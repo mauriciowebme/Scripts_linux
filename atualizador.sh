@@ -3,3 +3,5 @@
 apt update
 
 apt upgrade -y
+
+echo "ok"
