@@ -1,3 +1,5 @@
+echo "==================================================="
+echo " "
 echo "Arquivo instala_docker.sh iniciado!"
 echo " "
 echo "Verssão 1.01"
@@ -30,3 +32,5 @@ sudo docker run hello-world
 
 echo " "
 echo "Arquivo atualizador.sh terminado com sucesso!"
+echo " "
+echo "==================================================="

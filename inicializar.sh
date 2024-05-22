@@ -1,3 +1,10 @@
+echo "==================================================="
+echo " "
+echo "Arquivo inicializa.sh iniciado!"
+echo " "
+echo "Verssão 1.01"
+echo " "
+
 #!/bin/bash
 
 # Criar o arquivo de serviço systemd
@@ -27,3 +34,8 @@ systemctl start inicializar.service
 
 # Mostrar o status do serviço
 systemctl status inicializar.service
+
+echo " "
+echo "Arquivo inicializa.sh terminado com sucesso!"
+echo " "
+echo "==================================================="
