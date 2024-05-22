@@ -1,6 +1,6 @@
 echo "Arquivo iniciado!"
 echo " "
-echo "Verssão 1.0"
+echo "Verssão 1.01"
 echo " "
 
 apt update
