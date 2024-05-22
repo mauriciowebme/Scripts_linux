@@ -2,7 +2,7 @@ echo "==================================================="
 echo " "
 echo "Arquivo atualizador.sh iniciado!"
 echo " "
-echo "Verssão 1.01"
+echo "Verssão 1.02"
 echo " "
 
 apt update
