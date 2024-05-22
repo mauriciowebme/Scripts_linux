@@ -1,3 +1,3 @@
 #atualiza
 apt update
-apt upgrade
+#apt upgrade
