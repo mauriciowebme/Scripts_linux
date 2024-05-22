@@ -1,4 +1,4 @@
-echo "-----------------------------------------------------"
+echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_docker.sh iniciado!"
 echo " "
@@ -33,4 +33,4 @@ sudo docker run hello-world
 echo " "
 echo "Arquivo instala_docker.sh terminado com sucesso!"
 echo " "
-echo "-----------------------------------------------------"
+echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"

@@ -1,4 +1,4 @@
-echo "-----------------------------------------------------"
+echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo atualizador.sh iniciado!"
 echo " "
@@ -12,4 +12,4 @@ apt upgrade -y
 echo " "
 echo "Arquivo atualizador.sh terminado com sucesso!"
 echo " "
-echo "-----------------------------------------------------"
+echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
