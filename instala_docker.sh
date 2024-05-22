@@ -31,6 +31,6 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 sudo docker run hello-world
 
 echo " "
-echo "Arquivo atualizador.sh terminado com sucesso!"
+echo "Arquivo instala_docker.sh terminado com sucesso!"
 echo " "
 echo "==================================================="
