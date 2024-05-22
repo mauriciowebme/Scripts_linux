@@ -16,6 +16,6 @@ wget --no-cache -O - https://raw.githubusercontent.com/mauriciowebme/Scripts_lin
 #limpa containers e imagens do docker 
 wget --no-cache -O - https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/limpa_containers_imagens_docker.sh | sudo bash
 
-#instalador do docker 
+#instalador do instala_postgres-docker 
 wget --no-cache -O - https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/instala_postgres-docker.sh | sudo bash
 

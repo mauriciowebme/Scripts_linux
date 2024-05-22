@@ -11,7 +11,7 @@ docker run -d \
   -e POSTGRES_USER=postgres\
   --name postgres \
   -p 5432:5432\
-  -v /mnt/cephfs/postgres/:/var/lib/postgresql/data \
+  -v /mnt/cephfs/postgres:/var/lib/postgresql/data \
   -m 512M \
   postgres 
 
