@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Criar o arquivo de serviço systemd
-cat << 'EOF' > /etc/systemd/system/startup-script.service
+cat << 'EOF' > /etc/systemd/system/inicializar.service
 [Unit]
 Description=Executa o script /teste.txt 30 segundos após a inicialização
 After=network.target
@@ -20,10 +20,10 @@ EOF
 systemctl daemon-reload
 
 # Habilitar o serviço para iniciar no boot
-systemctl enable startup-script.service
+systemctl enable inicializar.service
 
 # Iniciar o serviço imediatamente
-systemctl start startup-script.service
+systemctl start inicializar.service
 
 # Mostrar o status do serviço
-systemctl status startup-script.service
+systemctl status inicializar.service
