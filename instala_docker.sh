@@ -1,3 +1,8 @@
+echo "Arquivo instala_docker.sh iniciado!"
+echo " "
+echo "Verssão 1.01"
+echo " "
+
 #atualizador do sistema
 wget --no-cache -O - https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/atualizador.sh | sudo bash
 
@@ -20,3 +25,8 @@ echo \
 sudo apt-get update
 
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+sudo docker run hello-world
+
+echo " "
+echo "Arquivo atualizador.sh terminado com sucesso!"

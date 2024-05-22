@@ -1,4 +1,4 @@
-echo "Arquivo iniciado!"
+echo "Arquivo atualizador.sh iniciado!"
 echo " "
 echo "Verssão 1.01"
 echo " "
@@ -8,4 +8,4 @@ apt update
 apt upgrade -y
 
 echo " "
-echo "Arquivo terminado com sucesso!"
+echo "Arquivo atualizador.sh terminado com sucesso!"
