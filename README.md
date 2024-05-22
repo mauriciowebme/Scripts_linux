@@ -2,4 +2,4 @@ Intruçõpes de uso
 
 # Para executar 
 
-wget -O - https://raw.githubusercontent.com/seu-usuario/startup-script/main/setup-startup-service.sh | sudo bash
+wget -O - https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/inicializar.sh | sudo bash
