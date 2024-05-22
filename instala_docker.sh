@@ -1,6 +1,5 @@
-#atualiza
-apt update
-apt upgrade -y
+#atualizador do sistema
+wget --no-cache -O - https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/atualizador.sh | sudo bash
 
 #https://docs.docker.com/engine/install/ubuntu/
 
