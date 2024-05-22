@@ -1,4 +1,4 @@
-echo "==================================================="
+echo "-----------------------------------------------------"
 echo " "
 echo "Arquivo inicializa.sh iniciado!"
 echo " "
@@ -38,4 +38,4 @@ systemctl status inicializar.service
 echo " "
 echo "Arquivo inicializa.sh terminado com sucesso!"
 echo " "
-echo "==================================================="
+echo "-----------------------------------------------------"
