@@ -3,7 +3,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_postgres-docker.sh iniciado!"
 echo " "
-echo "Verssão 1.02"
+echo "Verssão 1.03"
 echo " "
 
 docker run -d \
