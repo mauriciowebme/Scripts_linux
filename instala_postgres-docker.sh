@@ -13,7 +13,7 @@ docker run -d \
   -p 5432:5432\
   -v /mnt/cephfs/postgres:/var/lib/postgresql/data \
   -m 512M \
-  postgres 
+  postgres:15.3
 
 echo " "
 echo "Arquivo instala_postgres-docker.sh terminado com sucesso!"
