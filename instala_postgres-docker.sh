@@ -5,7 +5,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_postgres-docker.sh iniciado!"
 echo " "
-echo "Versão 1.03"
+echo "Versão 1.04"
 echo " "
 
 # Remover container existente se houver
