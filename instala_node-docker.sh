@@ -5,7 +5,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_node-docker.sh iniciado!"
 echo " "
-echo "Versão 1.1"
+echo "Versão 1.2"
 echo " "
 
 # Nome do container
@@ -21,7 +21,7 @@ const app = express();
 const port = 3000;
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.send('Node rodando!');
 });
 
 app.listen(port, () => {
