@@ -5,7 +5,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_node-docker.sh iniciado!"
 echo " "
-echo "Versão 1.0"
+echo "Versão 1.1"
 echo " "
 
 # Nome do container
@@ -38,7 +38,7 @@ docker run -d \
   -p 3000:3000 \
   -v $(pwd)/app:/usr/src/app \
   -w /usr/src/app \
-  node:18.12.1 \
+  node:latest \
   bash -c "npm init -y && npm install express && node index.js"
 
 # Esperar um pouco para o container iniciar
