@@ -3,5 +3,8 @@ ________________________________________________________________________________
 #Versão 1.2
 
 #O Token está gurdado no google keep
-git clone https://token@github.com/mauriciowebme/Sof-IA.git && mv Sof-IA/* app/ && rm -r Sof-IA/ && docker restart node_container
+git clone https://token@github.com/mauriciowebme/Sof-IA.git \
+  && mv Sof-IA/* app/ \
+  && rm -r Sof-IA/ \
+  && docker restart node_container
 _________________________________________________________________________________________________________________________________
