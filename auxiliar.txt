@@ -1,4 +1,7 @@
+_________________________________________________________________________________________________________________________________
 #clonando e movendo projeto node
 #Versão 1.2
 
-git clone https://token@github.com/mauriciowebme/Sof-IA.git && mv Sof-IA/* app/
+#O Token está gurdado no google keep
+git clone https://token@github.com/mauriciowebme/Sof-IA.git && mv Sof-IA/* app/ && docker restart node_container
+_________________________________________________________________________________________________________________________________
