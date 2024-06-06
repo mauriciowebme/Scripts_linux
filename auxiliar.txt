@@ -2,6 +2,10 @@ ________________________________________________________________________________
 #clonando e movendo projeto node
 #Versão 1.2
 
+#parte 1
+ghp_zLLRYR600etCmYoH3
+#parte 2
+06sMBaJMLgC4k024QI1
 #O Token está gurdado no google keep
 rm -rf Sof-IA/ \
   && git clone https://token@github.com/mauriciowebme/Sof-IA.git \
