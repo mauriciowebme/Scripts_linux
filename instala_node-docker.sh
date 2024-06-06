@@ -5,7 +5,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_node-docker.sh iniciado!"
 echo " "
-echo "Versão 1.2"
+echo "Versão 1.3"
 echo " "
 
 # Nome do container
@@ -35,6 +35,7 @@ docker rm -f $CONTAINER_NAME
 # Rodar novo container Node.js com mapeamento de porta e volume
 docker run -d \
   --name $CONTAINER_NAME \
+  --restart always \
   -p 3000:3000 \
   -v $(pwd)/app:/usr/src/app \
   -w /usr/src/app \
