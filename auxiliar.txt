@@ -1,0 +1,3 @@
+#clonando e movendo projeto node
+git clone https://token@github.com/mauriciowebme/Sof-IA.git
+mv Sof-IA/* app/
