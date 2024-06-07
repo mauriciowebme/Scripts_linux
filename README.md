@@ -7,6 +7,9 @@ OBS: As vezes qaundo atualiza o arquivo, não atualiza de imediato ao usar o com
 #atualizador do sistema
 wget --no-cache -O - https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/atualizador.sh | sudo bash
 
+#atualizador do sistema
+wget --no-cache -O - https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/compartilha_pasta.sh | sudo bash
+
 #criando tarefa no inicializar
 wget --no-cache -O - https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/inicializar.sh | sudo bash
 
