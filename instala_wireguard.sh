@@ -4,13 +4,12 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_wireguard.sh iniciado!"
 echo " "
-echo "Versão 1.3"
+echo "Versão 1.4"
 echo " "
 
 # Instalar o WireGuard
 sudo apt update 
 sudo apt install -y wireguard
-
 
 # Escolha um diretório para guardar as configurações do WireGuard
 WG_DIR=/etc/wireguard
@@ -36,9 +35,7 @@ cat > ${WG_DIR}/wg0.conf << EOF
 [Interface]
 Address = 10.0.0.1/24
 ListenPort = 51820
-PrivateKey = $(cat ${WG_DIR}/server_private_key)
-SaveConfig = true
-
+PrivateKey = $(cat ${WG_DIR}/server_private_wp}
 EOF
 
 # Ativar e iniciar o serviço WireGuard
