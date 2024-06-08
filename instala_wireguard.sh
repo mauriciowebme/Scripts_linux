@@ -4,7 +4,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_wireguard.sh iniciado!"
 echo " "
-echo "Verssão 1.02"
+echo "Verssão 1.0"
 echo " "
 
 # Instalar o WireGuard
