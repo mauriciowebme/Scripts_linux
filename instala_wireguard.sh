@@ -4,14 +4,13 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_wireguard.sh iniciado!"
 echo " "
-echo "Versão 1.2"
+echo "Versão 1.3"
 echo " "
 
 # Instalar o WireGuard
-if ! sudo apt update || ! sudo apt install -y wireguard; then
-    echo "Falha na instalação do WireGuard. Abortando..."
-    exit 1
-fi
+sudo apt update 
+sudo apt install -y wireguard
+
 
 # Escolha um diretório para guardar as configurações do WireGuard
 WG_DIR=/etc/wireguard
