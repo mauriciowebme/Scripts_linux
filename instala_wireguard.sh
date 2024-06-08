@@ -14,7 +14,7 @@ if ! sudo apt update || ! sudo apt install -y wireguard; then
 fi
 
 # Escolha um diretório para guardar as configurações do WireGuard
-WG_DIR=/etc/wireguard
+WG_DIR=/wireguard
 mkdir -p ${WG_DIR}
 
 # Verificar se o diretório foi criado
