@@ -4,7 +4,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_wireguard.sh iniciado!"
 echo " "
-echo "Versão 1.1"
+echo "Versão 1."
 echo " "
 
 # Instalar o WireGuard
@@ -14,7 +14,7 @@ if ! sudo apt update || ! sudo apt install -y wireguard; then
 fi
 
 # Escolha um diretório para guardar as configurações do WireGuard
-WG_DIR=/wireguard
+WG_DIR=/etc/wireguard
 mkdir -p ${WG_DIR}
 
 # Verificar se o diretório foi criado
