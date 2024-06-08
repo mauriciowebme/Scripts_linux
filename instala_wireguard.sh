@@ -4,19 +4,30 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_wireguard.sh iniciado!"
 echo " "
-echo "Verssão 1.0"
+echo "Versão 1.0"
 echo " "
 
 # Instalar o WireGuard
-sudo apt update
-sudo apt install -y wireguard
+if ! sudo apt update || ! sudo apt install -y wireguard; then
+    echo "Falha na instalação do WireGuard. Abortando..."
+    exit 1
+fi
 
 # Escolha um diretório para guardar as configurações do WireGuard
-WG_DIR=/wireguard
+WG_DIR=/etc/wireguard
 mkdir -p ${WG_DIR}
 
+# Verificar se o diretório foi criado
+if [ ! -d "${WG_DIR}" ]; then
+    echo "Diretório ${WG_DIR} não pôde ser criado. Abortando..."
+    exit 1
+fi
+
 # Gerar chaves privada e pública para o servidor
-wg genkey | tee ${WG_DIR}/server_private_key | wg pubkey > ${WG_DIR}/server_public_key
+if ! wg genkey | tee ${WG_DIR}/server_private_key | wg pubkey > ${WG_DIR}/server_public_key; then
+    echo "Falha ao gerar chaves para o servidor. Abortando..."
+    exit 1
+fi
 
 # Ajustar permissões
 chmod -R og-rwx ${WG_DIR}
@@ -31,24 +42,11 @@ SaveConfig = true
 
 EOF
 
-# Adicionar configurações para cada cliente
-for i in {1..5}
-do
-  # Gerar chaves para cada cliente (isto é apenas para exemplo; na prática, cada cliente deve gerar suas próprias chaves)
-  wg genkey | tee ${WG_DIR}/client${i}_private_key | wg pubkey > ${WG_DIR}/client${i}_public_key
-
-  cat >> ${WG_DIR}/wg0.conf << EOF
-[Peer]
-# PublicKey do cliente ${i}
-PublicKey = $(cat ${WG_DIR}/client${i}_public_key)
-AllowedIPs = 10.0.0.$((i+1))/32
-EOF
-done
-
 # Ativar e iniciar o serviço WireGuard
-systemctl enable wg-quick@wg0.service
-systemctl start wg-quick@wg0.service
-
+if ! systemctl enable wg-quick@wg0.service || ! systemctl start wg-quick@wg0.service; then
+    echo "Falha ao iniciar o serviço WireGuard. Abortando..."
+    exit 1
+fi
 
 echo " "
 echo "Arquivo instala_wireguard.sh terminado com sucesso!"
