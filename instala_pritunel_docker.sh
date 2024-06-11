@@ -5,7 +5,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_pritunel_docker.sh iniciado!"
 echo " "
-echo "Versão 1.14"
+echo "Versão 1.15"
 echo " "
 
 # Definição do diretório padrão
@@ -35,7 +35,7 @@ docker rm -f pritunl mongodb
 
 # Criar o Dockerfile
 cat > ${DATA_DIR}/Dockerfile <<EOF
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 # Evita que a instalação faça perguntas
 ENV DEBIAN_FRONTEND=noninteractive
