@@ -5,9 +5,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_pritunel_docker.sh iniciado!"
 echo " "
-echo "Documentação: https://github.com/jippi/docker-pritunl"
-echo " "
-echo "Versão 1.13"
+echo "Versão 1.14"
 echo " "
 
 # Definição do diretório padrão
