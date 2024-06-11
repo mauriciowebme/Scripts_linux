@@ -1,3 +1,5 @@
+#!/bin/bash
+ 
 echo " "
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
@@ -5,7 +7,7 @@ echo "Arquivo instala_pritunel_docker.sh iniciado!"
 echo " "
 echo "Documentação: https://github.com/jippi/docker-pritunl"
 echo " "
-echo "Versão 1.13"
+echo "Versão 1.12"
 echo " "
 
 # Definição do diretório padrão
@@ -13,28 +15,25 @@ DEFAULT_DIR="/pritunl"
 
 # Solicita ao usuário para escolher entre o local padrão ou um customizado
 echo "Escolha a opção de instalação:"
-echo "1 - Local padrão ($DEFAULT_DIR) (default)cd "
+echo "1 - Local padrão ($DEFAULT_DIR) (default)"
 echo "2 - Especificar local manualmente"
 read -p "Digite sua opção (1 ou 2): " user_choice
 
 if [ "$user_choice" = "2" ]; then
   read -p "Informe o diretório de instalação: " DATA_DIR
 else
-  DATA_DIR=$DEFAULT_DIR
+  DATA_DIR=$DEFAULT_DATA_DIR
 fi
 
-rm -r ${DATA_DIR}
+rm -rf ${DATA_DIR}
 
 # Cria a estrutura de diretórios e arquivos necessários
 echo "Instalação: ${DATA_DIR}"
-mkdir -p ${DATA_DIR}/pritunl ${DATA_DIR}/mongodb
+mkdir -p ${DATA_DIR}
 touch ${DATA_DIR}/pritunl.conf
 
 # Tenta remover o container se existir
-docker rm -f pritunl
-
-# Definir o endereço do host MongoDB
-MONGODB_URI="mongodb://localhost:27017/pritunl"
+docker rm -f pritunl mongodb
 
 # Criar o Dockerfile
 cat > ${DATA_DIR}/Dockerfile <<EOF
@@ -59,43 +58,47 @@ RUN apt-get update && \
 CMD ["/usr/bin/pritunl", "start"]
 EOF
 
-# Construir a imagem Docker
+# Criar o arquivo docker-compose.yml
+cat > ${DATA_DIR}/docker-compose.yml <<EOF
+version: '3.8'
+
+services:
+  pritunl:
+    build: .
+    image: pritunl_custom
+    volumes:
+      - ${DATA_DIR}/pritunl.conf:/etc/pritunl.conf
+      - ${DATA_DIR}/pritunl:/var/lib/pritunl
+      - ${DATA_DIR}/mongodb:/var/lib/mongodb
+    ports:
+      - "9700:9700"
+      - "1194:1194"
+      - "1194:1194/udp"
+    environment:
+      - PRITUNL_MONGODB_URI=mongodb://mongodb:27017/pritunl
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:latest
+    volumes:
+      - ${DATA_DIR}/mongodb:/data/db
+    restart: unless-stopped
+
+EOF
+
+# Construir e executar containers com Docker Compose
 cd ${DATA_DIR}/
-docker build -t pritunl_custom .
-
-# Executar o contêiner do Docker
-docker run -d \
-  --name pritunl \
-  --network="host" \
-  --volume ${DATA_DIR}/pritunl.conf:/etc/pritunl.conf \
-  --volume ${DATA_DIR}/pritunl:/var/lib/pritunl \
-  --volume ${DATA_DIR}/mongodb:/var/lib/mongodb \
-  -e PRITUNL_MONGODB_URI="$MONGODB_URI" \
-  pritunl_custom
-
-# Executa o container Docker
-# docker run \
-#     --name pritunl \
-#     --privileged \
-#     --publish 80:80 \
-#     --publish 443:443 \
-#     --publish 1194:1194 \
-#     --publish 1194:1194/udp \
-#     --dns 127.0.0.1 \
-#     --restart=unless-stopped \
-#     --detach \
-#     --volume ${DATA_DIR}/pritunl.conf:/etc/pritunl.conf \
-#     --volume ${DATA_DIR}/pritunl:/var/lib/pritunl \
-#     --volume ${DATA_DIR}/mongodb:/var/lib/mongodb \
-#     ghcr.io/jippi/docker-pritunl
+docker-compose up -d
 
 # Espera um pouco para o container iniciar
 sleep 20
-echo " "
 
 # Redefine a senha do Pritunl
 docker exec pritunl pritunl reset-password
-echo "Possiveis ip para acesso"
+
+echo "Possíveis IPs para acesso"
 hostname -I | tr ' ' '\n'
 
 echo " "
