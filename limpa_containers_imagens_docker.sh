@@ -3,7 +3,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo limpa_containers_imagens_docker.sh iniciado!"
 echo " "
-echo "Verssão 1.03"
+echo "Verssão 1.04"
 echo " "
 
 echo "Escolha a opção de limpeza:"
