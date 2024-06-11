@@ -23,10 +23,15 @@ else
   DATA_DIR=$DEFAULT_DIR
 fi
 
+rm -r ${DATA_DIR}
+
 # Cria a estrutura de diretórios e arquivos necessários
 echo "Instalação: ${DATA_DIR}"
 mkdir -p ${DATA_DIR}/pritunl ${DATA_DIR}/mongodb
 touch ${DATA_DIR}/pritunl.conf
+
+# Tenta remover o container se existir
+docker rm -f pritunl
 
 # Executa o container Docker
 docker run \
