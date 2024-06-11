@@ -5,7 +5,7 @@ echo "Arquivo instala_pritunel_docker.sh iniciado!"
 echo " "
 echo "Docuemntação: https://github.com/jippi/docker-pritunl"
 echo " "
-echo "Verssão 1.05"
+echo "Verssão 1.06"
 echo " "
 
 DATA_DIR=${pwd}/data
@@ -28,8 +28,9 @@ docker run \
 
 # Esperar um pouco para o container iniciar
 sleep 20
+echo " "
 
-docker exec pritunl pritunl default-password
+docker exec pritunl pritunl reset-password
 
 echo " "
 echo "Arquivo instala_pritunel_docker.sh terminado com sucesso!"
