@@ -20,8 +20,6 @@ else
   docker rmi $(docker images -q)
 fi
 
-
-
 echo " "
 echo "Arquivo limpa_containers_imagens_docker.sh terminado com sucesso!"
 echo " "
