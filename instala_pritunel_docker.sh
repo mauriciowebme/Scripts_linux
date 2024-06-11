@@ -5,7 +5,7 @@ echo "Arquivo instala_pritunel_docker.sh iniciado!"
 echo " "
 echo "Docuemntação: https://github.com/jippi/docker-pritunl"
 echo " "
-echo "Verssão 1.02"
+echo "Verssão 1.03"
 echo " "
 
 DATA_DIR=${pwd}/data
