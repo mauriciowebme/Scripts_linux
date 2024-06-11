@@ -5,7 +5,7 @@ echo "Arquivo instala_pritunel_docker.sh iniciado!"
 echo " "
 echo "Docuemntação: https://github.com/jippi/docker-pritunl"
 echo " "
-echo "Verssão 1.04"
+echo "Verssão 1.05"
 echo " "
 
 DATA_DIR=${pwd}/data
@@ -18,7 +18,7 @@ docker run \
     --name pritunl \
     --privileged \
     --network=host \
-    --dns 127.0.0.1 \
+    --dns 8.8.8.8 \
     --restart=unless-stopped \
     --detach \
     --volume ${DATA_DIR}/pritunl.conf:/etc/pritunl.conf \
