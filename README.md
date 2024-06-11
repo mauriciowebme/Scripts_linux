@@ -16,6 +16,9 @@ wget --no-cache -O - https://raw.githubusercontent.com/mauriciowebme/Scripts_lin
 # instalador do instala_postgres-docker 
 wget --no-cache -O - https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/instala_postgres-docker.sh | sudo bash
 
+# instalador do instala_pritunel_docker 
+wget --no-cache -O - https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/instala_pritunel_docker.sh | sudo bash
+
 # instalador do instala_node-docker 
 wget --no-cache -O - https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/instala_node-docker.sh | sudo bash
 
