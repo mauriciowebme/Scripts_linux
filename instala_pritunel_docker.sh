@@ -5,7 +5,7 @@ echo "Arquivo instala_pritunel_docker.sh iniciado!"
 echo " "
 echo "Documentação: https://github.com/jippi/docker-pritunl"
 echo " "
-echo "Versão 1.12"
+echo "Versão 1.13"
 echo " "
 
 # Definição do diretório padrão
@@ -33,21 +33,61 @@ touch ${DATA_DIR}/pritunl.conf
 # Tenta remover o container se existir
 docker rm -f pritunl
 
+# Definir o endereço do host MongoDB
+MONGODB_URI="mongodb://localhost:27017/pritunl"
+
+# Criar o Dockerfile
+cat > ${DATA_DIR}/Dockerfile <<EOF
+FROM ubuntu:20.04
+
+# Evita que a instalação faça perguntas
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Instala dependências necessárias
+RUN apt-get update && \
+    apt-get install -y wget gnupg software-properties-common
+
+# Adiciona o repositório do Pritunl
+RUN echo "deb http://repo.pritunl.com/stable/apt focal main" > /etc/apt/sources.list.d/pritunl.list && \
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7568D9BB55FF9E5287D586017AE645C0CF8E292A
+
+# Instala o Pritunl
+RUN apt-get update && \
+    apt-get install -y pritunl
+
+# Configura o ponto de entrada
+CMD ["/usr/bin/pritunl", "start"]
+EOF
+
+# Construir a imagem Docker
+cd ${DATA_DIR}/
+docker build -t pritunl_custom .
+
+# Executar o contêiner do Docker
+docker run -d \
+  --name pritunl \
+  --network="host" \
+  --volume ${DATA_DIR}/pritunl.conf:/etc/pritunl.conf \
+  --volume ${DATA_DIR}/pritunl:/var/lib/pritunl \
+  --volume ${DATA_DIR}/mongodb:/var/lib/mongodb \
+  -e PRITUNL_MONGODB_URI="$MONGODB_URI" \
+  pritunl_custom
+
 # Executa o container Docker
-docker run \
-    --name pritunl \
-    --privileged \
-    --publish 80:80 \
-    --publish 443:443 \
-    --publish 1194:1194 \
-    --publish 1194:1194/udp \
-    --dns 127.0.0.1 \
-    --restart=unless-stopped \
-    --detach \
-    --volume ${DATA_DIR}/pritunl.conf:/etc/pritunl.conf \
-    --volume ${DATA_DIR}/pritunl:/var/lib/pritunl \
-    --volume ${DATA_DIR}/mongodb:/var/lib/mongodb \
-    ghcr.io/jippi/docker-pritunl
+# docker run \
+#     --name pritunl \
+#     --privileged \
+#     --publish 80:80 \
+#     --publish 443:443 \
+#     --publish 1194:1194 \
+#     --publish 1194:1194/udp \
+#     --dns 127.0.0.1 \
+#     --restart=unless-stopped \
+#     --detach \
+#     --volume ${DATA_DIR}/pritunl.conf:/etc/pritunl.conf \
+#     --volume ${DATA_DIR}/pritunl:/var/lib/pritunl \
+#     --volume ${DATA_DIR}/mongodb:/var/lib/mongodb \
+#     ghcr.io/jippi/docker-pritunl
 
 # Espera um pouco para o container iniciar
 sleep 20
