@@ -5,10 +5,11 @@ echo "Arquivo instala_pritunel_docker.sh iniciado!"
 echo " "
 echo "Docuemntação: https://github.com/jippi/docker-pritunl"
 echo " "
-echo "Verssão 1.03"
+echo "Verssão 1.04"
 echo " "
 
 DATA_DIR=${pwd}/data
+echo "Instalação: ${pwd}"
 
 mkdir -p ${DATA_DIR}/pritunl ${DATA_DIR}/mongodb
 touch ${DATA_DIR}/pritunl.conf
