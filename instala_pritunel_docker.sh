@@ -38,7 +38,8 @@ docker run \
     --name pritunl \
     --privileged \
     --network=host \
-    --dns 8.8.8.8 \
+    --network=host \
+    --dns 127.0.0.1 \
     --restart=unless-stopped \
     --detach \
     --volume ${DATA_DIR}/pritunl.conf:/etc/pritunl.conf \
