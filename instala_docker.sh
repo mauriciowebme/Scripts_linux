@@ -3,7 +3,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_docker.sh iniciado!"
 echo " "
-echo "Verssão 1.03"
+echo "Verssão 1.05"
 echo " "
 
 #atualizador do sistema
