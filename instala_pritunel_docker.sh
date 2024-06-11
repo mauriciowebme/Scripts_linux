@@ -1,11 +1,13 @@
 #!/bin/bash
- 
+
 echo " "
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo instala_pritunel_docker.sh iniciado!"
 echo " "
-echo "Versão 1.15"
+echo "Documentação: https://github.com/jippi/docker-pritunl"
+echo " "
+echo "Versão 1.12"
 echo " "
 
 # Definição do diretório padrão
@@ -20,18 +22,19 @@ read -p "Digite sua opção (1 ou 2): " user_choice
 if [ "$user_choice" = "2" ]; then
   read -p "Informe o diretório de instalação: " DATA_DIR
 else
-  DATA_DIR=$DEFAULT_DATA_DIR
+  DATA_DIR=$DEFAULT_DIR
 fi
 
 rm -rf ${DATA_DIR}
 
-# Cria a estrutura de diretórios e arquivos necessários
+# Checa e cria a estrutura de diretórios e arquivos necessários
 echo "Instalação: ${DATA_DIR}"
 mkdir -p ${DATA_DIR}
 touch ${DATA_DIR}/pritunl.conf
 
 # Tenta remover o container se existir
-docker rm -f pritunl mongodb
+docker ps -a | grep 'pritunl' && docker rm -f pritunl
+docker ps -a | grep 'mongodb' && docker rm -f mongodb
 
 # Criar o Dockerfile
 cat > ${DATA_DIR}/Dockerfile <<EOF
@@ -45,7 +48,7 @@ RUN apt-get update && \
     apt-get install -y wget gnupg software-properties-common
 
 # Adiciona o repositório do Pritunl
-RUN echo "deb http://repo.pritunl.com/stable/apt focal main" > /etc/apt/sources.list.d/pritunl.list && \
+RUN echo "deb http://repo.pritunl.com/stable/apt jammy main" > /etc/apt/sources.list.d/pritunl.list && \
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7568D9BB55FF9E5287D586017AE645C0CF8E292A
 
 # Instala o Pritunl
