@@ -38,7 +38,6 @@ docker run \
     --name pritunl \
     --privileged \
     --network=host \
-    --network=host \
     --dns 127.0.0.1 \
     --restart=unless-stopped \
     --detach \
