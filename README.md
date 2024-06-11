@@ -8,7 +8,7 @@ wget --no-cache -O atualizador.sh https://raw.githubusercontent.com/mauriciowebm
 # ________________________________ DOCKER ________________________________ #
 
 # instalador do docker 
-wget --no-cache -O instala_doder.sh https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/instala_docker.sh && sudo bash instala_docker.sh
+wget --no-cache -O instala_docker.sh https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/instala_docker.sh && sudo bash instala_docker.sh
 
 # limpa containers e imagens do docker 
 wget --no-cache -O limpa_containers_imagens_docker.sh https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/limpa_containers_imagens_docker.sh && sudo bash limpa_containers_imagens_docker.sh
