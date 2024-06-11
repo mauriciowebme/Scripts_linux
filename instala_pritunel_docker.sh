@@ -13,7 +13,7 @@ DEFAULT_DIR="/pritunl"
 
 # Solicita ao usuário para escolher entre o local padrão ou um customizado
 echo "Escolha a opção de instalação:"
-echo "1 - Local padrão ($DEFAULT_DIR)"
+echo "1 - Local padrão ($DEFAULT_DIR) (default)"
 echo "2 - Especificar local manualmente"
 read -p "Digite sua opção (1 ou 2): " user_choice
 

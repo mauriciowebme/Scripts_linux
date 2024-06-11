@@ -3,11 +3,11 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo atualizador.sh iniciado!"
 echo " "
-echo "Verssão 1.03"
+echo "Verssão 1.04"
 echo " "
 
 echo "Escolha a opção de limpeza:"
-echo "1 - Atualização completa sem reinicialização"
+echo "1 - Atualização completa sem reinicialização (default)"
 echo "2 - Atualização completa com reinicialização"
 read -p "Digite sua opção (1 ou 2): " user_choice
 
