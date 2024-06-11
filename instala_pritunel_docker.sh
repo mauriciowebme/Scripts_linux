@@ -37,7 +37,10 @@ docker rm -f pritunl
 docker run \
     --name pritunl \
     --privileged \
-    --network=host \
+    --publish 80:80 \
+    --publish 443:443 \
+    --publish 1194:1194 \
+    --publish 1194:1194/udp \
     --dns 127.0.0.1 \
     --restart=unless-stopped \
     --detach \
