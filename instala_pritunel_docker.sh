@@ -47,6 +47,8 @@ echo " "
 
 # Redefine a senha do Pritunl
 docker exec pritunl pritunl reset-password
+echo "Possiveis ip para acesso"
+hostname -I | tr ' ' '\n'
 
 echo " "
 echo "Arquivo instala_pritunel_docker.sh terminado com sucesso!"
