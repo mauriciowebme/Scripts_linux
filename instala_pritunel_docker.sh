@@ -27,7 +27,7 @@ fi
 
 rm -rf ${DATA_DIR}
 
-# Checa e cria a estrutura de diretórios e arquivos necessários
+# Cria a estrutura de diretórios e arquivos necessários
 echo "Instalação: ${DATA_DIR}"
 mkdir -p ${DATA_DIR}
 touch ${DATA_DIR}/pritunl.conf
@@ -36,7 +36,7 @@ touch ${DATA_DIR}/pritunl.conf
 docker ps -a | grep 'pritunl' && docker rm -f pritunl
 docker ps -a | grep 'mongodb' && docker rm -f mongodb
 
-# Criar o Dockerfile
+# Prepara Dockerfile do Pritunl
 cat > ${DATA_DIR}/Dockerfile <<EOF
 FROM ubuntu:22.04
 
@@ -59,39 +59,24 @@ RUN apt-get update && \
 CMD ["/usr/bin/pritunl", "start"]
 EOF
 
-# Criar o arquivo docker-compose.yml
-cat > ${DATA_DIR}/docker-compose.yml <<EOF
-version: '3.8'
+# Construir a imagem Docker para Pritunl
+docker build -t pritunl_custom ${DATA_DIR}/
 
-services:
-  pritunl:
-    build: .
-    image: pritunl_custom
-    volumes:
-      - ${DATA_DIR}/pritunl.conf:/etc/pritunl.conf
-      - ${DATA_DIR}/pritunl:/var/lib/pritunl
-      - ${DATA_DIR}/mongodb:/var/lib/mongodb
-    ports:
-      - "9700:9700"
-      - "1194:1194"
-      - "1194:1194/udp"
-    environment:
-      - PRITUNL_MONGODB_URI=mongodb://mongodb:27017/pritunl
-    depends_on:
-      - mongodb
-    restart: unless-stopped
+# Iniciar o container MongoDB
+docker run -d \
+  --name mongodb \
+  --volume ${DATA_DIR}/mongodb:/data/db \
+  mongo:latest
 
-  mongodb:
-    image: mongo:latest
-    volumes:
-      - ${DATA_DIR}/mongodb:/data/db
-    restart: unless-stopped
-
-EOF
-
-# Construir e executar containers com Docker Compose
-cd ${DATA_DIR}/
-docker-compose up -d
+# Iniciar o container Pritunl
+docker run -d \
+  --name pritunl \
+  --network host \
+  --volume ${DATA_DIR}/pritunl.conf:/etc/pritunl.conf \
+  --volume ${DATA_DIR}/pritunl:/var/lib/pritunl \
+  --volume ${DATA_DIR}/mongodb:/var/lib/mongodb \
+  -e PRITUNL_MONGODB_URI="mongodb://localhost:27017/pritunl" \
+  pritunl_custom
 
 # Espera um pouco para o container iniciar
 sleep 20
