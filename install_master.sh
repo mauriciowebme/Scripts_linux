@@ -140,7 +140,6 @@ instala_postgres_docker(){
 
     # Reiniciar o PostgreSQL para aplicar configurações
     docker restart postgres
-
 }
 
 cria_pasta_compartilhada(){
