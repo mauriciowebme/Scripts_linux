@@ -64,10 +64,10 @@ instala_mongdb_docker(){
     chmod 777 ${DATA_DIR_MONGODB}  # Considere usar permissões mais restritivas
 
     # Cria e inicia o container MongoDB
+    #-v ${DATA_DIR_MONGODB}:/data/db \
     docker run \
-        --name mongodb \
         -d \
-        # -v ${DATA_DIR_MONGODB}:/data/db \
+        --name mongodb \
         -p 27017:27017 \
         mongo:latest
 }
