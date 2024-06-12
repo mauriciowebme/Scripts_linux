@@ -7,7 +7,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.06"
+echo "Versão 1.07"
 echo " "
 
 echo "Escolha a opção:"
@@ -17,6 +17,7 @@ echo "2 - Atualização completa com reinicialização"
 echo "3 - Atualização mínima sem reinicialização"
 echo "4 - Verificar status do sistema"
 echo "5 - Instala docker"
+echo "6 - Instala mongodb docker"
 read -p "Digite sua opção: " user_choice
 echo " "
 
@@ -65,6 +66,12 @@ case "$user_choice" in
     sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
     sudo docker run --name hello hello-world
+    ;;
+  6)
+    echo "instalando o docker mongo..."
+    docker run \
+        --name mongodb \
+        -d mongo
     ;;
   *)
     echo "Nada foi execudato!"
