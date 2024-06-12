@@ -7,7 +7,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.13"
+echo "Versão 1.14"
 echo " "
 
 instala_docker(){
@@ -55,17 +55,6 @@ instala_mongdb_docker(){
 instala_pritunel_docker(){
     echo "instalando pritunel docker..."
 
-    verifica_instalacao_docker
-
-    container_name="mongodb"
-    if [ $(docker ps -q -f name=^/${container_name}$) ]; then
-        echo "O container $container_name já está em execução."
-    else
-        echo "O container $container_name não existe ou não está em execução. Criando e iniciando o container..."
-        # Comando para criar e iniciar o container MongoDB
-        docker run --name $container_name -d mongo
-        echo "Container $container_name criado e iniciado com sucesso."
-    fi
     # Definição do diretório padrão
     DEFAULT_DIR="/pritunl"
     # Solicita ao usuário para escolher entre o local padrão ou um customizado
@@ -78,6 +67,19 @@ instala_pritunel_docker(){
     else
         DATA_DIR=$DEFAULT_DIR
     fi
+
+    verifica_instalacao_docker
+
+    container_name="mongodb"
+    if [ $(docker ps -q -f name=^/${container_name}$) ]; then
+        echo "O container $container_name já está em execução."
+    else
+        echo "O container $container_name não existe ou não está em execução. Criando e iniciando o container..."
+        # Comando para criar e iniciar o container MongoDB
+        docker run --name $container_name -d mongo
+        echo "Container $container_name criado e iniciado com sucesso."
+    fi
+    
     rm -r ${DATA_DIR}
     # Cria a estrutura de diretórios e arquivos necessários
     echo "Instalação: ${DATA_DIR}"
