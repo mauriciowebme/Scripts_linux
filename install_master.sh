@@ -7,7 +7,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.29"
+echo "Versão 1.30"
 echo " "
 
 instala_docker(){
@@ -34,15 +34,15 @@ instala_docker(){
     sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
     sudo docker run --name hello hello-world
+    cria_rede_docker
 }
 
 verifica_instalacao_docker(){
     if ! command -v docker &> /dev/null; then
         echo "Docker não está instalado. Instalando agora..."
         instala_docker
-    else
-        echo "Docker instalado ok."
     fi
+    cria_rede_docker
 }
 
 instala_mongdb_docker(){
@@ -74,7 +74,13 @@ instala_mongdb_docker(){
 }
 
 cria_rede_docker(){
-    docker network create rede_docker
+    NETWORK_NAME="rede_docker"
+    # Verifica se a rede já existe
+    if ! docker network ls | grep -wq $NETWORK_NAME; then
+        echo "Rede '$NETWORK_NAME' não encontrada. Criando rede..."
+        docker network create $NETWORK_NAME
+        echo "Rede '$NETWORK_NAME' criada com sucesso."
+    fi
 }
 
 instala_pritunel_docker(){
