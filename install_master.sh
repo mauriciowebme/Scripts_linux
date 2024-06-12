@@ -38,7 +38,7 @@ instala_docker(){
 
 verifica_instalacao_docker(){
     if ! command -v docker &> /dev/null; then
-        echo "Docker não está instalado."
+        echo "Docker não está instalado. Instalando agora..."
         instala_docker
     else
         echo "Docker instalado ok."
@@ -167,6 +167,7 @@ cria_pasta_compartilhada(){
 }
 
 limpa_containers_imagens_docker(){
+    verifica_instalacao_docker
     echo "Escolha a opção de limpeza:"
     echo "1 - Limpeza apenas de containers (default)"
     echo "2 - Limpeza completa"
