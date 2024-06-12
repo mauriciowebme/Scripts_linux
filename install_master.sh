@@ -7,7 +7,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.28"
+echo "Versão 1.29"
 echo " "
 
 instala_docker(){
@@ -64,12 +64,17 @@ instala_mongdb_docker(){
     chmod 777 ${DATA_DIR_MONGODB}  # Considere usar permissões mais restritivas
 
     # Cria e inicia o container MongoDB
-    #-v ${DATA_DIR_MONGODB}:/data/db \
     docker run \
         -d \
         --name mongodb \
         -p 27017:27017 \
+        --network rede_docker \
+        -v ${DATA_DIR_MONGODB}:/data/db \
         mongo:latest
+}
+
+cria_rede_docker(){
+    docker network create rede_docker
 }
 
 instala_pritunel_docker(){
@@ -116,9 +121,11 @@ instala_pritunel_docker(){
         --publish 1194:1194/udp \
         --restart=unless-stopped \
         --detach \
+        --network rede_docker \
         --volume ${DATA_DIR_pritunl}/pritunl.conf:/etc/pritunl.conf \
         --volume ${DATA_DIR_pritunl}/pritunl:/var/lib/pritunl \
         --env PRITUNL_MONGODB_URI=mongodb://127.0.0.1:27017/pritunl \
+        --env PRITUNL_MONGODB_URI="mongodb://mongodb:27017/pritunl" \
         ghcr.io/jippi/docker-pritunl
     # Espera um pouco para o container iniciar
     sleep 20
