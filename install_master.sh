@@ -7,7 +7,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.07"
+echo "Versão 1.08"
 echo " "
 
 echo "Escolha a opção:"
@@ -18,6 +18,7 @@ echo "3 - Atualização mínima sem reinicialização"
 echo "4 - Verificar status do sistema"
 echo "5 - Instala docker"
 echo "6 - Instala mongodb docker"
+echo "7 - Instala pritunel docker"
 read -p "Digite sua opção: " user_choice
 echo " "
 
@@ -72,6 +73,59 @@ case "$user_choice" in
     docker run \
         --name mongodb \
         -d mongo
+    ;;
+  7)
+    echo "instalando pritunel docker..."
+    # Definição do diretório padrão
+    DEFAULT_DIR="/pritunl"
+
+    # Solicita ao usuário para escolher entre o local padrão ou um customizado
+    echo "Escolha a opção de instalação:"
+    echo "1 - Local padrão ($DEFAULT_DIR) (default)cd "
+    echo "2 - Especificar local manualmente"
+    read -p "Digite sua opção (1 ou 2): " user_choice
+
+    if [ "$user_choice" = "2" ]; then
+    read -p "Informe o diretório de instalação: " DATA_DIR
+    else
+    DATA_DIR=$DEFAULT_DIR
+    fi
+
+    rm -r ${DATA_DIR}
+
+    # Cria a estrutura de diretórios e arquivos necessários
+    echo "Instalação: ${DATA_DIR}"
+    mkdir -p ${DATA_DIR}/pritunl ${DATA_DIR}/mongodb
+    touch ${DATA_DIR}/pritunl.conf
+
+    # Tenta remover o container se existir
+    docker rm -f pritunl
+
+    # Executa o container Docker
+    docker run \
+        --name pritunl \
+        --privileged \
+        --publish 80:80 \
+        --publish 443:443 \
+        --publish 1194:1194 \
+        --publish 1194:1194/udp \
+        --dns 127.0.0.1 \
+        --restart=unless-stopped \
+        --detach \
+        --volume $(data_dir)/pritunl.conf:/etc/pritunl.conf \
+        --volume $(data_dir)/pritunl:/var/lib/pritunl \
+        --env PRITUNL_MONGODB_URI=mongodb://127.0.0.1:27017/pritunl \
+        ghcr.io/jippi/docker-pritunl
+
+    # Espera um pouco para o container iniciar
+    sleep 20
+    echo " "
+
+    # Redefine a senha do Pritunl
+    docker exec pritunl pritunl reset-password
+    echo "Possiveis ip para acesso"
+    hostname -I | tr ' ' '\n'
+
     ;;
   *)
     echo "Nada foi execudato!"
