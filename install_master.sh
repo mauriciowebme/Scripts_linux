@@ -218,6 +218,37 @@ limpa_containers_imagens_docker(){
     fi
 }
 
+instala_pritunel(){
+    sudo tee /etc/apt/sources.list.d/pritunl.list << EOF
+    deb http://repo.pritunl.com/stable/apt jammy main
+EOF
+
+    # Import signing key from keyserver
+    sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com --recv 7568D9BB55FF9E5287D586017AE645C0CF8E292A
+    # Alternative import from download if keyserver offline
+    curl https://raw.githubusercontent.com/pritunl/pgp/master/pritunl_repo_pub.asc | sudo apt-key add -
+
+    sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list << EOF
+    deb https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse
+EOF
+
+    wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+
+    sudo apt update
+    sudo apt --assume-yes upgrade
+
+    # WireGuard server support
+    sudo apt -y install wireguard wireguard-tools
+
+    sudo ufw disable
+
+    sudo apt -y install pritunl mongodb-org
+    sudo systemctl enable mongod pritunl
+    sudo systemctl start mongod pritunl
+
+
+}
+
 echo "Escolha a opção:"
 echo "Pressione enter para sair (default)"
 echo "1 - Atualização completa sem reinicialização"
@@ -230,6 +261,7 @@ echo "7 - Instala pritunel docker"
 echo "8 - Instala postgres docker"
 echo "9 - Cria pasta compartilhada"
 echo "10 - Realiza limpezar do docker"
+echo "11 - Instala pritunel"
 read -p "Digite sua opção: " user_choice
 echo " "
 
@@ -271,6 +303,9 @@ case "$user_choice" in
     ;;
   10)
     limpa_containers_imagens_docker
+    ;;
+  11)
+    instala_pritunel
     ;;
   *)
     echo "Nada executado!"
