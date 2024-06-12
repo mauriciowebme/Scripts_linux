@@ -56,16 +56,14 @@ instala_pritunel_docker(){
     echo "instalando pritunel docker..."
 
     # Definição do diretório padrão
-    DEFAULT_DIR="/pritunl"
+    DATA_DIR="/pritunl"
     # Solicita ao usuário para escolher entre o local padrão ou um customizado
     echo "Escolha a opção de instalação:"
-    echo "1 - Local padrão ($DEFAULT_DIR) (default)"
+    echo "1 - Local padrão ($DATA_DIR) (default)"
     echo "2 - Especificar local manualmente"
     read -p "Digite sua opção (1 ou 2): " user_choice
     if [ "$user_choice" = "2" ]; then
         read -p "Informe o diretório de instalação: " DATA_DIR
-    else
-        DATA_DIR=$DEFAULT_DIR
     fi
 
     verifica_instalacao_docker
