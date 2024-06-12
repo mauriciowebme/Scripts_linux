@@ -89,9 +89,9 @@ instala_pritunel_docker(){
     if [ $(docker ps -q -f name=^/${container_name}$) ]; then
         echo "O container $container_name já está em execução."
     else
-        echo "O container $container_name não existe ou não está em execução. Criando e iniciando o container..."
+        echo "O container $container_name não existe ou não está em execução..."
         # Comando para criar e iniciar o container MongoDB
-        docker run --name $container_name -d mongo
+        instala_mongdb_docker
         echo "Container $container_name criado e iniciado com sucesso."
     fi
     
