@@ -67,7 +67,7 @@ instala_mongdb_docker(){
     docker run \
         --name mongodb \
         -d \
-        -v ${DATA_DIR_MONGODB}:/data/db \
+        # -v ${DATA_DIR_MONGODB}:/data/db \
         -p 27017:27017 \
         mongo:latest
 }
