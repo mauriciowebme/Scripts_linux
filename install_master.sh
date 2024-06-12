@@ -7,7 +7,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.22"
+echo "Versão 1.23"
 echo " "
 
 instala_docker(){
@@ -70,7 +70,6 @@ instala_mongdb_docker(){
         -v ${DATA_DIR_MONGODB}:/data/db \
         -p 27017:27017 \
         mongo:latest
-
 }
 
 instala_pritunel_docker(){
