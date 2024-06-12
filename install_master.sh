@@ -7,7 +7,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.11"
+echo "Versão 1.12"
 echo " "
 
 instala_docker(){
@@ -36,22 +36,27 @@ instala_docker(){
     sudo docker run --name hello hello-world
 }
 
-instala_mongdb(){
-    echo "instalando o docker mongo..."
-    docker run \
-        --name mongodb \
-        -d mongo
-}
-
-instala_pritunel(){
-    echo "instalando pritunel docker..."
-
+verifica_instalacao_docker(){
     if ! command -v docker &> /dev/null; then
         echo "Docker não está instalado."
         instala_docker
     else
         echo "Docker instalado ok."
     fi
+}
+
+instala_mongdb_docker(){
+    echo "instalando o docker mongo..."
+    docker run \
+        --name mongodb \
+        -d mongo
+}
+
+instala_pritunel_docker(){
+    echo "instalando pritunel docker..."
+
+    verifica_instalacao_docker
+
     container_name="mongodb"
     if [ $(docker ps -q -f name=^/${container_name}$) ]; then
         echo "O container $container_name já está em execução."
@@ -104,8 +109,10 @@ instala_pritunel(){
     hostname -I | tr ' ' '\n'
 }
 
-instala_postgres(){
+instala_postgres_docker(){
     echo "Instalando postgres docker..."
+
+    verifica_instalacao_docker
         
     # Remover container existente se houver
     docker rm -f postgres
@@ -134,6 +141,50 @@ instala_postgres(){
 
 }
 
+cria_pasta_compartilhada(){
+    echo "Criando pasta compartilhada..."
+    
+    # Atualiza os repositórios e instala o Samba
+    sudo apt-get update
+    sudo apt-get install samba -y
+
+    # Cria uma pasta compartilhada
+    sudo mkdir -p /compartilhado
+    sudo chmod 777 /compartilhado
+
+    # Adiciona configuração ao smb.conf
+    echo "
+    [Compartilhado]
+        comment = Pasta Compartilhada
+        path = /compartilhado
+        browsable = yes
+        guest ok = yes
+        read only = no
+    " | sudo tee -a /etc/samba/smb.conf
+
+    # Reinicia o serviço Samba para aplicar as configurações
+    sudo systemctl restart smbd
+}
+
+limpa_containers_imagens_docker(){
+    echo "Escolha a opção de limpeza:"
+    echo "1 - Limpeza apenas de containers (default)"
+    echo "2 - Limpeza completa"
+    read -p "Digite sua opção (1 ou 2): " user_choice
+    echo " "
+    echo "Iniciando limpeza..."
+    echo " "
+
+    if [ "$user_choice" = "2" ]; then
+        docker stop $(docker ps -q)
+        docker rm $(docker ps -aq)
+        docker rmi $(docker images -q)
+    else
+        docker stop $(docker ps -q)
+        docker rm $(docker ps -aq)
+    fi
+}
+
 echo "Escolha a opção:"
 echo "Pressione enter para sair (default)"
 echo "1 - Atualização completa sem reinicialização"
@@ -144,6 +195,8 @@ echo "5 - Instala docker"
 echo "6 - Instala mongodb docker"
 echo "7 - Instala pritunel docker"
 echo "8 - Instala postgres docker"
+echo "9 - Cria pasta compartilhada"
+echo "10 - Realiza limpezar do docker"
 read -p "Digite sua opção: " user_choice
 echo " "
 
@@ -172,15 +225,21 @@ case "$user_choice" in
     instala_docker
     ;;
   6)
-    instala_mongdb
+    instala_mongdb_docker
     ;;
   7)
-    instala_pritunel
+    instala_pritunel_docker
     ;;
   8)
-    instala_postgres
+    instala_postgres_docker
     ;;
-  8)
+  9)
+    cria_pasta_compartilhada
+    ;;
+  10)
+    limpa_containers_imagens_docker
+    ;;
+  *)
     echo "Nada executado!"
     ;;
 esac
