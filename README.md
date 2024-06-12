@@ -2,6 +2,10 @@ Intruçõpes de uso
 
 OBS: As vezes quando atualiza o arquivo, não atualiza de imediato ao usar o comando novamente.
 
+# INstalador principal
+wget --no-cache -O install_master.sh https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/atualizador.sh && sudo bash install_master.sh
+
+
 # atualizador do sistema
 wget --no-cache -O atualizador.sh https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/atualizador.sh && sudo bash atualizador.sh
 

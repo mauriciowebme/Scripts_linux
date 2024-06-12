@@ -33,6 +33,11 @@ touch ${DATA_DIR}/pritunl.conf
 # Tenta remover o container se existir
 docker rm -f pritunl
 
+# instalando o docker mongo
+docker run \
+    --name mongodb \
+    -d mongo
+
 # Executa o container Docker
 docker run \
     --name pritunl \
@@ -44,9 +49,9 @@ docker run \
     --dns 127.0.0.1 \
     --restart=unless-stopped \
     --detach \
-    --volume ${DATA_DIR}/pritunl.conf:/etc/pritunl.conf \
-    --volume ${DATA_DIR}/pritunl:/var/lib/pritunl \
-    --volume ${DATA_DIR}/mongodb:/var/lib/mongodb \
+    --volume $(data_dir)/pritunl.conf:/etc/pritunl.conf \
+    --volume $(data_dir)/pritunl:/var/lib/pritunl \
+    --env PRITUNL_MONGODB_URI=mongodb://127.0.0.1:27017/pritunl \
     ghcr.io/jippi/docker-pritunl
 
 # Espera um pouco para o container iniciar
