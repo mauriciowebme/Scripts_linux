@@ -7,7 +7,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.20"
+echo "Versão 1.21"
 echo " "
 
 instala_docker(){
@@ -73,14 +73,14 @@ instala_pritunel_docker(){
     echo "instalando pritunel docker..."
 
     # Definição do diretório padrão
-    DATA_DIR="/pritunl"
+    DATA_DIR_pritunl="/pritunl"
     # Solicita ao usuário para escolher entre o local padrão ou um customizado
     echo "Escolha a opção de instalação:"
-    echo "1 - Local padrão ($DATA_DIR) (default)"
+    echo "1 - Local padrão ($DATA_DIR_pritunl) (default)"
     echo "2 - Especificar local manualmente"
     read -p "Digite sua opção (1 ou 2): " user_choice
     if [ "$user_choice" = "2" ]; then
-        read -p "Informe o diretório de instalação: " DATA_DIR
+        read -p "Informe o diretório de instalação: " DATA_DIR_pritunl
     fi
 
     verifica_instalacao_docker
@@ -95,11 +95,11 @@ instala_pritunel_docker(){
         echo "Container $container_name criado e iniciado com sucesso."
     fi
     
-    rm -r ${DATA_DIR}
+    rm -r ${DATA_DIR_pritunl}
     # Cria a estrutura de diretórios e arquivos necessários
-    echo "Instalação: ${DATA_DIR}"
-    mkdir -p ${DATA_DIR}/pritunl ${DATA_DIR}/mongodb
-    touch ${DATA_DIR}/pritunl.conf
+    echo "Instalação: ${DATA_DIR_pritunl}"
+    mkdir -p ${DATA_DIR_pritunl}/pritunl ${DATA_DIR_pritunl}/mongodb
+    touch ${DATA_DIR_pritunl}/pritunl.conf
     # Tenta remover o container se existir
     docker rm -f pritunl
     # Executa o container Docker
@@ -113,8 +113,8 @@ instala_pritunel_docker(){
         --dns 127.0.0.1 \
         --restart=unless-stopped \
         --detach \
-        --volume ${DATA_DIR}/pritunl.conf:/etc/pritunl.conf \
-        --volume ${DATA_DIR}/pritunl:/var/lib/pritunl \
+        --volume ${DATA_DIR_pritunl}/pritunl.conf:/etc/pritunl.conf \
+        --volume ${DATA_DIR_pritunl}/pritunl:/var/lib/pritunl \
         --env PRITUNL_MONGODB_URI=mongodb://127.0.0.1:27017/pritunl \
         ghcr.io/jippi/docker-pritunl
     # Espera um pouco para o container iniciar
