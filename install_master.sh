@@ -129,6 +129,7 @@ case "$user_choice" in
     ;;
   *)
     echo "Nada foi execudato!"
+    
     ;;
 esac
 
