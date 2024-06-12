@@ -7,7 +7,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.05"
+echo "Versão 1.06"
 echo " "
 
 echo "Escolha a opção:"
@@ -17,10 +17,14 @@ echo "2 - Atualização completa com reinicialização"
 echo "3 - Atualização mínima sem reinicialização"
 echo "4 - Verificar status do sistema"
 echo "5 - Instala docker"
-read -p "Digite sua opção (1, 2, 3 ou 4): " user_choice
+read -p "Digite sua opção: " user_choice
 echo " "
 
 case "$user_choice" in
+  1)
+    echo "Atualizando o sistema..."
+    apt update && apt upgrade -y
+    ;;
   2)
     echo "Atualizando e reiniciando o sistema..."
     apt update && apt upgrade -y
