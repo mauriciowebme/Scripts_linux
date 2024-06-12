@@ -1,4 +1,6 @@
 #!/bin/bash
+#Execute com:
+#wget --no-cache -O install_master.sh https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.sh && sudo bash install_master.sh
 
 echo " "
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
@@ -9,7 +11,8 @@ echo "Versão 1.04"
 echo " "
 
 echo "Escolha a opção:"
-echo "1 - Atualização completa sem reinicialização (default)"
+echo "Pressione enter para sair (default)"
+echo "1 - Atualização completa sem reinicialização"
 echo "2 - Atualização completa com reinicialização"
 echo "3 - Atualização mínima sem reinicialização"
 echo "4 - Verificar status do sistema"
@@ -59,8 +62,7 @@ case "$user_choice" in
     sudo docker run --name hello hello-world
     ;;
   *)
-    echo "Realizando atualização completa sem reiniciar..."
-    apt update && apt upgrade -y
+    echo "Nada foi execudato!"
     ;;
 esac
 
