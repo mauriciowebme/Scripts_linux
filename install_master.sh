@@ -7,7 +7,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.18"
+echo "Versão 1.19"
 echo " "
 
 instala_docker(){
@@ -47,7 +47,7 @@ verifica_instalacao_docker(){
 
 instala_mongdb_docker(){
     echo "instalando o docker mongo..."
-    DATA_DIR="/mongodb"
+    docker="/mongodb"
     # Solicita ao usuário para escolher entre o local padrão ou um customizado
     echo "Escolha a opção de instalação:"
     echo "1 - Local padrão ($DATA_DIR) (default)"
@@ -64,7 +64,7 @@ instala_mongdb_docker(){
     docker run \
         --name mongodb \
         -d \
-        -v mongodb_data:/data/db \
+        -v ${DATA_DIR}:/data/db \
         -p 27017:27017 \
         mongo:latest
 }
