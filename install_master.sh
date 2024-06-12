@@ -7,7 +7,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.21"
+echo "Versão 1.22"
 echo " "
 
 instala_docker(){
