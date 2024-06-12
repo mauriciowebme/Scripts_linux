@@ -7,7 +7,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.14"
+echo "Versão 1.15"
 echo " "
 
 instala_docker(){
@@ -98,8 +98,8 @@ instala_pritunel_docker(){
         --dns 127.0.0.1 \
         --restart=unless-stopped \
         --detach \
-        --volume $(data_dir)/pritunl.conf:/etc/pritunl.conf \
-        --volume $(data_dir)/pritunl:/var/lib/pritunl \
+        --volume ${DATA_DIR}/pritunl/pritunl.conf:/etc/pritunl.conf \
+        --volume ${DATA_DIR}/pritunl:/var/lib/pritunl \
         --env PRITUNL_MONGODB_URI=mongodb://127.0.0.1:27017/pritunl \
         ghcr.io/jippi/docker-pritunl
     # Espera um pouco para o container iniciar
