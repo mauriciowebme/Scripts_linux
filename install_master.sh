@@ -7,7 +7,7 @@ echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.04"
+echo "Versão 1.05"
 echo " "
 
 echo "Escolha a opção:"
@@ -18,6 +18,7 @@ echo "3 - Atualização mínima sem reinicialização"
 echo "4 - Verificar status do sistema"
 echo "5 - Instala docker"
 read -p "Digite sua opção (1, 2, 3 ou 4): " user_choice
+echo " "
 
 case "$user_choice" in
   2)
