@@ -47,24 +47,24 @@ verifica_instalacao_docker(){
 
 instala_mongdb_docker(){
     echo "instalando o docker mongo..."
-    docker="/mongodb"
+    DATA_DIR_MONGODB="/mongodb"
     # Solicita ao usuário para escolher entre o local padrão ou um customizado
     echo "Escolha a opção de instalação:"
-    echo "1 - Local padrão ($DATA_DIR) (default)"
+    echo "1 - Local padrão ($DATA_DIR_MONGODB) (default)"
     echo "2 - Especificar local manualmente"
     read -p "Digite sua opção (1 ou 2): " user_choice
     if [ "$user_choice" = "2" ]; then
         read -p "Informe o diretório de instalação: " DATA_DIR
     fi
-    rm -r ${DATA_DIR}
+    rm -r ${DATA_DIR_MONGODB}
     # Cria a estrutura de diretórios e arquivos necessários
-    echo "Instalação: ${DATA_DIR}"
-    mkdir -p ${DATA_DIR}
-    chmod 777 ${DATA_DIR}
+    echo "Instalação: ${DATA_DIR_MONGODB}"
+    mkdir -p ${DATA_DIR_MONGODB}
+    chmod 777 ${DATA_DIR_MONGODB}
     docker run \
         --name mongodb \
         -d \
-        -v ${DATA_DIR}:/data/db \
+        -v ${DATA_DIR_MONGODB}:/data/db \
         -p 27017:27017 \
         mongo:latest
 }
