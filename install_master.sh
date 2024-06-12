@@ -46,27 +46,31 @@ verifica_instalacao_docker(){
 }
 
 instala_mongdb_docker(){
-    echo "instalando o docker mongo..."
+    echo "Instalando o MongoDB Docker..."
     DATA_DIR_MONGODB="/mongodb"
-    # Solicita ao usuário para escolher entre o local padrão ou um customizado
+
     echo "Escolha a opção de instalação:"
     echo "1 - Local padrão ($DATA_DIR_MONGODB) (default)"
     echo "2 - Especificar local manualmente"
     read -p "Digite sua opção (1 ou 2): " user_choice
+
     if [ "$user_choice" = "2" ]; then
-        read -p "Informe o diretório de instalação: " DATA_DIR
+        read -p "Informe o diretório de instalação: " DATA_DIR_MONGODB
     fi
-    rm -r ${DATA_DIR_MONGODB}
+
     # Cria a estrutura de diretórios e arquivos necessários
     echo "Instalação: ${DATA_DIR_MONGODB}"
     mkdir -p ${DATA_DIR_MONGODB}
-    chmod 777 ${DATA_DIR_MONGODB}
+    chmod 777 ${DATA_DIR_MONGODB}  # Considere usar permissões mais restritivas
+
+    # Cria e inicia o container MongoDB
     docker run \
         --name mongodb \
         -d \
         -v ${DATA_DIR_MONGODB}:/data/db \
         -p 27017:27017 \
         mongo:latest
+
 }
 
 instala_pritunel_docker(){
@@ -110,7 +114,7 @@ instala_pritunel_docker(){
         --publish 443:443 \
         --publish 1194:1194 \
         --publish 1194:1194/udp \
-        --dns 127.0.0.1 \
+        # --dns 127.0.0.1 \
         --restart=unless-stopped \
         --detach \
         --volume ${DATA_DIR_pritunl}/pritunl.conf:/etc/pritunl.conf \
