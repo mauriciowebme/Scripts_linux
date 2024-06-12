@@ -106,6 +106,7 @@ instala_pritunel_docker(){
     # Tenta remover o container se existir
     docker rm -f pritunl
     # Executa o container Docker
+    #--dns 127.0.0.1 \
     docker run \
         --name pritunl \
         --privileged \
@@ -113,7 +114,6 @@ instala_pritunel_docker(){
         --publish 443:443 \
         --publish 1194:1194 \
         --publish 1194:1194/udp \
-        # --dns 127.0.0.1 \
         --restart=unless-stopped \
         --detach \
         --volume ${DATA_DIR_pritunl}/pritunl.conf:/etc/pritunl.conf \
