@@ -140,11 +140,16 @@ instala_pritunel_docker(){
         ghcr.io/jippi/docker-pritunl
     # Espera um pouco para o container iniciar
     sleep 20
+    # docker exec -it pritunl bash -c "apt update && apt install nano -y"
     echo " "
     # Redefine a senha do Pritunl
     docker exec pritunl pritunl reset-password
     echo "Possiveis ip para acesso"
     hostname -I | tr ' ' '\n'
+    echo " "
+    echo "Acesse o container com:"
+    echo "docker exec -it pritunl /bin/bash"
+
 }
 
 instala_postgres_docker(){
