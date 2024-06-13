@@ -294,6 +294,36 @@ EOF
     sleep 10
 }
 
+criar_servico_inicializar(){
+    # Criar o arquivo de serviço systemd
+    cat << 'EOF' > /etc/systemd/system/inicializar.service
+    [Unit]
+    Description=Executa o script /teste.txt 30 segundos após a inicialização
+    After=network.target
+
+    [Service]
+    Type=simple
+    ExecStartPre=/bin/sleep 30
+    ExecStart=/bin/bash -c 'docker start postgres'
+    Restart=on-failure
+
+    [Install]
+    WantedBy=multi-user.target
+EOF
+
+    # Recarregar os serviços do systemd para reconhecer o novo serviço
+    systemctl daemon-reload
+
+    # Habilitar o serviço para iniciar no boot
+    systemctl enable inicializar.service
+
+    # Iniciar o serviço imediatamente
+    systemctl start inicializar.service
+
+    # Mostrar o status do serviço
+    systemctl status inicializar.service
+}
+
 echo "Escolha a opção:"
 echo "Pressione enter para sair (default)"
 echo " "
@@ -308,6 +338,8 @@ echo "8 - Instala postgres docker"
 echo "9 - Cria pasta compartilhada"
 echo "10 - Realiza limpezar do docker"
 echo "11 - Instala pritunel normal"
+echo "12 - Instala NodeJS docker"
+echo "13 - Instala serviço no inicializar"
 echo " "
 read -p "Digite sua opção: " user_choice
 echo " "
@@ -356,6 +388,9 @@ case "$user_choice" in
     ;;
   12)
     instala_node_docker
+    ;;
+  13)
+    criar_servico_inicializar
     ;;
   *)
     echo "Nada executado!"
