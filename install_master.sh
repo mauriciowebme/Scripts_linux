@@ -265,7 +265,7 @@ echo "7 - Instala pritunel docker"
 echo "8 - Instala postgres docker"
 echo "9 - Cria pasta compartilhada"
 echo "10 - Realiza limpezar do docker"
-echo "11 - Instala pritunel"
+echo "11 - Instala pritunel normal"
 read -p "Digite sua opção: " user_choice
 echo " "
 
