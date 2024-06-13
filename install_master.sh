@@ -54,30 +54,35 @@ verifica_instalacao_docker(){
 
 instala_mongdb_docker(){
     echo "Instalando o MongoDB Docker..."
-    DATA_DIR_MONGODB="/mongodb"
+    container_name="mongodb"
+    if [ $(docker ps -q -f name=^/${container_name}$) ]; then
+        echo "O container $container_name já está em execução."
+    else
+        DATA_DIR_MONGODB="/mongodb"
 
-    echo "Escolha a opção de instalação:"
-    echo "1 - Local padrão ($DATA_DIR_MONGODB) (default)"
-    echo "2 - Especificar local manualmente"
-    read -p "Digite sua opção (1 ou 2): " user_choice
+        echo "Escolha a opção de instalação:"
+        echo "1 - Local padrão ($DATA_DIR_MONGODB) (default)"
+        echo "2 - Especificar local manualmente"
+        read -p "Digite sua opção (1 ou 2): " user_choice
 
-    if [ "$user_choice" = "2" ]; then
-        read -p "Informe o diretório de instalação: " DATA_DIR_MONGODB
+        if [ "$user_choice" = "2" ]; then
+            read -p "Informe o diretório de instalação: " DATA_DIR_MONGODB
+        fi
+
+        # Cria a estrutura de diretórios e arquivos necessários
+        echo "Instalação: ${DATA_DIR_MONGODB}"
+        mkdir -p ${DATA_DIR_MONGODB}
+        chmod 777 ${DATA_DIR_MONGODB}  # Considere usar permissões mais restritivas
+
+        # Cria e inicia o container MongoDB
+        docker run \
+            -d \
+            --name mongodb \
+            -p 27017:27017 \
+            --network rede_docker \
+            -v ${DATA_DIR_MONGODB}:/data/db \
+            mongo:latest
     fi
-
-    # Cria a estrutura de diretórios e arquivos necessários
-    echo "Instalação: ${DATA_DIR_MONGODB}"
-    mkdir -p ${DATA_DIR_MONGODB}
-    chmod 777 ${DATA_DIR_MONGODB}  # Considere usar permissões mais restritivas
-
-    # Cria e inicia o container MongoDB
-    docker run \
-        -d \
-        --name mongodb \
-        -p 27017:27017 \
-        --network rede_docker \
-        -v ${DATA_DIR_MONGODB}:/data/db \
-        mongo:latest
 }
 
 cria_rede_docker(){
@@ -94,7 +99,7 @@ instala_pritunel_docker(){
     echo "instalando pritunel docker..."
 
     # Documentação
-    #https://github.com/jippi/docker-pritunl
+    # https://github.com/jippi/docker-pritunl
 
     # Definição do diretório padrão
     DATA_DIR_pritunl="/pritunl"
@@ -109,15 +114,7 @@ instala_pritunel_docker(){
 
     verifica_instalacao_docker
 
-    container_name="mongodb"
-    if [ $(docker ps -q -f name=^/${container_name}$) ]; then
-        echo "O container $container_name já está em execução."
-    else
-        echo "O container $container_name não existe ou não está em execução..."
-        # Comando para criar e iniciar o container MongoDB
-        instala_mongdb_docker
-        echo "Container $container_name criado e iniciado com sucesso."
-    fi
+    
     
     rm -r ${DATA_DIR_pritunl}
     # Cria a estrutura de diretórios e arquivos necessários
@@ -131,17 +128,15 @@ instala_pritunel_docker(){
     docker run \
         --name pritunl \
         --privileged \
-        --publish 80:80 \
-        --publish 443:443 \
+        --publish 85:80 \
+        --publish 445:443 \
         --publish 1194:1194 \
         --publish 1194:1194/udp \
         --restart=unless-stopped \
         --detach \
-        --network rede_docker \
         --volume ${DATA_DIR_pritunl}/pritunl.conf:/etc/pritunl.conf \
         --volume ${DATA_DIR_pritunl}/pritunl:/var/lib/pritunl \
-        --env PRITUNL_MONGODB_URI=mongodb://127.0.0.1:27017/pritunl \
-        --env PRITUNL_MONGODB_URI="mongodb://mongodb:27017/pritunl" \
+        --volume ${DATA_DIR_pritunl}/mongodb:/var/lib/mongodb \
         ghcr.io/jippi/docker-pritunl
     # Espera um pouco para o container iniciar
     sleep 20
