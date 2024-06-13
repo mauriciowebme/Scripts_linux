@@ -257,6 +257,7 @@ EOF
 
 echo "Escolha a opção:"
 echo "Pressione enter para sair (default)"
+echo " "
 echo "1 - Atualização completa sem reinicialização"
 echo "2 - Atualização completa com reinicialização"
 echo "3 - Atualização mínima sem reinicialização"
@@ -268,6 +269,7 @@ echo "8 - Instala postgres docker"
 echo "9 - Cria pasta compartilhada"
 echo "10 - Realiza limpezar do docker"
 echo "11 - Instala pritunel normal"
+echo " "
 read -p "Digite sua opção: " user_choice
 echo " "
 
