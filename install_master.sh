@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.35"
+echo "Versão 1.36"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -114,7 +114,7 @@ instala_pritunel_docker(){
 
     verifica_instalacao_docker
 
-    
+    # instala_mongdb_docker
     
     rm -r ${DATA_DIR_pritunl}
     # Cria a estrutura de diretórios e arquivos necessários
