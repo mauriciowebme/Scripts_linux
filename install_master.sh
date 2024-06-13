@@ -5,10 +5,15 @@
 echo " "
 echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 echo " "
+echo "==========================================================================="
+echo "==========================================================================="
+echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.31"
+echo "Versão 1.32"
 echo " "
+echo "==========================================================================="
+echo "==========================================================================="
 
 instala_docker(){
     echo "instalando docker..."
@@ -245,7 +250,6 @@ EOF
     sudo apt -y install pritunl mongodb-org
     sudo systemctl enable mongod pritunl
     sudo systemctl start mongod pritunl
-
 
 }
 
