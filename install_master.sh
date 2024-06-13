@@ -93,6 +93,9 @@ cria_rede_docker(){
 instala_pritunel_docker(){
     echo "instalando pritunel docker..."
 
+    # Documentação
+    #https://github.com/jippi/docker-pritunl
+
     # Definição do diretório padrão
     DATA_DIR_pritunl="/pritunl"
     # Solicita ao usuário para escolher entre o local padrão ou um customizado
