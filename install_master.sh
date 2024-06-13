@@ -130,6 +130,7 @@ instala_pritunel_docker(){
         --privileged \
         --publish 85:80 \
         --publish 445:443 \
+        --publish 445:445 \
         --publish 1194:1194 \
         --publish 1194:1194/udp \
         --restart=unless-stopped \
