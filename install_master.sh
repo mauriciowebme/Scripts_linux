@@ -55,34 +55,47 @@ verifica_instalacao_docker(){
 instala_mongodb_docker(){
     echo "Instalando o MongoDB Docker..."
     container_name="mongodb"
-    if [ $(docker ps -q -f name=^/${container_name}$) ]; then
+    
+    # Checa se o container já está em execução
+    if sudo docker ps -q -f name=^/${container_name}$; then
         echo "O container $container_name já está em execução."
-    else
-        DATA_DIR_MONGODB="/mongodb"
-
-        echo "Escolha a opção de instalação:"
-        echo "1 - Local padrão ($DATA_DIR_MONGODB) (default)"
-        echo "2 - Especificar local manualmente"
-        read -p "Digite sua opção (1 ou 2): " user_choice
-
-        if [ "$user_choice" = "2" ]; then
-            read -p "Informe o diretório de instalação: " DATA_DIR_MONGODB
-        fi
-
-        # Cria a estrutura de diretórios e arquivos necessários
-        echo "Instalação: ${DATA_DIR_MONGODB}"
-        mkdir -p ${DATA_DIR_MONGODB}
-        chmod 777 ${DATA_DIR_MONGODB}  # Considere usar permissões mais restritivas
-
-        # Cria e inicia o container MongoDB
-        docker run \
-            -d \
-            --name mongodb \
-            -p 27017:27017 \
-            --network rede_docker \
-            -v ${DATA_DIR_MONGODB}:/data/db \
-            mongo:latest
+        return
     fi
+
+    DATA_DIR_MONGODB="/mongodb"
+    options=("Local padrão ($DATA =DIR_MONGODB)" "Especificar local manualmente" "Voltar ao menu principal")
+    select opt in "${options[@]}"; do
+        case $opt in
+            "Local padrão ($DATA_DIR_MONGODB)")
+                # Diretório já definido
+                break
+                ;;
+            "Especificar local manualmente")
+                read -p "Informe o diretório de instalação: " DATA_DIR_MONGODB
+                break
+                ;;
+            "Voltar ao menu principal")
+                return
+                ;;
+            *) echo "Opção inválida. Tente novamente.";;
+        esac
+    done
+
+    # Cria a estrutura de diretórios e arquivos necessários
+    echo "Preparando instalação em: $DATA_DIR_MONGODB"
+    sudo mkdir -p $DATA_DIR_MONGODB
+    sudo chmod 777 $DATA_DIR_MONGODB  # Considere usar permissões mais restritivas
+
+    # Cria e inicia o container MongoDB
+    sudo docker run \
+        -d \
+        --name $container_name \
+        -p 27017:27017 \
+        --network rede_docker \
+        -v $DATA_DIR_MONGODB:/data/db \
+        mongo:latest
+    
+    echo "MongoDB Docker está configurado e rodando."
 }
 
 cria_rede_docker(){
