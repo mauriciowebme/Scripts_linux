@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.44"
+echo "Versão 1.45"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -210,25 +210,35 @@ cria_pasta_compartilhada(){
 }
 
 limpa_containers_imagens_docker(){
-    verifica_instalacao_docker
-    echo " "
+    verifica_instalacao_docker  # Assume que esta função verifica e instala o Docker se necessário
     echo "Escolha a opção de limpeza:"
-    echo "1 - Limpeza apenas de containers (default)"
-    echo "2 - Limpeza completa"
-    read -p "Digite sua opção (1 ou 2): " user_choice
-    echo " "
-    echo "Iniciando limpeza..."
-    echo " "
-
-    if [ "$user_choice" = "2" ]; then
-        docker stop $(docker ps -q)
-        docker rm $(docker ps -aq)
-        docker rmi $(docker images -q)
-    else
-        docker stop $(docker ps -q)
-        docker rm $(docker ps -aq)
-    fi
+    options=("Limpeza apenas de containers" "Limpeza completa" "Voltar ao menu principal")
+    select opt in "${options[@]}";
+    do
+        case $opt in
+            "Limpeza apenas de containers")
+                echo "Iniciando limpeza de containers..."
+                sudo docker stop $(sudo docker ps -q)
+                sudo docker rm $(sudo docker ps -aq)
+                echo "Limpeza de containers concluída."
+                break
+                ;;
+            "Limpeza completa")
+                echo "Iniciando limpeza completa..."
+                sudo docker stop $(sudo docker ps -q)
+                sudo docker rm $(sudo docker ps -aq)
+                sudo docker rmi $(sudo docker images -q)
+                echo "Limpeza completa realizada."
+                break
+                ;;
+            "Voltar ao menu principal")
+                return
+                ;;
+            *) echo "Opção inválida. Tente novamente.";;
+        esac
+    done
 }
+
 
 instala_pritunel(){
     sudo tee /etc/apt/sources.list.d/pritunl.list << EOF
