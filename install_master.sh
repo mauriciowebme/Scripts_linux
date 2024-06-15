@@ -211,6 +211,7 @@ cria_pasta_compartilhada(){
 
 limpa_containers_imagens_docker(){
     verifica_instalacao_docker
+    echo " "
     echo "Escolha a opção de limpeza:"
     echo "1 - Limpeza apenas de containers (default)"
     echo "2 - Limpeza completa"
