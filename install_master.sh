@@ -358,20 +358,53 @@ atualizações(){
     esac
 }
 
+docker(){
+    echo "Escolha a opção:"
+    echo "Pressione enter para sair (default)"
+    echo " "
+    echo "1 - Instala docker"
+    echo "2 - Instala mongodb docker"
+    echo "3 - Instala pritunel docker"
+    echo "4 - Instala postgres docker"
+    echo "5 - Realiza limpezar do docker"
+    echo "6 - Instala NodeJS docker"
+    echo " "
+    read -p "Digite sua opção: " user_choice
+    echo " "
+    case "$user_choice" in
+      1)
+        instala_docker
+        ;;
+      2)
+        instala_mongdb_docker
+        ;;
+      3)
+        instala_pritunel_docker
+        ;;
+      4)
+        instala_postgres_docker
+        ;;
+      5)
+        limpa_containers_imagens_docker
+        ;;
+      6)
+        instala_node_docker
+        ;;
+      *)
+        echo "Nada executado!"
+        ;;
+    esac
+}
+
 echo "Escolha a opção:"
 echo "Pressione enter para sair (default)"
 echo " "
 echo "1 - Atualizações"
-echo "4 - Verificar status do sistema"
-echo "5 - Instala docker"
-echo "6 - Instala mongodb docker"
-echo "7 - Instala pritunel docker"
-echo "8 - Instala postgres docker"
-echo "9 - Cria pasta compartilhada"
-echo "10 - Realiza limpezar do docker"
-echo "11 - Instala pritunel normal"
-echo "12 - Instala NodeJS docker"
-echo "13 - Instala serviço no inicializar"
+echo "2 - Verificar status do sistema"
+echo "3 - Docker"
+echo "4 - Cria pasta compartilhada"
+echo "5 - Instala pritunel normal"
+echo "6 - Instala serviço no inicializar"
 echo " "
 read -p "Digite sua opção: " user_choice
 echo " "
@@ -380,38 +413,23 @@ case "$user_choice" in
   1)
     atualizações
     ;;
-  4)
+  2)
     echo "Verificando status do sistema..."
     echo "Uptime do sistema:"
     uptime
     echo "Espaço em disco:"
     df -h
     ;;
-  5)
-    instala_docker
+  3)
+    docker
     ;;
-  6)
-    instala_mongdb_docker
-    ;;
-  7)
-    instala_pritunel_docker
-    ;;
-  8)
-    instala_postgres_docker
-    ;;
-  9)
+  4)
     cria_pasta_compartilhada
     ;;
-  10)
-    limpa_containers_imagens_docker
-    ;;
-  11)
+  5)
     instala_pritunel
     ;;
-  12)
-    instala_node_docker
-    ;;
-  13)
+  6)
     criar_servico_inicializar
     ;;
   *)
