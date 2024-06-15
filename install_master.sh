@@ -96,36 +96,42 @@ cria_rede_docker(){
 }
 
 instala_pritunel_docker(){
-    echo "instalando pritunel docker..."
-
-    # Documentação
-    # https://github.com/jippi/docker-pritunl
+    echo "Instalando Pritunel via Docker..."
+    echo "Escolha a opção de instalação:"
 
     # Definição do diretório padrão
     DATA_DIR_pritunl="/pritunl"
-    # Solicita ao usuário para escolher entre o local padrão ou um customizado
-    echo "Escolha a opção de instalação:"
-    echo "1 - Local padrão ($DATA_DIR_pritunl) (default)"
-    echo "2 - Especificar local manualmente"
-    read -p "Digite sua opção (1 ou 2): " user_choice
-    if [ "$user_choice" = "2" ]; then
-        read -p "Informe o diretório de instalação: " DATA_DIR_pritunl
-    fi
+    options=("Local padrão ($DATA_DIR_pritunl)" "Especificar local manualmente" "Voltar ao menu principal")
+    select opt in "${options[@]}"; do
+        case $opt in
+            "Local padrão ($DATA_DIR_pritunl)")
+                # Diretório já definido
+                break
+                ;;
+            "Especificar local manualmente")
+                read -p "Informe o diretório de instalação: " DATA_DIR_pritunl
+                break
+                ;;
+            "Voltar ao menu principal")
+                return
+                ;;
+            *) echo "Opção inválida. Tente novamente.";;
+        esac
+    done
 
     verifica_instalacao_docker
 
-    # instala_mongdb_docker
-    
-    rm -r ${DATA_DIR_pritunl}
-    # Cria a estrutura de diretórios e arquivos necessários
-    echo "Instalação: ${DATA_DIR_pritunl}"
-    mkdir -p ${DATA_DIR_pritunl}/pritunl ${DATA_DIR_pritunl}/mongodb
-    touch ${DATA_DIR_pritunl}/pritunl.conf
-    # Tenta remover o container se existir
-    docker rm -f pritunl
-    # Executa o container Docker
-    #--dns 127.0.0.1 \
-    docker run \
+    # Preparação do ambiente
+    echo "Preparando a instalação em: $DATA_DIR_pritunl"
+    sudo rm -rf ${DATA_DIR_pritunl}
+    sudo mkdir -p ${DATA_DIR_pritunl}/pritunl ${DATA_DIR_pritunl}/mongodb
+    sudo touch ${DATA_DIR_pritunl}/pritunl.conf
+
+    # Remoção de container pré-existente
+    sudo docker rm -f pritunl
+
+    # Execução do container Docker
+    sudo docker run \
         --name pritunl \
         --privileged \
         --publish 80:80 \
@@ -139,19 +145,18 @@ instala_pritunel_docker(){
         --volume ${DATA_DIR_pritunl}/pritunl:/var/lib/pritunl \
         --volume ${DATA_DIR_pritunl}/mongodb:/var/lib/mongodb \
         ghcr.io/jippi/docker-pritunl
-    # Espera um pouco para o container iniciar
-    sleep 20
-    # docker exec -it pritunl bash -c "apt update && apt install nano -y"
-    echo " "
-    # Redefine a senha do Pritunl
-    docker exec pritunl pritunl reset-password
-    echo "Possiveis ip para acesso"
-    hostname -I | tr ' ' '\n'
-    echo " "
-    echo "Acesse o container com:"
-    echo "docker exec -it pritunl /bin/bash"
 
+    echo "Aguarde enquanto o container é inicializado..."
+    sleep 20
+
+    # Configuração inicial pós-instalação
+    sudo docker exec pritunl pritunl reset-password
+    echo "Instalação concluída. Pritunl está pronto para uso."
+    echo "IPs possíveis para acesso:"
+    hostname -I | tr ' ' '\n'
+    echo "Acesse o container com: sudo docker exec -it pritunl /bin/bash"
 }
+
 
 instala_postgres_docker(){
     echo "Instalando postgres docker..."
