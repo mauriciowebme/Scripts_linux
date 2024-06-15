@@ -155,19 +155,6 @@ instala_pritunel_docker(){
         --volume ${DATA_DIR_pritunl}/pritunl:/var/lib/pritunl \
         --volume ${DATA_DIR_pritunl}/mongodb:/var/lib/mongodb \
         ghcr.io/jippi/docker-pritunl
-    # sudo docker run \
-    #     --name pritunl \
-    #     --privileged \
-    #     --publish 80:80 \
-    #     --publish 443:443 \
-    #     --publish 1194:1194 \
-    #     --publish 1194:1194/udp \
-    #     --restart=unless-stopped \
-    #     --detach \
-    #     --volume ${DATA_DIR_pritunl}/pritunl.conf:/etc/pritunl.conf \
-    #     --volume ${DATA_DIR_pritunl}/pritunl:/var/lib/pritunl \
-    #     --volume ${DATA_DIR_pritunl}/mongodb:/var/lib/mongodb \
-    #     ghcr.io/jippi/docker-pritunl
 
     echo "Aguarde enquanto o container é inicializado..."
     sleep 20
