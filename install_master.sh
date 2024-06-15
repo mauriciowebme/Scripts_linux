@@ -151,6 +151,7 @@ instala_pritunel_docker(){
         --publish 8080:8080 \
         --publish 445:443 \
         --publish 8443:8443 \
+        --publish 15361:15361 \
         --publish 27017:27017 \
         --publish 1194:1194 \
         --publish 1194:1194/udp \
