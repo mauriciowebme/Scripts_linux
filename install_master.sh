@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.43"
+echo "Versão 1.44"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -52,7 +52,7 @@ verifica_instalacao_docker(){
     cria_rede_docker
 }
 
-instala_mongdb_docker(){
+instala_mongodb_docker(){
     echo "Instalando o MongoDB Docker..."
     container_name="mongodb"
     if [ $(docker ps -q -f name=^/${container_name}$) ]; then
@@ -329,7 +329,7 @@ EOF
     systemctl status inicializar.service
 }
 
-atualizações(){
+atualizacoes(){
     echo "Escolha a opção:"
     echo "Pressione enter para sair (default)"
     echo " "
@@ -359,84 +359,89 @@ atualizações(){
     esac
 }
 
-docker(){
-    echo "Escolha a opção:"
-    echo "Pressione enter para sair (default)"
-    echo " "
-    echo "1 - Instala docker"
-    echo "2 - Instala mongodb docker"
-    echo "3 - Instala pritunel docker"
-    echo "4 - Instala postgres docker"
-    echo "5 - Realiza limpezar do docker"
-    echo "6 - Instala NodeJS docker"
-    echo " "
-    read -p "Digite sua opção: " user_choice
-    echo " "
-    case "$user_choice" in
-      1)
-        instala_docker
-        ;;
-      2)
-        instala_mongdb_docker
-        ;;
-      3)
-        instala_pritunel_docker
-        ;;
-      4)
-        instala_postgres_docker
-        ;;
-      5)
-        limpa_containers_imagens_docker
-        ;;
-      6)
-        instala_node_docker
-        ;;
-      *)
-        echo "Nada executado!"
-        ;;
-    esac
+docker_options(){
+    PS3='Digite sua opção: '
+    options=("Instala docker" "Instala mongodb docker" "Instala pritunel docker" "Instala postgres docker" "Realiza limpeza do docker" "Instala NodeJS docker" "Voltar ao menu principal")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Instala docker")
+                instala_docker
+                break
+                ;;
+            "Instala mongodb docker")
+                instala_mongodb_docker
+                break
+                ;;
+            "Instala pritunel docker")
+                instala_pritunel_docker
+                break
+                ;;
+            "Instala postgres docker")
+                instala_postgres_docker
+                break
+                ;;
+            "Realiza limpeza do docker")
+                limpa_containers_imagens_docker
+                break
+                ;;
+            "Instala NodeJS docker")
+                instala_node_docker
+                break
+                ;;
+            "Voltar ao menu principal")
+                return
+                ;;
+            *) echo "Opção inválida";;
+        esac
+    done
 }
 
-echo "Escolha a opção:"
-echo "Pressione enter para sair (default)"
-echo " "
-echo "1 - Atualizações"
-echo "2 - Verificar status do sistema"
-echo "3 - Docker"
-echo "4 - Cria pasta compartilhada"
-echo "5 - Instala pritunel normal"
-echo "6 - Instala serviço no inicializar"
-echo " "
-read -p "Digite sua opção: " user_choice
-echo " "
+main_menu(){
+    PS3='Digite sua opção: '
+    options=("Atualizações" "Verificar status do sistema" "Docker" "Cria pasta compartilhada" "Instala pritunel normal" "Instala serviço no inicializar" "Sair")
+    select opt in "${options[@]}"
+    do
+        case $opt in
+            "Atualizações")
+                atualizacoes
+                break
+                ;;
+            "Verificar status do sistema")
+                echo "Verificando status do sistema..."
+                uptime
+                df -h
+                break
+                ;;
+            "Docker")
+                docker_options
+                break
+                ;;
+            "Cria pasta compartilhada")
+                cria_pasta_compartilhada
+                break
+                ;;
+            "Instala pritunel normal")
+                instala_pritunel
+                break
+                ;;
+            "Instala serviço no inicializar")
+                criar_servico_inicializar
+                break
+                ;;
+            "Sair")
+                echo "Saindo..."
+                exit 0
+                ;;
+            *) echo "Opção inválida";;
+        esac
+    done
+}
 
-case "$user_choice" in
-  1)
-    atualizações
-    ;;
-  2)
-    echo "Verificando status do sistema..."
-    echo "Uptime do sistema:"
-    uptime
-    echo "Espaço em disco:"
-    df -h
-    ;;
-  3)
-    docker
-    ;;
-  4)
-    cria_pasta_compartilhada
-    ;;
-  5)
-    instala_pritunel
-    ;;
-  6)
-    criar_servico_inicializar
-    ;;
-  *)
-    echo "Nada executado!"
-    ;;
-esac
+# Loop principal para garantir retorno ao menu após ações
+while true; do
+    main_menu
+done
 
 echo " "
 echo "Arquivo install_master.sh terminado com sucesso!"
