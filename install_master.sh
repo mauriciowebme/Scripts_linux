@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.49"
+echo "Versão 1.50"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -147,10 +147,7 @@ instala_pritunel_docker(){
     docker run \
         --name pritunl \
         --privileged \
-        --publish 80:80 \
-        --publish 443:443 \
-        --publish 1194:1194 \
-        --publish 1194:1194/udp \
+        --network=host \
         --dns 127.0.0.1 \
         --restart=unless-stopped \
         --detach \
