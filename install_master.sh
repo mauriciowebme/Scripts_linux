@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.41"
+echo "Versão 1.42"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -338,7 +338,6 @@ atualizações(){
     echo " "
     read -p "Digite sua opção: " user_choice
     echo " "
-
     case "$user_choice" in
       1)
         echo "Atualizando o sistema..."
@@ -356,6 +355,7 @@ atualizações(){
       *)
         echo "Nada executado!"
         ;;
+    esac
 }
 
 echo "Escolha a opção:"
