@@ -330,33 +330,35 @@ EOF
 }
 
 atualizacoes(){
-    echo "Escolha a opção:"
-    echo "Pressione enter para sair (default)"
-    echo " "
-    echo "1 - Atualização completa sem reinicialização"
-    echo "2 - Atualização completa com reinicialização"
-    echo "3 - Atualização mínima sem reinicialização"
-    echo " "
-    read -p "Digite sua opção: " user_choice
-    echo " "
-    case "$user_choice" in
-      1)
-        echo "Atualizando o sistema..."
-        apt update && apt upgrade -y
-        ;;
-      2)
-        echo "Atualizando e reiniciando o sistema..."
-        apt update && apt upgrade -y
-        reboot
-        ;;
-      3)
-        echo "Realizando atualização mínima..."
-        apt update && apt upgrade --with-new-pkgs -y
-        ;;
-      *)
-        echo "Nada executado!"
-        ;;
-    esac
+    echo "Escolha a opção para atualização do sistema:"
+    options=("Atualização completa sem reinicialização" "Atualização completa com reinicialização" "Atualização mínima sem reinicialização" "Voltar ao menu principal")
+    select opt in "${options[@]}"; do
+        case $opt in
+            "Atualização completa sem reinicialização")
+                echo "Atualizando o sistema..."
+                sudo apt update && sudo apt upgrade -y
+                echo "Sistema atualizado sem reinicializar."
+                break
+                ;;
+            "Atualização completa com reinicialização")
+                echo "Atualizando o sistema..."
+                sudo apt update && sudo apt upgrade -y
+                echo "O sistema será reiniciado para concluir as atualizações."
+                sudo reboot
+                break
+                ;;
+            "Atualização mínima sem reinicialização")
+                echo "Realizando atualização mínima..."
+                sudo apt update && sudo apt upgrade --with-new-pkgs -y
+                echo "Atualização mínima concluída."
+                break
+                ;;
+            "Voltar ao menu principal")
+                return
+                ;;
+            *) echo "Opção inválida. Tente novamente.";;
+        esac
+    done
 }
 
 docker_options(){
