@@ -130,6 +130,7 @@ instala_pritunel_docker(){
         --privileged \
         --publish 80:80 \
         --publish 443:443 \
+        --publish 27017:27017 \
         --publish 1194:1194 \
         --publish 1194:1194/udp \
         --restart=unless-stopped \
@@ -327,12 +328,40 @@ EOF
     systemctl status inicializar.service
 }
 
+atualizações(){
+    echo "Escolha a opção:"
+    echo "Pressione enter para sair (default)"
+    echo " "
+    echo "1 - Atualização completa sem reinicialização"
+    echo "2 - Atualização completa com reinicialização"
+    echo "3 - Atualização mínima sem reinicialização"
+    echo " "
+    read -p "Digite sua opção: " user_choice
+    echo " "
+
+    case "$user_choice" in
+      1)
+        echo "Atualizando o sistema..."
+        apt update && apt upgrade -y
+        ;;
+      2)
+        echo "Atualizando e reiniciando o sistema..."
+        apt update && apt upgrade -y
+        reboot
+        ;;
+      3)
+        echo "Realizando atualização mínima..."
+        apt update && apt upgrade --with-new-pkgs -y
+        ;;
+      *)
+        echo "Nada executado!"
+        ;;
+}
+
 echo "Escolha a opção:"
 echo "Pressione enter para sair (default)"
 echo " "
-echo "1 - Atualização completa sem reinicialização"
-echo "2 - Atualização completa com reinicialização"
-echo "3 - Atualização mínima sem reinicialização"
+echo "1 - Atualizações"
 echo "4 - Verificar status do sistema"
 echo "5 - Instala docker"
 echo "6 - Instala mongodb docker"
@@ -349,17 +378,7 @@ echo " "
 
 case "$user_choice" in
   1)
-    echo "Atualizando o sistema..."
-    apt update && apt upgrade -y
-    ;;
-  2)
-    echo "Atualizando e reiniciando o sistema..."
-    apt update && apt upgrade -y
-    reboot
-    ;;
-  3)
-    echo "Realizando atualização mínima..."
-    apt update && apt upgrade --with-new-pkgs -y
+    atualizações
     ;;
   4)
     echo "Verificando status do sistema..."
