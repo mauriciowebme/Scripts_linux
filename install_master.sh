@@ -332,7 +332,8 @@ EOF
 atualizacoes(){
     echo "Escolha a opção para atualização do sistema:"
     options=("Atualização completa sem reinicialização" "Atualização completa com reinicialização" "Atualização mínima sem reinicialização" "Voltar ao menu principal")
-    select opt in "${options[@]}"; do
+    select opt in "${options[@]}";
+    do
         case $opt in
             "Atualização completa sem reinicialização")
                 echo "Atualizando o sistema..."
