@@ -147,8 +147,8 @@ instala_pritunel_docker(){
     sudo docker run \
         --name pritunl \
         --privileged \
-        --publish 8080:80 \
-        --publish 8443:443 \
+        --publish 80:80 \
+        --publish 443:443 \
         --publish 27017:27017 \
         --publish 1194:1194 \
         --publish 1194:1194/udp \
