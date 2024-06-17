@@ -409,11 +409,11 @@ importa_perfil_pritunel(){
     # Adicionar configurações de reconexão automática ao perfil temporário
     echo "Adicionando configurações de reconexão automática ao perfil temporário..."
     echo "
-    # Configurações de reconexão automática
-    persist-tun 
-    persist-key 
-    keepalive 2 10
-    " | sudo tee -a "$perfil_temp"
+# Configurações de reconexão automática
+persist-tun 
+persist-key 
+keepalive 2 10
+" | sudo tee -a "$perfil_temp"
 
     # Iniciar o OpenVPN com o perfil temporário em segundo plano
     echo "Conectando ao servidor OpenVPN..."
