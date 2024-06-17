@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.52"
+echo "Versão 1.53"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -393,41 +393,28 @@ instala_pritunel_cliente(){
     sudo apt update
     sudo apt upgrade -y
 
-    # Adicionar repositório do Pritunl
-    echo "Adicionando repositório do Pritunl..."
-    sudo tee /etc/apt/sources.list.d/pritunl.list << EOF
-    deb https://repo.pritunl.com/stable/apt jammy main
-EOF
-
-    # Instalar gnupg
-    echo "Instalando gnupg..."
-    sudo apt --assume-yes install gnupg
-
-    # Adicionar chave GPG do repositório
-    echo "Adicionando chave GPG do repositório Pritunl..."
-    gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 7568D9BB55FF9E5287D586017AE645C0CF8E292A
-    gpg --armor --export 7568D9BB55FF9E5287D586017AE645C0CF8E292A | sudo tee /etc/apt/trusted.gpg.d/pritunl.asc
-
-    # Atualizar e instalar o cliente Pritunl
-    echo "Instalando o cliente Pritunl..."
-    sudo apt update
-    sudo sudo apt install pritunl-client -y
+    # Instalar o OpenVPN
+    echo "Instalando o OpenVPN..."
+    sudo apt install openvpn -y
 }
 
 importa_perfil_pritunel(){
-    # Solicitar localização do perfil e importar
+    # Solicitar localização do perfil
     read -p "Digite o caminho para o arquivo de perfil (.ovpn): " perfil_caminho
-    echo "Importando perfil..."
-    sudo pritunl-client add "$perfil_caminho"
 
-    # Solicitar o nome do perfil e conectar
-    read -p "Digite o nome do perfil: " nome_perfil
-    echo "Conectando ao servidor Pritunl..."
-    sudo pritunl-client start "$nome_perfil"
+    # Iniciar o OpenVPN com o perfil fornecido em segundo plano
+    echo "Conectando ao servidor OpenVPN..."
+    sudo openvpn --config "$perfil_caminho" --daemon
 
-    # Verificar a conexão
-    echo "Verificando o status da conexão..."
-    sudo pritunl-client status
+    echo "Conexão VPN iniciada em segundo plano!"
+
+    # Verificar a conexão (opcional)
+    sleep 5
+    if ip a | grep tun0; then
+        echo "A conexão VPN foi estabelecida com sucesso."
+    else
+        echo "Falha ao estabelecer a conexão VPN."
+    fi
 
     echo "Configuração concluída!"
 }
