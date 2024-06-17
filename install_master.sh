@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.62"
+echo "Versão 1.63"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -418,15 +418,20 @@ instala_openvpn_cliente(){
 importa_perfil_pritunel(){
     # Solicitar localização do perfil
     read -p "Digite o caminho para o arquivo de perfil (.tar): " perfil_caminho
+    
+    echo "Realizando checagens Pritunl..."
 
     # Limpa antigos
     sudo pritunl-client list | awk '/Disconnected/ {print $2}' | xargs -I {} sudo pritunl-client remove {}
+    sleep 5
 
     # adiciona perfil
     sudo pritunl-client add "$perfil_caminho"
+    sleep 5
 
     # pegando ID
     perfil_id=$(sudo pritunl-client list | awk 'NR==4 {print $2}')
+    sleep 5
 
     # Iniciar o perfil
     echo "Conectando ao servidor Pritunl..."
