@@ -480,7 +480,7 @@ importa_perfil_openvpn(){
 
 pritunel(){
     echo "Escolha uma opção:"
-    options=("Instala pritunel" "Instala cliente pritunel" "importa perfil pritunel")
+    options=("Instala pritunel" "Instala cliente pritunel" "importa perfil pritunel" "Instala cliente openvpn" "importa perfil openvpn")
     select opt in "${options[@]}";
     do
         case $opt in
