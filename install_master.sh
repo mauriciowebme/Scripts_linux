@@ -401,7 +401,7 @@ EOF
     gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 7568D9BB55FF9E5287D586017AE645C0CF8E292A
     gpg --armor --export 7568D9BB55FF9E5287D586017AE645C0CF8E292A | sudo tee /etc/apt/trusted.gpg.d/pritunl.asc
     sudo apt update
-    sudo apt install pritunl-client-electron
+    sudo apt install pritunl-client -y
 }
 
 instala_openvpn_cliente(){
@@ -417,26 +417,17 @@ instala_openvpn_cliente(){
 
 importa_perfil_pritunel(){
     # Solicitar localização do perfil
-    read -p "Digite o caminho para o arquivo de perfil (.ovpn): " perfil_caminho
+    read -p "Digite o caminho para o arquivo de perfil (.tar): " perfil_caminho
 
-#     # Criar uma cópia temporária do perfil
-#     perfil_temp="/tmp/temp_perfil.ovpn"
-#     cp "$perfil_caminho" "$perfil_temp"
+    # adiciona perfil
+    sudo pritunl-client add "$perfil_caminho"
+    
+    # pegando ID
+    perfil_id=$(sudo pritunl-client list | grep -oP '^\| \K[^ ]+')
 
-#     # Adicionar configurações de reconexão automática ao perfil temporário
-#     echo "Adicionando configurações de reconexão automática ao perfil temporário..."
-#     echo "
-# # Configurações de reconexão automática
-# persist-tun 
-# persist-key 
-# keepalive 2 10
-# " | sudo tee -a "$perfil_temp"
-
-    # Iniciar o OpenVPN com o perfil temporário em segundo plano
-    echo "Conectando ao servidor OpenVPN..."
-    sudo openvpn --config "$perfil_caminho" --daemon
-
-    echo "Conexão VPN iniciada em segundo plano!"
+    # Iniciar o perfil
+    echo "Conectando ao servidor Pritunl..."
+    sudo pritunl-client start "$perfil_id"
 
     # Verificar a conexão (opcional)
     sleep 5
@@ -446,6 +437,10 @@ importa_perfil_pritunel(){
     else
         echo "Falha ao estabelecer a conexão VPN."
     fi
+
+    sleep 5
+
+    sudo pritunl-client list
 
     echo "Configuração concluída!"
 }
