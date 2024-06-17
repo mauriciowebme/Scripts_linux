@@ -403,7 +403,7 @@ importa_perfil_pritunel(){
     read -p "Digite o caminho para o arquivo de perfil (.ovpn): " perfil_caminho
 
     # Criar uma cópia temporária do perfil
-    perfil_temp="/tmp/temp_$(basename "$perfil_caminho")"
+    perfil_temp="/tmp/temp_perfil.ovpn"
     cp "$perfil_caminho" "$perfil_temp"
 
     # Adicionar configurações de reconexão automática ao perfil temporário
