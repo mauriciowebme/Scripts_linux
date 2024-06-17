@@ -419,6 +419,9 @@ importa_perfil_pritunel(){
     # Solicitar localização do perfil
     read -p "Digite o caminho para o arquivo de perfil (.tar): " perfil_caminho
 
+    # Limpa antigos
+    sudo pritunl-client list | awk '/Disconnected/ {print $2}' | xargs -I {} sudo pritunl-client remove {}
+
     # adiciona perfil
     sudo pritunl-client add "$perfil_caminho"
 
