@@ -423,15 +423,15 @@ importa_perfil_pritunel(){
 
     # Limpa antigos
     sudo pritunl-client list | awk '/Disconnected/ {print $2}' | xargs -I {} sudo pritunl-client remove {}
-    sleep 5
+    sleep 2
 
     # adiciona perfil
     sudo pritunl-client add "$perfil_caminho"
-    sleep 5
+    sleep 2
 
     # pegando ID
     perfil_id=$(sudo pritunl-client list | awk 'NR==4 {print $2}')
-    sleep 5
+    sleep 2
 
     # Iniciar o perfil
     echo "Conectando ao servidor Pritunl..."
