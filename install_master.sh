@@ -402,22 +402,22 @@ importa_perfil_pritunel(){
     # Solicitar localização do perfil
     read -p "Digite o caminho para o arquivo de perfil (.ovpn): " perfil_caminho
 
-    # Criar uma cópia temporária do perfil
-    perfil_temp="/tmp/temp_perfil.ovpn"
-    cp "$perfil_caminho" "$perfil_temp"
+#     # Criar uma cópia temporária do perfil
+#     perfil_temp="/tmp/temp_perfil.ovpn"
+#     cp "$perfil_caminho" "$perfil_temp"
 
-    # Adicionar configurações de reconexão automática ao perfil temporário
-    echo "Adicionando configurações de reconexão automática ao perfil temporário..."
-    echo "
-# Configurações de reconexão automática
-persist-tun 
-persist-key 
-keepalive 2 10
-" | sudo tee -a "$perfil_temp"
+#     # Adicionar configurações de reconexão automática ao perfil temporário
+#     echo "Adicionando configurações de reconexão automática ao perfil temporário..."
+#     echo "
+# # Configurações de reconexão automática
+# persist-tun 
+# persist-key 
+# keepalive 2 10
+# " | sudo tee -a "$perfil_temp"
 
     # Iniciar o OpenVPN com o perfil temporário em segundo plano
     echo "Conectando ao servidor OpenVPN..."
-    sudo openvpn --config "$perfil_temp" --daemon
+    sudo openvpn --config "$perfil_caminho" --daemon
 
     echo "Conexão VPN iniciada em segundo plano!"
 
