@@ -418,7 +418,7 @@ importa_perfil_pritunel(){
     # Solicitar localização do perfil e importar
     read -p "Digite o caminho para o arquivo de perfil (.ovpn): " perfil_caminho
     echo "Importando perfil..."
-    sudo pritunl-client import "$perfil_caminho"
+    sudo pritunl-client add "$perfil_caminho"
 
     # Solicitar o nome do perfil e conectar
     read -p "Digite o nome do perfil: " nome_perfil
