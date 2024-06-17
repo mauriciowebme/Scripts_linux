@@ -410,7 +410,8 @@ importa_perfil_pritunel(){
 
     # Verificar a conexão (opcional)
     sleep 5
-    if ip a | grep tun0; then
+    # Verificar a conexão VPN
+    if ip a | grep -q 'tun'; then
         echo "A conexão VPN foi estabelecida com sucesso."
     else
         echo "Falha ao estabelecer a conexão VPN."
