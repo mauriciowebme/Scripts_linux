@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.57"
+echo "Versão 1.58"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -421,7 +421,7 @@ importa_perfil_pritunel(){
 
     # adiciona perfil
     sudo pritunl-client add "$perfil_caminho"
-    
+    sleep 5
     # pegando ID
     perfil_id=$(sudo pritunl-client list | grep -oP '^\| \K[^ ]+')
 
