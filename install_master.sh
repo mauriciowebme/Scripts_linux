@@ -539,6 +539,7 @@ main_menu(){
 
 # Loop principal para garantir retorno ao menu após ações
 while true; do
+    echo " "
     main_menu
 done
 
