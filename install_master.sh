@@ -411,7 +411,7 @@ EOF
     # Atualizar e instalar o cliente Pritunl
     echo "Instalando o cliente Pritunl..."
     sudo apt update
-    sudo apt install pritunl-client-electron -y
+    sudo sudo apt install pritunl-client -y
 }
 
 importa_perfil_pritunel(){
