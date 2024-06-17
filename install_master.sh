@@ -412,7 +412,6 @@ importa_perfil_pritunel(){
     # Configurações de reconexão automática
     keepalive 10 60
     resolv-retry infinite
-    reconnect 5 300
     " | sudo tee -a "$perfil_temp"
 
     # Iniciar o OpenVPN com o perfil temporário em segundo plano
