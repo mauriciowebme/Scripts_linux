@@ -437,10 +437,11 @@ importa_perfil_pritunel(){
     echo "Conectando ao servidor Pritunl..."
     sudo pritunl-client start "$perfil_id"
 
-    # Verificar a conexão (opcional)
     sleep 20
     # Verificar a conexão VPN
-    if ip a | grep -E '^[0-9]+: tun'; then
+    if ip a | grep -q -e 'tun' -e 'tap'; then
+        echo "A conexão VPN foi estabelecida com sucesso."
+    elif sudo pritunl-client status "$perfil_id" | grep -q 'Connected'; then
         echo "A conexão VPN foi estabelecida com sucesso."
     else
         echo "Falha ao estabelecer a conexão VPN."
