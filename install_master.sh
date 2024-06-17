@@ -393,12 +393,64 @@ instala_pritunel_cliente(){
     sudo apt update
     sudo apt upgrade -y
 
+    sudo tee /etc/apt/sources.list.d/pritunl.list << EOF
+deb https://repo.pritunl.com/stable/apt jammy main
+EOF
+
+    sudo apt --assume-yes install gnupg
+    gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 7568D9BB55FF9E5287D586017AE645C0CF8E292A
+    gpg --armor --export 7568D9BB55FF9E5287D586017AE645C0CF8E292A | sudo tee /etc/apt/trusted.gpg.d/pritunl.asc
+    sudo apt update
+    sudo apt install pritunl-client-electron
+}
+
+instala_openvpn_cliente(){
+    # Atualizar o sistema
+    echo "Atualizando o sistema..."
+    sudo apt update
+    sudo apt upgrade -y
+
     # Instalar o OpenVPN
     echo "Instalando o OpenVPN..."
     sudo apt install openvpn -y
 }
 
 importa_perfil_pritunel(){
+    # Solicitar localização do perfil
+    read -p "Digite o caminho para o arquivo de perfil (.ovpn): " perfil_caminho
+
+#     # Criar uma cópia temporária do perfil
+#     perfil_temp="/tmp/temp_perfil.ovpn"
+#     cp "$perfil_caminho" "$perfil_temp"
+
+#     # Adicionar configurações de reconexão automática ao perfil temporário
+#     echo "Adicionando configurações de reconexão automática ao perfil temporário..."
+#     echo "
+# # Configurações de reconexão automática
+# persist-tun 
+# persist-key 
+# keepalive 2 10
+# " | sudo tee -a "$perfil_temp"
+
+    # Iniciar o OpenVPN com o perfil temporário em segundo plano
+    echo "Conectando ao servidor OpenVPN..."
+    sudo openvpn --config "$perfil_caminho" --daemon
+
+    echo "Conexão VPN iniciada em segundo plano!"
+
+    # Verificar a conexão (opcional)
+    sleep 5
+    # Verificar a conexão VPN
+    if ip a | grep -q 'tun'; then
+        echo "A conexão VPN foi estabelecida com sucesso."
+    else
+        echo "Falha ao estabelecer a conexão VPN."
+    fi
+
+    echo "Configuração concluída!"
+}
+
+importa_perfil_openvpn(){
     # Solicitar localização do perfil
     read -p "Digite o caminho para o arquivo de perfil (.ovpn): " perfil_caminho
 
@@ -449,6 +501,14 @@ pritunel(){
                 ;;
             "importa perfil pritunel")
                 importa_perfil_pritunel
+                break
+                ;;
+            "Instala cliente openvpn")
+                instala_openvpn_cliente
+                break
+                ;;
+            "importa perfil openvpn")
+                importa_perfil_openvpn
                 break
                 ;;
             "Voltar ao menu principal")
