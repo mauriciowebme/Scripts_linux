@@ -430,15 +430,13 @@ importa_perfil_pritunel(){
     sudo pritunl-client start "$perfil_id"
 
     # Verificar a conexão (opcional)
-    sleep 5
+    sleep 10
     # Verificar a conexão VPN
     if ip a | grep -q 'tun'; then
         echo "A conexão VPN foi estabelecida com sucesso."
     else
         echo "Falha ao estabelecer a conexão VPN."
     fi
-
-    sleep 5
 
     sudo pritunl-client list
 
