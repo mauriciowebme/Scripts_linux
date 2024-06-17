@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.51"
+echo "Versão 1.52"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -387,6 +387,77 @@ atualizacoes(){
     done
 }
 
+instala_pritunel_cliente(){
+    # Atualizar o sistema
+    echo "Atualizando o sistema..."
+    sudo apt update
+    sudo apt upgrade -y
+
+    # Adicionar repositório do Pritunl
+    echo "Adicionando repositório do Pritunl..."
+    sudo tee /etc/apt/sources.list.d/pritunl.list << EOF
+    deb https://repo.pritunl.com/stable/apt jammy main
+EOF
+
+    # Instalar gnupg
+    echo "Instalando gnupg..."
+    sudo apt --assume-yes install gnupg
+
+    # Adicionar chave GPG do repositório
+    echo "Adicionando chave GPG do repositório Pritunl..."
+    gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 7568D9BB55FF9E5287D586017AE645C0CF8E292A
+    gpg --armor --export 7568D9BB55FF9E5287D586017AE645C0CF8E292A | sudo tee /etc/apt/trusted.gpg.d/pritunl.asc
+
+    # Atualizar e instalar o cliente Pritunl
+    echo "Instalando o cliente Pritunl..."
+    sudo apt update
+    sudo apt install pritunl-client-electron -y
+}
+
+importa_perfil_pritunel(){
+    # Solicitar localização do perfil e importar
+    read -p "Digite o caminho para o arquivo de perfil (.ovpn): " perfil_caminho
+    echo "Importando perfil..."
+    sudo pritunl-client import "$perfil_caminho"
+
+    # Solicitar o nome do perfil e conectar
+    read -p "Digite o nome do perfil: " nome_perfil
+    echo "Conectando ao servidor Pritunl..."
+    sudo pritunl-client start "$nome_perfil"
+
+    # Verificar a conexão
+    echo "Verificando o status da conexão..."
+    sudo pritunl-client status
+
+    echo "Configuração concluída!"
+}
+
+pritunel(){
+    echo "Escolha uma opção:"
+    options=("Instala pritunel" "Instala cliente pritunel" "importa perfil pritunel")
+    select opt in "${options[@]}";
+    do
+        case $opt in
+            "Instala pritunel")
+                instala_pritunel
+                break
+                ;;
+            "Instala cliente pritunel")
+                instala_pritunel_cliente
+                break
+                ;;
+            "importa perfil pritunel")
+                importa_perfil_pritunel
+                break
+                ;;
+            "Voltar ao menu principal")
+                return
+                ;;
+            *) echo "Opção inválida. Tente novamente.";;
+        esac
+    done
+}
+
 docker_options(){
     PS3='Digite sua opção: '
     options=("Instala docker" "Instala mongodb docker" "Instala pritunel docker" "Instala postgres docker" "Realiza limpeza do docker" "Instala NodeJS docker" "Voltar ao menu principal")
@@ -427,7 +498,7 @@ docker_options(){
 
 main_menu(){
     PS3='Digite sua opção: '
-    options=("Atualizações" "Verificar status do sistema" "Docker" "Cria pasta compartilhada" "Instala pritunel normal" "Instala serviço no inicializar" "Sair")
+    options=("Atualizações" "Verificar status do sistema" "Docker" "Cria pasta compartilhada" "Pritunel" "Instala serviço no inicializar" "Sair")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -449,8 +520,8 @@ main_menu(){
                 cria_pasta_compartilhada
                 break
                 ;;
-            "Instala pritunel normal")
-                instala_pritunel
+            "Pritunel")
+                pritunel
                 break
                 ;;
             "Instala serviço no inicializar")
