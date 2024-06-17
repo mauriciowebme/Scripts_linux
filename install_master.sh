@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.60"
+echo "Versão 1.61"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -430,7 +430,7 @@ importa_perfil_pritunel(){
     sudo pritunl-client start "$perfil_id"
 
     # Verificar a conexão (opcional)
-    sleep 10
+    sleep 20
     # Verificar a conexão VPN
     if ip a | grep -E '^[0-9]+: tun'; then
         echo "A conexão VPN foi estabelecida com sucesso."
