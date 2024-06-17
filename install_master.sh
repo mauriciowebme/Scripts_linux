@@ -421,9 +421,9 @@ importa_perfil_pritunel(){
 
     # adiciona perfil
     sudo pritunl-client add "$perfil_caminho"
-    sleep 5
     # pegando ID
-    perfil_id=$(sudo pritunl-client list | grep -oP '^\| \K[^ ]+')
+    #perfil_id=$(sudo pritunl-client list | grep -oP '^\| \K[^ ]+')
+    perfil_id=$(sudo pritunl-client list | awk 'NR==4 {print $2}')
 
     # Iniciar o perfil
     echo "Conectando ao servidor Pritunl..."
