@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.59"
+echo "Versão 1.60"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -432,7 +432,7 @@ importa_perfil_pritunel(){
     # Verificar a conexão (opcional)
     sleep 10
     # Verificar a conexão VPN
-    if ip a | grep -q 'tun'; then
+    if ip a | grep -E '^[0-9]+: tun'; then
         echo "A conexão VPN foi estabelecida com sucesso."
     else
         echo "Falha ao estabelecer a conexão VPN."
@@ -469,7 +469,7 @@ importa_perfil_openvpn(){
     # Verificar a conexão (opcional)
     sleep 5
     # Verificar a conexão VPN
-    if ip a | grep -q 'tun'; then
+    if ip a | grep -E '^[0-9]+: tun'; then
         echo "A conexão VPN foi estabelecida com sucesso."
     else
         echo "Falha ao estabelecer a conexão VPN."
