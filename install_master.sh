@@ -485,6 +485,7 @@ docker_options(){
 }
 
 main_menu(){
+    echo " "
     PS3='Digite sua opção: '
     options=("Atualizações" "Verificar status do sistema" "Docker" "Cria pasta compartilhada" "Pritunel" "Instala serviço no inicializar" "Sair")
     select opt in "${options[@]}"
@@ -527,7 +528,6 @@ main_menu(){
 
 # Loop principal para garantir retorno ao menu após ações
 while true; do
-    echo " "
     main_menu
 done
 
