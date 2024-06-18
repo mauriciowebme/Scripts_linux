@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.64"
+echo "Versão 1.65"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -559,10 +559,26 @@ docker_options(){
     done
 }
 
+teste_velocidade(){
+    # Verifica se o speedtest-cli está instalado
+    if ! which speedtest > /dev/null; then
+        echo "Speedtest não está instalado. Instalando..."
+        sudo apt-get update
+        sudo apt-get install -y speedtest-cli
+    fi
+
+    # Executa o teste de velocidade
+    echo "Executando teste de velocidade..."
+    speedtest
+
+    # Informa o término do teste
+    echo "Teste de velocidade concluído."
+}
+
 main_menu(){
     echo " "
     PS3='Digite sua opção: '
-    options=("Atualizações" "Verificar status do sistema" "Docker" "Cria pasta compartilhada" "Pritunel" "Instala serviço no inicializar" "Sair")
+    options=("Atualizações" "Verificar status do sistema" "Teste de velocidade" "Docker" "Cria pasta compartilhada" "Pritunel" "Instala serviço no inicializar" "Sair")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -590,6 +606,10 @@ main_menu(){
                 ;;
             "Instala serviço no inicializar")
                 criar_servico_inicializar
+                break
+                ;;
+            "Teste de velocidade")
+                teste_velocidade
                 break
                 ;;
             "Sair")
