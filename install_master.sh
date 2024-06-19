@@ -616,6 +616,7 @@ monitor_rede(){
 
 main_menu(){
     echo " "
+    echo "Opções: "
     PS3='Digite sua opção: '
     options=("Atualizações" "Verificar status do sistema" "Teste de velocidade" "Monitor de rede" "Docker" "Cria pasta compartilhada" "Pritunel" "Instala serviço no inicializar" "Sair")
     select opt in "${options[@]}"
