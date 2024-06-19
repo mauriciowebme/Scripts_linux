@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.70"
+echo "Versão 1.69"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -616,8 +616,6 @@ monitor_rede(){
 
 main_menu(){
     echo " "
-    echo "=================================================================================="
-    echo " "
     PS3='Digite sua opção: '
     options=("Atualizações" "Verificar status do sistema" "Teste de velocidade" "Monitor de rede" "Docker" "Cria pasta compartilhada" "Pritunel" "Instala serviço no inicializar" "Sair")
     select opt in "${options[@]}"
@@ -665,9 +663,6 @@ main_menu(){
             *) echo "Opção inválida";;
         esac
     done
-    echo " "
-    echo "=================================================================================="
-    echo " "
 }
 
 # Loop principal para garantir retorno ao menu após ações
