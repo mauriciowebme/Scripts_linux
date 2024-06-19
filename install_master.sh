@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.66"
+echo "Versão 1.67"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -603,9 +603,15 @@ monitor_rede(){
         echo "Iniciando o serviço vnstat..."
         sudo systemctl start vnstat
     fi
-
-    # Mostrar visão mensal
-    vnstat --months
+    
+    # Verificar se há dados suficientes para exibir a visão mensal
+    if vnstat --months | grep -q "Not enough data available yet"
+    then
+        echo "Ainda não há dados suficientes disponíveis para exibir a visão mensal. Por favor, aguarde um tempo para que o vnstat colete os dados necessários."
+    else
+        # Mostrar visão mensal
+        vnstat --months
+    fi
 }
 
 main_menu(){
