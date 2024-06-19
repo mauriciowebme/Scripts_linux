@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.65"
+echo "Versão 1.66"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -575,10 +575,43 @@ teste_velocidade(){
     echo "Teste de velocidade concluído."
 }
 
+monitor_rede(){
+    # Verificar se vnstat já está instalado
+    if ! command -v vnstat &> /dev/null
+    then
+        echo "vnstat não está instalado. Instalando vnstat..."
+        sudo apt-get update
+        sudo apt-get install -y vnstat
+    else
+        echo "vnstat já está instalado."
+    fi
+
+    # Verificar se o serviço vnstat está habilitado
+    if systemctl is-enabled vnstat &> /dev/null
+    then
+        echo "O serviço vnstat já está habilitado."
+    else
+        echo "Habilitando o serviço vnstat..."
+        sudo systemctl enable vnstat
+    fi
+
+    # Verificar se o serviço vnstat está em execução
+    if systemctl is-active vnstat &> /dev/null
+    then
+        echo "O serviço vnstat já está em execução."
+    else
+        echo "Iniciando o serviço vnstat..."
+        sudo systemctl start vnstat
+    fi
+
+    # Mostrar visão mensal
+    vnstat --months
+}
+
 main_menu(){
     echo " "
     PS3='Digite sua opção: '
-    options=("Atualizações" "Verificar status do sistema" "Teste de velocidade" "Docker" "Cria pasta compartilhada" "Pritunel" "Instala serviço no inicializar" "Sair")
+    options=("Atualizações" "Verificar status do sistema" "Teste de velocidade" "Monitor de rede" "Docker" "Cria pasta compartilhada" "Pritunel" "Instala serviço no inicializar" "Sair")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -610,6 +643,10 @@ main_menu(){
                 ;;
             "Teste de velocidade")
                 teste_velocidade
+                break
+                ;;
+            "Monitor de rede")
+                monitor_rede
                 break
                 ;;
             "Sair")
