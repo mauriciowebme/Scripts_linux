@@ -286,6 +286,7 @@ EOF
 }
 
 instala_node_docker(){
+    echo "Configuração de porta."
     PORTA=3000
     options=("Porta padrão ($PORTA)" "Especificar porta manualmente" "Voltar ao menu principal")
     select opt in "${options[@]}"; do
@@ -295,7 +296,7 @@ instala_node_docker(){
                 break
                 ;;
             "Especificar porta manualmente")
-                read -p "Informe o diretório de instalação: " PORTA
+                read -p "Informe a porta: " PORTA
                 break
                 ;;
             "Voltar ao menu principal")
