@@ -288,6 +288,7 @@ EOF
 instala_node_docker(){
     # Nome do container
     CONTAINER_NAME=node_container
+    PORTA=3000
 
     # Cria o diretório app se não existir
     mkdir -p $(pwd)/app
@@ -296,7 +297,7 @@ instala_node_docker(){
     cat > $(pwd)/app/index.js <<EOF
     const express = require('express');
     const app = express();
-    const port = 3000;
+    const port = $PORTA;
 
     app.get('/', (req, res) => {
       res.send('Node rodando!');
@@ -314,7 +315,7 @@ EOF
     docker run -d \
       --name $CONTAINER_NAME \
       --restart always \
-      -p 3000:3000 \
+      -p $PORTA:3000 \
       -v $(pwd)/app:/usr/src/app \
       -w /usr/src/app \
       node:latest \
@@ -322,6 +323,9 @@ EOF
 
     # Esperar um pouco para o container iniciar
     sleep 10
+    echo "IPs possíveis para acesso:"
+    hostname -I | tr ' ' '\n'
+    echo "Porta de acesso: $PORTA"
 }
 
 criar_servico_inicializar(){
