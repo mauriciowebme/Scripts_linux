@@ -286,9 +286,27 @@ EOF
 }
 
 instala_node_docker(){
+    PORTA=3000
+    options=("Porta padrão ($PORTA)" "Especificar porta manualmente" "Voltar ao menu principal")
+    select opt in "${options[@]}"; do
+        case $opt in
+            "Porta padrão ($PORTA)")
+                # Diretório já definido
+                break
+                ;;
+            "Especificar porta manualmente")
+                read -p "Informe o diretório de instalação: " PORTA
+                break
+                ;;
+            "Voltar ao menu principal")
+                return
+                ;;
+            *) echo "Opção inválida. Tente novamente.";;
+        esac
+    done
     # Nome do container
     CONTAINER_NAME=node_container
-    PORTA=3000
+    
 
     # Cria o diretório app se não existir
     mkdir -p $(pwd)/app
@@ -315,7 +333,7 @@ EOF
     docker run -d \
       --name $CONTAINER_NAME \
       --restart always \
-      -p $PORTA:3000 \
+      -p $PORTA:$PORTA \
       -v $(pwd)/app:/usr/src/app \
       -w /usr/src/app \
       node:latest \
@@ -327,7 +345,7 @@ EOF
     ufw_status=$(sudo ufw status | grep -i "Status: active")
     if [ -n "$ufw_status" ]; then
         echo "UFW está ativo. Aplicando regras..."
-        sudo ufw allow 3000/tcp
+        sudo ufw allow $PORTA
         sudo ufw reload
     else
         echo "UFW não está ativo. Pule a configuração do UFW."
