@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.74"
+echo "Versão 1.75"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -323,6 +323,27 @@ EOF
 
     # Esperar um pouco para o container iniciar
     sleep 10
+    # Verifica se o ufw está ativo
+    ufw_status=$(sudo ufw status | grep -i "Status: active")
+    if [ -n "$ufw_status" ]; then
+        echo "UFW está ativo. Aplicando regras..."
+        sudo ufw allow 3000/tcp
+        sudo ufw reload
+    else
+        echo "UFW não está ativo. Pule a configuração do UFW."
+    fi
+
+    # Verifica se o iptables está ativo (verifica se há alguma regra configurada)
+    iptables_status=$(sudo iptables -L | grep "Chain INPUT (policy")
+    if [ -n "$iptables_status" ]; then
+        echo "iptables está ativo. Aplicando regras..."
+        sudo iptables -A INPUT -p tcp --dport 3000 -j ACCEPT
+        sudo iptables-save | sudo tee /etc/iptables/rules.v4
+    else
+        echo "iptables não está ativo. Pule a configuração do iptables."
+    fi
+
+    echo "Configurações de firewall concluídas."
     echo "IPs possíveis para acesso:"
     hostname -I | tr ' ' '\n'
     echo "Porta de acesso: $PORTA"
