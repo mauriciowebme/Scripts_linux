@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.75"
+echo "Versão 1.76"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -658,11 +658,78 @@ monitor_rede(){
     fi
 }
 
+# Função para verificar o arquivo de swap
+function verificar_swap() {
+    echo "Verificando o arquivo de swap existente..."
+    sudo swapon --show
+    free -h
+}
+
+# Função para modificar o arquivo de swap existente
+function modificar_swap() {
+    echo "Digite o novo tamanho para o arquivo de swap (ex: 4G):"
+    read novo_tamanho
+
+    echo "Desativando o swap atual..."
+    sudo swapoff /swap.img
+
+    echo "Removendo o arquivo de swap atual..."
+    sudo rm /swap.img
+
+    echo "Criando novo arquivo de swap de tamanho $novo_tamanho..."
+    sudo fallocate -l $novo_tamanho /swap.img
+    sudo chmod 600 /swap.img
+    sudo mkswap /swap.img
+    sudo swapon /swap.img
+    echo "Arquivo de swap modificado e ativado com sucesso."
+}
+
+# Função para criar um arquivo de swap se necessário
+function criar_swap() {
+    echo "Digite o tamanho para o novo arquivo de swap (ex: 2G):"
+    read tamanho
+
+    if sudo swapon --show | grep -q "/swap.img"; then
+        echo "Um arquivo de swap já existe."
+    else
+        echo "Nenhum arquivo de swap encontrado, criando um..."
+        sudo fallocate -l $tamanho /swap.img
+        sudo chmod 600 /swap.img
+        sudo mkswap /swap.img
+        sudo swapon /swap.img
+        echo "/swap.img none swap sw 0 0" | sudo tee -a /etc/fstab
+        echo "Arquivo de swap criado e ativado com sucesso."
+    fi
+}
+
+menu_swap(){
+    echo "Escolha uma opção:"
+    echo "1. Verificar arquivo de swap existente"
+    echo "2. Modificar arquivo de swap existente"
+    echo "3. Criar arquivo de swap"
+    read opcao
+
+    case $opcao in
+        1)
+            verificar_swap
+            ;;
+        2)
+            modificar_swap
+            ;;
+        3)
+            criar_swap
+            ;;
+        *)
+            echo "Opção inválida!"
+            ;;
+    esac
+}
+
 main_menu(){
     echo " "
     echo "Opções: "
     PS3='Digite sua opção: '
-    options=("Atualizações" "Verificar status do sistema" "Teste de velocidade" "Monitor de rede" "Docker" "Cria pasta compartilhada" "Pritunel" "Instala serviço no inicializar" "Sair")
+    options=("Atualizações" "Verificar status do sistema" "Teste de velocidade" "Monitor de rede" "Docker" "Cria pasta compartilhada" "Pritunel" "Instala serviço no inicializar" "Menu swap" "Sair")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -698,6 +765,10 @@ main_menu(){
                 ;;
             "Monitor de rede")
                 monitor_rede
+                break
+                ;;
+            "Menu swap")
+                menu_swap
                 break
                 ;;
             "Sair")
