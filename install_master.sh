@@ -713,7 +713,11 @@ menu_swap(){
 instala_webmin(){
     curl -o setup-repos.sh https://raw.githubusercontent.com/webmin/webmin/master/setup-repos.sh
     sh setup-repos.sh -y
-    apt-get install --install-recommends webmin
+    apt-get install -y --install-recommends webmin
+    echo " "
+    echo "IPs possíveis para acesso:"
+    hostname -I | tr ' ' '\n'
+    echo "Porta de acesso: 10000"
 }
 
 main_menu(){
