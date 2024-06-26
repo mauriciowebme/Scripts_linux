@@ -667,7 +667,7 @@ function verificar_swap() {
 
 # Função para modificar o arquivo de swap existente
 function modificar_swap() {
-    echo "Digite o novo tamanho para o arquivo de swap (ex: 4G):"
+    echo "Digite o tamanho desejado para o arquivo de swap (ex: 4G):"
     read novo_tamanho
 
     echo "Desativando o swap atual..."
@@ -681,32 +681,16 @@ function modificar_swap() {
     sudo chmod 600 /swap.img
     sudo mkswap /swap.img
     sudo swapon /swap.img
+    echo " "
     echo "Arquivo de swap modificado e ativado com sucesso."
-}
-
-# Função para criar um arquivo de swap se necessário
-function criar_swap() {
-    echo "Digite o tamanho para o novo arquivo de swap (ex: 2G):"
-    read tamanho
-
-    if sudo swapon --show | grep -q "/swap.img"; then
-        echo "Um arquivo de swap já existe."
-    else
-        echo "Nenhum arquivo de swap encontrado, criando um..."
-        sudo fallocate -l $tamanho /swap.img
-        sudo chmod 600 /swap.img
-        sudo mkswap /swap.img
-        sudo swapon /swap.img
-        echo "/swap.img none swap sw 0 0" | sudo tee -a /etc/fstab
-        echo "Arquivo de swap criado e ativado com sucesso."
-    fi
+    echo " "
+    verificar_swap
 }
 
 menu_swap(){
     echo "Escolha uma opção:"
     echo "1. Verificar arquivo de swap existente"
-    echo "2. Modificar arquivo de swap existente"
-    echo "3. Criar arquivo de swap"
+    echo "2. Criar/Modificar arquivo de swap existente"
     read opcao
 
     case $opcao in
@@ -715,9 +699,6 @@ menu_swap(){
             ;;
         2)
             modificar_swap
-            ;;
-        3)
-            criar_swap
             ;;
         *)
             echo "Opção inválida!"
