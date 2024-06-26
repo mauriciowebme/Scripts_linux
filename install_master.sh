@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.76"
+echo "Versão 1.78"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -739,8 +739,13 @@ main_menu(){
                 ;;
             "Verificar status do sistema")
                 echo "Verificando status do sistema..."
+                echo " "
+                ip addr show | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1
+                echo " "
                 uptime
+                echo " "
                 df -h
+                echo " "
                 break
                 ;;
             "Docker")
