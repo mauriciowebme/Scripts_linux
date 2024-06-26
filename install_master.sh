@@ -109,6 +109,7 @@ cria_rede_docker(){
 }
 
 instala_pritunel_docker(){
+    echo " "
     echo "Instalando Pritunel via Docker..."
     echo "Escolha a opção de instalação:"
 
