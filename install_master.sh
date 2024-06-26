@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.79"
+echo "Versão 1.80"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -399,6 +399,7 @@ EOF
 }
 
 atualizacoes(){
+    echo " "
     echo "Escolha a opção para atualização do sistema:"
     options=("Atualização completa sem reinicialização" "Atualização completa com reinicialização" "Atualização mínima sem reinicialização" "Voltar ao menu principal")
     select opt in "${options[@]}";
@@ -566,6 +567,7 @@ pritunel(){
 }
 
 docker_options(){
+    echo " "
     PS3='Digite sua opção: '
     options=("Instala docker" "Instala mongodb docker" "Instala pritunel docker" "Instala postgres docker" "Realiza limpeza do docker" "Instala NodeJS docker" "Voltar ao menu principal")
     select opt in "${options[@]}"
@@ -688,6 +690,7 @@ function modificar_swap() {
 }
 
 menu_swap(){
+    echo " "
     echo "Escolha uma opção:"
     echo "1. Verificar arquivo de swap existente"
     echo "2. Criar/Modificar arquivo de swap existente"
