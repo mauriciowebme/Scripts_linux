@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.80"
+echo "Versão 1.81"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -710,11 +710,27 @@ menu_swap(){
     esac
 }
 
+instala_webmin(){
+    curl -o setup-repos.sh https://raw.githubusercontent.com/webmin/webmin/master/setup-repos.sh
+    sh setup-repos.sh
+}
+
 main_menu(){
     echo " "
     echo "Opções: "
     PS3='Digite sua opção: '
-    options=("Atualizações" "Verificar status do sistema" "Teste de velocidade" "Monitor de rede" "Docker" "Cria pasta compartilhada" "Pritunel" "Instala serviço no inicializar" "Menu swap" "Sair")
+    options=(
+    "Atualizações"
+    "Verificar status do sistema"
+    "Teste de velocidade"
+    "Monitor de rede"
+    "Docker"
+    "Cria pasta compartilhada"
+    "Pritunel"
+    "Instala serviço no inicializar"
+    "Menu swap"
+    "instala webmin"
+    "Sair")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -759,6 +775,10 @@ main_menu(){
                 ;;
             "Menu swap")
                 menu_swap
+                break
+                ;;
+            "instala webmin")
+                instala_webmin
                 break
                 ;;
             "Sair")
