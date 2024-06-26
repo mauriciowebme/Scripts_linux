@@ -713,6 +713,7 @@ menu_swap(){
 instala_webmin(){
     curl -o setup-repos.sh https://raw.githubusercontent.com/webmin/webmin/master/setup-repos.sh
     sh setup-repos.sh
+    apt-get install --install-recommends webmin
 }
 
 main_menu(){
