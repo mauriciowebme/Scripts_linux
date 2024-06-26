@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.81"
+echo "Versão 1.82"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -712,7 +712,7 @@ menu_swap(){
 
 instala_webmin(){
     curl -o setup-repos.sh https://raw.githubusercontent.com/webmin/webmin/master/setup-repos.sh
-    sh setup-repos.sh
+    sh setup-repos.sh -y
     apt-get install --install-recommends webmin
 }
 
