@@ -499,11 +499,11 @@ perfil_pritunel(){
     sudo pritunl-client list
 
     echo "Escolha uma opção:"
-    options=("importa perfil pritunel" "Excluir conexão")
+    options=("Importa perfil pritunel" "Excluir conexão")
     select opt in "${options[@]}";
     do
         case $opt in
-            "importa perfil pritunel")
+            "Importa perfil pritunel")
                 importa_perfil_pritunel
                 break
                 ;;
