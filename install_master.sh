@@ -523,7 +523,7 @@ perfil_pritunel(){
 
 pritunel(){
     echo "Escolha uma opção:"
-    options=("Instala pritunel" "Instala cliente pritunel" "Perfil pritunel")
+    options=("Instala pritunel" "Instala cliente pritunel" "Perfil/conexões pritunel")
     select opt in "${options[@]}";
     do
         case $opt in
@@ -535,7 +535,7 @@ pritunel(){
                 instala_pritunel_cliente
                 break
                 ;;
-            "Perfil pritunel")
+            "Perfil/conexões pritunel")
                 perfil_pritunel
                 break
                 ;;
