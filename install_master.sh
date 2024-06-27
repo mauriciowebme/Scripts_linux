@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.83"
+echo "Versão 1.84"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -490,6 +490,9 @@ importa_perfil_pritunel(){
 exclui_conexao_pritunel(){
     read -p "Digite o ID de conexão para excluir: " id_exclusao
     sudo pritunl-client stop $id_exclusao
+    sleep 2
+    sudo pritunl-client delete $id_exclusao
+    sleep 2
     echo "Mostrando conexões."
     sudo pritunl-client list
 }
