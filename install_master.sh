@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.82"
+echo "Versão 1.83"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -450,17 +450,6 @@ EOF
     sudo apt install pritunl-client -y
 }
 
-instala_openvpn_cliente(){
-    # Atualizar o sistema
-    echo "Atualizando o sistema..."
-    sudo apt update
-    sudo apt upgrade -y
-
-    # Instalar o OpenVPN
-    echo "Instalando o OpenVPN..."
-    sudo apt install openvpn -y
-}
-
 importa_perfil_pritunel(){
     # Solicitar localização do perfil
     read -p "Digite o caminho para o arquivo de perfil (.tar): " perfil_caminho
@@ -498,44 +487,43 @@ importa_perfil_pritunel(){
     echo "Configuração concluída!"
 }
 
-importa_perfil_openvpn(){
-    # Solicitar localização do perfil
-    read -p "Digite o caminho para o arquivo de perfil (.ovpn): " perfil_caminho
+exclui_conexao_pritunel(){
+    read -p "Digite o ID de conexão para excluir: " id_exclusao
+    sudo pritunl-client stop $id_exclusao
+    echo "Mostrando conexões."
+    sudo pritunl-client list
+}
 
-#     # Criar uma cópia temporária do perfil
-#     perfil_temp="/tmp/temp_perfil.ovpn"
-#     cp "$perfil_caminho" "$perfil_temp"
+perfil_pritunel(){
+    echo "Mostrando conexões."
+    sudo pritunl-client list
 
-#     # Adicionar configurações de reconexão automática ao perfil temporário
-#     echo "Adicionando configurações de reconexão automática ao perfil temporário..."
-#     echo "
-# # Configurações de reconexão automática
-# persist-tun 
-# persist-key 
-# keepalive 2 10
-# " | sudo tee -a "$perfil_temp"
-
-    # Iniciar o OpenVPN com o perfil temporário em segundo plano
-    echo "Conectando ao servidor OpenVPN..."
-    sudo openvpn --config "$perfil_caminho" --daemon
-
-    echo "Conexão VPN iniciada em segundo plano!"
-
-    # Verificar a conexão (opcional)
-    sleep 5
-    # Verificar a conexão VPN
-    if ip a | grep -E '^[0-9]+: tun'; then
-        echo "A conexão VPN foi estabelecida com sucesso."
-    else
-        echo "Falha ao estabelecer a conexão VPN."
-    fi
-
-    echo "Configuração concluída!"
+    echo "Escolha uma opção:"
+    options=("importa perfil pritunel" "Excluir conexão")
+    select opt in "${options[@]}";
+    do
+        case $opt in
+            "importa perfil pritunel")
+                importa_perfil_pritunel
+                break
+                ;;
+            "Excluir conexão")
+                exclui_conexao_pritunel
+                break
+                ;;
+            "Voltar ao menu principal")
+                return
+                ;;
+            *) 
+                echo "Opção inválida. Tente novamente."
+                ;;
+        esac
+    done
 }
 
 pritunel(){
     echo "Escolha uma opção:"
-    options=("Instala pritunel" "Instala cliente pritunel" "importa perfil pritunel" "Instala cliente openvpn" "importa perfil openvpn")
+    options=("Instala pritunel" "Instala cliente pritunel" "Perfil pritunel")
     select opt in "${options[@]}";
     do
         case $opt in
@@ -547,22 +535,24 @@ pritunel(){
                 instala_pritunel_cliente
                 break
                 ;;
-            "importa perfil pritunel")
-                importa_perfil_pritunel
+            "Perfil pritunel")
+                perfil_pritunel
                 break
                 ;;
-            "Instala cliente openvpn")
-                instala_openvpn_cliente
-                break
-                ;;
-            "importa perfil openvpn")
-                importa_perfil_openvpn
-                break
-                ;;
+            # "Instala cliente openvpn")
+            #     instala_openvpn_cliente
+            #     break
+            #     ;;
+            # "importa perfil openvpn")
+            #     importa_perfil_openvpn
+            #     break
+            #     ;;
             "Voltar ao menu principal")
                 return
                 ;;
-            *) echo "Opção inválida. Tente novamente.";;
+            *) 
+                echo "Opção inválida. Tente novamente."
+                ;;
         esac
     done
 }
