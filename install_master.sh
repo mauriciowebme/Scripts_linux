@@ -491,7 +491,7 @@ exclui_conexao_pritunel(){
     read -p "Digite o ID de conexão para excluir: " id_exclusao
     sudo pritunl-client stop $id_exclusao
     sleep 2
-    sudo pritunl-client delete $id_exclusao
+    sudo pritunl-client remove $id_exclusao
     sleep 2
     echo "Mostrando conexões."
     sudo pritunl-client list
