@@ -332,10 +332,12 @@ instala_postgres_docker_secundario(){
     read -p "Digite o IP da máquina primária: " PRIMARY_IP
     docker stop postgres2
 
-    sudo rm -rf $DATA_DIR
+    sudo rm -rf $DATA_DIR/*
 
     # Copiar dados do primário
-    PGPASSWORD=postgres pg_basebackup -h $PRIMARY_IP -D $DATA_DIR -U postgres -P --wal-method=stream
+    docker run --rm -v $DATA_DIR:/var/lib/postgresql/data postgres:15.3 bash -c "
+    PGPASSWORD=postgres pg_basebackup -h $PRIMARY_IP -D /var/lib/postgresql/data -U postgres -P --wal-method=stream
+    "
 
     cat > $DATA_DIR/recovery.conf <<EOF
 standby_mode = 'on'
