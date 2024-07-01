@@ -267,15 +267,16 @@ instala_postgres_docker_primario(){
     docker exec postgres1 bash -c "echo \"log_min_messages = warning\" >> /var/lib/postgresql/data/postgresql.conf"
     docker exec postgres1 bash -c "echo \"log_statement = 'none'\" >> /var/lib/postgresql/data/postgresql.conf"
     docker exec -it postgres1 bash -c "
-    echo \"wal_level = replica\" >> /var/lib/postgresql/data/postgresql.conf
-    echo \"max_wal_senders = 3\" >> /var/lib/postgresql/data/postgresql.conf
-    echo \"wal_keep_segments = 64\" >> /var/lib/postgresql/data/postgresql.conf
-    echo \"archive_mode = on\" >> /var/lib/postgresql/data/postgresql.conf
-    echo \"archive_command = 'cp %p /var/lib/postgresql/data/archive/%f'\" >> /var/lib/postgresql/data/postgresql.conf
+    su postgres -c \"
+    echo 'wal_level = replica' >> /var/lib/postgresql/data/postgresql.conf
+    echo 'max_wal_senders = 3' >> /var/lib/postgresql/data/postgresql.conf
+    echo 'wal_keep_segments = 64' >> /var/lib/postgresql/data/postgresql.conf
+    echo 'archive_mode = on' >> /var/lib/postgresql/data/postgresql.conf
+    echo 'archive_command = \\\'cp %p /var/lib/postgresql/data/archive/%f\\\'' >> /var/lib/postgresql/data/postgresql.conf
 
-    echo \"host replication postgres 0.0.0.0/0 md5\" >> /var/lib/postgresql/data/pg_hba.conf
+    echo 'host replication postgres 0.0.0.0/0 md5' >> /var/lib/postgresql/data/pg_hba.conf
 
-    pg_ctl restart -D /var/lib/postgresql/data
+    pg_ctl restart -D /var/lib/postgresql/data\"
     "
 
     # Reiniciar o PostgreSQL para aplicar configurações
