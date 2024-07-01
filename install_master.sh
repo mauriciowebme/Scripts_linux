@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.84"
+echo "Versão 1.85"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -171,6 +171,26 @@ instala_pritunel_docker(){
 
 instala_postgres_docker(){
     echo "Instalando postgres docker..."
+    
+    # Definição do diretório padrão
+    DATA_DIR="/install_principal/postgres"
+    options=("Local padrão ($DATA_DIR)" "Especificar local manualmente" "Voltar ao menu principal")
+    select opt in "${options[@]}"; do
+        case $opt in
+            "Local padrão ($DATA_DIR)")
+                # Diretório já definido
+                break
+                ;;
+            "Especificar local manualmente")
+                read -p "Informe o diretório de instalação: " DATA_DIR
+                break
+                ;;
+            "Voltar ao menu principal")
+                return
+                ;;
+            *) echo "Opção inválida. Tente novamente.";;
+        esac
+    done
 
     verifica_instalacao_docker
         
@@ -183,7 +203,7 @@ instala_postgres_docker(){
     -e POSTGRES_USER=postgres \
     --name postgres \
     -p 5432:5432 \
-    -v /mnt/cephfs/postgres:/var/lib/postgresql/data \
+    -v $DATA_DIR:/var/lib/postgresql/data \
     -m 512M \
     --log-opt max-size=10m \
     --log-opt max-file=3 \
@@ -198,6 +218,141 @@ instala_postgres_docker(){
 
     # Reiniciar o PostgreSQL para aplicar configurações
     docker restart postgres
+}
+
+instala_postgres_docker_primario(){
+    echo "Instalando postgres docker..."
+
+    # Definição do diretório padrão
+    DATA_DIR="/install_principal/postgres1"
+    options=("Local padrão ($DATA_DIR)" "Especificar local manualmente" "Voltar ao menu principal")
+    select opt in "${options[@]}"; do
+        case $opt in
+            "Local padrão ($DATA_DIR)")
+                # Diretório já definido
+                break
+                ;;
+            "Especificar local manualmente")
+                read -p "Informe o diretório de instalação: " DATA_DIR
+                break
+                ;;
+            "Voltar ao menu principal")
+                return
+                ;;
+            *) echo "Opção inválida. Tente novamente.";;
+        esac
+    done
+
+    verifica_instalacao_docker
+        
+    # Remover container existente se houver
+    docker rm -f postgres1
+
+    # Rodar novo container PostgreSQL com configurações de log
+    docker run -d \
+    -e POSTGRES_PASSWORD=postgres \
+    -e POSTGRES_USER=postgres \
+    --name postgres1 \
+    -p 5432:5432 \
+    -v $DATA_DIR:/var/lib/postgresql/data \
+    -m 512M \
+    --log-opt max-size=10m \
+    --log-opt max-file=3 \
+    postgres:15.3
+
+    # Esperar um pouco para o container iniciar
+    sleep 10
+
+    # Ajustar configuração de logs dentro do container
+    docker exec postgres1 bash -c "echo \"log_min_messages = warning\" >> /var/lib/postgresql/data/postgresql.conf"
+    docker exec postgres1 bash -c "echo \"log_statement = 'none'\" >> /var/lib/postgresql/data/postgresql.conf"
+    docker exec -it postgres1 bash -c "
+    echo \"wal_level = replica\" >> /var/lib/postgresql/data/postgresql.conf
+    echo \"max_wal_senders = 3\" >> /var/lib/postgresql/data/postgresql.conf
+    echo \"wal_keep_segments = 64\" >> /var/lib/postgresql/data/postgresql.conf
+    echo \"archive_mode = on\" >> /var/lib/postgresql/data/postgresql.conf
+    echo \"archive_command = 'cp %p /var/lib/postgresql/data/archive/%f'\" >> /var/lib/postgresql/data/postgresql.conf
+
+    echo \"host replication postgres 0.0.0.0/0 md5\" >> /var/lib/postgresql/data/pg_hba.conf
+
+    pg_ctl restart -D /var/lib/postgresql/data
+    "
+
+    # Reiniciar o PostgreSQL para aplicar configurações
+    docker restart postgres1
+}
+
+instala_postgres_docker_secundario(){
+    echo "Instalando postgres docker..."
+
+    # Definição do diretório padrão
+    DATA_DIR="/install_principal/postgres2"
+    options=("Local padrão ($DATA_DIR)" "Especificar local manualmente" "Voltar ao menu principal")
+    select opt in "${options[@]}"; do
+        case $opt in
+            "Local padrão ($DATA_DIR)")
+                # Diretório já definido
+                break
+                ;;
+            "Especificar local manualmente")
+                read -p "Informe o diretório de instalação: " DATA_DIR
+                break
+                ;;
+            "Voltar ao menu principal")
+                return
+                ;;
+            *) echo "Opção inválida. Tente novamente.";;
+        esac
+    done
+
+    verifica_instalacao_docker
+        
+    # Remover container existente se houver
+    docker rm -f postgres2
+
+    # Rodar novo container PostgreSQL com configurações de log
+    docker run -d \
+    -e POSTGRES_PASSWORD=postgres \
+    -e POSTGRES_USER=postgres \
+    --name postgres2 \
+    -p 5432:5432 \
+    -v $DATA_DIR:/var/lib/postgresql/data \
+    -m 512M \
+    --log-opt max-size=10m \
+    --log-opt max-file=3 \
+    postgres:15.3
+
+    # Esperar um pouco para o container iniciar
+    sleep 10
+
+    # Ajustar configuração de logs dentro do container
+    docker exec postgres2 bash -c "echo \"log_min_messages = warning\" >> /var/lib/postgresql/data/postgresql.conf"
+    docker exec postgres2 bash -c "echo \"log_statement = 'none'\" >> /var/lib/postgresql/data/postgresql.conf"
+
+    read -p "Digite o IP da máquina primária: " PRIMARY_IP
+    docker exec -it postgres2 bash -c "
+    pg_ctl stop -D /var/lib/postgresql/data
+    rm -rf /var/lib/postgresql/data/*
+
+    pg_basebackup -h $PRIMARY_IP -D /var/lib/postgresql/data -U postgres -P --wal-method=stream
+
+    echo \"standby_mode = 'on'\" > /var/lib/postgresql/data/recovery.conf
+    echo \"primary_conninfo = 'host=$PRIMARY_IP port=5432 user=postgres password=mysecretpassword'\" >> /var/lib/postgresql/data/recovery.conf
+    echo \"trigger_file = '/tmp/postgresql.trigger'\" >> /var/lib/postgresql/data/recovery.conf
+
+    pg_ctl start -D /var/lib/postgresql/data
+    "
+
+    # Reiniciar o PostgreSQL para aplicar configurações
+    docker restart postgres2
+}
+
+# Função para ativar o secundário como primário
+ativa_postgres_docker_secundario_primario() {
+    docker exec -it postgres2 bash -c "
+    touch /tmp/postgresql.trigger
+    pg_ctl promote -D /var/lib/postgresql/data
+    "
 }
 
 cria_pasta_compartilhada(){
@@ -581,6 +736,18 @@ docker_options(){
                 ;;
             "Instala postgres docker")
                 instala_postgres_docker
+                break
+                ;;
+            "Instala postgres docker")
+                instala_postgres_docker_primario
+                break
+                ;;
+            "Instala postgres docker")
+                instala_postgres_docker_secundario
+                break
+                ;;
+            "Instala postgres docker")
+                ativa_postgres_docker_secundario_primario
                 break
                 ;;
             "Realiza limpeza do docker")
