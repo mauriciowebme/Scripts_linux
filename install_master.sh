@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.90"
+echo "Versão 1.91"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -340,9 +340,9 @@ instala_postgres_docker_secundario(){
     "
 
     cat > $DATA_DIR/recovery.conf <<EOF
-standby_mode = 'on'
-primary_conninfo = 'host=$PRIMARY_IP port=5432 user=postgres password=postgres'
-trigger_file = '/tmp/postgresql.trigger'
+    standby_mode = on
+    primary_conninfo = host=$PRIMARY_IP port=5432 user=postgres password=postgres
+    trigger_file = /tmp/postgresql.trigger
 EOF
 
     # Reiniciar o PostgreSQL para aplicar configurações
