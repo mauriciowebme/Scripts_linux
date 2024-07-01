@@ -266,20 +266,16 @@ instala_postgres_docker_primario(){
     sleep 10
 
     # Ajustar configuração de logs dentro do container
+    #echo 'wal_keep_segments = 64' >> /var/lib/postgresql/data/postgresql.conf
     docker exec postgres1 bash -c "echo \"log_min_messages = warning\" >> /var/lib/postgresql/data/postgresql.conf"
     docker exec postgres1 bash -c "echo \"log_statement = 'none'\" >> /var/lib/postgresql/data/postgresql.conf"
-    docker exec -it postgres1 bash -c "
-    su postgres -c \"
-    echo 'wal_level = replica' >> /var/lib/postgresql/data/postgresql.conf
-    echo 'max_wal_senders = 3' >> /var/lib/postgresql/data/postgresql.conf
-    echo 'wal_keep_segments = 64' >> /var/lib/postgresql/data/postgresql.conf
-    echo 'archive_mode = on' >> /var/lib/postgresql/data/postgresql.conf
-    echo 'archive_command = \\\'cp %p /var/lib/postgresql/data/archive/%f\\\'' >> /var/lib/postgresql/data/postgresql.conf
 
-    echo 'host replication postgres 0.0.0.0/0 md5' >> /var/lib/postgresql/data/pg_hba.conf
+    docker stop postgres1
 
-    pg_ctl restart -D /var/lib/postgresql/data\"
-    "
+    echo 'wal_level = replica' >> $DATA_DIR/postgresql.conf
+    echo 'max_wal_senders = 3' >> $DATA_DIR/postgresql.conf
+    echo 'archive_mode = on' >> $DATA_DIR/postgresql.conf
+    echo 'host replication postgres 0.0.0.0/0 md5' >> $DATA_DIR/pg_hba.conf
 
     # Reiniciar o PostgreSQL para aplicar configurações
     docker restart postgres1
@@ -334,21 +330,21 @@ instala_postgres_docker_secundario(){
     docker exec postgres2 bash -c "echo \"log_statement = 'none'\" >> /var/lib/postgresql/data/postgresql.conf"
 
     read -p "Digite o IP da máquina primária: " PRIMARY_IP
-    docker exec -it postgres2 bash -c "
-    pg_ctl stop -D /var/lib/postgresql/data
-    rm -rf /var/lib/postgresql/data/*
+    docker stop postgres2
 
-    pg_basebackup -h $PRIMARY_IP -D /var/lib/postgresql/data -U postgres -P --wal-method=stream
+    sudo rm -rf $DATA_DIR
 
-    echo \"standby_mode = 'on'\" > /var/lib/postgresql/data/recovery.conf
-    echo \"primary_conninfo = 'host=$PRIMARY_IP port=5432 user=postgres password=mysecretpassword'\" >> /var/lib/postgresql/data/recovery.conf
-    echo \"trigger_file = '/tmp/postgresql.trigger'\" >> /var/lib/postgresql/data/recovery.conf
+    # Copiar dados do primário
+    PGPASSWORD=postgres pg_basebackup -h $PRIMARY_IP -D $DATA_DIR -U postgres -P --wal-method=stream
 
-    pg_ctl start -D /var/lib/postgresql/data
-    "
+    cat > $DATA_DIR/recovery.conf <<EOF
+standby_mode = 'on'
+primary_conninfo = 'host=$PRIMARY_IP port=5432 user=postgres password=postgres'
+trigger_file = '/tmp/postgresql.trigger'
+EOF
 
     # Reiniciar o PostgreSQL para aplicar configurações
-    docker restart postgres2
+    docker start postgres2
 }
 
 # Função para ativar o secundário como primário
