@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.85"
+echo "Versão 1.86"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -718,7 +718,7 @@ pritunel(){
 docker_options(){
     echo " "
     PS3='Digite sua opção: '
-    options=("Instala docker" "Instala mongodb docker" "Instala pritunel docker" "Instala postgres docker" "Realiza limpeza do docker" "Instala NodeJS docker" "Voltar ao menu principal")
+    options=("Instala docker" "Instala mongodb docker" "Instala pritunel docker" "Instala postgres docker" "Instala postgres docker primario" "Instala postgres docker secundario" "Ativa postgres docker secundario primario" "Realiza limpeza do docker" "Instala NodeJS docker" "Voltar ao menu principal")
     select opt in "${options[@]}"
     do
         case $opt in
@@ -738,15 +738,15 @@ docker_options(){
                 instala_postgres_docker
                 break
                 ;;
-            "Instala postgres docker")
+            "Instala postgres docker primario")
                 instala_postgres_docker_primario
                 break
                 ;;
-            "Instala postgres docker")
+            "Instala postgres docker secundario")
                 instala_postgres_docker_secundario
                 break
                 ;;
-            "Instala postgres docker")
+            "Ativa postgres docker secundario primario")
                 ativa_postgres_docker_secundario_primario
                 break
                 ;;
