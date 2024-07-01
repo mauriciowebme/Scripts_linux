@@ -339,11 +339,13 @@ instala_postgres_docker_secundario(){
     PGPASSWORD=postgres pg_basebackup -h $PRIMARY_IP -D /var/lib/postgresql/data -U postgres -P --wal-method=stream
     "
 
-    cat > $DATA_DIR/recovery.conf <<EOF
-    standby_mode = on
-    primary_conninfo = host=$PRIMARY_IP port=5432 user=postgres password=postgres
-    trigger_file = /tmp/postgresql.trigger
+    cat >> $DATA_DIR/postgresql.conf <<EOF
+    primary_conninfo = 'host=$PRIMARY_IP port=5432 user=postgres password=postgres'
+    primary_slot_name = 'replica_slot'
 EOF
+
+    # Criar o sinalizador de recuperação
+    touch $DATA_DIR/standby.signal
 
     # Reiniciar o PostgreSQL para aplicar configurações
     docker start postgres2
