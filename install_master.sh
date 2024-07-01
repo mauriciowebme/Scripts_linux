@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.86"
+echo "Versão 1.87"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -881,6 +881,11 @@ instala_webmin(){
     echo "Porta de acesso: 10000"
 }
 
+instala_cyberpanel(){
+    sudo apt update && sudo apt upgrade -y
+    sudo su - -c "sh <(curl https://cyberpanel.net/install.sh || wget -O - https://cyberpanel.net/install.sh)"
+}
+
 main_menu(){
     echo " "
     echo "Opções: "
@@ -895,7 +900,8 @@ main_menu(){
     "Pritunel"
     "Instala serviço no inicializar"
     "Menu swap"
-    "instala webmin"
+    "Instala CyberPanel"
+    "Instala webmin"
     "Sair")
     select opt in "${options[@]}"
     do
@@ -943,8 +949,12 @@ main_menu(){
                 menu_swap
                 break
                 ;;
-            "instala webmin")
+            "Instala webmin")
                 instala_webmin
+                break
+                ;;
+            "Instala CyberPanel")
+                instala_cyberpanel
                 break
                 ;;
             "Sair")
