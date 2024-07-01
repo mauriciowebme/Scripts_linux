@@ -195,6 +195,7 @@ instala_postgres_docker(){
     verifica_instalacao_docker
         
     # Remover container existente se houver
+    sudo rm -rf ${DATA_DIR}
     docker rm -f postgres
 
     # Rodar novo container PostgreSQL com configurações de log
@@ -246,6 +247,7 @@ instala_postgres_docker_primario(){
     verifica_instalacao_docker
         
     # Remover container existente se houver
+    sudo rm -rf ${DATA_DIR}
     docker rm -f postgres1
 
     # Rodar novo container PostgreSQL com configurações de log
@@ -309,6 +311,7 @@ instala_postgres_docker_secundario(){
     verifica_instalacao_docker
         
     # Remover container existente se houver
+    sudo rm -rf ${DATA_DIR}
     docker rm -f postgres2
 
     # Rodar novo container PostgreSQL com configurações de log
