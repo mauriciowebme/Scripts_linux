@@ -252,7 +252,10 @@ instala_postgres_docker_primario(){
 
     # Criar diretório de arquivamento
     ARCHIVE_DIR="${DATA_DIR}/archive"
+
+    # recriando diretorios
     mkdir -p ${ARCHIVE_DIR}
+    mkdir -p ${DATA_DIR}
 
     # Rodar novo container PostgreSQL com configurações de log
     docker run -d \
