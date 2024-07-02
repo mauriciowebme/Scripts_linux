@@ -62,7 +62,7 @@ instala_mongodb_docker(){
         return
     fi
 
-    DATA_DIR_MONGODB="/mongodb"
+    DATA_DIR_MONGODB="${DIR_Principal}/mongodb"
     options=("Local padrão ($DATA =DIR_MONGODB)" "Especificar local manualmente" "Voltar ao menu principal")
     select opt in "${options[@]}"; do
         case $opt in
@@ -114,7 +114,7 @@ instala_pritunel_docker(){
     echo "Escolha a opção de instalação:"
 
     # Definição do diretório padrão
-    DATA_DIR_pritunl="/pritunl"
+    DATA_DIR_pritunl="${DIR_Principal}/pritunl"
     options=("Local padrão ($DATA_DIR_pritunl)" "Especificar local manualmente" "Voltar ao menu principal")
     select opt in "${options[@]}"; do
         case $opt in
@@ -173,7 +173,7 @@ instala_postgres_docker(){
     echo "Instalando postgres docker..."
     
     # Definição do diretório padrão
-    DATA_DIR="/install_principal/postgres"
+    DATA_DIR="${DIR_Principal}/postgres"
     options=("Local padrão ($DATA_DIR)" "Especificar local manualmente" "Voltar ao menu principal")
     select opt in "${options[@]}"; do
         case $opt in
@@ -225,7 +225,7 @@ instala_postgres_docker_primario(){
     echo "Instalando postgres docker..."
 
     # Definição do diretório padrão
-    DATA_DIR="/install_principal/postgres1"
+    DATA_DIR="${DIR_Principal}/postgres1"
     options=("Local padrão ($DATA_DIR)" "Especificar local manualmente" "Voltar ao menu principal")
     select opt in "${options[@]}"; do
         case $opt in
@@ -288,7 +288,7 @@ instala_postgres_docker_secundario(){
     echo "Instalando postgres docker..."
 
     # Definição do diretório padrão
-    DATA_DIR="/install_principal/postgres2"
+    DATA_DIR="${DIR_Principal}/postgres2"
     options=("Local padrão ($DATA_DIR)" "Especificar local manualmente" "Voltar ao menu principal")
     select opt in "${options[@]}"; do
         case $opt in
@@ -362,6 +362,7 @@ ativa_postgres_docker_secundario_primario() {
 }
 
 cria_pasta_compartilhada(){
+
     echo "Criando pasta compartilhada..."
     
     # Atualiza os repositórios e instala o Samba
@@ -369,14 +370,14 @@ cria_pasta_compartilhada(){
     sudo apt-get install samba -y
 
     # Cria uma pasta compartilhada
-    sudo mkdir -p /compartilhado
-    sudo chmod 777 /compartilhado
+    sudo mkdir -p "${DIR_Principal}/compartilhado"
+    sudo chmod 777 "${DIR_Principal}/compartilhado"
 
     # Adiciona configuração ao smb.conf
     echo "
     [Compartilhado]
         comment = Pasta Compartilhada
-        path = /compartilhado
+        path = ${DIR_Principal}/compartilhado
         browsable = yes
         guest ok = yes
         read only = no
@@ -472,10 +473,10 @@ instala_node_docker(){
     
 
     # Cria o diretório app se não existir
-    mkdir -p $(pwd)/app
+    mkdir -p "${DIR_Principal}/app"
 
     # Cria o arquivo index.js dentro do diretório app
-    cat > $(pwd)/app/index.js <<EOF
+    cat > ${DIR_Principal}/app/index.js <<EOF
     const express = require('express');
     const app = express();
     const port = $PORTA;
@@ -525,6 +526,10 @@ EOF
     fi
 
     echo "Configurações de firewall concluídas."
+    echo " "
+    echo "Caminho de instalação:"
+    echo "${DIR_Principal}/app"
+    echo " "
     echo "IPs possíveis para acesso:"
     hostname -I | tr ' ' '\n'
     echo "Porta de acesso: $PORTA"
@@ -892,6 +897,8 @@ instala_cyberpanel(){
 }
 
 main_menu(){
+    # constantes
+    DIR_Principal = /install_principal
     echo " "
     echo "Opções: "
     PS3='Digite sua opção: '
