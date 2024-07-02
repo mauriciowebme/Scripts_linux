@@ -931,10 +931,21 @@ main_menu(){
     "Instala webmin"
     "Verificador de portas"
     "Reseta senha OpenLiteSpeed"
+    "Limpeza de sistema"
     )
     select opt in "${options[@]}"
     do
         case $opt in
+            "Limpeza de sistema")
+                sudo apt update && sudo apt upgrade -y
+                sudo apt autoremove
+                sudo apt clean
+                sudo apt autoclean
+                dpkg -l | grep '^rc' | awk '{print $2}' | xargs sudo dpkg --purge
+                sudo journalctl --vacuum-size=100M
+
+                break
+                ;;
             "Atualizações")
                 atualizacoes
                 break
