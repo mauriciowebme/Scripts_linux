@@ -63,7 +63,7 @@ instala_mongodb_docker(){
     fi
 
     DATA_DIR_MONGODB="${DIR_Principal}/mongodb"
-    options=("Local padrão ($DATA =DIR_MONGODB)" "Especificar local manualmente" "Voltar ao menu principal")
+    options=("Local padrão ($DATA_DIR_MONGODB)" "Especificar local manualmente" "Voltar ao menu principal")
     select opt in "${options[@]}"; do
         case $opt in
             "Local padrão ($DATA_DIR_MONGODB)")
@@ -910,7 +910,9 @@ instala_cyberpanel(){
 
 main_menu(){
     # constantes
+    echo " "
     DIR_Principal = /install_principal
+    echo $DIR_Principal
     echo " "
     echo "Opções: "
     PS3='Digite sua opção: '
