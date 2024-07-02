@@ -274,7 +274,10 @@ instala_postgres_docker_primario(){
 
     echo 'wal_level = replica' >> $DATA_DIR/postgresql.conf
     echo 'max_wal_senders = 3' >> $DATA_DIR/postgresql.conf
+    echo 'wal_keep_size = 64' >> $DATA_DIR/postgresql.conf
     echo 'archive_mode = on' >> $DATA_DIR/postgresql.conf
+    echo "archive_command = 'cp %p /path/to/archive/%f'" >> $DATA_DIR/postgresql.conf
+
     echo 'host replication postgres 0.0.0.0/0 md5' >> $DATA_DIR/pg_hba.conf
 
     # Reiniciar o PostgreSQL para aplicar configurações
