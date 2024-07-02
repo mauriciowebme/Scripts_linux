@@ -341,7 +341,6 @@ instala_postgres_docker_secundario(){
 
     cat >> $DATA_DIR/postgresql.conf <<EOF
     primary_conninfo = 'host=$PRIMARY_IP port=5432 user=postgres password=postgres'
-    primary_slot_name = 'replica_slot'
 EOF
 
     # Criar o sinalizador de recuperação
