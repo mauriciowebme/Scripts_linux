@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.95"
+echo "Versão 1.96"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -247,6 +247,7 @@ instala_postgres_docker_primario(){
     verifica_instalacao_docker
         
     # Remover container existente se houver
+    echo ${DATA_DIR}
     docker rm -f postgres1
     sudo rm -rf ${DATA_DIR}
 
