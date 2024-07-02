@@ -911,7 +911,7 @@ instala_cyberpanel(){
 main_menu(){
     # constantes
     echo " "
-    DIR_Principal = /install_principal
+    DIR_Principal = "/install_principal"
     echo $DIR_Principal
     echo " "
     echo "Opções: "
