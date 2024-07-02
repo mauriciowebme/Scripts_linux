@@ -270,7 +270,6 @@ instala_postgres_docker_primario(){
     sleep 10
 
     # Ajustar configuração de logs dentro do container
-    #echo 'wal_keep_segments = 64' >> /var/lib/postgresql/data/postgresql.conf
     docker exec postgres1 bash -c "echo \"log_min_messages = warning\" >> /var/lib/postgresql/data/postgresql.conf"
     docker exec postgres1 bash -c "echo \"log_statement = 'none'\" >> /var/lib/postgresql/data/postgresql.conf"
 
