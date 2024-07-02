@@ -251,13 +251,9 @@ instala_postgres_docker_primario(){
     docker rm -f postgres1
     sudo rm -rf ${DATA_DIR}
 
-    # Criar diretório de arquivamento
-    ARCHIVE_DIR="${DATA_DIR}/archive"
-
     # recriando diretorios
     mkdir -p ${DATA_DIR}
-    mkdir -p ${ARCHIVE_DIR}
-
+    
     # Rodar novo container PostgreSQL com configurações de log
     docker run -d \
     -e POSTGRES_PASSWORD=postgres \
@@ -283,6 +279,9 @@ instala_postgres_docker_primario(){
     echo 'max_wal_senders = 3' >> $DATA_DIR/postgresql.conf
     echo 'wal_keep_size = 500' >> $DATA_DIR/postgresql.conf
     echo "archive_mode = on" >> $DATA_DIR/postgresql.conf
+    # Criar diretório de arquivamento
+    ARCHIVE_DIR="${DATA_DIR}/archive"
+    mkdir -p ${ARCHIVE_DIR}
     echo "archive_command = 'cp %p ${ARCHIVE_DIR}/%f'" >> $DATA_DIR/postgresql.conf
 
     echo 'host replication postgres 0.0.0.0/0 md5' >> $DATA_DIR/pg_hba.conf
