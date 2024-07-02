@@ -260,7 +260,7 @@ instala_postgres_docker_primario(){
     -e POSTGRES_USER=postgres \
     --name postgres1 \
     -p 5432:5432 \
-    -v $DATA_DIR:/var/lib/postgresql/data \
+    -v ${DATA_DIR}:/var/lib/postgresql/data \
     -m 512M \
     --log-opt max-size=10m \
     --log-opt max-file=3 \
@@ -911,6 +911,9 @@ main_menu(){
     # constantes
     echo " "
     DIR_Principal="/install_principal"
+    echo $DIR_Principal
+    echo ${DIR_Principal}
+    echo "${DIR_Principal}"
     echo "Opções: "
     PS3='Digite sua opção: '
     options=(
