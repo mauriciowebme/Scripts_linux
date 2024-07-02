@@ -250,6 +250,10 @@ instala_postgres_docker_primario(){
     docker rm -f postgres1
     sudo rm -rf ${DATA_DIR}
 
+    # Criar diretório de arquivamento
+    ARCHIVE_DIR="${DATA_DIR}/archive"
+    mkdir -p ${ARCHIVE_DIR}
+
     # Rodar novo container PostgreSQL com configurações de log
     docker run -d \
     -e POSTGRES_PASSWORD=postgres \
@@ -274,14 +278,17 @@ instala_postgres_docker_primario(){
 
     echo 'wal_level = replica' >> $DATA_DIR/postgresql.conf
     echo 'max_wal_senders = 3' >> $DATA_DIR/postgresql.conf
-    echo 'wal_keep_size = 64' >> $DATA_DIR/postgresql.conf
-    echo 'archive_mode = on' >> $DATA_DIR/postgresql.conf
-    echo "archive_command = 'cp %p /path/to/archive/%f'" >> $DATA_DIR/postgresql.conf
+    echo 'wal_keep_size = 500' >> $DATA_DIR/postgresql.conf
+    echo "archive_mode = on" >> $DATA_DIR/postgresql.conf
+    echo "archive_command = 'cp %p ${ARCHIVE_DIR}/%f'" >> $DATA_DIR/postgresql.conf
 
     echo 'host replication postgres 0.0.0.0/0 md5' >> $DATA_DIR/pg_hba.conf
 
     # Reiniciar o PostgreSQL para aplicar configurações
     docker restart postgres1
+
+    # Criar slot de replicação
+    docker exec -it postgres1 psql -U postgres -c "SELECT * FROM pg_create_physical_replication_slot('meu_slot');"
 }
 
 instala_postgres_docker_secundario(){
@@ -312,6 +319,10 @@ instala_postgres_docker_secundario(){
     # Remover container existente se houver
     docker rm -f postgres2
     sudo rm -rf ${DATA_DIR}
+
+    # Criar diretório de arquivamento
+    ARCHIVE_DIR="${DATA_DIR}/archive"
+    mkdir -p ${ARCHIVE_DIR}
     
     # Rodar novo container PostgreSQL com configurações de log
     docker run -d \
@@ -343,7 +354,8 @@ instala_postgres_docker_secundario(){
     "
 
     cat >> $DATA_DIR/postgresql.conf <<EOF
-    primary_conninfo = 'host=$PRIMARY_IP port=5432 user=postgres password=postgres'
+primary_conninfo = 'host=$PRIMARY_IP port=5432 user=postgres password=postgres'
+primary_slot_name = 'meu_slot'
 EOF
 
     # Criar o sinalizador de recuperação
