@@ -148,7 +148,11 @@ instala_pritunel_docker(){
     docker run \
         --name pritunl \
         --privileged \
-        --network=host \
+        --publish 81:80 \
+        --publish 445:443 \
+        --publish 446:446 \
+        --publish 1194:1194 \
+        --publish 1194:1194/udp \
         --dns 127.0.0.1 \
         --restart=unless-stopped \
         --detach \
