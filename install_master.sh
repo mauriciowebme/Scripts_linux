@@ -167,6 +167,8 @@ instala_pritunel_docker(){
     # Configuração inicial pós-instalação
     sudo docker exec pritunl pritunl reset-password
     echo "Instalação concluída. Pritunl está pronto para uso."
+    echo "porta de acesso: 445"
+    echo "Mude a porta apos logar para: 446"
     echo "IPs possíveis para acesso:"
     hostname -I | tr ' ' '\n'
     echo "Acesse o container com: sudo docker exec -it pritunl /bin/bash"
