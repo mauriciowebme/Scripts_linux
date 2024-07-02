@@ -930,6 +930,7 @@ main_menu(){
     "Instala CyberPanel"
     "Instala webmin"
     "Verificador de portas"
+    "Reseta senha OpenLiteSpeed"
     )
     select opt in "${options[@]}"
     do
@@ -989,6 +990,10 @@ main_menu(){
                 read -p "Informe a porta: " PORTA
                 sudo netstat -tuln | grep $PORTA
                 sudo lsof -i :$PORTA
+                break
+                ;;
+            "Reseta senha OpenLiteSpeed")
+                sudo /usr/local/lsws/admin/misc/admpass.sh
                 break
                 ;;
             "Sair")
