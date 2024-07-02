@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.97"
+echo "Versão 1.98"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -917,6 +917,7 @@ main_menu(){
     echo "Opções: "
     PS3='Digite sua opção: '
     options=(
+    "Sair"
     "Atualizações"
     "Verificar status do sistema"
     "Teste de velocidade"
@@ -928,7 +929,8 @@ main_menu(){
     "Menu swap"
     "Instala CyberPanel"
     "Instala webmin"
-    "Sair")
+    "Verificador de portas"
+    )
     select opt in "${options[@]}"
     do
         case $opt in
@@ -981,6 +983,11 @@ main_menu(){
                 ;;
             "Instala CyberPanel")
                 instala_cyberpanel
+                break
+                ;;
+            "Verificador de portas")
+                read -p "Informe a porta: " PORTA
+                sudo netstat -tuln | grep $PORTA
                 break
                 ;;
             "Sair")
