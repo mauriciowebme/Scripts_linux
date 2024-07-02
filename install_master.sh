@@ -914,9 +914,6 @@ main_menu(){
     # constantes
     echo " "
     DIR_Principal="/install_principal"
-    echo $DIR_Principal
-    echo ${DIR_Principal}
-    echo "${DIR_Principal}"
     echo "Opções: "
     PS3='Digite sua opção: '
     options=(
