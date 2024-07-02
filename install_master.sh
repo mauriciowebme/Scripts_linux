@@ -988,6 +988,7 @@ main_menu(){
             "Verificador de portas")
                 read -p "Informe a porta: " PORTA
                 sudo netstat -tuln | grep $PORTA
+                sudo lsof -i :$PORTA
                 break
                 ;;
             "Sair")
