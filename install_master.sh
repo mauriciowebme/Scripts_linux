@@ -961,6 +961,11 @@ main_menu(){
                 Especificar uma Porta SSH Diferente:
                 Se o servidor remoto estiver utilizando uma porta SSH diferente da padrão (22), você pode especificar a porta com a opção -P:
                 scp -P 2222 /caminho/para/o/arquivo usuario@servidor_remoto:/caminho/para/destino
+
+                Exemplo Prático:
+                Copiar um arquivo chamado relatorio.pdf do diretório local /home/usuario/documentos para o diretório /home/usuario/remotos em um servidor remoto servidor.com com o usuário usuario_remoto:
+                scp /home/usuario/documentos/relatorio.pdf usuario_remoto@servidor.com:/home/usuario/remotos
+
                 "
                 break
                 ;;
