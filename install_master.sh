@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.03"
+echo "Versão 2.05"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -328,10 +328,6 @@ instala_postgres_docker_secundario(){
     # Remover container existente se houver
     docker rm -f postgres2
     sudo rm -rf ${DATA_DIR}
-
-    # Criar diretório de arquivamento
-    ARCHIVE_DIR="${DATA_DIR}/archive"
-    mkdir -p ${ARCHIVE_DIR}
     
     # Rodar novo container PostgreSQL com configurações de log
     docker run -d \
@@ -369,6 +365,10 @@ EOF
 
     # Criar o sinalizador de recuperação
     touch $DATA_DIR/standby.signal
+
+    # Criar diretório de arquivamento
+    ARCHIVE_DIR="${DATA_DIR}/archive"
+    mkdir -p ${ARCHIVE_DIR}
 
     # Reiniciar o PostgreSQL para aplicar configurações
     docker start postgres2
