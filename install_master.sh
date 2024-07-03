@@ -944,10 +944,15 @@ main_menu(){
     "Reseta senha OpenLiteSpeed"
     "Limpeza de sistema"
     "Copiar arquivos"
+    "Verifica tamanho da pasta atual"
     )
     select opt in "${options[@]}"
     do
         case $opt in
+            "Verifica tamanho da pasta atual")
+                du -ah --max-depth=1 | sort -hr
+                break
+                ;;
             "Copiar arquivos")
                 echo " 
 Exemplos:
