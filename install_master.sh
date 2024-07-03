@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.05"
+echo "Versão 2.06"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -145,7 +145,7 @@ instala_pritunel_docker(){
     sudo docker rm -f pritunl
 
     # Execução do container Docker
-    docker run -d \
+    docker run \
         --name pritunl \
         --restart always \
         --privileged \
