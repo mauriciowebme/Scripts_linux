@@ -87,9 +87,9 @@ instala_mongodb_docker(){
     sudo chmod 777 $DATA_DIR_MONGODB  # Considere usar permissões mais restritivas
 
     # Cria e inicia o container MongoDB
-    sudo docker run \
-        -d \
+    sudo docker run -d \
         --name $container_name \
+        --restart always \
         -p 27017:27017 \
         --network rede_docker \
         -v $DATA_DIR_MONGODB:/data/db \
@@ -145,8 +145,9 @@ instala_pritunel_docker(){
     sudo docker rm -f pritunl
 
     # Execução do container Docker
-    docker run \
+    docker run -d \
         --name pritunl \
+        --restart always \
         --privileged \
         --publish 81:80 \
         --publish 445:443 \
@@ -207,15 +208,16 @@ instala_postgres_docker(){
 
     # Rodar novo container PostgreSQL com configurações de log
     docker run -d \
-    -e POSTGRES_PASSWORD=postgres \
-    -e POSTGRES_USER=postgres \
-    --name postgres \
-    -p 5432:5432 \
-    -v $DATA_DIR:/var/lib/postgresql/data \
-    -m 512M \
-    --log-opt max-size=10m \
-    --log-opt max-file=3 \
-    postgres:15.3
+        -e POSTGRES_PASSWORD=postgres \
+        -e POSTGRES_USER=postgres \
+        --name postgres \
+        --restart always \
+        -p 5432:5432 \
+        -v $DATA_DIR:/var/lib/postgresql/data \
+        -m 512M \
+        --log-opt max-size=10m \
+        --log-opt max-file=3 \
+        postgres:15.3
 
     # Esperar um pouco para o container iniciar
     sleep 10
@@ -263,15 +265,16 @@ instala_postgres_docker_primario(){
     
     # Rodar novo container PostgreSQL com configurações de log
     docker run -d \
-    -e POSTGRES_PASSWORD=postgres \
-    -e POSTGRES_USER=postgres \
-    --name postgres1 \
-    -p 5432:5432 \
-    -v ${DATA_DIR}:/var/lib/postgresql/data \
-    -m 512M \
-    --log-opt max-size=10m \
-    --log-opt max-file=3 \
-    postgres:15.3
+        -e POSTGRES_PASSWORD=postgres \
+        -e POSTGRES_USER=postgres \
+        --name postgres1 \
+        --restart always \
+        -p 5432:5432 \
+        -v ${DATA_DIR}:/var/lib/postgresql/data \
+        -m 512M \
+        --log-opt max-size=10m \
+        --log-opt max-file=3 \
+        postgres:15.3
 
     # Esperar um pouco para o container iniciar
     sleep 10
@@ -331,15 +334,16 @@ instala_postgres_docker_secundario(){
     
     # Rodar novo container PostgreSQL com configurações de log
     docker run -d \
-    -e POSTGRES_PASSWORD=postgres \
-    -e POSTGRES_USER=postgres \
-    --name postgres2 \
-    -p 5432:5432 \
-    -v $DATA_DIR:/var/lib/postgresql/data \
-    -m 512M \
-    --log-opt max-size=10m \
-    --log-opt max-file=3 \
-    postgres:15.3
+        -e POSTGRES_PASSWORD=postgres \
+        -e POSTGRES_USER=postgres \
+        --name postgres2 \
+        --restart always \
+        -p 5432:5432 \
+        -v $DATA_DIR:/var/lib/postgresql/data \
+        -m 512M \
+        --log-opt max-size=10m \
+        --log-opt max-file=3 \
+        postgres:15.3
 
     # Esperar um pouco para o container iniciar
     sleep 10
@@ -516,13 +520,13 @@ EOF
 
     # Rodar novo container Node.js com mapeamento de porta e volume
     docker run -d \
-      --name $CONTAINER_NAME \
-      --restart always \
-      -p $PORTA:$PORTA \
-      -v $(pwd)/app:/usr/src/app \
-      -w /usr/src/app \
-      node:latest \
-      bash -c "npm init -y && npm install express && node index.js"
+        --name $CONTAINER_NAME \
+        --restart always \
+        -p $PORTA:$PORTA \
+        -v $(pwd)/app:/usr/src/app \
+        -w /usr/src/app \
+        node:latest \
+        bash -c "npm init -y && npm install express && node index.js"
 
     # Esperar um pouco para o container iniciar
     sleep 10
