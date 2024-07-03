@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.01"
+echo "Versão 2.02"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -939,6 +939,7 @@ main_menu(){
     "Verificador de portas"
     "Reseta senha OpenLiteSpeed"
     "Limpeza de sistema"
+    "Copiar arquivos"
     )
     select opt in "${options[@]}"
     do
