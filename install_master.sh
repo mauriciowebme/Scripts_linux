@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 1.99"
+echo "Versão 2.01"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -168,7 +168,8 @@ instala_pritunel_docker(){
     sudo docker exec pritunl pritunl reset-password
     echo "Instalação concluída. Pritunl está pronto para uso."
     echo "porta de acesso: 445"
-    echo "Mude a porta apos logar para: 446"
+    echo "Mude a porta da interface apos logar para: 446"
+    echo "Mude a porta do servidor apos logar para: 1194"
     echo "IPs possíveis para acesso:"
     hostname -I | tr ' ' '\n'
     echo "Acesse o container com: sudo docker exec -it pritunl /bin/bash"
