@@ -946,25 +946,25 @@ main_menu(){
         case $opt in
             "Copiar arquivos")
                 echo " 
-                Exemplos:
+Exemplos:
 
-                Copiar um Arquivo do Computador Local para um Servidor Remoto:
-                scp /caminho/para/o/arquivo usuario@servidor_remoto:/caminho/para/destino
+Copiar um Arquivo do Computador Local para um Servidor Remoto:
+scp /caminho/para/o/arquivo usuario@servidor_remoto:/caminho/para/destino
 
-                Copiar um Arquivo de um Servidor Remoto para o Computador Local:
-                scp usuario@servidor_remoto:/caminho/para/o/arquivo /caminho/para/destino
+Copiar um Arquivo de um Servidor Remoto para o Computador Local:
+scp usuario@servidor_remoto:/caminho/para/o/arquivo /caminho/para/destino
 
-                Copiar um Diretório Inteiro Recursivamente:
-                Para copiar um diretório inteiro e seu conteúdo, use a opção -r:
-                scp -r /caminho/para/o/diretorio usuario@servidor_remoto:/caminho/para/destino
+Copiar um Diretório Inteiro Recursivamente:
+Para copiar um diretório inteiro e seu conteúdo, use a opção -r:
+scp -r /caminho/para/o/diretorio usuario@servidor_remoto:/caminho/para/destino
 
-                Especificar uma Porta SSH Diferente:
-                Se o servidor remoto estiver utilizando uma porta SSH diferente da padrão (22), você pode especificar a porta com a opção -P:
-                scp -P 2222 /caminho/para/o/arquivo usuario@servidor_remoto:/caminho/para/destino
+Especificar uma Porta SSH Diferente:
+Se o servidor remoto estiver utilizando uma porta SSH diferente da padrão (22), você pode especificar a porta com a opção -P:
+scp -P 2222 /caminho/para/o/arquivo usuario@servidor_remoto:/caminho/para/destino
 
-                Exemplo Prático:
-                Copiar um arquivo chamado relatorio.pdf do diretório local /home/usuario/documentos para o diretório /home/usuario/remotos em um servidor remoto servidor.com com o usuário usuario_remoto:
-                scp /home/usuario/documentos/relatorio.pdf usuario_remoto@servidor.com:/home/usuario/remotos
+Exemplo Prático:
+Copiar um arquivo chamado relatorio.pdf do diretório local /home/usuario/documentos para o diretório /home/usuario/remotos em um servidor remoto servidor.com com o usuário usuario_remoto:
+scp /home/usuario/documentos/relatorio.pdf usuario_remoto@servidor.com:/home/usuario/remotos
 
                 "
                 break
