@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.02"
+echo "Versão 2.03"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -945,7 +945,7 @@ main_menu(){
     do
         case $opt in
             "Copiar arquivos")
-                atualizacoecho " 
+                echo " 
                 Exemplos:
 
                 Copiar um Arquivo do Computador Local para um Servidor Remoto:
