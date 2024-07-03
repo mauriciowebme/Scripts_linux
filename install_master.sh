@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.06"
+echo "Versão 2.07"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -147,7 +147,6 @@ instala_pritunel_docker(){
     # Execução do container Docker
     docker run \
         --name pritunl \
-        --restart always \
         --privileged \
         --publish 81:80 \
         --publish 445:443 \
@@ -163,7 +162,7 @@ instala_pritunel_docker(){
         ghcr.io/jippi/docker-pritunl
 
     echo "Aguarde enquanto o container é inicializado..."
-    sleep 20
+    sleep 10
 
     # Configuração inicial pós-instalação
     sudo docker exec pritunl pritunl reset-password
