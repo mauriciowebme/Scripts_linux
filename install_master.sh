@@ -955,6 +955,9 @@ firewall_configuracao(){
     sudo iptables -A INPUT -p udp --dport "$PORT" -j ACCEPT
     # Salvar as regras do iptables
     echo "Salvando as regras do iptables..."
+    if [ ! -d /etc/iptables ]; then
+        sudo mkdir -p /etc/iptables
+    fi
     sudo sh -c "iptables-save > /etc/iptables/rules.v4"
 }
 
