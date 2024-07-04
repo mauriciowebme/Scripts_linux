@@ -1061,7 +1061,7 @@ main_menu(){
     select opt in "${options[@]}"
     do
         case $opt in
-            "Criação de tuneis")
+            "Tuneis")
                 criacao_tunel
                 break
                 ;;
