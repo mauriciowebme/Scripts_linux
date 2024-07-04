@@ -991,11 +991,17 @@ criação_tuneis(){
     echo "Túnel SSH para porta HTTP criado."
 }
 
+listar_tuneis(){
+    echo "Listando túneis SSH ativos..."
+    ps aux | grep "[s]sh -fN -R"
+}
+
 criacao_tunel(){
     echo " "
     echo "Escolha uma opção:"
     echo "1. Habilitando encaminhamentos portas tuneis."
     echo "2. Criação dos tuneis."
+    echo "3. Listar tuneis ativos."
     read opcao
 
     case $opcao in
@@ -1004,6 +1010,9 @@ criacao_tunel(){
             ;;
         2)
             criação_tuneis
+            ;;
+        3)
+            listar_tuneis
             ;;
         *)
             echo "Opção inválida!"
