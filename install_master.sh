@@ -1004,7 +1004,13 @@ criacao_tuneis(){
 
 listar_tuneis(){
     echo "Listando túneis SSH ativos..."
+    echo "Enviando..."
     ps aux | grep "[s]sh -fN -R"
+
+    echo "Listando túneis SSH ativos..."
+    echo "Recebendo..."
+    sudo ss -unlp
+    sudo ss -tnlp
 }
 
 Tuneis(){
