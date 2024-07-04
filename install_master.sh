@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.09"
+echo "Versão 2.10"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -972,9 +972,10 @@ habilitando_ecaminhamentos_portas_tuneis(){
     #ssh $VPS_USER@$VPS_IP "sudo cp $SSH_CONFIG_FILE ${SSH_CONFIG_FILE}.bak && sudo sed -i '/^#GatewayPorts yes/s/^#//; /GatewayPorts no/s/no/yes/; /GatewayPorts yes/!s/$/\\nGatewayPorts yes/' $SSH_CONFIG_FILE && sudo systemctl restart ssh"
     ssh $VPS_USER@$VPS_IP "
         sudo cp $SSH_CONFIG_FILE ${SSH_CONFIG_FILE}.bak && \
-        sudo sed -i '/^#GatewayPorts yes/s/^#//; /GatewayPorts no/s/no/yes/; /GatewayPorts yes/!s/^GatewayPorts yes/' $SSH_CONFIG_FILE && \
+        sudo sed -i '/^#GatewayPorts yes/s/^#//; /GatewayPorts no/s/no/yes/; /GatewayPorts yes/! s/\$// ' $SSH_CONFIG_FILE && \
         if ! grep -q '^GatewayPorts yes' $SSH_CONFIG_FILE; then echo 'GatewayPorts yes' | sudo tee -a $SSH_CONFIG_FILE; fi && \
-        sudo systemctl restart ssh"
+        sudo systemctl restart ssh
+    "
     echo "Encaminhamento de portas habilitado."
 }
 
