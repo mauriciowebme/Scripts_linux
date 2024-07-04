@@ -974,7 +974,7 @@ habilitando_ecaminhamentos_portas_tuneis(){
         sudo cp $SSH_CONFIG_FILE ${SSH_CONFIG_FILE}.bak && \
         sudo sed -i '/^#GatewayPorts yes/s/^#//; /GatewayPorts no/s/no/yes/; /GatewayPorts yes/!s/^GatewayPorts yes/' $SSH_CONFIG_FILE && \
         if ! grep -q '^GatewayPorts yes' $SSH_CONFIG_FILE; then echo 'GatewayPorts yes' | sudo tee -a $SSH_CONFIG_FILE; fi && \
-        sudo syste
+        sudo systemctl restart ssh"
     echo "Encaminhamento de portas habilitado."
 }
 
