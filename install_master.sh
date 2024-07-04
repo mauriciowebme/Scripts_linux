@@ -994,8 +994,8 @@ criação_tuneis(){
 criacao_tunel(){
     echo " "
     echo "Escolha uma opção:"
-    echo "1. Habilitando ecaminhamentos portas tuneis"
-    echo "2. Criação dos tuneis"
+    echo "1. Habilitando encaminhamentos portas tuneis."
+    echo "2. Criação dos tuneis."
     read opcao
 
     case $opcao in
