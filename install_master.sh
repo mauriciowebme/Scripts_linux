@@ -990,7 +990,7 @@ habilitando_ecaminhamentos_portas_tuneis(){
     echo "Encaminhamento de portas habilitado."
 }
 
-criação_tuneis(){
+criacao_tuneis(){
     echo "habilitando ecaminhamentos portas tuneis."
     read -p "Digite o usuario da maquina remota: " VPS_USER
     read -p "Digite o IP da maquina remota: " VPS_IP
@@ -1007,7 +1007,7 @@ listar_tuneis(){
     ps aux | grep "[s]sh -fN -R"
 }
 
-criacao_tunel(){
+Tuneis(){
     echo " "
     echo "Escolha uma opção:"
     echo "1. Habilitando encaminhamentos portas tuneis."
@@ -1020,7 +1020,7 @@ criacao_tunel(){
             habilitando_ecaminhamentos_portas_tuneis
             ;;
         2)
-            criação_tuneis
+            criacao_tuneis
             ;;
         3)
             listar_tuneis
@@ -1062,7 +1062,7 @@ main_menu(){
     do
         case $opt in
             "Tuneis")
-                criacao_tunel
+                Tuneis
                 break
                 ;;
             "Configuração de firewall")
