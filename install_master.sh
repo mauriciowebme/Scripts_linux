@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.07"
+echo "Versão 2.08"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -961,6 +961,49 @@ firewall_configuracao(){
     sudo sh -c "iptables-save > /etc/iptables/rules.v4"
 }
 
+habilitando_ecaminhamentos_portas_tuneis(){
+    echo "habilitando ecaminhamentos portas tuneis."
+    read -p "Digite o usuario da maquina remota: " VPS_USER
+    read -p "Digite o IP da maquina remota: " VPS_IP
+
+    SSH_CONFIG_FILE="/etc/ssh/sshd_config"
+    echo "Habilitando encaminhamento de portas no VPS..."
+    ssh $VPS_USER@$VPS_IP "sudo sed -i '/^#GatewayPorts yes/s/^#//; /GatewayPorts no/s/no/yes/; /GatewayPorts yes/!s/$/\\nGatewayPorts yes/' $SSH_CONFIG_FILE && sudo systemctl restart ssh"
+    echo "Encaminhamento de portas habilitado."
+}
+
+criação_tuneis(){
+    echo "habilitando ecaminhamentos portas tuneis."
+    read -p "Digite o usuario da maquina remota: " VPS_USER
+    read -p "Digite o IP da maquina remota: " VPS_IP
+    read -p "Digite a porta remota: " REMOTE_PORT
+    read -p "Digite a porta local: " LOCAL_PORT
+
+    echo "Criando túnel SSH para porta ${LOCAL_PORT}"
+    ssh -fN -R $REMOTE_PORT:localhost:$LOCAL_PORT $VPS_USER@$VPS_IP
+    echo "Túnel SSH para porta HTTP criado."
+}
+
+criacao_tunel(){
+    echo " "
+    echo "Escolha uma opção:"
+    echo "1. Habilitando ecaminhamentos portas tuneis"
+    echo "2. Criação dos tuneis"
+    read opcao
+
+    case $opcao in
+        1)
+            habilitando_ecaminhamentos_portas_tuneis
+            ;;
+        2)
+            criação_tuneis
+            ;;
+        *)
+            echo "Opção inválida!"
+            ;;
+    esac
+}
+
 main_menu(){
     # constantes
     echo " "
@@ -985,12 +1028,17 @@ main_menu(){
     "Limpeza de sistema"
     "Copiar arquivos"
     "Verifica tamanho da pasta atual"
-    "Configuraçõ de firewall"
+    "Configuração de firewall"
+    "Criação de tuneis"
     )
     select opt in "${options[@]}"
     do
         case $opt in
-            "Configuraçõ de firewall")
+            "Criação de tuneis")
+                criacao_tunel
+                break
+                ;;
+            "Configuração de firewall")
                 firewall_configuracao
                 break
                 ;;
