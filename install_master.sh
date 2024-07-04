@@ -1056,7 +1056,7 @@ main_menu(){
     "Copiar arquivos"
     "Verifica tamanho da pasta atual"
     "Configuração de firewall"
-    "Criação de tuneis"
+    "Tuneis"
     )
     select opt in "${options[@]}"
     do
