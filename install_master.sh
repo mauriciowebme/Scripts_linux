@@ -920,6 +920,44 @@ instala_cyberpanel(){
     sudo su - -c "sh <(curl https://cyberpanel.net/install.sh || wget -O - https://cyberpanel.net/install.sh)"
 }
 
+habilitar_ufw(){
+    # Habilitar UFW se não estiver habilitado
+    if sudo ufw status | grep -q "Status: inactive"; then
+        echo "Habilitando o UFW..."
+        sudo ufw enable
+    fi
+}
+
+firewall_configuracao(){
+
+    # Solicitar ao usuário a porta a ser aberta
+    read -p "Digite a porta que deseja abrir: " PORT
+
+    # Verificar se a entrada é um número válido
+    if ! [[ "$PORT" =~ ^[0-9]+$ ]]; then
+    echo "Erro: Porta inválida. Por favor, insira um número."
+    exit 1
+    fi
+
+    # Verificar se o UFW está instalado
+    if ! command -v ufw &> /dev/null; then
+        echo "UFW não está instalado. Instalando..."
+        sudo apt update
+        sudo apt install -y ufw
+    fi
+    # Abrir a porta especificada com o UFW
+    echo "Abrindo a porta $PORT no UFW..."
+    sudo ufw allow "$PORT"
+    
+    # Abrir a porta especificada para tráfego
+    echo "Abrindo a porta $PORT no iptables..."
+    sudo iptables -A INPUT -p tcp --dport "$PORT" -j ACCEPT
+    sudo iptables -A INPUT -p udp --dport "$PORT" -j ACCEPT
+    # Salvar as regras do iptables
+    echo "Salvando as regras do iptables..."
+    sudo sh -c "iptables-save > /etc/iptables/rules.v4"
+}
+
 main_menu(){
     # constantes
     echo " "
@@ -944,10 +982,15 @@ main_menu(){
     "Limpeza de sistema"
     "Copiar arquivos"
     "Verifica tamanho da pasta atual"
+    "Configuraçõ de firewall"
     )
     select opt in "${options[@]}"
     do
         case $opt in
+            "Configuraçõ de firewall")
+                firewall_configuracao
+                break
+                ;;
             "Verifica tamanho da pasta atual")
                 du -ah --max-depth=1 | sort -hr
                 break
