@@ -969,7 +969,12 @@ habilitando_ecaminhamentos_portas_tuneis(){
     SSH_CONFIG_FILE="/etc/ssh/sshd_config"
     echo "Habilitando encaminhamento de portas no VPS..."
     ssh-keygen -R $VPS_IP
-    ssh $VPS_USER@$VPS_IP "sudo cp $SSH_CONFIG_FILE ${SSH_CONFIG_FILE}.bak && sudo sed -i '/^#GatewayPorts yes/s/^#//; /GatewayPorts no/s/no/yes/; /GatewayPorts yes/!s/$/\\nGatewayPorts yes/' $SSH_CONFIG_FILE && sudo systemctl restart ssh"
+    #ssh $VPS_USER@$VPS_IP "sudo cp $SSH_CONFIG_FILE ${SSH_CONFIG_FILE}.bak && sudo sed -i '/^#GatewayPorts yes/s/^#//; /GatewayPorts no/s/no/yes/; /GatewayPorts yes/!s/$/\\nGatewayPorts yes/' $SSH_CONFIG_FILE && sudo systemctl restart ssh"
+    ssh $VPS_USER@$VPS_IP "
+        sudo cp $SSH_CONFIG_FILE ${SSH_CONFIG_FILE}.bak && \
+        sudo sed -i '/^#GatewayPorts yes/s/^#//; /GatewayPorts no/s/no/yes/; /GatewayPorts yes/!s/^GatewayPorts yes/' $SSH_CONFIG_FILE && \
+        if ! grep -q '^GatewayPorts yes' $SSH_CONFIG_FILE; then echo 'GatewayPorts yes' | sudo tee -a $SSH_CONFIG_FILE; fi && \
+        sudo syste
     echo "Encaminhamento de portas habilitado."
 }
 
