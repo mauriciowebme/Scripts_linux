@@ -753,7 +753,18 @@ pritunel(){
 docker_options(){
     echo " "
     PS3='Digite sua opção: '
-    options=("Instala docker" "Realiza limpeza do docker" "Instala mongodb docker" "Instala pritunel docker" "Instala postgres docker" "Instala postgres docker primario" "Instala postgres docker secundario" "Ativa postgres docker secundario primario" "Instala NodeJS docker" "Voltar ao menu principal")
+    options=(
+        "Instala docker"
+        "Realiza limpeza do docker"
+        "Instala pritunel docker"
+        "Instala mongodb docker"
+        "Instala postgres docker"
+        "Instala postgres docker primario"
+        "Instala postgres docker secundario"
+        "Ativa postgres docker secundario primario"
+        "Instala NodeJS docker"
+        "Voltar ao menu principal"
+        )
     select opt in "${options[@]}"
     do
         case $opt in
