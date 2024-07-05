@@ -717,6 +717,7 @@ perfil_pritunel(){
 }
 
 pritunel(){
+    echo " "
     echo "Escolha uma opção:"
     options=("Instala pritunel" "Instala cliente pritunel" "Perfil/conexões pritunel")
     select opt in "${options[@]}";
