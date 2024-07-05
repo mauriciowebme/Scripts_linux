@@ -162,7 +162,7 @@ instala_pritunel_docker(){
         ghcr.io/jippi/docker-pritunl
 
     echo "Aguarde enquanto o container é inicializado..."
-    sleep 5
+    sleep 10
 
     # Configuração inicial pós-instalação
     sudo docker exec pritunl pritunl reset-password
