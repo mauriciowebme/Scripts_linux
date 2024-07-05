@@ -145,14 +145,16 @@ instala_pritunel_docker(){
     sudo docker rm -f pritunl
 
     # Execução do container Docker
+    # --publish 1194:1194 \
+    # --publish 1194:1194/udp \
     docker run \
         --name pritunl \
         --privileged \
         --publish 81:80 \
         --publish 445:443 \
         --publish 446:446 \
-        --publish 1194:1194 \
-        --publish 1194:1194/udp \
+        --publish 11416:11416 \
+        --publish 11416:11416/udp \
         --dns 127.0.0.1 \
         --restart=unless-stopped \
         --detach \
@@ -169,7 +171,7 @@ instala_pritunel_docker(){
     echo "Instalação concluída. Pritunl está pronto para uso."
     echo "porta de acesso: 445"
     echo "Mude a porta da interface apos logar para: 446"
-    echo "Mude a porta do servidor apos logar para: 1194"
+    echo "Mude a porta do servidor apos logar para: 11416"
     echo "IPs possíveis para acesso:"
     hostname -I | tr ' ' '\n'
     echo "Acesse o container com: sudo docker exec -it pritunl /bin/bash"
