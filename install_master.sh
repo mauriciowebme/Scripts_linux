@@ -301,6 +301,7 @@ instala_postgres_docker_primario(){
     docker restart postgres1
 
     # Criar slot de replicação
+    sleep 10
     docker exec -it postgres1 psql -U postgres -c "SELECT * FROM pg_create_physical_replication_slot('meu_slot');"
 }
 
