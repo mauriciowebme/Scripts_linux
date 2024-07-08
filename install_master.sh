@@ -1065,22 +1065,21 @@ EOL
 }
 
 configure_proxy_context() {
-    # Função para adicionar ou modificar o contexto de proxy no Virtual Host
-    echo " "
     echo "Configurando Contexto de Proxy..."
-    if grep -q "context.*proxy" "$DOMAIN_CONF_FILE"; then
+    if grep -q "context / {" "$DOMAIN_CONF_FILE"; then
         echo "Contexto de Proxy já configurado. Atualizando..."
-        sed -i "/context.*proxy/{n;s/uri.*/uri                     \//;n;s/location.*/location                $EXTERNAL_APP_NAME/;}" "$DOMAIN_CONF_FILE"
+        sed -i "/context \/ {/,/}/ s/handler.*/handler                 $EXTERNAL_APP_NAME/" "$DOMAIN_CONF_FILE"
     else
         echo "Adicionando novo Contexto de Proxy..."
         cat <<EOL >> "$DOMAIN_CONF_FILE"
+
 context / {
     type                    proxy
-    uri                     /
-    location                $EXTERNAL_APP_NAME
+    handler                 $EXTERNAL_APP_NAME
+    addDefaultCharset       off
 }
 EOL
-        fi
+    fi
 }
 
 configurar_proxy_reverso(){
