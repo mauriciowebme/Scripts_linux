@@ -499,6 +499,7 @@ instala_node_docker(){
     
 
     # Cria o diretório app se não existir
+    sudo rm -rf ${DIR_Principal}/app
     mkdir -p "${DIR_Principal}/app"
 
     # Cria o arquivo index.js dentro do diretório app
