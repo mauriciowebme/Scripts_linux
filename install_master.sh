@@ -564,18 +564,18 @@ EOF
 criar_servico_inicializar(){
     # Criar o arquivo de serviço systemd
     cat << 'EOF' > /etc/systemd/system/inicializar.service
-    [Unit]
-    Description=Executa o script /teste.txt 30 segundos após a inicialização
-    After=network.target
+[Unit]
+Description=Executa o script /teste.txt 30 segundos após a inicialização
+After=network.target
 
-    [Service]
-    Type=simple
-    ExecStartPre=/bin/sleep 30
-    ExecStart=/bin/bash -c 'docker start postgres'
-    Restart=on-failure
+[Service]
+Type=simple
+ExecStartPre=/bin/sleep 30
+ExecStart=/bin/bash -c 'docker start postgres'
+Restart=on-failure
 
-    [Install]
-    WantedBy=multi-user.target
+[Install]
+WantedBy=multi-user.target
 EOF
 
     # Recarregar os serviços do systemd para reconhecer o novo serviço
