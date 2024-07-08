@@ -508,11 +508,11 @@ const app = express();
 const port = $PORTA;
 
 app.get('/', (req, res) => {
-  res.send('Node rodando!');
+    res.send('Node rodando!');
 });
 
 app.listen(port, () => {
-  console.log(\`Servidor rodando em http://localhost:\${port}\`);
+    console.log(\`Servidor rodando em http://localhost:\${port}\`);
 });
 EOF
 
