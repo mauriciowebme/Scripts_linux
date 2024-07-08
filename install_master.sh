@@ -545,7 +545,7 @@ EOF
     iptables_status=$(sudo iptables -L | grep "Chain INPUT (policy")
     if [ -n "$iptables_status" ]; then
         echo "iptables está ativo. Aplicando regras..."
-        sudo iptables -A INPUT -p tcp --dport 3000 -j ACCEPT
+        sudo iptables -A INPUT -p tcp --dport $PORTA -j ACCEPT
         sudo iptables-save | sudo tee /etc/iptables/rules.v4
     else
         echo "iptables não está ativo. Pule a configuração do iptables."
