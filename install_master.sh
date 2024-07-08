@@ -504,7 +504,7 @@ instala_node_docker(){
 
     # Cria o arquivo index.js dentro do diretório app
     cat > $DIR_Principal/app/index.js <<EOF
-Xconst express = require('express');
+const express = require('express');
 const app = express();
 const port = $PORTA;
 
