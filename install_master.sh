@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.13"
+echo "Versão 2.14"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -1041,6 +1041,81 @@ Tuneis(){
     esac
 }
 
+configure_external_app() {
+    # Função para adicionar ou modificar a configuração do servidor externo
+    echo "Configurando External App..."
+    if grep -q "extprocessor.*$EXTERNAL_APP_NAME" "$OPENLITESPEED_CONF"; then
+        echo "Servidor Externo já configurado. Atualizando..."
+        sed -i "/extprocessor.*$EXTERNAL_APP_NAME/{n;s/address.*/address                 $EXTERNAL_APP_ADDRESS/;}" "$OPENLITESPEED_CONF"
+    else
+        echo "Adicionando novo Servidor Externo..."
+        cat <<EOL >> "$OPENLITESPEED_CONF"
+extprocessor $EXTERNAL_APP_NAME {
+    type                    proxy
+    address                 $EXTERNAL_APP_ADDRESS
+    maxConns                100
+    pcKeepAliveTimeout      60
+    initTimeout             60
+    retryTimeout            0
+    respBuffer              0
+}
+EOL
+        fi
+}
+
+configure_proxy_context() {
+    # Função para adicionar ou modificar o contexto de proxy no Virtual Host
+    echo "Configurando Contexto de Proxy..."
+    if grep -q "context.*proxy" "$DOMAIN_CONF_FILE"; then
+        echo "Contexto de Proxy já configurado. Atualizando..."
+        sed -i "/context.*proxy/{n;s/uri.*/uri                     \//;n;s/location.*/location                $EXTERNAL_APP_NAME/;}" "$DOMAIN_CONF_FILE"
+    else
+        echo "Adicionando novo Contexto de Proxy..."
+        cat <<EOL >> "$DOMAIN_CONF_FILE"
+context / {
+    type                    proxy
+    uri                     /
+    location                $EXTERNAL_APP_NAME
+}
+EOL
+        fi
+}
+
+configurar_proxy_reverso(){
+    # Solicitar o nome do domínio e o IP/porta de redirecionamento
+    echo " "
+    read -p "Digite o nome do domínio: " NOME_DOMINIO
+    read -p "Digite o IP de redirecionamento: " IP
+    read -p "Digite a porta de redirecionamento: " PORTA
+
+    # Variáveis
+    DOMAIN_CONF_DIR="/usr/local/lsws/conf/vhosts/$NOME_DOMINIO"
+    DOMAIN_CONF_FILE="$DOMAIN_CONF_DIR/vhost.conf"
+    EXTERNAL_APP_NAME="$NOME_DOMINIO"
+    EXTERNAL_APP_ADDRESS="$IP:$PORTA"
+    OPENLITESPEED_CONF="/usr/local/lsws/conf/httpd_config.conf"
+    
+    # Verificar se o diretório de configuração do Virtual Host existe
+    if [ -d "$DOMAIN_CONF_DIR" ]; then
+        # Verificar se o arquivo de configuração do Virtual Host existe
+        if [ -f "$DOMAIN_CONF_FILE" ]; then
+            configure_external_app
+            configure_proxy_context
+
+            # Reiniciar o OpenLiteSpeed para aplicar as alterações
+            echo "Reiniciando OpenLiteSpeed..."
+            sudo /usr/local/lsws/bin/lswsctrl restart
+            echo "Configuração concluída com sucesso."
+        else
+            echo "Arquivo de configuração do Virtual Host não encontrado: $DOMAIN_CONF_FILE"
+            exit 1
+        fi
+    else
+        echo "Diretório de configuração do Virtual Host não encontrado: $DOMAIN_CONF_DIR"
+        exit 1
+    fi
+}
+
 main_menu(){
     # constantes
     echo " "
@@ -1066,11 +1141,15 @@ main_menu(){
     "Copiar arquivos"
     "Verifica tamanho da pasta atual"
     "Configuração de firewall"
-    "Tuneis"
+    "Configurar proxy reverso"
     )
     select opt in "${options[@]}"
     do
         case $opt in
+            "Configurar proxy reverso")
+                Tuneconfigurar_proxy_reversois
+                break
+                ;;
             "Tuneis")
                 Tuneis
                 break
