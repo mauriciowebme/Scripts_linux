@@ -1042,6 +1042,7 @@ Tuneis(){
 }
 
 configure_external_app() {
+    echo " "
     # Função para adicionar ou modificar a configuração do servidor externo
     echo "Configurando External App..."
     if grep -q "extprocessor.*$EXTERNAL_APP_NAME" "$OPENLITESPEED_CONF"; then
@@ -1065,6 +1066,7 @@ EOL
 
 configure_proxy_context() {
     # Função para adicionar ou modificar o contexto de proxy no Virtual Host
+    echo " "
     echo "Configurando Contexto de Proxy..."
     if grep -q "context.*proxy" "$DOMAIN_CONF_FILE"; then
         echo "Contexto de Proxy já configurado. Atualizando..."
