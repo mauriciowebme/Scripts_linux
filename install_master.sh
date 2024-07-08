@@ -1142,12 +1142,12 @@ main_menu(){
     "Copiar arquivos"
     "Verifica tamanho da pasta atual"
     "Configuração de firewall"
-    "Configurar proxy reverso"
+    "Configurar proxy reverso com Openlitespeed"
     )
     select opt in "${options[@]}"
     do
         case $opt in
-            "Configurar proxy reverso")
+            "Configurar proxy reverso com Openlitespeed")
                 configurar_proxy_reverso
                 break
                 ;;
