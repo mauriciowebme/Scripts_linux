@@ -502,18 +502,18 @@ instala_node_docker(){
     mkdir -p "${DIR_Principal}/app"
 
     # Cria o arquivo index.js dentro do diretório app
-    cat > ${DIR_Principal}/app/index.js <<EOF
-    const express = require('express');
-    const app = express();
-    const port = $PORTA;
+    cat > $DIR_Principal/app/index.js <<EOF
+Xconst express = require('express');
+const app = express();
+const port = $PORTA;
 
-    app.get('/', (req, res) => {
-      res.send('Node rodando!');
-    });
+app.get('/', (req, res) => {
+  res.send('Node rodando!');
+});
 
-    app.listen(port, () => {
-      console.log(\`Servidor rodando em http://localhost:\${port}\`);
-    });
+app.listen(port, () => {
+  console.log(\`Servidor rodando em http://localhost:\${port}\`);
+});
 EOF
 
     # Remover container existente se houver
