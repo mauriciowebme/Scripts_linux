@@ -499,7 +499,7 @@ instala_node_docker(){
     
 
     # Cria o diretório app se não existir
-    sudo rm -rf ${DIR_Principal}/app
+    #sudo rm -rf ${DIR_Principal}/app
     mkdir -p "${DIR_Principal}/app"
 
     # Cria o arquivo index.js dentro do diretório app
@@ -525,7 +525,7 @@ EOF
         --name $CONTAINER_NAME \
         --restart always \
         -p $PORTA:$PORTA \
-        -v $(pwd)/app:/usr/src/app \
+        -v $DIR_Principal/app/:/usr/src/app \
         -w /usr/src/app \
         node:latest \
         bash -c "npm init -y && npm install express && node index.js"
