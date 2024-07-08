@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.14"
+echo "Versão 2.15"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -1147,7 +1147,7 @@ main_menu(){
     do
         case $opt in
             "Configurar proxy reverso")
-                Tuneconfigurar_proxy_reversois
+                configurar_proxy_reverso
                 break
                 ;;
             "Tuneis")
