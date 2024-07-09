@@ -1117,6 +1117,34 @@ configurar_proxy_reverso(){
     fi
 }
 
+Github_conf(){
+    echo " "
+    echo "Atualizando git..."
+    sudo apt-get update
+    sudo apt-get install -y git
+    
+    echo " "
+    echo "Escolha uma opção:"
+    echo "1. Atualizar repositorio atual"
+    echo "2. Clonar novo repositorio"
+    read opcao
+
+    case $opcao in
+        1)
+            git pull origin main
+            docker restart node_container
+            ;;
+        2)
+            echo " "
+            echo "Siga esse exemplo:"
+            echo "git clone https://token@github.com/mauriciowebme/SISUM.git /install_principal/app/"
+            ;;
+        *)
+            echo "Opção inválida!"
+            ;;
+    esac
+}
+
 main_menu(){
     # constantes
     echo " "
@@ -1143,10 +1171,15 @@ main_menu(){
     "Verifica tamanho da pasta atual"
     "Configuração de firewall"
     "Configurar proxy reverso com Openlitespeed"
+    "Github"
     )
     select opt in "${options[@]}"
     do
         case $opt in
+            "Github")
+                Github_conf
+                break
+                ;;
             "Configurar proxy reverso com Openlitespeed")
                 configurar_proxy_reverso
                 break
