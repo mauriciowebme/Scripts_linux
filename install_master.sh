@@ -1139,8 +1139,15 @@ Github_conf(){
             ;;
         2)
             echo " "
-            echo "Siga esse exemplo:"
+            echo "--------------------------------------------------------------------------------------"
+            echo "Siga esses passos:"
+            echo "docker stop node_container"
+            echo "sudo rm -rf /install_principal/app/"
+            echo "mkdir /install_principal/app/"
             echo "git clone https://token@github.com/mauriciowebme/SISUM.git /install_principal/app/"
+            echo "docker start node_container"
+            echo "--------------------------------------------------------------------------------------"
+            echo " "
             ;;
         *)
             echo "Opção inválida!"
