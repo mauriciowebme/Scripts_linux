@@ -1120,8 +1120,8 @@ configurar_proxy_reverso(){
 Github_conf(){
     echo " "
     echo "Atualizando git..."
-    sudo apt-get update
-    sudo apt-get install -y git
+    sudo apt-get update -y > /dev/null 2>&1
+    sudo apt-get install -y git > /dev/null 2>&1
     
     echo " "
     echo "Escolha uma opção:"
