@@ -528,7 +528,7 @@ EOF
         -v $DIR_Principal/app/:/usr/src/app \
         -w /usr/src/app \
         node:latest \
-        bash -c "npm init -y && npm install express && node index.js"
+        bash -c "npm init -y && npm install && npm install express && node index.js"
 
     # Esperar um pouco para o container iniciar
     sleep 10
