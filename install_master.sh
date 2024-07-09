@@ -1133,6 +1133,7 @@ Github_conf(){
         1)
             echo " "
             git pull origin main
+            echo "Reiniciando o container..."
             docker restart node_container
             echo "Lembre-se de estar na pasta onde o projeto git encontra-se!"
             echo " "
