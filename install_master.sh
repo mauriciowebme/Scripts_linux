@@ -1131,8 +1131,11 @@ Github_conf(){
 
     case $opcao in
         1)
+            echo " "
             git pull origin main
             docker restart node_container
+            echo "Lembre-se de estar na pasta onde o projeto git encontra-se!"
+            echo " "
             ;;
         2)
             echo " "
