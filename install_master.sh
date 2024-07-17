@@ -1183,6 +1183,7 @@ main_menu(){
     "Configuração de firewall"
     "Configurar proxy reverso com Openlitespeed"
     "Github"
+    "Tuneis"
     )
     select opt in "${options[@]}"
     do
