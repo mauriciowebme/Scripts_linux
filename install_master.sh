@@ -1195,7 +1195,7 @@ main_menu(){
     select opt in "${options[@]}"
     do
         case $opt in
-            ""Intala padrão UBUNTU"b")
+            "Intala padrão UBUNTU")
                 padrao_ubuntu
                 break
                 ;;
