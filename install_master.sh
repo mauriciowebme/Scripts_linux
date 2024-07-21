@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.16"
+echo "Versão 2.17"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -1156,6 +1156,12 @@ Github_conf(){
     esac
 }
 
+padrao_ubuntu(){
+    sudo apt install -y ubuntu-standard
+    sudo apt install -y openssh-server
+    sudo apt install -y curl wget net-tools htop nano ufw git
+}
+
 main_menu(){
     # constantes
     echo " "
@@ -1184,10 +1190,15 @@ main_menu(){
     "Configurar proxy reverso com Openlitespeed"
     "Github"
     "Tuneis"
+    "Intala padrão UBUNTU"
     )
     select opt in "${options[@]}"
     do
         case $opt in
+            ""Intala padrão UBUNTU"b")
+                padrao_ubuntu
+                break
+                ;;
             "Github")
                 Github_conf
                 break
