@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.18"
+echo "Versão 2.19"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -1157,6 +1157,7 @@ Github_conf(){
 }
 
 padrao_ubuntu(){
+    apt update && apt upgrade -y
     sudo apt install -y ubuntu-standard
     sudo apt install -y openssh-server
     sudo apt install -y curl wget net-tools htop nano ufw git
