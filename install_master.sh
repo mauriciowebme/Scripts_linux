@@ -767,6 +767,7 @@ docker_options(){
         "Instala postgres docker secundario"
         "Ativa postgres docker secundario primario"
         "Instala NodeJS docker"
+        "Instala vscode_server docker"
         "Voltar ao menu principal"
         )
     select opt in "${options[@]}"
@@ -778,6 +779,10 @@ docker_options(){
                 ;;
             "Instala mongodb docker")
                 instala_mongodb_docker
+                break
+                ;;
+            "Instala vscode_server docker")
+                vscode_server
                 break
                 ;;
             "Instala pritunel docker")
@@ -1161,6 +1166,14 @@ padrao_ubuntu(){
     sudo apt install -y ubuntu-standard
     sudo apt install -y openssh-server
     sudo apt install -y curl wget net-tools htop nano ufw git
+}
+
+vscode_server(){
+    docker run -d -p 8081:8080 -v "/projects:/home/coder/projects" -e PASSWORD="1234" codercom/code-server:latest
+    echo "IPs possíveis para acesso:"
+    hostname -I | tr ' ' '\n'
+    echo "Porta: 8081"
+    echo "Senha: 1234"
 }
 
 main_menu(){
