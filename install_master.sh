@@ -1194,6 +1194,7 @@ padrao_ubuntu(){
 
 vscode_server(){
     read -p "Configure uma senha para acessar a interface: " SENHA
+    rm -r /coder
     mkdir /coder
     chmod 777 /coder
     docker run -d --name vscode_server -p 8081:8080 -v "/coder:/home/coder" -e PASSWORD="$SENHA" codercom/code-server:latest
