@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.20"
+echo "Versão 2.21"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -1193,7 +1193,7 @@ padrao_ubuntu(){
 }
 
 vscode_server(){
-    docker run -d -p 8081:8080 -v "/projects:/home/coder/projects" -e PASSWORD="1234" codercom/code-server:latest
+    docker run -d --name vscode_server -p 8081:8080 -v "/projects:/home/coder/projects" -e PASSWORD="1234" codercom/code-server:latest
     echo "IPs possíveis para acesso:"
     hostname -I | tr ' ' '\n'
     echo "Porta: 8081"
