@@ -754,12 +754,26 @@ pritunel(){
     done
 }
 
+abre_bash_docker(){
+    # Solicita o nome do container ao usuário
+    read -p "Digite o nome ou ID do container: " container_name
+
+    # Verifica se o container existe
+    if [ "$(docker ps -q -f name=$container_name)" ]; then
+        # Abre uma sessão bash no container
+        docker exec -it $container_name bash
+    else
+        echo "Container não encontrado. Verifique o nome ou ID e tente novamente."
+    fi
+}
+
 docker_options(){
     echo " "
     PS3='Digite sua opção: '
     options=(
         "Instala docker"
         "Realiza limpeza do docker"
+        "Abre bash docker"
         "Instala pritunel docker"
         "Instala mongodb docker"
         "Instala postgres docker"
@@ -773,6 +787,14 @@ docker_options(){
     select opt in "${options[@]}"
     do
         case $opt in
+            "Abre bash docker")
+                abre_bash_docker
+                break
+                ;;
+            "Instala docker")
+                instala_docker
+                break
+                ;;
             "Instala docker")
                 instala_docker
                 break
