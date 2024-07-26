@@ -755,6 +755,8 @@ pritunel(){
 }
 
 abre_bash_docker(){
+    echo "Containers em execução:"
+    docker ps --format "table {{.Names}}\t{{.ID}}\t{{.Image}}\t{{.Status}}"
     # Solicita o nome do container ao usuário
     read -p "Digite o nome ou ID do container: " container_name
 
