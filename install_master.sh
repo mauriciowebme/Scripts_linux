@@ -1198,7 +1198,7 @@ vscode_server(){
     echo "IPs possíveis para acesso:"
     hostname -I | tr ' ' '\n'
     echo "Porta: 8081"
-    echo "Senha: 1234"
+    echo "Senha: $SENHA"
 }
 
 main_menu(){
