@@ -1201,6 +1201,7 @@ vscode_server(){
     docker run -d --name vscode_server -p 8081:8080 -v "/coder:/home/coder" -e PASSWORD="$SENHA" codercom/code-server:latest
     sleep 30
     docker exec -it --user root vscode_server /bin/bash -c "apt-get update && apt-get upgrade -y && apt-get install -y python3 python3-pip nodejs npm"
+    docker restart vscode_server
     echo "IPs possíveis para acesso:"
     hostname -I | tr ' ' '\n'
     echo "Porta: 8081"
