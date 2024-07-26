@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.21"
+echo "Versão 2.22"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -1198,6 +1198,8 @@ vscode_server(){
     mkdir /coder
     chmod 777 /coder
     docker run -d --name vscode_server -p 8081:8080 -v "/coder:/home/coder" -e PASSWORD="$SENHA" codercom/code-server:latest
+    sleep 30
+    docker exec -it --user root vscode_server /bin/bash -c "apt-get update && apt-get install -y python3 python3-pip nodejs npm"
     echo "IPs possíveis para acesso:"
     hostname -I | tr ' ' '\n'
     echo "Porta: 8081"
