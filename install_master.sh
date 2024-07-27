@@ -1209,9 +1209,11 @@ vscode_server(){
 }
 
 tarefas_cron(){
+    echo " "
     # Exibe os comandos já existentes no crontab do usuário (ou informa que não há comandos)
     echo "Comandos atuais no crontab:"
-    crontab -l || echo "Não existe informaçõe no Crontab do usuario atual."
+    crontab -l || echo "No crontab for the current user."
+    echo " "
 
     # Pergunta se deseja editar o crontab atual manualmente
     read -p "Você deseja editar o crontab atual manualmente antes de adicionar um novo comando? (s/n): " edit_manual_choice
@@ -1228,6 +1230,18 @@ tarefas_cron(){
     exit 0
     fi
 
+    # Exemplos de crontab
+
+    echo " "
+    echo "Exemplos de uso do crontab:"
+    echo "1. Comando simples a cada minuto:"
+    echo "* * * * * echo \"Cron está funcionando\" >> /var/log/meu_cron.log 2>&1"
+    echo "2. Desligar o sistema a cada hora no minuto 1:"
+    echo "1 * * * * /sbin/poweroff >> /var/log/meu_cron.log 2>&1"
+    echo "3. Executar um script a cada 15 minutos:"
+    echo "*/15 * * * * /usr/local/bin/meu_script.sh >> /var/log/meu_script.log 2>&1"
+    echo " "
+
     # Solicita os comandos que o usuário deseja adicionar ao cron
     read -p "Digite os comandos que você deseja adicionar ao cron (separados por '&&' se houver mais de um): " user_commands
 
@@ -1238,9 +1252,11 @@ tarefas_cron(){
     read -p "Dia do mês (1-31 ou *): " day_of_month
     read -p "Mês (1-12 ou *): " month
     read -p "Dia da semana (0-7, 0 e 7 representam domingo, ou *): " day_of_week
+    echo " "
 
     # Solicita o caminho do arquivo de log
     read -p "Digite o caminho para o arquivo de log (por exemplo, /var/log/meu_cron.log): " log_file
+    echo " "
 
     # Cria o diretório para o arquivo de log, caso não exista
     log_dir=$(dirname "$log_file")
@@ -1256,10 +1272,12 @@ tarefas_cron(){
     (crontab -l 2>/dev/null; echo "$cron_line") | crontab -
 
     echo "Comando adicionado ao crontab com sucesso!"
+    echo " "
 
     # Exibe o novo crontab para verificação
     echo "Novo crontab:"
     crontab -l
+    echo " "
 
     # Pergunta se deseja editar o crontab atual ou continuar
     read -p "Você deseja editar o crontab atual ou continuar? (e para editar, c para continuar): " final_edit_choice
