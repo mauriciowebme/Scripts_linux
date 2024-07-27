@@ -1218,7 +1218,7 @@ tarefas_cron(){
 
     if [[ "$continue_choice" != "s" && "$continue_choice" != "S" ]]; then
         echo "Operação abortada pelo usuário."
-        break
+        exit 0
     fi
 
     # Solicita os comandos que o usuário deseja adicionar ao cron
