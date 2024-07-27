@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.23"
+echo "Versão 2.24"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -1208,6 +1208,40 @@ vscode_server(){
     echo "Senha: $SENHA"
 }
 
+tarefas_cron(){
+    # Exibe os comandos já existentes no crontab do usuário
+    echo "Comandos atuais no crontab:"
+    crontab -l
+
+    # Pergunta se deseja continuar ou abortar
+    read -p "Você deseja continuar a adicionar um novo comando ao crontab? (s/n): " continue_choice
+
+    if [[ "$continue_choice" != "s" && "$continue_choice" != "S" ]]; then
+        echo "Operação abortada pelo usuário."
+        break
+    fi
+
+    # Solicita os comandos que o usuário deseja adicionar ao cron
+    read -p "Digite os comandos que você deseja adicionar ao cron (separados por '&&' se houver mais de um): " user_commands
+
+    # Solicita as configurações de tempo para o cron
+    echo "Digite as configurações de tempo para o cron (use '*' para representar qualquer valor):"
+    read -p "Minuto (0-59 ou *): " minute
+    read -p "Hora (0-23 ou *): " hour
+    read -p "Dia do mês (1-31 ou *): " day_of_month
+    read -p "Mês (1-12 ou *): " month
+    read -p "Dia da semana (0-7, 0 e 7 representam domingo, ou *): " day_of_week
+
+    # Cria a linha do cron com as configurações fornecidas
+    cron_line="$minute $hour $day_of_month $month $day_of_week $user_commands"
+
+    # Adiciona a linha ao crontab
+    (crontab -l; echo "$cron_line") | crontab -
+
+    crontab -l
+    echo "Comando adicionado ao crontab com sucesso!"
+}
+
 main_menu(){
     # constantes
     echo " "
@@ -1219,12 +1253,13 @@ main_menu(){
     "Atualizações"
     "Verificar status do sistema"
     "Docker"
+    "Tarefas Cron"
+    "Menu swap"
     "Cria pasta compartilhada"
     "Teste de velocidade"
     "Monitor de rede"
     "Pritunel"
     "Instala serviço no inicializar"
-    "Menu swap"
     "Instala CyberPanel"
     "Instala webmin"
     "Verificador de portas"
@@ -1241,6 +1276,10 @@ main_menu(){
     select opt in "${options[@]}"
     do
         case $opt in
+            "Tarefas Cron")
+                tarefas_cron
+                break
+                ;;
             "Intala padrão UBUNTU")
                 padrao_ubuntu
                 break
