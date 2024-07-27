@@ -1209,16 +1209,16 @@ vscode_server(){
 }
 
 tarefas_cron(){
-    # Exibe os comandos já existentes no crontab do usuário
+    # Exibe os comandos já existentes no crontab do usuário (ou informa que não há comandos)
     echo "Comandos atuais no crontab:"
-    crontab -l
+    crontab -l || echo "No crontab for the current user."
 
     # Pergunta se deseja continuar ou abortar
     read -p "Você deseja continuar a adicionar um novo comando ao crontab? (s/n): " continue_choice
 
     if [[ "$continue_choice" != "s" && "$continue_choice" != "S" ]]; then
-        echo "Operação abortada pelo usuário."
-        exit 0
+    echo "Operação abortada pelo usuário."
+    exit 0
     fi
 
     # Solicita os comandos que o usuário deseja adicionar ao cron
@@ -1232,14 +1232,27 @@ tarefas_cron(){
     read -p "Mês (1-12 ou *): " month
     read -p "Dia da semana (0-7, 0 e 7 representam domingo, ou *): " day_of_week
 
+    # Solicita o caminho do arquivo de log
+    read -p "Digite o caminho para o arquivo de log (por exemplo, /var/log/meu_cron.log): " log_file
+
+    # Cria o diretório para o arquivo de log, caso não exista
+    log_dir=$(dirname "$log_file")
+    if [ ! -d "$log_dir" ]; then
+    mkdir -p "$log_dir"
+    echo "Diretório $log_dir criado."
+    fi
+
     # Cria a linha do cron com as configurações fornecidas
-    cron_line="$minute $hour $day_of_month $month $day_of_week $user_commands"
+    cron_line="$minute $hour $day_of_month $month $day_of_week $user_commands >> $log_file 2>&1"
 
     # Adiciona a linha ao crontab
-    (crontab -l; echo "$cron_line") | crontab -
+    (crontab -l 2>/dev/null; echo "$cron_line") | crontab -
 
-    crontab -l
     echo "Comando adicionado ao crontab com sucesso!"
+
+    # Exibe o novo crontab para verificação
+    echo "Novo crontab:"
+    crontab -l
 }
 
 main_menu(){
