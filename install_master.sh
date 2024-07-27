@@ -1211,7 +1211,14 @@ vscode_server(){
 tarefas_cron(){
     # Exibe os comandos já existentes no crontab do usuário (ou informa que não há comandos)
     echo "Comandos atuais no crontab:"
-    crontab -l || echo "No crontab for the current user."
+    crontab -l || echo "Não existe informaçõe no Crontab do usuario atual."
+
+    # Pergunta se deseja editar o crontab atual manualmente
+    read -p "Você deseja editar o crontab atual manualmente antes de adicionar um novo comando? (s/n): " edit_manual_choice
+
+    if [[ "$edit_manual_choice" == "s" || "$edit_manual_choice" == "S" ]]; then
+    crontab -e
+    fi
 
     # Pergunta se deseja continuar ou abortar
     read -p "Você deseja continuar a adicionar um novo comando ao crontab? (s/n): " continue_choice
@@ -1253,6 +1260,15 @@ tarefas_cron(){
     # Exibe o novo crontab para verificação
     echo "Novo crontab:"
     crontab -l
+
+    # Pergunta se deseja editar o crontab atual ou continuar
+    read -p "Você deseja editar o crontab atual ou continuar? (e para editar, c para continuar): " final_edit_choice
+
+    if [[ "$final_edit_choice" == "e" || "$final_edit_choice" == "E" ]]; then
+    crontab -e
+    else
+    echo "Operação concluída."
+    fi
 }
 
 main_menu(){
