@@ -1212,12 +1212,34 @@ padrao_ubuntu(){
 }
 
 vscode_server(){
+    echo "Iniciando instalação vscode_server:"
+    echo " "
     read -p "Configure uma senha para acessar a interface: " SENHA
     docker rm -f vscode_server
-    rm -r /coder
-    mkdir /coder
-    chmod 777 /coder
-    docker run -d --name vscode_server -p 8081:8080 -v "/coder:/home/coder" -e PASSWORD="$SENHA" codercom/code-server:latest
+    echo "Escolha a opção de instalação:"
+    # Definição do diretório padrão
+    DATA_DIR_vscode_server="${DIR_Principal}/vscode_server"
+    options=("Local padrão ($DATA_DIR_vscode_server)" "Especificar local manualmente" "Voltar ao menu principal")
+    select opt in "${options[@]}"; do
+        case $opt in
+            "Local padrão ($DATA_DIR_vscode_server)")
+                # Diretório já definido
+                break
+                ;;
+            "Especificar local manualmente")
+                read -p "Informe o diretório de instalação: " DATA_DIR_vscode_server
+                break
+                ;;
+            "Voltar ao menu principal")
+                return
+                ;;
+            *) echo "Opção inválida. Tente novamente.";;
+        esac
+    done
+    rm -r $DATA_DIR_vscode_server
+    mkdir $DATA_DIR_vscode_server
+    chmod 777 $DATA_DIR_vscode_server
+    docker run -d --name vscode_server --restart always -p 8081:8080 -v "$DATA_DIR_vscode_server:/home/coder" -e PASSWORD="$SENHA" codercom/code-server:latest
     sleep 30
     docker exec -it --user root vscode_server /bin/bash -c "apt-get update && apt-get upgrade -y && apt-get install -y python3 python3-pip nodejs npm lsof"
     docker restart vscode_server
