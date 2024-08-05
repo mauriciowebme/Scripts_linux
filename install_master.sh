@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.24"
+echo "Versão 2.25"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -144,16 +144,24 @@ instala_pritunel_docker(){
     sudo docker rm -f pritunl
 
     # Execução do container Docker
-    # --publish 1194:1194 \
-    # --publish 1194:1194/udp \
     docker run \
         --name pritunl \
         --privileged \
         --publish 81:80 \
         --publish 447:443 \
         --publish 446:446 \
+        --publish 11940:11940 \
+        --publish 11940:11940/udp \
+        --publish 11941:11941 \
+        --publish 11941:11941/udp \
+        --publish 11942:11942 \
+        --publish 11942:11942/udp \
+        --publish 11943:11943 \
+        --publish 11943:11943/udp \
         --publish 11944:11944 \
         --publish 11944:11944/udp \
+        --publish 11945:11945 \
+        --publish 11945:11945/udp \
         --dns 127.0.0.1 \
         --restart=unless-stopped \
         --detach \
