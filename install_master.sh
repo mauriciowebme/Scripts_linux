@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.25"
+echo "Versão 2.26"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -424,7 +424,7 @@ cria_pasta_compartilhada(){
 limpa_containers_imagens_docker(){
     verifica_instalacao_docker  # Assume que esta função verifica e instala o Docker se necessário
     echo "Escolha a opção de limpeza:"
-    options=("Limpeza apenas de containers" "Limpeza completa" "Voltar ao menu principal")
+    options=("Limpeza apenas de containers" "Limpeza completa" "Apagar um container específico" "Voltar ao menu principal")
     select opt in "${options[@]}";
     do
         case $opt in
@@ -443,6 +443,16 @@ limpa_containers_imagens_docker(){
                 echo "Limpeza completa realizada."
                 break
                 ;;
+            "Apagar um container específico")
+                echo "Listando containers ativos..."
+                sudo docker ps
+                echo "Digite o ID ou nome do container que deseja apagar:"
+                read container_id
+                sudo docker stop $container_id
+                sudo docker rm $container_id
+                echo "Container $container_id apagado."
+                break
+                ;;
             "Voltar ao menu principal")
                 return
                 ;;
@@ -450,6 +460,7 @@ limpa_containers_imagens_docker(){
         esac
     done
 }
+
 
 
 instala_pritunel(){
