@@ -817,7 +817,7 @@ docker_options(){
         "Ativa postgres docker secundario primario"
         "Instala NodeJS docker"
         "Instala vscode_server docker"
-        "Instala redis docker"
+        "Instala Redis docker"
         "Voltar ao menu principal"
         )
     select opt in "${options[@]}"
