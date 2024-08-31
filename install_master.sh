@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.27"
+echo "Versão 2.28"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -499,11 +499,19 @@ instala_redis_docker(){
     echo " "
     read -p "Configure uma senha para acessar: " SENHA
     docker run --name cont-redis -d -p 6379:6379 -e REDIS_PASSWORD=$SENHA redis
+    sleep 10
+    docker exec -it cont-redis apt update
+    docker exec -it cont-redis apt-get install nano
     echo ""
     echo "Realize testes assim:"
     echo "docker exec -it cont-redis redis-cli"
+    
     echo "set meu-teste "funcionando""
     echo "get meu-teste"
+    echo " "
+    echo "Configurações:"
+    echo "docker exec -it cont-redis nano /usr/local/etc/redis/redis.conf"
+    echo " "
 }
 
 instala_node_docker(){
