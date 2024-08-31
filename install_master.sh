@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.28"
+echo "Versão 2.29"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -498,7 +498,8 @@ instala_redis_docker(){
     echo "Iniciando instalação redis_docker:"
     echo " "
     read -p "Configure uma senha para acessar: " SENHA
-    docker run -v $DIR_Principal/myredis_conf:/usr/local/etc/redis --name cont-redis -d -p 6379:6379 -e REDIS_PASSWORD="$SENHA" redis
+    # docker run -v $DIR_Principal/myredis_conf:/usr/local/etc/redis --name cont-redis -d -p 6379:6379 -e REDIS_PASSWORD="$SENHA" redis
+    docker run -v $DIR_Principal/myredis_conf:/usr/local/etc/redis --name cont-redis -d -p 6379:6379 redis redis-server /usr/local/etc/redis/redis.conf
     # docker run -v /myredis_conf:/usr/local/etc/redis --name cont-redis -d -p 6379:6379 -e REDIS_PASSWORD=senha redis
     sleep 10
     docker exec -it cont-redis apt update
