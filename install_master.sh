@@ -498,7 +498,8 @@ instala_redis_docker(){
     echo "Iniciando instalação redis_docker:"
     echo " "
     read -p "Configure uma senha para acessar: " SENHA
-    docker run --name cont-redis -d -p 6379:6379 -e REDIS_PASSWORD=$SENHA redis
+    docker run -v $DIR_Principal/myredis_conf:/usr/local/etc/redis --name cont-redis -d -p 6379:6379 -e REDIS_PASSWORD="$SENHA" redis
+    # docker run -v /myredis_conf:/usr/local/etc/redis --name cont-redis -d -p 6379:6379 -e REDIS_PASSWORD=senha redis
     sleep 10
     docker exec -it cont-redis apt update
     docker exec -it cont-redis apt-get install nano -y
@@ -510,7 +511,7 @@ instala_redis_docker(){
     echo "get meu-teste"
     echo " "
     echo "Configurações:"
-    echo "docker exec -it cont-redis nano /usr/local/etc/redis/redis.conf"
+    echo "docker exec -it cont-redis nano /etc/redis/redis.conf"
     echo " "
 }
 
