@@ -501,7 +501,7 @@ instala_redis_docker(){
     docker run --name cont-redis -d -p 6379:6379 -e REDIS_PASSWORD=$SENHA redis
     sleep 10
     docker exec -it cont-redis apt update
-    docker exec -it cont-redis apt-get install nano
+    docker exec -it cont-redis apt-get install nano -y
     echo ""
     echo "Realize testes assim:"
     echo "docker exec -it cont-redis redis-cli"
