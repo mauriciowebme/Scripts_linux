@@ -493,7 +493,20 @@ EOF
 
 }
 
+instala_redis_docker(){
+    echo " "
+    echo "Iniciando instalação redis_docker:"
+    echo " "
+    read -p "Configure uma senha para acessar: " SENHA
+    docker run --name cont-redis -d -p 6379:6379 -e REDIS_PASSWORD=$SENHA redis
+    echo ""
+    echo "Realize testes assim:"
+    echo "docker exec -it cont-redis redis-cli"
+    echo "set meu-teste "funcionando""
+    echo "get meu-teste"
+}
 instala_node_docker(){
+    echo " "
     echo "Configuração de porta."
     PORTA=3000
     options=("Porta padrão ($PORTA)" "Especificar porta manualmente" "Voltar ao menu principal")
@@ -803,6 +816,7 @@ docker_options(){
         "Ativa postgres docker secundario primario"
         "Instala NodeJS docker"
         "Instala vscode_server docker"
+        "Instala redis docker"
         "Voltar ao menu principal"
         )
     select opt in "${options[@]}"
@@ -854,6 +868,10 @@ docker_options(){
                 ;;
             "Instala NodeJS docker")
                 instala_node_docker
+                break
+                ;;
+            "Instala Redis docker")
+                instala_redis_docker
                 break
                 ;;
             "Voltar ao menu principal")
