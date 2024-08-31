@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.26"
+echo "Versão 2.27"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -505,6 +505,7 @@ instala_redis_docker(){
     echo "set meu-teste "funcionando""
     echo "get meu-teste"
 }
+
 instala_node_docker(){
     echo " "
     echo "Configuração de porta."
