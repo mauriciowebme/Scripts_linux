@@ -497,22 +497,18 @@ instala_redis_docker(){
     echo " "
     echo "Iniciando instalação redis_docker:"
     echo " "
-    # read -p "Configure uma senha para acessar: " SENHA
-    # docker run -v $DIR_Principal/myredis_conf:/usr/local/etc/redis --name cont-redis -d -p 6379:6379 -e REDIS_PASSWORD="$SENHA" redis
-    docker run -v $DIR_Principal/myredis_conf:/usr/local/etc/redis --name cont-redis -d -p 6379:6379 redis redis-server /usr/local/etc/redis/redis.conf
-    # docker run -v /myredis_conf:/usr/local/etc/redis --name cont-redis -d -p 6379:6379 -e REDIS_PASSWORD=senha redis
-    sleep 10
-    docker exec -it cont-redis apt update
-    docker exec -it cont-redis apt-get install nano -y
+    read -p "Configure uma senha para acessar: " SENHA
+    docker run --name cont-redis -d -p 6379:6379 redis redis-server --requirepass "$SENHA"
+    # sleep 10
+    # docker exec -it cont-redis apt update
+    # docker exec -it cont-redis apt-get install nano -y
     echo ""
     echo "Realize testes assim:"
     echo "docker exec -it cont-redis redis-cli"
     
+    echo "AUTH sua_senha_aqui"
     echo "set meu-teste "funcionando""
     echo "get meu-teste"
-    echo " "
-    echo "Configurações:"
-    echo "docker exec -it cont-redis nano /etc/redis/redis.conf"
     echo " "
 }
 
