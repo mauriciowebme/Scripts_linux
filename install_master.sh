@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.30"
+echo "Versão 2.31"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -104,7 +104,16 @@ cria_rede_docker(){
         echo "Rede '$NETWORK_NAME' não encontrada. Criando rede..."
         docker network create $NETWORK_NAME
         echo "Rede '$NETWORK_NAME' criada com sucesso."
+    else
+        echo "Rede '$NETWORK_NAME' já existe."
     fi
+
+    # Associa todos os containers existentes à rede
+    for container_id in $(docker ps -q); do
+        echo "Associando container $container_id à rede '$NETWORK_NAME'..."
+        docker network connect $NETWORK_NAME $container_id
+        echo "Container $container_id associado à rede '$NETWORK_NAME' com sucesso."
+    done
 }
 
 instala_pritunel_docker(){
@@ -498,7 +507,8 @@ instala_redis_docker(){
     echo "Iniciando instalação redis_docker:"
     echo " "
     read -p "Configure uma senha para acessar: " SENHA
-    docker run --name cont-redis -d --restart always -p 6379:6379 redis redis-server --requirepass "$SENHA"
+    # -p 6379:6379
+    docker run --network host --name cont-redis -d --restart always redis redis-server --requirepass "$SENHA"
     # sleep 10
     # docker exec -it cont-redis apt update
     # docker exec -it cont-redis apt-get install nano -y
@@ -815,6 +825,7 @@ docker_options(){
         "Instala docker"
         "Realiza limpeza do docker"
         "Abre bash docker"
+        "Cria rede docker"
         "Instala pritunel docker"
         "Instala mongodb docker"
         "Instala postgres docker"
@@ -829,12 +840,12 @@ docker_options(){
     select opt in "${options[@]}"
     do
         case $opt in
-            "Abre bash docker")
-                abre_bash_docker
+            "Cria rede docker")
+                cria_rede_docker
                 break
                 ;;
-            "Instala docker")
-                instala_docker
+            "Abre bash docker")
+                abre_bash_docker
                 break
                 ;;
             "Instala docker")
