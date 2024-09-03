@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.29"
+echo "Versão 2.30"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -498,7 +498,7 @@ instala_redis_docker(){
     echo "Iniciando instalação redis_docker:"
     echo " "
     read -p "Configure uma senha para acessar: " SENHA
-    docker run --name cont-redis -d -p 6379:6379 redis redis-server --requirepass "$SENHA"
+    docker run --name cont-redis -d --restart always -p 6379:6379 redis redis-server --requirepass "$SENHA"
     # sleep 10
     # docker exec -it cont-redis apt update
     # docker exec -it cont-redis apt-get install nano -y
