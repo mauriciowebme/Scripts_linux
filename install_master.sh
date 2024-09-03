@@ -513,6 +513,8 @@ instala_redis_docker(){
     # docker exec -it cont-redis apt update
     # docker exec -it cont-redis apt-get install nano -y
     echo ""
+    echo "Porta de acesso: 6379"
+    echo ""
     echo "Realize testes assim:"
     echo "docker exec -it cont-redis redis-cli"
     
