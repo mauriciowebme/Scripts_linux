@@ -530,6 +530,7 @@ instala_openlitespeed(){
         -p 8088:8088 \
         -p 80:80 \
         -p 443:443 \
+        -p 7080:7080 \
         -v $DIR_Principal/vhosts:/var/www/vhosts/ \
         litespeedtech/openlitespeed:latest
 }
