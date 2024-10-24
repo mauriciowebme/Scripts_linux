@@ -524,6 +524,16 @@ instala_redis_docker(){
     echo " "
 }
 
+instala_openlitespeed(){
+    mkdir -p "${DIR_Principal}/vhosts"
+    docker run -d --name openlitespeed \
+        -p 8088:8088 \
+        -p 80:80 \
+        -p 443:443 \
+        -v $DIR_Principal/vhosts:/var/www/vhosts/ \
+        litespeedtech/openlitespeed:latest
+}
+
 instala_node_docker(){
     echo " "
     echo "Configuração de porta."
@@ -837,11 +847,16 @@ docker_options(){
         "Instala NodeJS docker"
         "Instala vscode_server docker"
         "Instala Redis docker"
+        "Instala openlitespeed"
         "Voltar ao menu principal"
         )
     select opt in "${options[@]}"
     do
         case $opt in
+            "Instala openlitespeed")
+                instala_openlitespeed
+                break
+                ;;
             "Cria rede docker")
                 cria_rede_docker
                 break
