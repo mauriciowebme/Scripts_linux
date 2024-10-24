@@ -1143,12 +1143,21 @@ teste_stress(){
         sudo apt install -y htop
     fi
 
+    # Verifica se o lm-sensors está instalado, caso contrário instala
+    if ! command -v sensors &> /dev/null
+    then
+        echo "Instalando lm-sensors..."
+        sudo apt install -y lm-sensors
+        sudo sensors-detect --auto
+    fi
+
     echo " "
     echo "Escolha uma opção:"
     echo "1. Teste combinado de CPU, memória e disco..."
     echo "2. Teste de Memoria."
     echo "3. Teste de HD/SSD."
     echo "4. Teste de CPU."
+    echo "5. Visualiza sensores de temperatura"
     read opcao
 
     case $opcao in
@@ -1163,6 +1172,9 @@ teste_stress(){
             ;;
         4)
             stress-ng --cpu 4 --timeout 60s
+            ;;
+        5)
+            watch -n 2 sensors
             ;;
         *)
             echo "Opção inválida!"
