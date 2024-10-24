@@ -1127,6 +1127,49 @@ Tuneis(){
     esac
 }
 
+teste_stress(){
+    # Verifica se o stress-ng está instalado, caso contrário instala
+    if ! command -v stress-ng &> /dev/null
+    then
+        echo "Instalando stress-ng..."
+        sudo apt update
+        sudo apt install -y stress-ng
+    fi
+
+    # Verifica se o htop está instalado, caso contrário instala
+    if ! command -v htop &> /dev/null
+    then
+        echo "Instalando htop..."
+        sudo apt install -y htop
+    fi
+
+    echo " "
+    echo "Escolha uma opção:"
+    echo "1. Teste combinado de CPU, memória e disco..."
+    echo "2. Teste de Memoria."
+    echo "3. Teste de HD/SSD."
+    echo "4. Teste de CPU."
+    read opcao
+
+    case $opcao in
+        1)  
+            stress-ng --cpu 2 --vm 1 --vm-bytes 256M --hdd 1 --timeout 60s
+            ;;
+        2)
+            stress-ng --vm 2 --vm-bytes 512M --timeout 60s
+            ;;
+        3)
+            stress-ng --hdd 1 --timeout 60s
+            ;;
+        4)
+            stress-ng --cpu 4 --timeout 60s
+            ;;
+        *)
+            echo "Opção inválida!"
+            ;;
+    esac
+}
+
 configure_external_app() {
     echo " "
     # Função para adicionar ou modificar a configuração do servidor externo
@@ -1378,6 +1421,7 @@ main_menu(){
     "Sair"
     "Atualizações"
     "Verificar status do sistema"
+    "Testes de stress"
     "Docker"
     "Tarefas Cron"
     "Menu swap"
@@ -1524,6 +1568,10 @@ scp /home/usuario/documentos/relatorio.pdf usuario_remoto@servidor.com:/home/usu
                 ;;
             "Reseta senha OpenLiteSpeed")
                 sudo /usr/local/lsws/admin/misc/admpass.sh
+                break
+                ;;
+            "Testes de stress")
+                teste_stress
                 break
                 ;;
             "Sair")
