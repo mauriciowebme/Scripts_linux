@@ -843,8 +843,8 @@ instala_openlitespeed(){
 }
 
 instala_portainer(){
-    $DIR_completo="${DIR_Principal}/portainer"
-    mkdir -p $DIR_completo
+    DIR_completo="${DIR_Principal}/portainer"
+    mkdir -p "$DIR_completo"
     sudo docker run -d --name portainer \
         --restart=always \
         -p 8000:8000 \
@@ -868,8 +868,8 @@ instala_portainer(){
 instala_traefik(){
     sudo docker network create traefik
 
-    $DIR_completo="${DIR_Principal}/traefik"
-    mkdir -p $DIR_completo
+    DIR_completo="$DIR_Principal/traefik"
+    mkdir -p "$DIR_completo"
     sudo docker run -d \
         --name traefik \
         --network traefik \
