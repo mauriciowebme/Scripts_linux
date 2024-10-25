@@ -980,6 +980,7 @@ instala_openlitespeed(){
     # -p 80:80 \
     # -p 443:443 \
     docker run -d --name openlitespeed \
+        --restart=always \
         -p 8088:8088 \
         -p 7080:7080 \
         -v $DIR_Principal/openlitespeed/vhosts:/var/www/vhosts/ \
@@ -1091,7 +1092,7 @@ EOL
     sudo docker run -d \
         --name traefik \
         --network web \
-        --restart always \
+        --restart=always \
         -p 80:80 \
         -p 443:443 \
         -p 8080:8080 \
