@@ -894,7 +894,7 @@ storage = "/acme.json"
     entryPoint = "web"
 EOL
 
-    Alterar as permissões para o arquivo de configuração
+    # Alterar as permissões para o arquivo de configuração
     chmod 644 "$DIR_completo/traefik.toml"
 
     sudo docker run -d \
