@@ -951,28 +951,6 @@ EOF
     echo "Porta de acesso: $PORTA"
 }
 
-instala_openlitespeed(){
-    mkdir -p "${DIR_Principal}/vhosts"
-    docker run -d --name openlitespeed \
-        -p 8088:8088 \
-        -p 80:80 \
-        -p 443:443 \
-        -p 7080:7080 \
-        -v $DIR_Principal/vhosts:/var/www/vhosts/ \
-        litespeedtech/openlitespeed:latest
-
-    echo " "
-    echo "Configurações de openlitespeed concluídas."
-    echo " "
-    echo "Caminho de instalação:"
-    echo "${DIR_Principal}/vhosts"
-    echo " "
-    echo "IPs possíveis para acesso:"
-    hostname -I | tr ' ' '\n'
-    echo "Porta de acesso: 7080"
-    echo " "
-}
-
 instala_portainer(){
     DIR_completo="${DIR_Principal}/portainer"
     mkdir -p "$DIR_completo"
@@ -996,8 +974,48 @@ instala_portainer(){
     echo " "
 }
 
+instala_openlitespeed(){
+    mkdir -p "${DIR_Principal}/openlitespeed/vhosts"
+    mkdir -p "${DIR_Principal}/openlitespeed/conf"
+    docker run -d --name openlitespeed \
+        -p 8088:8088 \
+        -p 80:80 \
+        -p 443:443 \
+        -p 7080:7080 \
+        -v $DIR_Principal/openlitespeed/vhosts:/var/www/vhosts/ \
+        -v $DIR_Principal/openlitespeed/conf:/usr/local/lsws/conf \
+        litespeedtech/openlitespeed:latest
+
+    echo " "
+    echo "Configurações de openlitespeed concluídas."
+    echo " "
+    echo "Caminho de instalação:"
+    echo "${DIR_Principal}/vhosts"
+    echo " "
+    echo "IPs possíveis para acesso:"
+    hostname -I | tr ' ' '\n'
+    echo "Porta de acesso: 7080"
+    echo " "
+}
+
+adciona_site(){
+    echo " "
+    read -p "Informe o domino: " SITE
+    mkdir -p "${DIR_Principal}/openlitespeed/vhosts/${SITE}"
+    echo "<?php echo 'Bem-vindo ao ${SITE}'; ?>" > $DIR_Principal/openlitespeed/vhosts/$SITE/index.php
+    echo " "
+    docker update \
+        --label-add traefik.http.routers.novosite.rule=Host(`$SITE`) \
+        --label-add traefik.http.routers.novosite.entrypoints=web \
+        --label-add traefik.http.routers.novosite.tls.certresolver=myresolver \
+        --label-add traefik.http.services.novosite.loadbalancer.server.port=8088 \
+        openlitespeed
+
+}
+
 instala_traefik(){
-    sudo docker network create traefik
+    echo " "
+    sudo docker network create web
 
     DIR_completo="$DIR_Principal/traefik"
     mkdir -p "$DIR_completo"
@@ -1030,7 +1048,7 @@ EOL
 
     sudo docker run -d \
         --name traefik \
-        --network traefik \
+        --network web \
         --restart always \
         -p 80:80 \
         -p 443:443 \
@@ -1081,6 +1099,7 @@ docker_options(){
         "Instala vscode_server docker"
         "Instala Redis docker"
         "Instala openlitespeed"
+        "Adicionar site openlitespeed"
         "Voltar ao menu principal"
         )
     select opt in "${options[@]}"
@@ -1096,6 +1115,10 @@ docker_options(){
                 ;;
             "Instala openlitespeed")
                 instala_openlitespeed
+                break
+                ;;
+            "Adicionar site openlitespeed")
+                adciona_site
                 break
                 ;;
             "Cria rede docker")
