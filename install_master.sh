@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.31"
+echo "Versão 2.32"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -876,6 +876,7 @@ instala_traefik(){
         --restart always \
         -p 80:80 \
         -p 443:443 \
+        -p 8080:8080 \
         -v /var/run/docker.sock:/var/run/docker.sock:ro \
         -v $DIR_completo/traefik/acme.json:/acme.json \
         -v $DIR_completo/traefik/traefik.toml:/traefik.toml \
