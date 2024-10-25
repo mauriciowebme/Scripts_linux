@@ -831,6 +831,17 @@ abre_bash_docker(){
     fi
 }
 
+instala_portainer(){
+    $DIR_completo="${DIR_Principal}/portainer"
+    mkdir -p $DIR_completo
+    sudo docker run -d -p 8000:8000 -p 9443:9443 \
+        --name portainer \
+        --restart=always \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v $DIR_completo/portainer:/data \
+        portainer/portainer-ce:latest
+}
+
 docker_options(){
     echo " "
     PS3='Digite sua opção: '
@@ -839,6 +850,7 @@ docker_options(){
         "Realiza limpeza do docker"
         "Abre bash docker"
         "Cria rede docker"
+        "Instala portainer"
         "Instala pritunel docker"
         "Instala mongodb docker"
         "Instala postgres docker"
@@ -854,6 +866,10 @@ docker_options(){
     select opt in "${options[@]}"
     do
         case $opt in
+            "Instala portainer")
+                instala_portainer
+                break
+                ;;
             "Instala openlitespeed")
                 instala_openlitespeed
                 break
