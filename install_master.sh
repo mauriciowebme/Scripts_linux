@@ -866,6 +866,8 @@ instala_portainer(){
 }
 
 instala_traefik(){
+    sudo docker network create traefik
+
     $DIR_completo="${DIR_Principal}/traefik"
     mkdir -p $DIR_completo
     sudo docker run -d \
