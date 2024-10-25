@@ -909,7 +909,7 @@ EOL
         -v $DIR_completo/traefik.toml:/traefik.toml \
         traefik:latest \
         --api.dashboard=true \
-        --api.insecure=true \
+        --api.insecure=false \
         --providers.docker=true \
         --entrypoints.web.address=:80 \
         --entrypoints.websecure.address=:443 \
