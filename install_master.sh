@@ -977,10 +977,10 @@ instala_portainer(){
 instala_openlitespeed(){
     mkdir -p "${DIR_Principal}/openlitespeed/vhosts"
     mkdir -p "${DIR_Principal}/openlitespeed/conf"
+    # -p 80:80 \
+    # -p 443:443 \
     docker run -d --name openlitespeed \
         -p 8088:8088 \
-        -p 80:80 \
-        -p 443:443 \
         -p 7080:7080 \
         -v $DIR_Principal/openlitespeed/vhosts:/var/www/vhosts/ \
         -v $DIR_Principal/openlitespeed/conf:/usr/local/lsws/conf \
