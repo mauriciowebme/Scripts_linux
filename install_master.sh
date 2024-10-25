@@ -524,26 +524,6 @@ instala_redis_docker(){
     echo " "
 }
 
-instala_openlitespeed(){
-    mkdir -p "${DIR_Principal}/vhosts"
-    docker run -d --name openlitespeed \
-        -p 8088:8088 \
-        -p 80:80 \
-        -p 443:443 \
-        -p 7080:7080 \
-        -v $DIR_Principal/vhosts:/var/www/vhosts/ \
-        litespeedtech/openlitespeed:latest
-    echo " "
-    echo "Acesso padrão:"
-    echo "Usuario: admin"
-    echo "Senha: 123456"
-    echo " "
-    echo " Vá para a seção Security no painel de administração."
-    echo " Escolha a opção Admin Password."
-    echo " Insira a nova senha desejada e salve as alterações."
-    echo " "
-}
-
 instala_node_docker(){
     echo " "
     echo "Configuração de porta."
@@ -996,6 +976,14 @@ instala_openlitespeed(){
     echo "IPs possíveis para acesso:"
     hostname -I | tr ' ' '\n'
     echo "Porta de acesso: 7080"
+    echo " "
+    echo "Acesso padrão:"
+    echo "Usuario: admin"
+    echo "Senha: 123456"
+    echo " "
+    echo " Vá para a seção Security no painel de administração."
+    echo " Escolha a opção Admin Password."
+    echo " Insira a nova senha desejada e salve as alterações."
     echo " "
 }
 
