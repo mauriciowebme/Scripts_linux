@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.31"
+echo "Versão 2.32"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -88,7 +88,7 @@ instala_mongodb_docker(){
     # Cria e inicia o container MongoDB
     sudo docker run -d \
         --name $container_name \
-        --restart always \
+        --restart=always \
         -p 27017:27017 \
         --network rede_docker \
         -v $DATA_DIR_MONGODB:/data/db \
@@ -228,7 +228,7 @@ instala_postgres_docker(){
         -e POSTGRES_PASSWORD=postgres \
         -e POSTGRES_USER=postgres \
         --name postgres \
-        --restart always \
+        --restart=always \
         -p 5432:5432 \
         -v $DATA_DIR:/var/lib/postgresql/data \
         -m 512M \
@@ -285,7 +285,7 @@ instala_postgres_docker_primario(){
         -e POSTGRES_PASSWORD=postgres \
         -e POSTGRES_USER=postgres \
         --name postgres1 \
-        --restart always \
+        --restart=always \
         -p 5432:5432 \
         -v ${DATA_DIR}:/var/lib/postgresql/data \
         -m 512M \
@@ -355,7 +355,7 @@ instala_postgres_docker_secundario(){
         -e POSTGRES_PASSWORD=postgres \
         -e POSTGRES_USER=postgres \
         --name postgres2 \
-        --restart always \
+        --restart=always \
         -p 5432:5432 \
         -v $DATA_DIR:/var/lib/postgresql/data \
         -m 512M \
@@ -840,6 +840,227 @@ abre_bash_docker(){
     fi
 }
 
+instala_redis_docker(){
+    echo " "
+    echo "Iniciando instalação redis_docker:"
+    echo " "
+    read -p "Configure uma senha para acessar: " SENHA
+    # --network host
+    docker run -d --name cont-redis --restart=always -p 6379:6379 redis redis-server --requirepass "$SENHA"
+    # sleep 10
+    # docker exec -it cont-redis apt update
+    # docker exec -it cont-redis apt-get install nano -y
+    echo ""
+    echo "Porta de acesso: 6379"
+    echo ""
+    echo "Realize testes assim:"
+    echo "docker exec -it cont-redis redis-cli"
+    
+    echo "AUTH sua_senha_aqui"
+    echo "set meu-teste "funcionando""
+    echo "get meu-teste"
+    echo " "
+}
+
+instala_node_docker(){
+    echo " "
+    echo "Configuração de porta."
+    PORTA=3000
+    options=("Porta padrão ($PORTA)" "Especificar porta manualmente" "Voltar ao menu principal")
+    select opt in "${options[@]}"; do
+        case $opt in
+            "Porta padrão ($PORTA)")
+                # Diretório já definido
+                break
+                ;;
+            "Especificar porta manualmente")
+                read -p "Informe a porta: " PORTA
+                break
+                ;;
+            "Voltar ao menu principal")
+                return
+                ;;
+            *) echo "Opção inválida. Tente novamente.";;
+        esac
+    done
+    # Nome do container
+    CONTAINER_NAME=node_container
+    
+
+    # Cria o diretório app se não existir
+    #sudo rm -rf ${DIR_Principal}/app
+    mkdir -p "${DIR_Principal}/app"
+
+    # Cria o arquivo index.js dentro do diretório app
+    cat > $DIR_Principal/app/index.js <<EOF
+const express = require('express');
+const app = express();
+const port = $PORTA;
+
+app.get('/', (req, res) => {
+    res.send('Node rodando!');
+});
+
+app.listen(port, () => {
+    console.log(\`Servidor rodando em http://localhost:\${port}\`);
+});
+EOF
+
+    # Remover container existente se houver
+    docker rm -f $CONTAINER_NAME
+
+    # Rodar novo container Node.js com mapeamento de porta e volume
+    docker run -d \
+        --name $CONTAINER_NAME \
+        --restart=always \
+        -p $PORTA:$PORTA \
+        -v $DIR_Principal/app/:/usr/src/app \
+        -w /usr/src/app \
+        node:latest \
+        bash -c "npm init -y && npm install && npm install express && node index.js"
+
+    # Esperar um pouco para o container iniciar
+    sleep 10
+    # Verifica se o ufw está ativo
+    ufw_status=$(sudo ufw status | grep -i "Status: active")
+    if [ -n "$ufw_status" ]; then
+        echo "UFW está ativo. Aplicando regras..."
+        sudo ufw allow $PORTA
+        sudo ufw reload
+    else
+        echo "UFW não está ativo. Pule a configuração do UFW."
+    fi
+
+    # Verifica se o iptables está ativo (verifica se há alguma regra configurada)
+    iptables_status=$(sudo iptables -L | grep "Chain INPUT (policy")
+    if [ -n "$iptables_status" ]; then
+        echo "iptables está ativo. Aplicando regras..."
+        sudo iptables -A INPUT -p tcp --dport $PORTA -j ACCEPT
+        sudo iptables-save | sudo tee /etc/iptables/rules.v4
+    else
+        echo "iptables não está ativo. Pule a configuração do iptables."
+    fi
+
+    echo "Configurações de firewall concluídas."
+    echo " "
+    echo "Caminho de instalação:"
+    echo "${DIR_Principal}/app"
+    echo " "
+    echo "IPs possíveis para acesso:"
+    hostname -I | tr ' ' '\n'
+    echo "Porta de acesso: $PORTA"
+}
+
+instala_openlitespeed(){
+    mkdir -p "${DIR_Principal}/vhosts"
+    docker run -d --name openlitespeed \
+        -p 8088:8088 \
+        -p 80:80 \
+        -p 443:443 \
+        -p 7080:7080 \
+        -v $DIR_Principal/vhosts:/var/www/vhosts/ \
+        litespeedtech/openlitespeed:latest
+
+    echo " "
+    echo "Configurações de openlitespeed concluídas."
+    echo " "
+    echo "Caminho de instalação:"
+    echo "${DIR_Principal}/vhosts"
+    echo " "
+    echo "IPs possíveis para acesso:"
+    hostname -I | tr ' ' '\n'
+    echo "Porta de acesso: 7080"
+    echo " "
+}
+
+instala_portainer(){
+    DIR_completo="${DIR_Principal}/portainer"
+    mkdir -p "$DIR_completo"
+    sudo docker run -d --name portainer \
+        --restart=always \
+        -p 8000:8000 \
+        -p 9443:9443 \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v $DIR_completo/portainer:/data \
+        portainer/portainer-ce:latest
+
+    echo " "
+    echo "Configurações de portainer concluídas."
+    echo " "
+    echo "Caminho de instalação:"
+    echo "${DIR_Principal}/portainer"
+    echo " "
+    echo "IPs possíveis para acesso:"
+    hostname -I | tr ' ' '\n'
+    echo "Porta de acesso: 9443"
+    echo " "
+}
+
+instala_traefik(){
+    sudo docker network create traefik
+
+    DIR_completo="$DIR_Principal/traefik"
+    mkdir -p "$DIR_completo"
+
+    # Criar o arquivo traefik.toml com uma configuração básica
+    cat <<EOL > "$DIR_completo/traefik.toml"
+[entryPoints]
+[entryPoints.web]
+    address = ":80"
+[entryPoints.websecure]
+    address = ":443"
+
+[api]
+dashboard = true
+insecure = true
+
+[providers]
+[providers.docker]
+    exposedByDefault = false
+
+[certificatesResolvers.myresolver.acme]
+email = "seu-email@dominio.com"
+storage = "/acme.json"
+[certificatesResolvers.myresolver.acme.httpChallenge]
+    entryPoint = "web"
+EOL
+
+    # Alterar as permissões para o arquivo de configuração
+    chmod 644 "$DIR_completo/traefik.toml"
+
+    sudo docker run -d \
+        --name traefik \
+        --network traefik \
+        --restart always \
+        -p 80:80 \
+        -p 443:443 \
+        -p 8080:8080 \
+        -v /var/run/docker.sock:/var/run/docker.sock:ro \
+        -v $DIR_completo/acme.json:/acme.json \
+        -v $DIR_completo/traefik.toml:/traefik.toml \
+        traefik:latest \
+        --api.dashboard=true \
+        --api.insecure=false \
+        --providers.docker=true \
+        --entrypoints.web.address=:80 \
+        --entrypoints.websecure.address=:443 \
+        --certificatesresolvers.myresolver.acme.httpchallenge=true \
+        --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web \
+        --certificatesresolvers.myresolver.acme.email=seu-email@dominio.com \
+        --certificatesresolvers.myresolver.acme.storage=/acme.json
+
+    echo " "
+    echo "Configurações de traefik concluídas."
+    echo " "
+    echo "Caminho de instalação:"
+    echo "${DIR_Principal}/traefik"
+    echo " "
+    echo "IPs possíveis para acesso:"
+    hostname -I | tr ' ' '\n'
+    echo "Porta de acesso: 8080"
+    echo " "
+}
+
 docker_options(){
     echo " "
     PS3='Digite sua opção: '
@@ -848,6 +1069,8 @@ docker_options(){
         "Realiza limpeza do docker"
         "Abre bash docker"
         "Cria rede docker"
+        "Instala portainer"
+        "Instala traefik"
         "Instala pritunel docker"
         "Instala mongodb docker"
         "Instala postgres docker"
@@ -863,6 +1086,14 @@ docker_options(){
     select opt in "${options[@]}"
     do
         case $opt in
+            "Instala traefik")
+                instala_traefik
+                break
+                ;;
+            "Instala portainer")
+                instala_portainer
+                break
+                ;;
             "Instala openlitespeed")
                 instala_openlitespeed
                 break
@@ -1357,7 +1588,7 @@ vscode_server(){
     rm -r $DATA_DIR_vscode_server
     mkdir $DATA_DIR_vscode_server
     chmod 777 $DATA_DIR_vscode_server
-    docker run -d --name vscode_server --restart always -p 8081:8080 -v "$DATA_DIR_vscode_server:/home/coder" -e PASSWORD="$SENHA" codercom/code-server:latest
+    docker run -d --name vscode_server --restart=always -p 8081:8080 -v "$DATA_DIR_vscode_server:/home/coder" -e PASSWORD="$SENHA" codercom/code-server:latest
     sleep 30
     docker exec -it --user root vscode_server /bin/bash -c "apt-get update && apt-get upgrade -y && apt-get install -y python3 python3-pip nodejs npm lsof"
     docker restart vscode_server
