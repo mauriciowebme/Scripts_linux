@@ -998,7 +998,7 @@ instala_openlitespeed(){
     echo " "
 }
 
-adiciona_site(){
+adiciona_site_openlitespeed(){
     echo " "
     read -p "Informe o domínio: " SITE
 
@@ -1160,7 +1160,7 @@ docker_options(){
                 break
                 ;;
             "Adicionar site openlitespeed")
-                adciona_site
+                adiciona_site_openlitespeed
                 break
                 ;;
             "Cria rede docker")
