@@ -533,6 +533,15 @@ instala_openlitespeed(){
         -p 7080:7080 \
         -v $DIR_Principal/vhosts:/var/www/vhosts/ \
         litespeedtech/openlitespeed:latest
+    echo " "
+    echo "Acesso padrão:"
+    echo "Usuario: admin"
+    echo "Senha: 123456"
+    echo " "
+    echo " Vá para a seção Security no painel de administração."
+    echo " Escolha a opção Admin Password."
+    echo " Insira a nova senha desejada e salve as alterações."
+    echo " "
 }
 
 instala_node_docker(){
