@@ -881,13 +881,14 @@ instala_traefik(){
         -v $DIR_completo/traefik/acme.json:/acme.json \
         -v $DIR_completo/traefik/traefik.toml:/traefik.toml \
         traefik:latest \
-        --api.insecure=false \
+        --api.dashboard=true \
+        --api.insecure=true \
         --providers.docker=true \
         --entrypoints.web.address=:80 \
         --entrypoints.websecure.address=:443 \
         --certificatesresolvers.myresolver.acme.httpchallenge=true \
         --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web \
-        --certificatesresolvers.myresolver.acme.email=mauriciowebme@gmail.com \
+        --certificatesresolvers.myresolver.acme.email=seu-email@dominio.com \
         --certificatesresolvers.myresolver.acme.storage=/acme.json
 
     echo " "
@@ -898,7 +899,7 @@ instala_traefik(){
     echo " "
     echo "IPs possíveis para acesso:"
     hostname -I | tr ' ' '\n'
-    echo "Porta de acesso: 80"
+    echo "Porta de acesso: 8080"
     echo " "
 }
 
