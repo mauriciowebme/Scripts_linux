@@ -998,19 +998,61 @@ instala_openlitespeed(){
     echo " "
 }
 
-adciona_site(){
+adiciona_site(){
     echo " "
-    read -p "Informe o domino: " SITE
+    read -p "Informe o domínio: " SITE
+
+    # Criar o diretório do novo site e o arquivo PHP de boas-vindas
     mkdir -p "${DIR_Principal}/openlitespeed/vhosts/${SITE}"
-    echo "<?php echo 'Bem-vindo ao ${SITE}'; ?>" > $DIR_Principal/openlitespeed/vhosts/$SITE/index.php
+    echo "<?php echo 'Bem-vindo ao ${SITE}'; ?>" > "${DIR_Principal}/openlitespeed/vhosts/${SITE}/index.php"
+    
     echo " "
+
+    # Adicionar novas labels no contêiner OpenLiteSpeed para o Traefik reconhecer o novo site
     docker update \
-        --label-add traefik.http.routers.novosite.rule=Host(`$SITE`) \
-        --label-add traefik.http.routers.novosite.entrypoints=web \
-        --label-add traefik.http.routers.novosite.tls.certresolver=myresolver \
-        --label-add traefik.http.services.novosite.loadbalancer.server.port=8088 \
+        --label-add "traefik.http.routers.${SITE}.rule=Host(\`${SITE}\`)" \
+        --label-add "traefik.http.routers.${SITE}.entrypoints=web" \
+        --label-add "traefik.http.routers.${SITE}.tls.certresolver=myresolver" \
+        --label-add "traefik.http.services.${SITE}.loadbalancer.server.port=8088" \
         openlitespeed
 
+    # Criar o arquivo de configuração do Virtual Host
+    VH_CONF="${DIR_Principal}/openlitespeed/vhosts/${SITE}/vhconf.conf"
+    echo "docRoot                   \$VH_ROOT/
+vhDomain                  ${SITE}
+vhAliases                 www.${SITE}
+enableGzip                1
+
+index  {
+    useServer             0
+    indexFiles            index.php, index.html
+}
+
+scriptHandler  {
+    add                   \"application/x-httpd-php\" php
+}
+
+autoIndex                 1
+" > "$VH_CONF"
+
+    # Registrar o Virtual Host no arquivo principal de configuração do OpenLiteSpeed (httpd_config.conf)
+    HTTPD_CONF="${DIR_Principal}/openlitespeed/conf/httpd_config.conf"
+    echo "
+virtualHost ${SITE} {
+    vhRoot                  ${DIR_Principal}/openlitespeed/vhosts/${SITE}/
+    configFile              \$VH_ROOT/vhconf.conf
+    allowSymbolLink         1
+    enableScript            1
+    restrained              0
+}" >> "$HTTPD_CONF"
+
+    # Associar o Virtual Host ao Listener padrão
+    sed -i "/listener Default {/a\\    map ${SITE} ${SITE}" "$HTTPD_CONF"
+
+    echo "Configuração completa! Virtual Host '${SITE}' criado e associado ao Listener padrão."
+    
+    # Reiniciar o OpenLiteSpeed para aplicar as mudanças
+    docker restart openlitespeed
 }
 
 instala_traefik(){
