@@ -870,6 +870,33 @@ instala_traefik(){
 
     DIR_completo="$DIR_Principal/traefik"
     mkdir -p "$DIR_completo"
+
+    # Criar o arquivo traefik.toml com uma configuração básica
+#     cat <<EOL > "$DIR_completo"
+# [entryPoints]
+# [entryPoints.web]
+#     address = ":80"
+# [entryPoints.websecure]
+#     address = ":443"
+
+# [api]
+# dashboard = true
+# insecure = true
+
+# [providers]
+# [providers.docker]
+#     exposedByDefault = false
+
+# [certificatesResolvers.myresolver.acme]
+# email = "seu-email@dominio.com"
+# storage = "/acme.json"
+# [certificatesResolvers.myresolver.acme.httpChallenge]
+#     entryPoint = "web"
+# EOL
+
+    # Alterar as permissões para o arquivo de configuração
+    # chmod 644 "$DIR_completo"
+
     sudo docker run -d \
         --name traefik \
         --network traefik \
@@ -878,8 +905,8 @@ instala_traefik(){
         -p 443:443 \
         -p 8080:8080 \
         -v /var/run/docker.sock:/var/run/docker.sock:ro \
-        -v $DIR_completo/traefik/acme.json:/acme.json \
-        -v $DIR_completo/traefik/traefik.toml:/traefik.toml \
+        -v $DIR_completo/acme.json:/acme.json \
+        -v $DIR_completo/traefik.toml:/traefik.toml \
         traefik:latest \
         --api.dashboard=true \
         --api.insecure=true \
