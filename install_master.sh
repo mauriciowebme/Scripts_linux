@@ -1789,6 +1789,22 @@ EOL
     echo "Configuração concluída com sucesso!"
 }
 
+instala_interface_xfce(){
+    # Verifica se o XFCE4 já está instalado
+    if dpkg -l | grep -q xfce4; then
+        echo "XFCE4 já está instalado."
+    else
+        echo "Instalando XFCE4..."
+        sudo apt update
+        sudo apt install -y xfce4
+        echo "XFCE4 instalado com sucesso."
+    fi
+
+    # Inicia o XFCE4
+    echo "Iniciando XFCE4..."
+    startxfce4
+}
+
 main_menu(){
     # constantes
     echo " "
@@ -1799,6 +1815,7 @@ main_menu(){
     "Sair"
     "Atualizações"
     "Verificar status do sistema"
+    "instala/executa interface XFCE"
     "Testes de stress"
     "Docker"
     "Tarefas Cron"
@@ -1825,6 +1842,10 @@ main_menu(){
     select opt in "${options[@]}"
     do
         case $opt in
+            "instala/executa interface XFCE")
+                instala_interface_xfce
+                break
+                ;;
             "configura IP fixo")
                 configura_ip_fixo
                 break
