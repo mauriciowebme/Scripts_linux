@@ -1769,17 +1769,17 @@ configura_ip_fixo(){
     echo "Gerando novo arquivo de configuração..."
     sudo tee $config_file > /dev/null <<EOL
 network:
-    version: 2
-    renderer: networkd
-    ethernets:
-        $interface:
-            addresses:
-                - $ip_address
-            routes:
-                - to: default
-                    via: $gateway
-            nameservers:
-                addresses: [$dns]
+  version: 2
+  renderer: networkd
+  ethernets:
+    $interface:
+      addresses:
+        - $ip_address
+      routes:
+        - to: default
+          via: $gateway
+      nameservers:
+          addresses: [$dns]
 EOL
 
     # Aplicando as configurações
