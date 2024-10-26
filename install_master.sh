@@ -1733,6 +1733,62 @@ tarefas_cron(){
     fi
 }
 
+configura_ip_fixo(){
+    # Script para configuração de IP fixo com Netplan
+
+    # Listar interfaces de rede disponíveis
+    echo "Interfaces de rede disponíveis:"
+    ip addr | grep -E '^[0-9]+:' | awk '{print $2}' | sed 's/://g'
+
+    # Solicita o nome da interface
+    read -p "Digite o nome da interface de rede (ex: enp2s0f5): " interface
+
+    # Verifica se a interface de rede existe
+    if ! ip addr show "$interface" > /dev/null 2>&1; then
+    echo "Interface $interface não encontrada. Verifique o nome e tente novamente."
+    exit 1
+    fi
+
+    # Solicita o endereço IP e máscara
+    read -p "Digite o endereço IP com a máscara (ex: 192.168.0.80/24): " ip_address
+
+    # Solicita o gateway
+    read -p "Digite o endereço do gateway (ex: 192.168.0.1): " gateway
+
+    # Solicita os servidores de DNS
+    read -p "Digite os endereços de DNS separados por vírgula (ex: 8.8.8.8,8.8.4.4): " dns
+
+    # Nome do arquivo de configuração do Netplan
+    config_file="/etc/netplan/00-installer-config.yaml"
+
+    # Fazendo backup do arquivo de configuração existente
+    echo "Criando backup do arquivo de configuração existente..."
+    sudo cp $config_file "$config_file"_old
+
+    # Gerando o conteúdo do novo arquivo de configuração
+    echo "Gerando novo arquivo de configuração..."
+    sudo tee $config_file > /dev/null <<EOL
+network:
+version: 2
+renderer: networkd
+ethernets:
+    $interface:
+    addresses:
+        - $ip_address
+    routes:
+        - to: default
+        via: $gateway
+    nameservers:
+        addresses: [$dns]
+EOL
+
+    # Aplicando as configurações
+    echo "Aplicando as configurações..."
+    sudo netplan apply
+
+    echo "Configuração concluída com sucesso!"
+}
+
 main_menu(){
     # constantes
     echo " "
@@ -1763,11 +1819,16 @@ main_menu(){
     "Configurar proxy reverso com Openlitespeed"
     "Github"
     "Tuneis"
+    "configura IP fixo"
     "Intala padrão UBUNTU"
     )
     select opt in "${options[@]}"
     do
         case $opt in
+            "configura IP fixo")
+                configura_ip_fixo
+                break
+                ;;
             "Tarefas Cron")
                 tarefas_cron
                 break
