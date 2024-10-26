@@ -1805,6 +1805,22 @@ instala_interface_xfce(){
     startxfce4
 }
 
+instala_navegador_firefox(){
+    # Verifica se o Firefox já está instalado
+    if dpkg -l | grep -q firefox; then
+        echo "Firefox já está instalado."
+    else
+        echo "Instalando Firefox..."
+        sudo apt update
+        sudo apt install -y firefox
+        echo "Firefox instalado com sucesso."
+    fi
+
+    # Inicia o Firefox
+    echo "Iniciando Firefox..."
+    firefox &
+}
+
 main_menu(){
     # constantes
     echo " "
@@ -1816,6 +1832,7 @@ main_menu(){
     "Atualizações"
     "Verificar status do sistema"
     "instala/executa interface XFCE"
+    "instala/executa Firefox"
     "Testes de stress"
     "Docker"
     "Tarefas Cron"
@@ -1842,6 +1859,10 @@ main_menu(){
     select opt in "${options[@]}"
     do
         case $opt in
+            "instala/executa Firefox")
+                instala_navegador_firefox
+                break
+                ;;
             "instala/executa interface XFCE")
                 instala_interface_xfce
                 break
