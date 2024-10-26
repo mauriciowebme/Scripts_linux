@@ -1821,6 +1821,49 @@ instala_navegador_firefox(){
     firefox &
 }
 
+instala_navegador_chrome(){
+    # Verifica se o Google Chrome já está instalado
+    if dpkg -l | grep -q google-chrome-stable; then
+        echo "Google Chrome já está instalado."
+    else
+        echo "Instalando Google Chrome..."
+        # Baixa o pacote do Chrome
+        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/google-chrome.deb
+        
+        # Instala o pacote baixado
+        sudo dpkg -i /tmp/google-chrome.deb
+
+        # Corrige dependências, caso necessário
+        sudo apt-get install -f -y
+
+        echo "Google Chrome instalado com sucesso."
+    fi
+
+    # Inicia o Google Chrome
+    echo "Iniciando Google Chrome..."
+    google-chrome &
+}
+
+selecao_navegador(){
+    echo " "
+    echo "Escolha uma opção:"
+    echo "1. Chrome"
+    echo "2. Firefox"
+    read opcao
+
+    case $opcao in
+        1)
+            instala_navegador_chrome
+            ;;
+        2)
+            instala_navegador_firefox
+            ;;
+        *)
+            echo "Opção inválida!"
+            ;;
+    esac
+}
+
 main_menu(){
     # constantes
     echo " "
@@ -1832,7 +1875,7 @@ main_menu(){
     "Atualizações"
     "Verificar status do sistema"
     "instala/executa interface XFCE"
-    "instala/executa Firefox"
+    "instala/executa Navegador"
     "Testes de stress"
     "Docker"
     "Tarefas Cron"
@@ -1859,8 +1902,8 @@ main_menu(){
     select opt in "${options[@]}"
     do
         case $opt in
-            "instala/executa Firefox")
-                instala_navegador_firefox
+            "instala/executa Navegador")
+                selecao_navegador
                 break
                 ;;
             "instala/executa interface XFCE")
