@@ -1098,6 +1098,8 @@ EOL
         --certificatesresolvers.myresolver.acme.email=seu-email@dominio.com \
         --certificatesresolvers.myresolver.acme.storage=/acme.json
 
+    chmod 600 "$DIR_completo/acme.json"
+
     echo " "
     echo "Configurações de traefik concluídas."
     echo " "
