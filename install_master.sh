@@ -1391,15 +1391,17 @@ habilitando_ecaminhamentos_portas_tuneis(){
 }
 
 criacao_tuneis(){
+    echo " "
     echo "habilitando ecaminhamentos portas tuneis."
-    read -p "Digite o usuario da maquina remota: " VPS_USER
-    read -p "Digite o IP da maquina remota: " VPS_IP
-    read -p "Digite a porta remota: " REMOTE_PORT
-    read -p "Digite a porta local: " LOCAL_PORT
-
-    echo "Criando túnel SSH para porta ${LOCAL_PORT}"
-    ssh -fN -R $REMOTE_PORT:localhost:$LOCAL_PORT $VPS_USER@$VPS_IP
-    echo "Túnel SSH para porta HTTP criado."
+    echo " "
+    echo "Tunel do servidor para maquina que solicita."
+    echo "ssh -fN -R 8080:localhost:80 seu_usuario@192.168.1.100"
+    echo "Isso significa que qualquer requisição feita para o IP 192.168.1.100 na porta 8080 será redirecionada para localhost:80 na sua máquina local."
+    echo " "
+    echo "Tunel da maquina que solicita para o servidor."
+    echo "ssh -L 8080:192.168.0.1:80 seu_usuario@192.168.1.100"
+    echo "Esse comando fará com que todo o tráfego na porta 8080 da sua máquina local seja redirecionado para 192.168.0.1:80 no seu servidor."
+    echo " "
 }
 
 listar_tuneis(){
