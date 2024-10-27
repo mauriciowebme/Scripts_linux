@@ -1401,9 +1401,9 @@ criacao_tuneis(){
     echo "Isso significa que qualquer requisição feita para o IP 192.168.1.100 na porta 8080 será redirecionada para localhost:80 na sua máquina local."
     echo " "
     echo "Tunel da maquina que solicita para o servidor."
-    echo "ssh -L 8080:192.168.0.1:80 seu_usuario@192.168.1.100"
+    echo "ssh -fN -L 8080:192.168.0.1:80 seu_usuario@192.168.1.100"
     echo "Ou caso já esteja logado no servidor:"
-    echo "ssh -L 8080:192.168.0.1:80 localhost"
+    echo "ssh -fN -L 8080:192.168.0.1:80 localhost"
     echo "Esse comando fará com que todo o tráfego na porta 8080 da sua máquina local seja redirecionado para 192.168.0.1:80 no seu servidor."
     echo " "
 }
