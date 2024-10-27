@@ -1406,6 +1406,12 @@ criacao_tuneis(){
     echo "ssh -fN -L 8080:192.168.0.1:80 localhost"
     echo "Esse comando fará com que todo o tráfego na porta 8080 da sua máquina local seja redirecionado para 192.168.0.1:80 no seu servidor."
     echo " "
+    echo "Use isso para listar os tuneis no servidor:"
+    echo "ps aux | grep "ssh -fN -L""
+    echo " "
+    echo "Use isso para matar os processos de tuneis no servidor:"
+    echo "pkill -f "ssh -fN -L""
+    echo " "
 }
 
 listar_tuneis(){
