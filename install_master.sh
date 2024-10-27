@@ -1069,7 +1069,7 @@ insecure = true
 
 [certificatesResolvers.myresolver.acme]
 email = "seu-email@dominio.com"
-storage = "$DIR_completo/acme.json"
+storage = "/acme.json"
 [certificatesResolvers.myresolver.acme.httpChallenge]
     entryPoint = "web"
 EOL
