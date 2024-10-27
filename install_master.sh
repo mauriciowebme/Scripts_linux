@@ -1069,10 +1069,14 @@ insecure = true
 
 [certificatesResolvers.myresolver.acme]
 email = "seu-email@dominio.com"
-storage = "/acme.json"
+storage = "$DIR_completo/acme.json"
 [certificatesResolvers.myresolver.acme.httpChallenge]
     entryPoint = "web"
 EOL
+
+    # Criar o arquivo acme.json e definir as permissões corretas
+    touch "$DIR_completo/acme.json"
+    chmod 600 "$DIR_completo/acme.json"
 
     # Alterar as permissões para o arquivo de configuração
     chmod 644 "$DIR_completo/traefik.toml"
