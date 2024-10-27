@@ -1373,21 +1373,49 @@ firewall_configuracao(){
 }
 
 habilitando_ecaminhamentos_portas_tuneis(){
-    echo "habilitando ecaminhamentos portas tuneis."
-    read -p "Digite o usuario da maquina remota: " VPS_USER
-    read -p "Digite o IP da maquina remota: " VPS_IP
+    echo "Deseja habilitar os encaminhamentos de portas localmente ou remotamente?"
+    echo "1) Localmente"
+    echo "2) Remotamente"
+    read -p "Escolha uma opção (1 ou 2): " escolha
 
     SSH_CONFIG_FILE="/etc/ssh/sshd_config"
-    echo "Habilitando encaminhamento de portas no VPS..."
-    ssh-keygen -R $VPS_IP
-    #ssh $VPS_USER@$VPS_IP "sudo cp $SSH_CONFIG_FILE ${SSH_CONFIG_FILE}.bak && sudo sed -i '/^#GatewayPorts yes/s/^#//; /GatewayPorts no/s/no/yes/; /GatewayPorts yes/!s/$/\\nGatewayPorts yes/' $SSH_CONFIG_FILE && sudo systemctl restart ssh"
-    ssh $VPS_USER@$VPS_IP "
-        sudo cp $SSH_CONFIG_FILE ${SSH_CONFIG_FILE}.bak && \
-        sudo sed -i '/^#GatewayPorts yes/s/^#//; /GatewayPorts no/s/no/yes/; /GatewayPorts yes/! s/\$// ' $SSH_CONFIG_FILE && \
-        if ! grep -q '^GatewayPorts yes' $SSH_CONFIG_FILE; then echo 'GatewayPorts yes' | sudo tee -a $SSH_CONFIG_FILE; fi && \
+
+    if [ "$escolha" == "1" ]; then
+        echo "Habilitando encaminhamentos de portas localmente."
+        
+        # Cria um backup do arquivo de configuração do SSH
+        sudo cp $SSH_CONFIG_FILE ${SSH_CONFIG_FILE}.bak
+
+        # Modifica o arquivo para permitir encaminhamento de portas
+        sudo sed -i '/^#GatewayPorts yes/s/^#//; /GatewayPorts no/s/no/yes/; /GatewayPorts yes/!s/$/\nGatewayPorts yes/' $SSH_CONFIG_FILE
+
+        # Verifica se a linha 'GatewayPorts yes' foi adicionada, caso contrário, a adiciona
+        if ! grep -q '^GatewayPorts yes' $SSH_CONFIG_FILE; then
+            echo 'GatewayPorts yes' | sudo tee -a $SSH_CONFIG_FILE
+        fi
+
+        # Reinicia o serviço SSH para aplicar as alterações
         sudo systemctl restart ssh
-    "
-    echo "Encaminhamento de portas habilitado."
+
+        echo "Encaminhamento de portas habilitado localmente."
+
+    elif [ "$escolha" == "2" ]; then
+        read -p "Digite o usuário da máquina remota: " VPS_USER
+        read -p "Digite o IP da máquina remota: " VPS_IP
+
+        echo "Habilitando encaminhamento de portas no servidor remoto..."
+        ssh-keygen -R $VPS_IP
+        ssh $VPS_USER@$VPS_IP "
+            sudo cp $SSH_CONFIG_FILE ${SSH_CONFIG_FILE}.bak && \
+            sudo sed -i '/^#GatewayPorts yes/s/^#//; /GatewayPorts no/s/no/yes/; /GatewayPorts yes/! s/\$// ' $SSH_CONFIG_FILE && \
+            if ! grep -q '^GatewayPorts yes' $SSH_CONFIG_FILE; then echo 'GatewayPorts yes' | sudo tee -a $SSH_CONFIG_FILE; fi && \
+            sudo systemctl restart ssh
+        "
+        echo "Encaminhamento de portas habilitado remotamente."
+
+    else
+        echo "Opção inválida. Por favor, escolha 1 para localmente ou 2 para remotamente."
+    fi
 }
 
 criacao_tuneis(){
