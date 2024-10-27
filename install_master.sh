@@ -965,6 +965,10 @@ instala_openlitespeed(){
         -p 7080:7080 \
         -v $DIR_Principal/openlitespeed/vhosts:/var/www/vhosts/ \
         -v $DIR_Principal/openlitespeed/conf:/usr/local/lsws/conf \
+        --label "traefik.http.routers.teste.rule=Host(\`teste.techupsistemas.com\`)" \
+        --label "traefik.http.routers.teste.entrypoints=web" \
+        --label "traefik.http.routers.teste.tls.certresolver=myresolver" \
+        --label "traefik.http.services.teste.loadbalancer.server.port=8088" \
         litespeedtech/openlitespeed:latest
 
     echo " "
