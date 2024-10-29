@@ -965,10 +965,6 @@ instala_openlitespeed(){
         -p 7080:7080 \
         -v $DIR_Principal/openlitespeed/vhosts:/var/www/vhosts/ \
         -v $DIR_Principal/openlitespeed/conf:/usr/local/lsws/conf \
-        --label "traefik.http.routers.teste.rule=Host(\`teste.techupsistemas.com\`)" \
-        --label "traefik.http.routers.teste.entrypoints=web" \
-        --label "traefik.http.routers.teste.tls.certresolver=myresolver" \
-        --label "traefik.http.services.teste.loadbalancer.server.port=8088" \
         litespeedtech/openlitespeed:latest
 
     echo " "
@@ -991,128 +987,37 @@ instala_openlitespeed(){
     echo " "
 }
 
-adiciona_site_openlitespeed(){
-    echo " "
-    read -p "Informe o domínio: " SITE
-
-    # Criar o diretório do novo site e o arquivo PHP de boas-vindas
-    mkdir -p "${DIR_Principal}/openlitespeed/vhosts/${SITE}"
-    echo "<?php echo 'Bem-vindo ao ${SITE}'; ?>" > "${DIR_Principal}/openlitespeed/vhosts/${SITE}/index.php"
-    
-    echo " "
-
-    # Adicionar novas labels no contêiner OpenLiteSpeed para o Traefik reconhecer o novo site
-    docker update \
-        --label-add "traefik.http.routers.${SITE}.rule=Host(\`${SITE}\`)" \
-        --label-add "traefik.http.routers.${SITE}.entrypoints=web" \
-        --label-add "traefik.http.routers.${SITE}.tls.certresolver=myresolver" \
-        --label-add "traefik.http.services.${SITE}.loadbalancer.server.port=8088" \
-        openlitespeed
-
-    # Criar o arquivo de configuração do Virtual Host
-    VH_CONF="${DIR_Principal}/openlitespeed/vhosts/${SITE}/vhconf.conf"
-    echo "docRoot                   \$VH_ROOT/
-vhDomain                  ${SITE}
-vhAliases                 www.${SITE}
-enableGzip                1
-
-index  {
-    useServer             0
-    indexFiles            index.php, index.html
-}
-
-scriptHandler  {
-    add                   \"application/x-httpd-php\" php
-}
-
-autoIndex                 1
-" > "$VH_CONF"
-
-    # Registrar o Virtual Host no arquivo principal de configuração do OpenLiteSpeed (httpd_config.conf)
-    HTTPD_CONF="${DIR_Principal}/openlitespeed/conf/httpd_config.conf"
-    echo "
-virtualHost ${SITE} {
-    vhRoot                  ${DIR_Principal}/openlitespeed/vhosts/${SITE}/
-    configFile              \$VH_ROOT/vhconf.conf
-    allowSymbolLink         1
-    enableScript            1
-    restrained              0
-}" >> "$HTTPD_CONF"
-
-    # Associar o Virtual Host ao Listener padrão
-    sed -i "/listener Default {/a\\    map ${SITE} ${SITE}" "$HTTPD_CONF"
-
-    echo "Configuração completa! Virtual Host '${SITE}' criado e associado ao Listener padrão."
-    
-    # Reiniciar o OpenLiteSpeed para aplicar as mudanças
-    docker restart openlitespeed
-}
-
 instala_traefik(){
     echo " "
-    sudo docker network create web
+    sudo docker network create net
 
-    DIR_completo="$DIR_Principal/traefik"
-    mkdir -p "$DIR_completo"
-
-    # Criar o arquivo traefik.toml com uma configuração básica
-    cat <<EOL > "$DIR_completo/traefik.toml"
-[entryPoints]
-[entryPoints.web]
-    address = ":80"
-[entryPoints.websecure]
-    address = ":443"
-
-[api]
-dashboard = true
-insecure = true
-
-[providers]
-[providers.docker]
-    exposedByDefault = false
-
-[certificatesResolvers.myresolver.acme]
-email = "seu-email@dominio.com"
-storage = "/acme.json"
-[certificatesResolvers.myresolver.acme.httpChallenge]
-    entryPoint = "web"
-EOL
-
-    # Criar o arquivo acme.json e definir as permissões corretas
-    touch "$DIR_completo/acme.json"
-    chmod 600 "$DIR_completo/acme.json"
-
-    # Alterar as permissões para o arquivo de configuração
-    chmod 644 "$DIR_completo/traefik.toml"
+    # DIR_completo="$DIR_Principal/traefik"
+    # mkdir -p "$DIR_completo"
 
     sudo docker run -d \
         --name traefik \
-        --network web \
+        --network net \
         --restart=always \
         -p 80:80 \
         -p 443:443 \
         -p 8080:8080 \
         -v /var/run/docker.sock:/var/run/docker.sock:ro \
-        -v $DIR_completo/acme.json:/acme.json \
-        -v $DIR_completo/traefik.toml:/traefik.toml \
+        -v ./lets-encrypt:/letsencrypt \
         traefik:latest \
-        --api.dashboard=true \
-        --api.insecure=false \
-        --providers.docker=true \
         --entrypoints.web.address=:80 \
         --entrypoints.websecure.address=:443 \
-        --certificatesresolvers.myresolver.acme.httpchallenge=true \
-        --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web \
-        --certificatesresolvers.myresolver.acme.email=seu-email@dominio.com \
-        --certificatesresolvers.myresolver.acme.storage=/acme.json
-
-    chmod 600 "$DIR_completo/acme.json"
+        --entrypoints.traefik.address=:8080 \
+        --providers.docker=true \
+        --providers.docker.exposedbydefault=false \
+        --api.dashboard=true \
+        --api.insecure=true \
+        --certificatesResolvers.le.acme.email=seu-email@gmail.com \
+        --certificatesResolvers.le.acme.storage=/letsencrypt/acme.json \
+        --certificatesResolvers.le.acme.httpChallenge.entryPoint=web \
+        --log.level=INFO
 
     echo " "
     echo "Configurações de traefik concluídas."
-    echo " "
-    echo "Caminho de instalação:"
-    echo "${DIR_Principal}/traefik"
     echo " "
     echo "IPs possíveis para acesso:"
     hostname -I | tr ' ' '\n'
@@ -1140,7 +1045,6 @@ docker_options(){
         "Instala vscode_server docker"
         "Instala Redis docker"
         "Instala openlitespeed"
-        "Adicionar site openlitespeed"
         "Voltar ao menu principal"
         )
     select opt in "${options[@]}"
