@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.34"
+echo "Versão 2.35"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -1079,8 +1079,8 @@ docker_options(){
                 cria_rede_docker
                 break
                 ;;
-            "Abre bash docker")
-                abre_bash_docker
+            "Abre shell docker")
+                abre_shell_docker
                 break
                 ;;
             "Instala docker")
