@@ -1061,8 +1061,8 @@ RUN apk add --no-cache inotify-tools
 CMD ["sh", "-c", "\
     inotifywait -m -r -e modify,create,delete /data/source | \
     while read; do \
-        rsync -av /data/source/ /data/target/ >> ${DIR_Principal}/rsync_sync.log; \
-        tail -n 100 ${DIR_Principal}/rsync_sync.log > ${DIR_Principal}/rsync_sync.tmp && mv ${DIR_Principal}/rsync_sync.tmp ${DIR_Principal}/rsync_sync.log; \
+        rsync -av /data/source/ /data/target/ >> $DIR_Principal/rsync_sync.log; \
+        tail -n 100 $DIR_Principal/rsync_sync.log > $DIR_Principal/rsync_sync.tmp && mv $DIR_Principal/rsync_sync.tmp $DIR_Principal/rsync_sync.log; \
         sleep 5; \
     done \
 "]
