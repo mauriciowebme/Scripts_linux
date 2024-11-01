@@ -1034,6 +1034,47 @@ instala_traefik(){
     echo " "
 }
 
+# Função para iniciar o container rsync com monitoramento inotify
+start_sync(){
+    echo " "
+    # Solicita ao usuário os caminhos da pasta de origem e destino
+    read -p "Digite o caminho da pasta de origem: " source_path
+    read -p "Digite o caminho da pasta de destino: " target_path
+
+    # Verifica se os parâmetros foram preenchidos
+    if [[ -z "$source_path" || -z "$target_path" ]]; then
+        echo "Erro: Ambos os caminhos de origem e destino são obrigatórios."
+        exit 1
+    fi
+
+    # Verifica e constrói a imagem se necessário
+    if [[ "$(docker images -q rsync-inotify 2> /dev/null)" == "" ]]; then
+        echo "Imagem rsync-inotify não encontrada. Construindo a imagem..."
+        
+        # Define o caminho para o Dockerfile temporário em /tmp
+        temp_dockerfile="/tmp/Dockerfile-rsync-inotify"
+
+        # Cria o Dockerfile temporário em /tmp
+        cat <<EOF > "$temp_dockerfile"
+FROM eeacms/rsync
+RUN apk add --no-cache inotify-tools
+CMD ["sh", "-c", "inotifywait -m -r -e modify,create,delete /data/source | while read; do rsync -av /data/source/ /data/target/; done"]
+EOF
+        docker build -t rsync-inotify -f "$temp_dockerfile" .
+        # Remove o Dockerfile temporário
+        rm "$temp_dockerfile"
+    else
+        echo "Imagem rsync-inotify já existe. Prosseguindo..."
+    fi
+
+    # Executa o container com inotifywait e rsync
+    docker run --rm \
+        -v "$source_path":/data/source \
+        -v "$target_path":/data/target \
+        rsync-inotify \
+        sh -c "inotifywait -m -r -e modify,create,delete /data/source | while read; do rsync -av /data/source/ /data/target/; done"
+}
+
 docker_options(){
     echo " "
     PS3='Digite sua opção: '
@@ -1054,11 +1095,16 @@ docker_options(){
         "Instala vscode_server docker"
         "Instala Redis docker"
         "Instala openlitespeed"
+        "Cria sincronizador de pastas"
         "Voltar ao menu principal"
         )
     select opt in "${options[@]}"
     do
         case $opt in
+            "Cria sincronizador de pastas")
+                start_sync
+                break
+                ;;
             "Instala traefik")
                 instala_traefik
                 break
