@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.37"
+echo "Versão 2.38"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -1049,15 +1049,13 @@ start_sync(){
 
     docker rm -f rsync-inotify
 
-    # Verifica e constrói a imagem se necessário
-    if [[ "$(docker images -q rsync-inotify 2> /dev/null)" == "" ]]; then
-        echo "Imagem rsync-inotify não encontrada. Construindo a imagem..."
-        
-        # Define o caminho para o Dockerfile temporário em /tmp
-        temp_dockerfile="/tmp/Dockerfile-rsync-inotify"
+    echo "Imagem rsync-inotify não encontrada. Construindo a imagem..."
+    
+    # Define o caminho para o Dockerfile temporário em /tmp
+    temp_dockerfile="/tmp/Dockerfile-rsync-inotify"
 
-        # Cria o Dockerfile temporário em /tmp
-        cat <<EOF > "$temp_dockerfile"
+    # Cria o Dockerfile temporário em /tmp
+    cat <<EOF > "$temp_dockerfile"
 FROM eeacms/rsync
 RUN apk add --no-cache inotify-tools
 CMD ["sh", "-c", "\
@@ -1069,12 +1067,9 @@ CMD ["sh", "-c", "\
     done \
 "]
 EOF
-        docker build -t rsync-inotify -f "$temp_dockerfile" .
-        # Remove o Dockerfile temporário
-        rm "$temp_dockerfile"
-    else
-        echo "Imagem rsync-inotify já existe. Prosseguindo..."
-    fi
+    docker build -t rsync-inotify -f "$temp_dockerfile" .
+    # Remove o Dockerfile temporário
+    rm "$temp_dockerfile"
 
     # Executa o container com inotifywait e rsync
     docker run -d \
