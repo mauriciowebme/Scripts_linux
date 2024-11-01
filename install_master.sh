@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.39"
+echo "Versão 2.40"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -1034,7 +1034,6 @@ instala_traefik(){
     echo " "
 }
 
-# Função para iniciar o container rsync com monitoramento inotify
 start_sync(){
     echo " "
     # Solicita ao usuário os caminhos da pasta de origem e destino
@@ -1061,25 +1060,25 @@ RUN apk add --no-cache inotify-tools
 CMD ["sh", "-c", "\
     inotifywait -m -r -e modify,create,delete /data/source | \
     while read; do \
-        rsync -av /data/source/ /data/target/ >> $DIR_Principal/rsync_sync.log; \
-        tail -n 100 $DIR_Principal/rsync_sync.log > $DIR_Principal/rsync_sync.tmp && mv $DIR_Principal/rsync_sync.tmp $DIR_Principal/rsync_sync.log; \
+        rsync -av /data/source/ /data/target/ >> /log/rsync_sync.log; \
+        tail -n 100 /log/rsync_sync.log > /log/rsync_sync.tmp && mv /log/rsync_sync.tmp /log/rsync_sync.log; \
         sleep 5; \
     done \
 "]
 EOF
+
     docker build -t rsync-inotify -f "$temp_dockerfile" .
-    # Remove o Dockerfile temporário
     rm "$temp_dockerfile"
 
-    # Executa o container com inotifywait e rsync
+    # Executa o container com volumes montados para as pastas de origem, destino e log
     docker run -d \
         --name rsync-inotify \
         --network net \
         --restart=always \
         -v "$source_path":/data/source \
         -v "$target_path":/data/target \
-        rsync-inotify \
-        sh -c "inotifywait -m -r -e modify,create,delete /data/source | while read; do rsync -av /data/source/ /data/target/; done"
+        -v "$DIR_Principal":/log \
+        rsync-inotify
 }
 
 docker_options(){
