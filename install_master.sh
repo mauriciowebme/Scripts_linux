@@ -1058,7 +1058,13 @@ start_sync(){
         cat <<EOF > "$temp_dockerfile"
 FROM eeacms/rsync
 RUN apk add --no-cache inotify-tools
-CMD ["sh", "-c", "inotifywait -m -r -e modify,create,delete /data/source | while read; do rsync -av /data/source/ /data/target/; done"]
+CMD ["sh", "-c", "\
+    inotifywait -m -r -e modify,create,delete /data/source | \
+    while read; do \
+        rsync -av /data/source/ /data/target/; \
+        sleep 5; \
+    done \
+"]
 EOF
         docker build -t rsync-inotify -f "$temp_dockerfile" .
         # Remove o Dockerfile temporário
