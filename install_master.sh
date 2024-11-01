@@ -1047,6 +1047,8 @@ start_sync(){
         exit 1
     fi
 
+    docker rm -f rsync-inotify
+
     # Verifica e constrói a imagem se necessário
     if [[ "$(docker images -q rsync-inotify 2> /dev/null)" == "" ]]; then
         echo "Imagem rsync-inotify não encontrada. Construindo a imagem..."
