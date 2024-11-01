@@ -1040,7 +1040,7 @@ docker_options(){
     options=(
         "Instala docker"
         "Realiza limpeza do docker"
-        "Abre bash docker"
+        "Abre shell docker"
         "Cria rede docker"
         "Instala portainer"
         "Instala traefik"
