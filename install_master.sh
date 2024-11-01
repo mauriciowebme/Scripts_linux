@@ -10,7 +10,7 @@ echo "==========================================================================
 echo " "
 echo "Arquivo install_master.sh iniciado!"
 echo " "
-echo "Versão 2.33"
+echo "Versão 2.34"
 echo " "
 echo "==========================================================================="
 echo "==========================================================================="
@@ -805,7 +805,7 @@ pritunel(){
     done
 }
 
-abre_bash_docker() {
+abre_shell_docker() {
     echo "Containers em execução:"
     docker ps --format "table {{.Names}}\t{{.ID}}\t{{.Image}}\t{{.Status}}"
     
@@ -814,7 +814,7 @@ abre_bash_docker() {
 
     # Verifica se o container existe
     if [ "$(docker ps -q -f name=$container_name)" ]; then
-        # Tenta abrir uma sessão com o shell disponível
+        # Verifica qual shell está disponível e conecta
         if docker exec -it $container_name bash &> /dev/null; then
             docker exec -it $container_name bash
         elif docker exec -it $container_name sh &> /dev/null; then
