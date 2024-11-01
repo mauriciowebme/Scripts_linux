@@ -805,16 +805,25 @@ pritunel(){
     done
 }
 
-abre_bash_docker(){
+abre_bash_docker() {
     echo "Containers em execução:"
     docker ps --format "table {{.Names}}\t{{.ID}}\t{{.Image}}\t{{.Status}}"
+    
     # Solicita o nome do container ao usuário
     read -p "Digite o nome ou ID do container: " container_name
 
     # Verifica se o container existe
     if [ "$(docker ps -q -f name=$container_name)" ]; then
-        # Abre uma sessão bash no container
-        docker exec -it $container_name bash
+        # Tenta abrir uma sessão com o shell disponível
+        if docker exec -it $container_name bash &> /dev/null; then
+            docker exec -it $container_name bash
+        elif docker exec -it $container_name sh &> /dev/null; then
+            docker exec -it $container_name sh
+        elif docker exec -it $container_name ash &> /dev/null; then
+            docker exec -it $container_name ash
+        else
+            echo "Nenhum shell compatível encontrado no contêiner."
+        fi
     else
         echo "Container não encontrado. Verifique o nome ou ID e tente novamente."
     fi
