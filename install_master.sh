@@ -1068,7 +1068,10 @@ EOF
     fi
 
     # Executa o container com inotifywait e rsync
-    docker run --rm \
+    docker run -d \
+        --name rsync-inotify \
+        --network net \
+        --restart=always \
         -v "$source_path":/data/source \
         -v "$target_path":/data/target \
         rsync-inotify \
