@@ -50,7 +50,10 @@ class Sistema():
         #     processo.wait()
         resultados = {}
         for comando in comandos:
-            print(f'\n---> Executando comando: {comando} <---\n')
+            print("\n" + "*" * 40)
+            print(" " * 5 + "---> Executando comando: <---")
+            print(" " * 5 + f"{comando}")
+            print("*" * 40 + "\n")
             processo = subprocess.Popen(
                 comando, 
                 shell=True, 
