@@ -9,7 +9,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.9
+Versão 1.10
 ===========================================================================
 ===========================================================================
 """)
@@ -41,9 +41,9 @@ class Sistema():
             else:
                 print("\nOpção inválida. Tente novamente.\n")
     
-    def testes(sef,):
+    def testes(self,):
         print('Testes ok.')
-    
+        
     def executar_comandos(self, comandos:list=[]):
         for comando in comandos:
             print(f"\nIniciando: {comando}")
@@ -56,6 +56,17 @@ class Sistema():
             # Verifica se houve algum erro
             if processo.returncode != 0:
                 print(f"Erro ao executar o comando: {comando}")
+            else:
+                print(f"Comando: '{comando}'\nExecutado com sucesso.")
+    
+    def verificando_status_sistema(self,):
+        print("Verificando status do sistema...")
+        comandos = [
+            "ip addr show | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1",
+            "uptime"
+            "df -h"
+        ]
+        self.executar_comandos(comandos)
     
     def menu_atualizacoes(self,):
         """Menu de atualizações."""
@@ -95,6 +106,7 @@ def main():
     opcoes_menu = [
         ("Testes", servicos.testes),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
+        ("verificando status do sistema", servicos.verificando_status_sistema),
     ]
     servicos.mostrar_menu(opcoes_menu, principal=True)
 
