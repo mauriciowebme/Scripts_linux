@@ -9,44 +9,15 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.27
+Versão 1.28
 ===========================================================================
 ===========================================================================
 """)
 
-class Sistema():
+class Executa_comados():
     def __init__(self):
         pass
     
-    def mostrar_menu(self, opcoes_menu, principal=False):
-        """Mostra o menu de opções para o usuário de forma dinâmica."""
-        opcoes_menu.insert(0, ("Sair", self.sair))
-        while True:
-            print("\nMenu de Opções:")
-            print('===========================================================================')
-            for chave, detalhes in enumerate(opcoes_menu):
-                print(f"{chave}. {detalhes[0]}")
-            print('===========================================================================')
-            escolha = input("\nSelecione uma opção: ")
-
-            if int(escolha) >= 0 and int(escolha) <= (len(opcoes_menu)-1):
-                for chave, detalhes in enumerate(opcoes_menu):
-                    if escolha == str(chave):
-                        detalhes[1]()
-                        if principal:
-                            break
-                        else:
-                            return
-                        
-            else:
-                print("\nOpção inválida. Tente novamente.\n")
-    
-    def testes(self,):
-        comandos = [
-            f"echo 'Teste ok!'"
-        ]
-        resultado = self.executar_comandos(comandos)
-        
     def executar_comandos(self, comandos:list=[], ignorar_erros=False):
         # for comando in comandos:
         #     processo = subprocess.Popen(comando, shell=True)
@@ -82,6 +53,75 @@ class Sistema():
                     exit()
                     
         return resultados
+
+class Docker(Executa_comados):
+    def __init__(self):
+        Executa_comados.__init__(self)
+    
+    def instala_docker(self,):
+        
+        # Executa o comando para verificar se o Docker está instalado
+        resultados = self.executar_comandos(["command -v docker"], ignorar_erros=True)
+        # Verifica se há saída para o comando
+        comando = "command -v docker"
+        if resultados[comando]:
+            print("Docker está instalado.")
+        else:
+            print("Docker não está instalado.")
+            comandos = [
+                "apt update && apt upgrade -y",
+                "for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove -y $pkg; done",
+                "sudo apt-get update",
+                "sudo apt-get install -y ca-certificates curl",
+                "sudo install -m 0755 -d /etc/apt/keyrings",
+                "sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc",
+                "sudo chmod a+r /etc/apt/keyrings/docker.asc",
+                (
+                    "echo "
+                    "'deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] "
+                    "https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable' | "
+                    "sudo tee /etc/apt/sources.list.d/docker.list > /dev/null"
+                ),
+                "sudo apt-get update",
+                "sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin"
+            ]
+
+            # Executa todos os comandos de instalação do Docker
+            self.executar_comandos(comandos)
+
+class Sistema(Docker, Executa_comados):
+    def __init__(self):
+        Docker.__init__(self)
+        Executa_comados.__init__(self)
+    
+    def mostrar_menu(self, opcoes_menu, principal=False):
+        """Mostra o menu de opções para o usuário de forma dinâmica."""
+        opcoes_menu.insert(0, ("Sair", self.sair))
+        while True:
+            print("\nMenu de Opções:")
+            print('===========================================================================')
+            for chave, detalhes in enumerate(opcoes_menu):
+                print(f"{chave}. {detalhes[0]}")
+            print('===========================================================================')
+            escolha = input("\nSelecione uma opção: ")
+
+            if int(escolha) >= 0 and int(escolha) <= (len(opcoes_menu)-1):
+                for chave, detalhes in enumerate(opcoes_menu):
+                    if escolha == str(chave):
+                        detalhes[1]()
+                        if principal:
+                            break
+                        else:
+                            return
+                        
+            else:
+                print("\nOpção inválida. Tente novamente.\n")
+    
+    def testes(self,):
+        comandos = [
+            f"echo 'Teste ok!'"
+        ]
+        resultado = self.executar_comandos(comandos)
     
     def adicionar_ao_fstab(self, dispositivo, ponto_montagem):
         try:
@@ -131,7 +171,7 @@ class Sistema():
         if adicionar_fstab.lower() == "s":
             self.adicionar_ao_fstab(f"/dev/{disco}1", ponto_montagem)
     
-    def exibir_menu_completo(self):
+    def manu_lvm(self):
         print("\nBem-vindo ao Gerenciador LVM\n")
         print("Listando discos disponiveis:")
         comandos = [
@@ -142,6 +182,14 @@ class Sistema():
         """Menu de opções"""
         opcoes_menu = [
             ("cria_particao", self.cria_particao),
+        ]
+        self.mostrar_menu(opcoes_menu)
+        
+    def menu_docker(self):
+        print("\nBem-vindo ao Gerenciador Docker\n")
+        """Menu de opções"""
+        opcoes_menu = [
+            ("Instala docker", self.instala_docker),
         ]
         self.mostrar_menu(opcoes_menu)
     
@@ -198,7 +246,8 @@ def main():
         ("Testes", servicos.testes),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
         ("verificando status do sistema", servicos.verificando_status_sistema),
-        ("Menu LVM", servicos.exibir_menu_completo),
+        ("Menu LVM", servicos.manu_lvm),
+        ("Menu Docker", servicos.menu_docker),
     ]
     servicos.mostrar_menu(opcoes_menu, principal=True)
 
