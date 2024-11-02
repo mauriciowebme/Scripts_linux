@@ -9,112 +9,14 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.17
+Versão 1.18
 ===========================================================================
 ===========================================================================
 """)
 
-
-class LVMManager:
+class Sistema():
     def __init__(self):
         pass
-
-    # Método para executar comandos do sistema e capturar a saída
-    def executar_comando(self, comando):
-        resultado = subprocess.run(comando, shell=True, capture_output=True, text=True)
-        return resultado.stdout.strip()
-
-    # Método para listar discos disponíveis para uso no LVM
-    def listar_dispositivos_disponiveis(self):
-        print("Dispositivos disponíveis (discos não LVM):")
-        dispositivos = self.executar_comando("lsblk -d -o NAME,SIZE,TYPE | grep 'disk'")
-        print(dispositivos)
-        print()
-
-    # Método para preparar uma partição ou disco como volume físico (PV)
-    def criar_volume_fisico(self):
-        self.listar_dispositivos_disponiveis()
-        dispositivo = input("Digite o nome do dispositivo que deseja preparar como PV (ex: sdb): ")
-        confirmacao = input(f"Você está prestes a preparar /dev/{dispositivo} como volume físico. Deseja continuar? (s/n): ")
-        if confirmacao.lower() == "s":
-            resultado = self.executar_comando(f"pvcreate /dev/{dispositivo}")
-            if resultado == "":
-                print(f"Volume físico (PV) /dev/{dispositivo} criado com sucesso.")
-            else:
-                print(f"Erro ao criar volume físico (PV) em /dev/{dispositivo}.")
-        else:
-            print("Operação cancelada.")
-
-    # Método para criar um grupo de volume (VG)
-    def criar_grupo_de_volume(self):
-        self.listar_dispositivos_disponiveis()
-        dispositivo = input("Digite o nome do dispositivo que deseja adicionar ao VG (ex: sdb): ")
-        vg_name = input("Digite o nome do novo Grupo de Volume (VG): ")
-        resultado = self.executar_comando(f"vgcreate {vg_name} /dev/{dispositivo}")
-        if resultado == "":
-            print(f"Grupo de volume {vg_name} criado com sucesso usando /dev/{dispositivo}.")
-        else:
-            print(f"Erro ao criar o grupo de volume {vg_name}.")
-
-    # Método para criar um volume lógico (LV)
-    def criar_volume_logico(self):
-        self.listar_grupos_de_volumes()
-        vg_name = input("Digite o nome do Grupo de Volume (VG) onde deseja criar o Volume Lógico: ")
-        lv_name = input("Digite o nome do novo Volume Lógico (LV): ")
-        lv_size = input("Digite o tamanho do Volume Lógico (ex: 10G): ")
-        resultado = self.executar_comando(f"lvcreate -L {lv_size} -n {lv_name} {vg_name}")
-        if resultado == "":
-            print(f"Volume lógico {lv_name} de tamanho {lv_size} criado com sucesso em {vg_name}.")
-        else:
-            print(f"Erro ao criar o volume lógico {lv_name}.")
-
-    # Método para listar grupos de volumes (VG)
-    def listar_grupos_de_volumes(self):
-        print("Grupos de Volumes (VG) disponíveis:")
-        vgs = self.executar_comando("vgs --noheadings -o vg_name,vg_size,vg_free")
-        print(vgs)
-        print()
-
-    # Método para listar volumes lógicos (LV) em um grupo de volume específico
-    def listar_volumes_logicos(self, vg_name):
-        print(f"Volumes Lógicos (LV) no grupo de volume {vg_name}:")
-        lvs = self.executar_comando(f"lvs --noheadings -o lv_name,lv_size,lv_attr,vg_name --select vg_name={vg_name}")
-        print(lvs)
-        print()
-
-    # Método para exibir o menu e realizar as operações
-    def menu(self):
-        while True:
-            print("\nOpções de Gerenciamento LVM:")
-            print("1) Preparar uma partição/disco para LVM (criar PV)")
-            print("2) Criar um novo Grupo de Volume (VG)")
-            print("3) Criar um Volume Lógico (LV) em um VG existente")
-            print("4) Listar Grupos de Volume (VG)")
-            print("5) Listar Volumes Lógicos (LV) em um VG")
-            print("6) Sair")
-
-            opcao = input("Escolha uma opção: ")
-
-            if opcao == "1":
-                self.criar_volume_fisico()
-            elif opcao == "2":
-                self.criar_grupo_de_volume()
-            elif opcao == "3":
-                self.criar_volume_logico()
-            elif opcao == "4":
-                self.listar_grupos_de_volumes()
-            elif opcao == "5":
-                vg_name = input("Digite o nome do Grupo de Volume (VG) para listar os volumes lógicos: ")
-                self.listar_volumes_logicos(vg_name)
-            elif opcao == "6":
-                print("Saindo do gerenciador de LVM.")
-                break
-            else:
-                print("Opção inválida. Tente novamente.")
-
-class Sistema(LVMManager):
-    def __init__(self):
-        super().__init__()
     
     def mostrar_menu(self, opcoes_menu, principal=False):
         """Mostra o menu de opções para o usuário de forma dinâmica."""
@@ -170,10 +72,62 @@ class Sistema(LVMManager):
                     print(linha, end="")
             else:
                 return resultado
+    
+    def adicionar_ao_fstab(self, dispositivo, ponto_montagem):
+        try:
+            # Verifica se o dispositivo ou ponto de montagem já está no /etc/fstab
+            with open("/etc/fstab", "r") as fstab:
+                conteudo_fstab = fstab.read()
+                if dispositivo in conteudo_fstab or ponto_montagem in conteudo_fstab:
+                    print(f"A partição {dispositivo} já está presente no /etc/fstab.")
+                    return
             
+            # Se não estiver, adiciona ao /etc/fstab
+            linha_fstab = f"{dispositivo} {ponto_montagem} ext4 defaults 0 0\n"
+            with open("/etc/fstab", "a") as fstab:
+                fstab.write(linha_fstab)
+            print(f"Partição {dispositivo} adicionada ao /etc/fstab para montagem automática em {ponto_montagem}.")
+        except PermissionError:
+            print("Erro: Permissões insuficientes para modificar /etc/fstab. Execute o script com sudo.")
+    
+    def cria_particao(self,):
+        # Solicita o nome do disco ao usuário
+        disco = input("Digite o nome do disco (ex: sdb) onde deseja criar a partição: ")
+        ponto_montagem = input("Digite o local onde deseja montar a partição (ex: /mnt/dados): ")
+        
+        print(f"Criando nova partição em /dev/{disco}...")
+        
+        # Comandos para criar a partição e formatar
+        comandos = [
+            f"sudo mkdir -p {ponto_montagem}",
+            f"sudo parted /dev/{disco} mklabel gpt",                              # Define o tipo de tabela de partição como GPT
+            f"sudo parted -a opt /dev/{disco} mkpart primary ext4 0% 100%",       # Cria a partição ocupando todo o disco
+            f"sudo mkfs.ext4 /dev/{disco}1"                                       # Formata a nova partição como ext4
+        ]
+        
+        # Executa os comandos
+        resultado = self.executar_comandos(comandos)
+        
+        print(f"Partição criada, formatada e montada com sucesso em {ponto_montagem}.")
+            
+        # Opcional: Adicionar ao /etc/fstab para montagem automática
+        adicionar_fstab = input("Deseja adicionar essa partição ao /etc/fstab para montagem automática? (s/n): ")
+        if adicionar_fstab.lower() == "s":
+            self.adicionar_ao_fstab(f"/dev/{disco}1", ponto_montagem)
+    
     def exibir_menu_completo(self):
-        print("Bem-vindo ao Gerenciador LVM Completo")
-        self.menu()
+        print("\nBem-vindo ao Gerenciador LVM\n")
+        print("Listando discos disponiveis:")
+        comandos = [
+            "lsblk -o NAME,SIZE,TYPE,MOUNTPOINT | grep -E 'disk|part|lvm'",
+        ]
+        resultado = self.executar_comandos(comandos)
+        
+        """Menu de opções"""
+        opcoes_menu = [
+            ("cria_particao", self.cria_particao),
+        ]
+        self.mostrar_menu(opcoes_menu)
     
     def verificando_status_sistema(self,):
         print("Verificando status do sistema...")
@@ -190,7 +144,7 @@ class Sistema(LVMManager):
         self.executar_comandos(comandos)
     
     def menu_atualizacoes(self,):
-        """Menu de atualizações."""
+        """Menu de opções"""
         opcoes_menu = [
             ("atualizar_sistema_simples", self.atualizar_sistema_simples),
             ("atualizar_sistema_completa", self.atualizar_sistema_completa),
