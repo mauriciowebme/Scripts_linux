@@ -60,6 +60,7 @@ class Sistema():
                 # Lê o conteúdo do arquivo temporário para capturar a saída
                 temp_file.seek(0)
                 saida_comando = temp_file.read()
+                print(saida_comando)
 
                 # Verifica o código de saída para identificar erros
                 if processo.returncode != 0:
