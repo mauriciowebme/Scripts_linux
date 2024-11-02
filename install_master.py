@@ -62,9 +62,14 @@ class Sistema():
     def verificando_status_sistema(self,):
         print("Verificando status do sistema...")
         comandos = [
+            "echo 'Verificando status do sistema...'",
+            "echo ' '",
             "ip addr show | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1",
-            "uptime"
-            "df -h"
+            "echo ' '",
+            "uptime",
+            "echo ' '",
+            "df -h",
+            "echo ' '"
         ]
         self.executar_comandos(comandos)
     
