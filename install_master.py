@@ -48,9 +48,9 @@ class Sistema():
         # for comando in comandos:
         #     processo = subprocess.Popen(comando, shell=True)
         #     processo.wait()
-        
+        resultados = {}
         for comando in comandos:
-            print(f'Executando comando: {comando}')
+            print(f'\n---> Executando comando: {comando} <---\n')
             processo = subprocess.Popen(
                 comando, 
                 shell=True, 
@@ -60,9 +60,9 @@ class Sistema():
             )
 
             # Lê e exibe cada linha da saída conforme é produzida
-            resultado = []
+            resultados[comando] = []
             for linha in processo.stdout:
-                resultado += [linha]
+                resultados[comando] += [linha]
                 print(linha, end="")
 
             # Espera o processo terminar e captura possíveis erros
@@ -71,8 +71,8 @@ class Sistema():
                 print(f"\nErro ao executar comando: {comando}\n")
                 for linha in processo.stderr:
                     print(linha, end="")
-            else:
-                return resultado
+                    
+        return resultados
     
     def adicionar_ao_fstab(self, dispositivo, ponto_montagem):
         try:
