@@ -12,44 +12,79 @@ Versão 1.0
 ===========================================================================
 """)
 
-def atualizar_sistema():
-    """Executa o comando para atualizar o sistema."""
-    print("Atualizando o sistema...")
-    result = subprocess.run("sudo apt-get update", shell=True, capture_output=True, text=True)
-    print(result.stdout)
+class Sistema():
+    def __init__(self):
+        pass
+    
+    def mostrar_menu(self, opcoes_menu):
+        """Mostra o menu de opções para o usuário de forma dinâmica."""
+        print("\nMenu de Opções:")
+        for chave, detalhes in enumerate(opcoes_menu):
+            print(f"{chave}. {detalhes[0]}")
+        while True:
+            escolha = input("Selecione uma opção: ")
 
-def instalar_pacote():
-    """Instala um pacote especificado pelo usuário."""
-    pacote = input("Digite o nome do pacote que deseja instalar: ")
-    print(f"Instalando o pacote {pacote}...")
-    subprocess.run(f"sudo apt-get install -y {pacote}", shell=True)
+            for chave, detalhes in enumerate(opcoes_menu):
+                if escolha == str(chave):
+                    detalhes[1]()
+                    break
+            else:
+                print("Opção inválida. Tente novamente.")
+    
+    def testes(sef,):
+        print('Testes ok.')
+    
+    def menu_atualizacoes(self,):
+        """Menu de atualizações."""
+        opcoes_menu = [
+            ("atualizar_sistema_simples", self.atualizar_sistema_simples),
+            ("atualizar_sistema_simples", self.atualizar_sistema_completa),
+            ("atualizar_sistema_simples", self.atualizar_sistema_completa_reiniciar),
+        ]
+        self.mostrar_menu(opcoes_menu)
+        
+    def atualizar_sistema_simples(self,):
+        """Executa o comando para atualizar o sistema."""
+        print("Atualizando o sistema...")
+        result = subprocess.run("sudo apt-get update", shell=True, capture_output=True, text=True)
+        print(result.stdout)
+        
+    def atualizar_sistema_completa(self,):
+        """Executa o comando para atualizar o sistema."""
+        print("Atualizando o sistema...")
+        self.atualizar_sistema_simples()
+        result = subprocess.run("sudo apt-get upgrade -y", shell=True, capture_output=True, text=True)
+        print(result.stdout)
+        
+    def atualizar_sistema_completa_reiniciar(self,):
+        """Executa o comando para atualizar o sistema."""
+        print("Atualizando o sistema...")
+        self.atualizar_sistema_simples()
+        self.atualizar_sistema_completa()
+        result = subprocess.run("reboot", shell=True, capture_output=True, text=True)
+        print(result.stdout)
 
-def sair():
-    """Sai do programa."""
-    print("Saindo...")
-    exit()
+    def instalar_pacote(self,):
+        """Instala um pacote especificado pelo usuário."""
+        pacote = input("Digite o nome do pacote que deseja instalar: ")
+        print(f"Instalando o pacote {pacote}...")
+        subprocess.run(f"sudo apt-get install -y {pacote}", shell=True)
 
-def mostrar_menu():
-    """Mostra o menu de opções para o usuário."""
-    print("\nMenu de Opções:")
-    print("1. Atualizar o sistema")
-    print("2. Instalar um pacote")
-    print("3. Sair")
+    def sair(self,):
+        """Sai do programa."""
+        print("Saindo...")
+        exit()
 
 def main():
     """Função principal que controla o menu."""
-    while True:
-        mostrar_menu()
-        escolha = input("Selecione uma opção: ")
-
-        if escolha == "1":
-            atualizar_sistema()
-        elif escolha == "2":
-            instalar_pacote()
-        elif escolha == "3":
-            sair()
-        else:
-            print("Opção inválida. Tente novamente.")
+    servicos = Sistema()
+    opcoes_menu = [
+        ("Sair", servicos.sair),
+        ("Testes", servicos.testes),
+        ("Atualizar o sistema", servicos.menu_atualizacoes),
+        ("Instalar um pacote", servicos.instalar_pacote),
+    ]
+    servicos.mostrar_menu(opcoes_menu)
 
 if __name__ == "__main__":
     main()
