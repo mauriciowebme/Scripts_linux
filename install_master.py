@@ -9,7 +9,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.14
+Versão 1.15
 ===========================================================================
 ===========================================================================
 """)
@@ -50,14 +50,24 @@ class Sistema():
         #     processo.wait()
         
         for comando in comandos:
-            # Cria um arquivo temporário para capturar a saída e mantém aberto
-            with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp_file:
-                # Executa o comando diretamente no terminal e redireciona a saída para o arquivo temporário
-                processo = subprocess.run(comando, shell=True, stdout=temp_file, stderr=temp_file)
+            processo = subprocess.Popen(
+                comando, 
+                shell=True, 
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.PIPE, 
+                text=True
+            )
 
-            # Reabre o arquivo temporário para leitura após a execução
-            with open(temp_file.name, "r") as temp_file:
-                saida_completa = temp_file.read()
+            # Lê e exibe cada linha da saída conforme é produzida
+            for linha in processo.stdout:
+                print(linha, end="")
+
+            # Espera o processo terminar e captura possíveis erros
+            processo.wait()
+            if processo.returncode != 0:
+                print(f"\nErro ao executar comando: {comando}\n")
+                for linha in processo.stderr:
+                    print(linha, end="")
     
     def verificando_status_sistema(self,):
         print("Verificando status do sistema...")
