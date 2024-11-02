@@ -7,7 +7,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.1
+Versão 1.2
 ===========================================================================
 ===========================================================================
 """)
@@ -27,7 +27,7 @@ class Sistema():
             for chave, detalhes in enumerate(opcoes_menu):
                 if escolha == str(chave):
                     detalhes[1]()
-                    if principal:
+                    if not principal:
                         return
             else:
                 print("Opção inválida. Tente novamente.")
