@@ -9,7 +9,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.13
+Versão 1.14
 ===========================================================================
 ===========================================================================
 """)
@@ -50,12 +50,12 @@ class Sistema():
         #     processo.wait()
         
         for comando in comandos:
-            # Cria um arquivo temporário para capturar a saída
+            # Cria um arquivo temporário para capturar a saída e mantém aberto
             with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp_file:
-                # Executa o comando diretamente no terminal, redirecionando a saída para o arquivo temporário
+                # Executa o comando diretamente no terminal e redireciona a saída para o arquivo temporário
                 processo = subprocess.run(comando, shell=True, stdout=temp_file, stderr=temp_file)
-            
-            # Lê a saída do arquivo temporário após a execução do comando
+
+            # Reabre o arquivo temporário para leitura após a execução
             with open(temp_file.name, "r") as temp_file:
                 saida_completa = temp_file.read()
     
