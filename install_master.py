@@ -45,19 +45,22 @@ class Sistema():
         print('Testes ok.')
         
     def executar_comandos(self, comandos:list=[]):
+        # for comando in comandos:
+        #     processo = subprocess.Popen(comando, shell=True)
+        #     processo.wait()
+        # Cria um arquivo temporário para capturar a saída
         for comando in comandos:
-            #print(f"\nIniciando: {comando}")
-            # Envia o comando diretamente para o terminal
-            processo = subprocess.Popen(comando, shell=True)
-            
-            # Aguarda o término do comando antes de prosseguir para o próximo
-            processo.wait()
-            
-            # Verifica se houve algum erro
-            # if processo.returncode != 0:
-            #     print(f"Erro ao executar o comando: {comando}")
-            # else:
-            #     print(f"Comando: '{comando}'\nExecutado com sucesso.")
+            with tempfile.NamedTemporaryFile(mode="w+", delete=True) as temp_file:
+                # Envia o comando diretamente para o terminal e redireciona a saída para o arquivo temporário
+                processo = subprocess.Popen(comando, shell=True, stdout=temp_file, stderr=temp_file)
+                
+                # Aguarda o término do comando antes de prosseguir para o próximo
+                processo.wait()
+                
+                # Move o ponteiro para o início do arquivo temporário para leitura
+                temp_file.seek(0)
+                # Lê a saída completa do comando
+                saida_comando = temp_file.read()
     
     def verificando_status_sistema(self,):
         print("Verificando status do sistema...")
