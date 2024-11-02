@@ -20,9 +20,11 @@ class Sistema():
         """Mostra o menu de opções para o usuário de forma dinâmica."""
         print("\nMenu de Opções:")
         opcoes_menu.insert(0, ("Sair", self.sair))
-        for chave, detalhes in enumerate(opcoes_menu):
-            print(f"{chave}. {detalhes[0]}")
         while True:
+            print('===========================================================================')
+            for chave, detalhes in enumerate(opcoes_menu):
+                print(f"{chave}. {detalhes[0]}")
+            print('===========================================================================')
             escolha = input("\nSelecione uma opção: ")
 
             if int(escolha) >= 0 and int(escolha) <= (len(opcoes_menu)-1):
@@ -35,7 +37,7 @@ class Sistema():
                             return
                         
             else:
-                print("Opção inválida. Tente novamente.")
+                print("\nOpção inválida. Tente novamente.\n")
     
     def testes(sef,):
         print('Testes ok.')
