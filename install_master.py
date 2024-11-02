@@ -9,7 +9,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.25
+Versão 1.26
 ===========================================================================
 ===========================================================================
 """)
@@ -42,7 +42,10 @@ class Sistema():
                 print("\nOpção inválida. Tente novamente.\n")
     
     def testes(self,):
-        print('Testes ok.')
+        comandos = [
+            f"echo 'Teste ok!'"
+        ]
+        resultado = self.executar_comandos(comandos)
         
     def executar_comandos(self, comandos:list=[], ignorar_erros=False):
         # for comando in comandos:
