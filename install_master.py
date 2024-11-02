@@ -16,18 +16,19 @@ class Sistema():
     def __init__(self):
         pass
     
-    def mostrar_menu(self, opcoes_menu):
+    def mostrar_menu(self, opcoes_menu, principal=False):
         """Mostra o menu de opções para o usuário de forma dinâmica."""
         print("\nMenu de Opções:")
         for chave, detalhes in enumerate(opcoes_menu):
             print(f"{chave}. {detalhes[0]}")
         while True:
-            escolha = input("Selecione uma opção: ")
+            escolha = input("\nSelecione uma opção: ")
 
             for chave, detalhes in enumerate(opcoes_menu):
                 if escolha == str(chave):
                     detalhes[1]()
-                    break
+                    if principal:
+                        return
             else:
                 print("Opção inválida. Tente novamente.")
     
@@ -38,8 +39,8 @@ class Sistema():
         """Menu de atualizações."""
         opcoes_menu = [
             ("atualizar_sistema_simples", self.atualizar_sistema_simples),
-            ("atualizar_sistema_simples", self.atualizar_sistema_completa),
-            ("atualizar_sistema_simples", self.atualizar_sistema_completa_reiniciar),
+            ("atualizar_sistema_completa", self.atualizar_sistema_completa),
+            ("atualizar_sistema_completa_reiniciar", self.atualizar_sistema_completa_reiniciar),
         ]
         self.mostrar_menu(opcoes_menu)
         
@@ -84,7 +85,7 @@ def main():
         ("Atualizar o sistema", servicos.menu_atualizacoes),
         ("Instalar um pacote", servicos.instalar_pacote),
     ]
-    servicos.mostrar_menu(opcoes_menu)
+    servicos.mostrar_menu(opcoes_menu, principal=True)
 
 if __name__ == "__main__":
     main()
