@@ -9,7 +9,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.26
+Versão 1.27
 ===========================================================================
 ===========================================================================
 """)
@@ -20,9 +20,9 @@ class Sistema():
     
     def mostrar_menu(self, opcoes_menu, principal=False):
         """Mostra o menu de opções para o usuário de forma dinâmica."""
-        print("\nMenu de Opções:")
         opcoes_menu.insert(0, ("Sair", self.sair))
         while True:
+            print("\nMenu de Opções:")
             print('===========================================================================')
             for chave, detalhes in enumerate(opcoes_menu):
                 print(f"{chave}. {detalhes[0]}")
