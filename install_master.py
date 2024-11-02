@@ -9,7 +9,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.23
+Versão 1.24
 ===========================================================================
 ===========================================================================
 """)
@@ -44,7 +44,7 @@ class Sistema():
     def testes(self,):
         print('Testes ok.')
         
-    def executar_comandos(self, comandos:list=[]):
+    def executar_comandos(self, comandos:list=[], ignorar_erros=False):
         # for comando in comandos:
         #     processo = subprocess.Popen(comando, shell=True)
         #     processo.wait()
@@ -71,8 +71,9 @@ class Sistema():
                 print(f"\nErro ao executar comando: {comando}\n")
                 for linha in processo.stderr:
                     print(linha, end="")
-                print("Saindo...")
-                exit()
+                if not ignorar_erros
+                    print("Saindo...")
+                    exit()
                     
         return resultados
     
@@ -100,9 +101,14 @@ class Sistema():
         
         print(f"Criando nova partição em /dev/{disco}...")
         
-        # Comandos para criar a partição e formatar sdb
+        # Tenta desmonatr as partições existentes no disco
         comandos = [
-            f"sudo umount /dev/{disco}*", # tenta desmontar todas as partições
+            f"sudo umount /dev/{disco}*",
+        ]
+        # Executa os comandos
+        resultado = self.executar_comandos(comandos, ignorar_erros=True)
+        
+        comandos = [
             f"sudo mkdir -p {ponto_montagem}",
             f"sudo parted -s /dev/{disco} mklabel gpt",                              # Define o tipo de tabela de partição como GPT
             f"sudo parted -s -a opt /dev/{disco} mkpart primary ext4 0% 100%",       # Cria a partição ocupando todo o disco
