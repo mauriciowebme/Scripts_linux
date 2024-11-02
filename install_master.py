@@ -51,16 +51,11 @@ class Sistema():
         # Cria um arquivo temporário para capturar a saída
         for comando in comandos:
             with tempfile.NamedTemporaryFile(mode="w+", delete=True) as temp_file:
-                # Envia o comando diretamente para o terminal e redireciona a saída para o arquivo temporário
-                processo = subprocess.Popen(comando, shell=True, stdout=temp_file, stderr=temp_file)
+                # processo = subprocess.Popen(comando, shell=True, stdout=temp_file, stderr=temp_file)
+                processo = subprocess.run(comando, shell=True, stdout=temp_file, stderr=temp_file)
                 
-                # Aguarda o término do comando antes de prosseguir para o próximo
-                processo.wait()
-                
-                # Move o ponteiro para o início do arquivo temporário para leitura
-                temp_file.seek(0)
-                # Lê a saída completa do comando
-                saida_comando = temp_file.read()
+            with open(temp_file.name, "r") as temp_file:
+                saida_completa = temp_file.read()
     
     def verificando_status_sistema(self,):
         print("Verificando status do sistema...")
