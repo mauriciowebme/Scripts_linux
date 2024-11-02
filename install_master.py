@@ -9,7 +9,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.22
+Versão 1.23
 ===========================================================================
 ===========================================================================
 """)
@@ -71,6 +71,8 @@ class Sistema():
                 print(f"\nErro ao executar comando: {comando}\n")
                 for linha in processo.stderr:
                     print(linha, end="")
+                print("Saindo...")
+                exit()
                     
         return resultados
     
@@ -100,6 +102,7 @@ class Sistema():
         
         # Comandos para criar a partição e formatar sdb
         comandos = [
+            f"sudo umount /dev/{disco}*", # tenta desmontar todas as partições
             f"sudo mkdir -p {ponto_montagem}",
             f"sudo parted -s /dev/{disco} mklabel gpt",                              # Define o tipo de tabela de partição como GPT
             f"sudo parted -s -a opt /dev/{disco} mkpart primary ext4 0% 100%",       # Cria a partição ocupando todo o disco
