@@ -9,7 +9,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.24
+Versão 1.25
 ===========================================================================
 ===========================================================================
 """)
@@ -71,7 +71,7 @@ class Sistema():
                 print(f"\nErro ao executar comando: {comando}\n")
                 for linha in processo.stderr:
                     print(linha, end="")
-                if not ignorar_erros
+                if not ignorar_erros:
                     print("Saindo...")
                     exit()
                     
