@@ -70,7 +70,7 @@ class Sistema():
                 # Armazena a saída completa do comando
                 saidas.append((comando, saida_comando))
     
-    return saidas
+        return saidas
     
     def menu_atualizacoes(self,):
         """Menu de atualizações."""
