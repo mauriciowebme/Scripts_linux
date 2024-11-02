@@ -54,10 +54,10 @@ class Sistema():
             processo.wait()
             
             # Verifica se houve algum erro
-            if processo.returncode != 0:
-                print(f"Erro ao executar o comando: {comando}")
-            else:
-                print(f"Comando: '{comando}'\nExecutado com sucesso.")
+            # if processo.returncode != 0:
+            #     print(f"Erro ao executar o comando: {comando}")
+            # else:
+            #     print(f"Comando: '{comando}'\nExecutado com sucesso.")
     
     def verificando_status_sistema(self,):
         print("Verificando status do sistema...")
