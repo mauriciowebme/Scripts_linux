@@ -1034,7 +1034,7 @@ instala_traefik(){
     echo " "
 }
 
-start_sync(){
+start_sync_pastas(){
     echo " "
     # Solicita ao usuário os caminhos da pasta de origem e destino
     read -p "Digite o caminho da pasta de origem: " source_path
@@ -1108,7 +1108,7 @@ docker_options(){
     do
         case $opt in
             "Cria sincronizador de pastas")
-                start_sync
+                start_sync_pastas
                 break
                 ;;
             "Instala traefik")
@@ -1121,10 +1121,6 @@ docker_options(){
                 ;;
             "Instala openlitespeed")
                 instala_openlitespeed
-                break
-                ;;
-            "Adicionar site openlitespeed")
-                adiciona_site_openlitespeed
                 break
                 ;;
             "Cria rede docker")
