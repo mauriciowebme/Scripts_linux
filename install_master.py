@@ -7,7 +7,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.2
+Versão 1.3
 ===========================================================================
 ===========================================================================
 """)
@@ -19,6 +19,7 @@ class Sistema():
     def mostrar_menu(self, opcoes_menu, principal=False):
         """Mostra o menu de opções para o usuário de forma dinâmica."""
         print("\nMenu de Opções:")
+        opcoes_menu.insert(0, ("Sair", self.sair))
         for chave, detalhes in enumerate(opcoes_menu):
             print(f"{chave}. {detalhes[0]}")
         while True:
@@ -80,7 +81,6 @@ def main():
     """Função principal que controla o menu."""
     servicos = Sistema()
     opcoes_menu = [
-        ("Sair", servicos.sair),
         ("Testes", servicos.testes),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
         ("Instalar um pacote", servicos.instalar_pacote),
