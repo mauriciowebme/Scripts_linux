@@ -42,6 +42,31 @@ class Sistema():
     def testes(sef,):
         print('Testes ok.')
     
+    def executar_comandos(self, comandos:list=[]):
+        """Executa uma lista de comandos no Linux, exibe a saída em tempo real e aguarda o término de cada comando."""
+        for comando in comandos:
+            print(f"\nExecutando: {comando}")
+            processo = subprocess.Popen(
+                comando, 
+                shell=True, 
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.PIPE, 
+                text=True
+            )
+
+            # Exibe a saída em tempo real
+            for linha in processo.stdout:
+                print(linha, end="")
+
+            # Aguarda o término do processo e verifica se houve erro
+            processo.wait()
+            if processo.returncode != 0:
+                print("Erro durante a execução do comando:")
+                for linha in processo.stderr:
+                    print(linha, end="")
+            # else:
+            #     print("\nComando executado com sucesso.")
+    
     def menu_atualizacoes(self,):
         """Menu de atualizações."""
         opcoes_menu = [
@@ -53,30 +78,21 @@ class Sistema():
         
     def atualizar_sistema_simples(self,):
         """Executa o comando para atualizar o sistema."""
-        print("Atualizando o sistema...")
-        result = subprocess.run("sudo apt-get update", shell=True, capture_output=True, text=True)
-        print(result.stdout)
+        print("Atualizando o sistema com update...")
+        self.executar_comandos(['sudo apt-get update'])
         
     def atualizar_sistema_completa(self,):
         """Executa o comando para atualizar o sistema."""
-        print("Atualizando o sistema...")
+        print("Atualizando o sistema com upgrade...")
         self.atualizar_sistema_simples()
-        result = subprocess.run("sudo apt-get upgrade -y", shell=True, capture_output=True, text=True)
-        print(result.stdout)
+        self.executar_comandos(['sudo apt-get upgrade -y'])
         
     def atualizar_sistema_completa_reiniciar(self,):
         """Executa o comando para atualizar o sistema."""
-        print("Atualizando o sistema...")
+        print("Reiniciando o sistema...")
         self.atualizar_sistema_simples()
         self.atualizar_sistema_completa()
-        result = subprocess.run("reboot", shell=True, capture_output=True, text=True)
-        print(result.stdout)
-
-    def instalar_pacote(self,):
-        """Instala um pacote especificado pelo usuário."""
-        pacote = input("Digite o nome do pacote que deseja instalar: ")
-        print(f"Instalando o pacote {pacote}...")
-        subprocess.run(f"sudo apt-get install -y {pacote}", shell=True)
+        self.executar_comandos(['reboot'])
 
     def sair(self,):
         """Sai do programa."""
@@ -89,7 +105,6 @@ def main():
     opcoes_menu = [
         ("Testes", servicos.testes),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
-        ("Instalar um pacote", servicos.instalar_pacote),
     ]
     servicos.mostrar_menu(opcoes_menu, principal=True)
 
