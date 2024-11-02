@@ -9,7 +9,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.8
+Versão 1.9
 ===========================================================================
 ===========================================================================
 """)
@@ -45,33 +45,17 @@ class Sistema():
         print('Testes ok.')
     
     def executar_comandos(self, comandos:list=[]):
-        """Executa uma lista de comandos diretamente no terminal e captura a saída após a execução."""
-        saidas = []
-        
         for comando in comandos:
             print(f"\nIniciando: {comando}")
+            # Envia o comando diretamente para o terminal
+            processo = subprocess.Popen(comando, shell=True)
             
-            # Cria um arquivo temporário para capturar a saída
-            with tempfile.NamedTemporaryFile(mode="w+", delete=True) as temp_file:
-                # Executa o comando diretamente no terminal e redireciona a saída para o arquivo temporário
-                processo = subprocess.Popen(comando, shell=True, stdout=temp_file, stderr=temp_file)
-                processo.wait()  # Aguarda o término do comando
-
-                # Lê o conteúdo do arquivo temporário para capturar a saída
-                temp_file.seek(0)
-                saida_comando = temp_file.read()
-                print(saida_comando)
-
-                # Verifica o código de saída para identificar erros
-                if processo.returncode != 0:
-                    print(f"Erro ao executar o comando: {comando}")
-                else:
-                    print(f"Comando '{comando}' executado com sucesso.")
+            # Aguarda o término do comando antes de prosseguir para o próximo
+            processo.wait()
             
-                # Armazena a saída completa do comando
-                saidas.append((comando, saida_comando))
-    
-        return saidas
+            # Verifica se houve algum erro
+            if processo.returncode != 0:
+                print(f"Erro ao executar o comando: {comando}")
     
     def menu_atualizacoes(self,):
         """Menu de atualizações."""
