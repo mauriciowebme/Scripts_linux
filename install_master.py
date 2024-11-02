@@ -41,6 +41,8 @@ class Executa_comados():
             for linha in processo.stdout:
                 resultados[comando] += [linha]
                 print(linha, end="")
+            
+            print('\n')
 
             # Espera o processo terminar e captura possíveis erros
             processo.wait()
