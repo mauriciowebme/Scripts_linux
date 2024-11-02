@@ -9,7 +9,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.21
+Versão 1.22
 ===========================================================================
 ===========================================================================
 """)
@@ -101,8 +101,8 @@ class Sistema():
         # Comandos para criar a partição e formatar sdb
         comandos = [
             f"sudo mkdir -p {ponto_montagem}",
-            f"yes | sudo parted /dev/{disco} mklabel gpt",                              # Define o tipo de tabela de partição como GPT
-            f"sudo parted -a opt /dev/{disco} mkpart primary ext4 0% 100%",       # Cria a partição ocupando todo o disco
+            f"sudo parted -s /dev/{disco} mklabel gpt",                              # Define o tipo de tabela de partição como GPT
+            f"sudo parted -s -a opt /dev/{disco} mkpart primary ext4 0% 100%",       # Cria a partição ocupando todo o disco
             f"sudo mkfs.ext4 /dev/{disco}1"                                       # Formata a nova partição como ext4
         ]
         
