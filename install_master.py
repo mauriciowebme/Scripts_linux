@@ -46,7 +46,7 @@ class Sistema():
         
     def executar_comandos(self, comandos:list=[]):
         for comando in comandos:
-            print(f"\nIniciando: {comando}")
+            #print(f"\nIniciando: {comando}")
             # Envia o comando diretamente para o terminal
             processo = subprocess.Popen(comando, shell=True)
             
