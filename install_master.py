@@ -1,13 +1,15 @@
 #!/bin/bash
 #Execute com:
 #wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
+
 import subprocess
+import tempfile
 
 print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.6
+Versão 1.7
 ===========================================================================
 ===========================================================================
 """)
@@ -43,29 +45,32 @@ class Sistema():
         print('Testes ok.')
     
     def executar_comandos(self, comandos:list=[]):
-        """Executa uma lista de comandos no Linux, exibe a saída em tempo real e aguarda o término de cada comando."""
+        """Executa uma lista de comandos diretamente no terminal e captura a saída após a execução."""
+        saidas = []
+        
         for comando in comandos:
-            print(f"\nExecutando: {comando}")
-            processo = subprocess.Popen(
-                comando, 
-                shell=True, 
-                stdout=subprocess.PIPE, 
-                stderr=subprocess.PIPE, 
-                text=True
-            )
+            print(f"\nIniciando: {comando}")
+            
+            # Cria um arquivo temporário para capturar a saída
+            with tempfile.NamedTemporaryFile(mode="w+", delete=True) as temp_file:
+                # Executa o comando diretamente no terminal e redireciona a saída para o arquivo temporário
+                processo = subprocess.Popen(comando, shell=True, stdout=temp_file, stderr=temp_file)
+                processo.wait()  # Aguarda o término do comando
 
-            # Exibe a saída em tempo real
-            for linha in processo.stdout:
-                print(linha, end="")
+                # Lê o conteúdo do arquivo temporário para capturar a saída
+                temp_file.seek(0)
+                saida_comando = temp_file.read()
 
-            # Aguarda o término do processo e verifica se houve erro
-            processo.wait()
-            if processo.returncode != 0:
-                print("Erro durante a execução do comando:")
-                for linha in processo.stderr:
-                    print(linha, end="")
-            # else:
-            #     print("\nComando executado com sucesso.")
+                # Verifica o código de saída para identificar erros
+                if processo.returncode != 0:
+                    print(f"Erro ao executar o comando: {comando}")
+                else:
+                    print(f"Comando '{comando}' executado com sucesso.")
+            
+                # Armazena a saída completa do comando
+                saidas.append((comando, saida_comando))
+    
+    return saidas
     
     def menu_atualizacoes(self,):
         """Menu de atualizações."""
