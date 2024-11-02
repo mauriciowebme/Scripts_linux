@@ -25,11 +25,12 @@ class Sistema():
         while True:
             escolha = input("\nSelecione uma opção: ")
 
-            for chave, detalhes in enumerate(opcoes_menu):
-                if escolha == str(chave):
-                    detalhes[1]()
-                    if not principal:
-                        return
+            if int(escolha) >= 0 and int(escolha) <= (len(opcoes_menu)-1):
+                for chave, detalhes in enumerate(opcoes_menu):
+                    if escolha == str(chave):
+                        detalhes[1]()
+                        if not principal:
+                            return
             else:
                 print("Opção inválida. Tente novamente.")
     
