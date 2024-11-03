@@ -8,7 +8,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.35
+Versão 1.36
 ===========================================================================
 ===========================================================================
 """)
@@ -58,8 +58,6 @@ class Executa_comados():
 class Docker(Executa_comados):
     def __init__(self):
         Executa_comados.__init__(self)
-    
-    import subprocess
 
     def cria_rede_docker(self):
         network_name = "net"
@@ -89,7 +87,6 @@ class Docker(Executa_comados):
             # elif "already exists in network" not in connect_result.stderr:
             #     print(f"Erro ao associar o container {container_id}: {connect_result.stderr.strip()}")
 
-    
     def remove_container(self, nome_container):
         comandos = [
             f'docker rm -f {nome_container}',
