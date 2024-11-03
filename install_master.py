@@ -59,15 +59,17 @@ class Docker(Executa_comados):
     def __init__(self):
         Executa_comados.__init__(self)
     
-    def instala_wetty_ssh(self,):
-        your_server_ip = input("\nDigite o endereço para conexão ssh: ")
+    def instala_webserver_ssh(self,):
+        your_server = input("\nDigite o usuario@endereço para conexão ssh: ")
         comandos = [
-            'docker rm -f wetty',
+            'docker rm -f webssh2',
             f"""docker run -d \
-            --name wetty \
-            --network net \
-            -p 3000:3000 \
-            wettyoss/wetty --base / --ssh-host {your_server_ip}""",
+                --name webssh2 \
+                -p 2222:2222 \
+                -e SSHHOST={your_server.split('@')[1]} \
+                -e SSHUSER={your_server.split('@')[0]} \
+                ghcr.io/billchurch/webssh2
+                """,
             ]
         resultados = self.executar_comandos(comandos)
 
@@ -227,7 +229,7 @@ class Sistema(Docker, Executa_comados):
         """Menu de opções"""
         opcoes_menu = [
             ("Instala docker", self.instala_docker),
-            ("Instala wetty ssh", self.instala_wetty_ssh),
+            ("Instala webserver ssh", self.instala_webserver_ssh),
         ]
         self.mostrar_menu(opcoes_menu)
     
