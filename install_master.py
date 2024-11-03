@@ -90,11 +90,17 @@ class Docker(Executa_comados):
             #     print(f"Erro ao associar o container {container_id}: {connect_result.stderr.strip()}")
 
     
+    def remove_container(self, nome_container):
+        comandos = [
+            f'docker rm -f {nome_container}',
+            ]
+        resultados = self.executar_comandos(comandos)
+    
     def instala_webserver_ssh(self,):
         #your_server = input("\nDigite o usuario@endereço para conexão ssh: ")
         # porta para acesso 8080
+        self.remove_container('webssh')
         comandos = [
-            'docker rm -f webssh',
             f"""docker run -d \
                     --name webssh \
                     -p 8081:8080 \
