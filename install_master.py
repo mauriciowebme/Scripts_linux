@@ -60,7 +60,7 @@ class Docker(Executa_comados):
         Executa_comados.__init__(self)
     
     def instala_wetty_ssh(self,):
-        your_server_ip = input("\nDigite o usuario@endereço para conexão ssh: ")
+        your_server_ip = input("\nDigite o endereço para conexão ssh: ")
         comandos = [
             'docker rm -f wetty',
             f"""docker run -d \
