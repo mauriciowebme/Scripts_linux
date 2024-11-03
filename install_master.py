@@ -3,13 +3,12 @@
 #wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
 import subprocess
-import tempfile
 
 print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.29
+Versão 1.30
 ===========================================================================
 ===========================================================================
 """)
@@ -60,8 +59,19 @@ class Docker(Executa_comados):
     def __init__(self):
         Executa_comados.__init__(self)
     
+    def instala_wetty_ssh(self,):
+        your_server_ip = input("\nDigite o ip de conexão: ")
+        comandos = [
+            'docker rm -f wetty',
+            f"""docker run -d \
+            --name wetty \
+            --network net \
+            -p 3000:3000 \
+            wettyoss/wetty --base / --ssh-host {your_server_ip}""",
+            ]
+        resultados = self.executar_comandos(comandos)
+
     def instala_docker(self,):
-        
         # Executa o comando para verificar se o Docker está instalado
         resultados = self.executar_comandos(["command -v docker"], ignorar_erros=True)
         # Verifica se há saída para o comando
@@ -217,6 +227,7 @@ class Sistema(Docker, Executa_comados):
         """Menu de opções"""
         opcoes_menu = [
             ("Instala docker", self.instala_docker),
+            ("Instala wetty ssh", self.instala_wetty_ssh),
         ]
         self.mostrar_menu(opcoes_menu)
     
