@@ -70,16 +70,24 @@ class Docker(Executa_comados):
             print(f"Rede '{network_name}' não encontrada. Criando rede...")
             subprocess.run(["docker", "network", "create", network_name])
             print(f"Rede '{network_name}' criada com sucesso.")
-        else:
-            print(f"Rede '{network_name}' já existe.")
+        # else:
+        #     print(f"Rede '{network_name}' já existe.")
 
         # Associa todos os containers existentes à rede
         result = subprocess.run(["docker", "ps", "-q"], capture_output=True, text=True)
         container_ids = result.stdout.strip().splitlines()
         for container_id in container_ids:
-            print(f"Associando container {container_id} à rede '{network_name}'...")
-            subprocess.run(["docker", "network", "connect", network_name, container_id])
-            print(f"Container {container_id} associado à rede '{network_name}' com sucesso.")
+            # Tenta conectar o container à rede e captura o erro, se houver
+            connect_result = subprocess.run(
+                ["docker", "network", "connect", network_name, container_id],
+                capture_output=True, text=True
+            )
+
+            # Verifica se o container foi associado com sucesso ou já estava na rede
+            if connect_result.returncode == 0:
+                print(f"Container {container_id} associado à rede '{network_name}' com sucesso.")
+            # elif "already exists in network" not in connect_result.stderr:
+            #     print(f"Erro ao associar o container {container_id}: {connect_result.stderr.strip()}")
 
     
     def instala_webserver_ssh(self,):
@@ -127,6 +135,7 @@ class Docker(Executa_comados):
 
             # Executa todos os comandos de instalação do Docker
             self.executar_comandos(comandos)
+            self.cria_rede_docker()
 
 class Sistema(Docker, Executa_comados):
     def __init__(self):
