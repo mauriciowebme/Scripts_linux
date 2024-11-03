@@ -9,7 +9,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.28
+Versão 1.29
 ===========================================================================
 ===========================================================================
 """)
@@ -142,7 +142,15 @@ class Sistema(Docker, Executa_comados):
         except PermissionError:
             print("Erro: Permissões insuficientes para modificar /etc/fstab. Execute o script com sudo.")
     
+    def listar_particoes(self,):
+        print("Listando discos disponiveis:")
+        comandos = [
+            "lsblk -o NAME,SIZE,TYPE,MOUNTPOINT | grep -E 'disk|part|lvm'",
+        ]
+        resultado = self.executar_comandos(comandos)
+        
     def cria_particao(self,):
+        self.listar_particoes()
         # Solicita o nome do disco ao usuário
         disco = input("Digite o nome do disco (ex: sdb) onde deseja criar a partição: ")
         ponto_montagem = input("Digite o local onde deseja montar a partição (ex: /mnt/dados): ")
@@ -173,17 +181,34 @@ class Sistema(Docker, Executa_comados):
         if adicionar_fstab.lower() == "s":
             self.adicionar_ao_fstab(f"/dev/{disco}1", ponto_montagem)
     
-    def manu_lvm(self):
-        print("\nBem-vindo ao Gerenciador LVM\n")
-        print("Listando discos disponiveis:")
-        comandos = [
-            "lsblk -o NAME,SIZE,TYPE,MOUNTPOINT | grep -E 'disk|part|lvm'",
-        ]
-        resultado = self.executar_comandos(comandos)
+    def fecha_tela_noot(self):
+        # Caminho do arquivo de configuração
+        config_path = "/etc/systemd/logind.conf"
         
+        # Ler o conteúdo do arquivo
+        with open(config_path, "r") as file:
+            lines = file.readlines()
+        
+        # Modificar a linha HandleLidSwitch
+        with open(config_path, "w") as file:
+            for line in lines:
+                if line.strip().startswith("#HandleLidSwitch") or line.strip().startswith("HandleLidSwitch"):
+                    file.write("HandleLidSwitch=ignore\n")
+                else:
+                    file.write(line)
+        
+        comandos = [
+            "sudo systemctl restart systemd-logind",
+            ]
+        self.executar_comandos(comandos)
+    
+    def opcoes_sistema(self):
+        print("\nMenu de sistema.\n")
         """Menu de opções"""
         opcoes_menu = [
             ("cria_particao", self.cria_particao),
+            ("listar_particoes", self.listar_particoes),
+            ("fecha_tela_noot", self.fecha_tela_noot),
         ]
         self.mostrar_menu(opcoes_menu)
         
@@ -248,7 +273,7 @@ def main():
         ("Testes", servicos.testes),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
         ("verificando status do sistema", servicos.verificando_status_sistema),
-        ("Menu LVM", servicos.manu_lvm),
+        ("Menu operações de sistema", servicos.opcoes_sistema),
         ("Menu Docker", servicos.menu_docker),
     ]
     servicos.mostrar_menu(opcoes_menu, principal=True)
