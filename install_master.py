@@ -66,6 +66,7 @@ class Docker(Executa_comados):
             'docker rm -f webssh',
             f"""docker run -d \
                 --name webssh \
+                -p 8081:8080 \
                 --mount source=shellngn-data,target=/home/node/server/data \
                 -e HOST=0.0.0.0 shellngn/pro:latest
                 """,
