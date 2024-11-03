@@ -69,7 +69,7 @@ class Docker(Executa_comados):
                     -p 8081:8080 \
                     --label "traefik.enable=true" \
                     --label "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https" \
-                    --label "traefik.http.routers.teste.rule=Host(`teste.techupsistemas.com`)" \
+                    --label "traefik.http.routers.teste.rule=Host(\"teste.techupsistemas.com\")" \
                     --label "traefik.http.routers.teste.entrypoints=web,websecure" \
                     --label "traefik.http.routers.teste.tls.certresolver=le" \
                     --label "traefik.http.services.teste.loadbalancer.server.port=8080" \
