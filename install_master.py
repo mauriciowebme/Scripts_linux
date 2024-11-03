@@ -60,15 +60,14 @@ class Docker(Executa_comados):
         Executa_comados.__init__(self)
     
     def instala_webserver_ssh(self,):
-        your_server = input("\nDigite o usuario@endereço para conexão ssh: ")
+        #your_server = input("\nDigite o usuario@endereço para conexão ssh: ")
         comandos = [
-            'docker rm -f webssh2',
+            'docker rm -f webssh',
             f"""docker run -d \
-                --name webssh2 \
+                --name webssh \
                 -p 2222:2222 \
-                -e SSHHOST={your_server.split('@')[1]} \
-                -e SSHUSER={your_server.split('@')[0]} \
-                ghcr.io/billchurch/webssh2
+                -v ./conf:/home/web/conf \
+                --rm genshen/ssh-web-console
                 """,
             ]
         resultados = self.executar_comandos(comandos)
