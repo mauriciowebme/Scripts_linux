@@ -65,10 +65,17 @@ class Docker(Executa_comados):
         comandos = [
             'docker rm -f webssh',
             f"""docker run -d \
-                --name webssh \
-                -p 8081:8080 \
-                --mount source=shellngn-data,target=/home/node/server/data \
-                -e HOST=0.0.0.0 shellngn/pro:latest
+                    --name webssh \
+                    -p 8081:8080 \
+                    --label "traefik.enable=true" \
+                    --label "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https" \
+                    --label "traefik.http.routers.teste.rule=Host(`teste.techupsistemas.com`)" \
+                    --label "traefik.http.routers.teste.entrypoints=web,websecure" \
+                    --label "traefik.http.routers.teste.tls.certresolver=le" \
+                    --label "traefik.http.services.teste.loadbalancer.server.port=8080" \
+                    --mount source=shellngn-data,target=/home/node/server/data \
+                    -e HOST=0.0.0.0 \
+                    shellngn/pro:latest
                 """,
             ]
         resultados = self.executar_comandos(comandos)
