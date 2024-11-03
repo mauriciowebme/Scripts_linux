@@ -59,6 +59,29 @@ class Docker(Executa_comados):
     def __init__(self):
         Executa_comados.__init__(self)
     
+    import subprocess
+
+    def cria_rede_docker(self):
+        network_name = "net"
+
+        # Verifica se a rede já existe
+        result = subprocess.run(["docker", "network", "ls"], capture_output=True, text=True)
+        if network_name not in result.stdout:
+            print(f"Rede '{network_name}' não encontrada. Criando rede...")
+            subprocess.run(["docker", "network", "create", network_name])
+            print(f"Rede '{network_name}' criada com sucesso.")
+        else:
+            print(f"Rede '{network_name}' já existe.")
+
+        # Associa todos os containers existentes à rede
+        result = subprocess.run(["docker", "ps", "-q"], capture_output=True, text=True)
+        container_ids = result.stdout.strip().splitlines()
+        for container_id in container_ids:
+            print(f"Associando container {container_id} à rede '{network_name}'...")
+            subprocess.run(["docker", "network", "connect", network_name, container_id])
+            print(f"Container {container_id} associado à rede '{network_name}' com sucesso.")
+
+    
     def instala_webserver_ssh(self,):
         #your_server = input("\nDigite o usuario@endereço para conexão ssh: ")
         # porta para acesso 8080
@@ -67,18 +90,13 @@ class Docker(Executa_comados):
             f"""docker run -d \
                     --name webssh \
                     -p 8081:8080 \
-                    --label "traefik.enable=true" \
-                    --label "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https" \
-                    --label "traefik.http.routers.teste.rule=\"Host('teste.techupsistemas.com')\"" \
-                    --label "traefik.http.routers.teste.entrypoints=web,websecure" \
-                    --label "traefik.http.routers.teste.tls.certresolver=le" \
-                    --label "traefik.http.services.teste.loadbalancer.server.port=8080" \
                     --mount source=shellngn-data,target=/home/node/server/data \
                     -e HOST=0.0.0.0 \
                     shellngn/pro:latest
                 """,
             ]
         resultados = self.executar_comandos(comandos)
+        self.cria_rede_docker()
 
     def instala_docker(self,):
         # Executa o comando para verificar se o Docker está instalado
