@@ -65,9 +65,8 @@ class Docker(Executa_comados):
             'docker rm -f webssh',
             f"""docker run -d \
                 --name webssh \
-                -p 2222:2222 \
-                -v ./conf:/home/web/conf \
-                --rm genshen/ssh-web-console
+                --mount source=shellngn-data,target=/home/node/server/data \
+                -e HOST=0.0.0.0 shellngn/pro:latest
                 """,
             ]
         resultados = self.executar_comandos(comandos)
