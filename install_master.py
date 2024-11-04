@@ -96,7 +96,7 @@ class Docker(Executa_comados):
         resultados = self.executar_comandos(comandos)
     
     def instala_traefik(self,):
-        # self.remove_container('traefik')
+        self.remove_container('traefik')
         comandos = [
             f"""docker run -d \
                 --name traefik \
@@ -133,6 +133,7 @@ class Docker(Executa_comados):
         # --label traefik.http.routers.filebrowser.entrypoints=web,websecure \
         # --label traefik.http.routers.filebrowser.tls.certresolver=le \
         # --label traefik.http.services.filebrowser.loadbalancer.server.port=80 \
+        self.remove_container('filebrowser')
         comandos = [
             f"""docker run -d \
                     --name filebrowser \
@@ -147,6 +148,7 @@ class Docker(Executa_comados):
         self.cria_rede_docker()
         
     def instala_portainer(self,):
+        self.remove_container('portainer')
         comandos = [
             f"""sudo docker run -d \
                     --name portainer \
