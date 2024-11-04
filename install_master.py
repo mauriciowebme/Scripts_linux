@@ -135,7 +135,7 @@ class Docker(Executa_comados):
         # --label traefik.http.services.filebrowser.loadbalancer.server.port=80 \
         self.remove_container('filebrowser')
         comandos = [
-            f"mkdir {self.install_principal}/database_filebrowser/"
+            f"mkdir {self.install_principal}/database_filebrowser"
             f"touch {self.install_principal}/database_filebrowser/database.db",
             f"""docker run -d \
                     --name filebrowser \
