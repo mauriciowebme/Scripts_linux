@@ -21,7 +21,7 @@ class Executa_comados():
         # for comando in comandos:
         #     processo = subprocess.Popen(comando, shell=True)
         #     processo.wait()
-        resultados = {}
+        resultados = []
         for comando in comandos:
             print("\n" + "*" * 40)
             print(" " * 5 + "---> Executando comando: <---")
@@ -36,9 +36,9 @@ class Executa_comados():
             )
 
             # Lê e exibe cada linha da saída conforme é produzida
-            resultados[comando] = []
+            resultado = [] 
             for linha in processo.stdout:
-                resultados[comando] += [linha]
+                resultado += [linha]
                 print(linha, end="")
             
             print('\n')
@@ -47,12 +47,14 @@ class Executa_comados():
             processo.wait()
             if processo.returncode != 0:
                 print(f"\nErro ao executar comando: {comando}\n")
-                resultados[comando] += ['Erro:True']
+                resultado += ['Erro:True']
+                resultados += [resultado]
                 for linha in processo.stderr:
                     print(linha, end="")
                 if not ignorar_erros:
                     print("Saindo...")
                     exit()
+            resultados += [resultado]
                     
         return resultados
 
