@@ -197,7 +197,7 @@ class Docker(Executa_comados):
         if resposta.lower() == 's':
             dominio = input('Digite o dominio:')
             porta = input('Digite a porta do container:')
-            dados = self.adiciona_redirecionamento_traefik()
+            dados = self.adiciona_redirecionamento_traefik(dominio, porta)
             container += dados
             
         container += 'liftoff/gateone'
