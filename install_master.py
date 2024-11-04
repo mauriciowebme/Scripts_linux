@@ -194,7 +194,7 @@ class Docker(Executa_comados):
                         --label traefik.http.routers.teste.tls.certresolver=le \
                         --label traefik.http.services.teste.loadbalancer.server.port=8000 \
                     """
-        if resposta.lower() == 'S':
+        if resposta.lower() == 's':
             dominio = input('Digite o dominio:')
             porta = input('Digite a porta do container:')
             dados = self.adiciona_redirecionamento_traefik()
