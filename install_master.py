@@ -8,7 +8,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.37
+Versão 1.38
 ===========================================================================
 ===========================================================================
 """)
@@ -213,6 +213,38 @@ class Docker(Executa_comados):
                         ]
                     self.executar_comandos(comandos)
             self.cria_rede_docker()
+            
+    def instala_docker_force(self,):
+        print("Docker não está instalado.")
+        for i in range(2):
+            comandos = [
+                "apt update && apt upgrade -y",
+                "for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove -y $pkg; done",
+                "sudo apt-get update",
+                "sudo apt-get install -y ca-certificates curl",
+                "sudo install -m 0755 -d /etc/apt/keyrings",
+                "sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc",
+                "sudo chmod a+r /etc/apt/keyrings/docker.asc",
+                (
+                    "echo "
+                    "'deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] "
+                    "https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo \"$VERSION_CODENAME\") stable' | "
+                    "sudo tee /etc/apt/sources.list.d/docker.list > /dev/null"
+                ),
+                "sudo apt-get update",
+                "sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin"
+            ]
+
+            # Executa todos os comandos de instalação do Docker
+            resultados = self.executar_comandos(comandos, ignorar_erros=True)
+            if 'erro:true' not in resultados[-1]:
+                break
+            else:
+                comandos = [
+                    f"""sudo rm /etc/apt/sources.list.d/docker.list""",
+                    ]
+                self.executar_comandos(comandos)
+        self.cria_rede_docker()
 
 class Sistema(Docker, Executa_comados):
     def __init__(self):
@@ -340,6 +372,7 @@ class Sistema(Docker, Executa_comados):
         self.instala_docker()
         """Menu de opções"""
         opcoes_menu = [
+            ("Força instalação docker", self.instala_docker_force),
             ("Instala portainer", self.instala_portainer),
             ("Instala traefik", self.instala_traefik),
             ("Instala filebrowser", self.instala_filebrowser),
