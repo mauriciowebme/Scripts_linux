@@ -176,13 +176,15 @@ class Docker(Executa_comados):
         comandos = [
             f"""docker run -d \
                     --name webssh \
-                    -p 3001:3000 \
-                    wettyoss/wetty --ssh-host ssh.techupsistemas.com --ssh-user master
+                    --restart=always \
+                    -p 8001:8000 \
+                    liftoff/gateone
                 """,
             ]
         # comandos = [
         #     f"""docker run -d \
         #             --name webssh \
+                    # --restart=always \
         #             -p 8081:8080 \
         #             --mount source=shellngn-data,target=/home/node/server/data \
         #             -e HOST=0.0.0.0 \
