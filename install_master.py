@@ -162,6 +162,12 @@ class Docker(Executa_comados):
             ]
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker()
+        print('\nIPs possíveis para acesso:')
+        comandos = [
+            f"hostname -I | tr ' ' '\n'",
+            ]
+        resultados = self.executar_comandos(comandos)
+        print('Porta de acesso: 9443')
         
     def instala_webserver_ssh(self,):
         self.remove_container('webssh')
