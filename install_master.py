@@ -94,6 +94,16 @@ class Docker(Executa_comados):
             f'docker rm -f {nome_container}',
             ]
         resultados = self.executar_comandos(comandos)
+        
+    def adiciona_redirecionamento_traefik(self, dominio, porta):
+        dados = f""" --label traefik.enable=true \
+                --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
+                --label traefik.http.routers.{dominio}.rule=\"Host(`{dominio}`)\" \
+                --label traefik.http.routers.{dominio}.entrypoints=web,websecure \
+                --label traefik.http.routers.{dominio}.tls.certresolver=le \
+                --label traefik.http.services.{dominio}.loadbalancer.server.port={porta} \
+            """
+        return dados
     
     def instala_traefik(self,):
         self.remove_container('traefik')
@@ -126,7 +136,6 @@ class Docker(Executa_comados):
         self.cria_rede_docker()
         
     def instala_filebrowser(self,):
-        # self.remove_container('filebrowser')
         # --label traefik.enable=true \
         # --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
         # --label traefik.http.routers.filebrowser.rule="Host(`filebrowser.techupsistemas.com`)" \
@@ -173,11 +182,22 @@ class Docker(Executa_comados):
         
     def instala_webserver_ssh(self,):
         self.remove_container('webssh')
+        resposta = input('Deseja redirecionar com traefik?: S ou N')
+        if resposta == 'S':
+            dominio = input('Digite o dominio:')
+            porta = input('Digite a porta do container:')
+            self.adiciona_redirecionamento_traefik
         comandos = [
             f"""docker run -d \
                     --name webssh \
                     --restart=always \
                     -p 8001:8000 \
+                    --label traefik.enable=true \
+                    --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
+                    --label traefik.http.routers.teste.techupsistemas.com.rule=\"Host(`teste.techupsistemas.com`)\" \
+                    --label traefik.http.routers.teste.techupsistemas.com.entrypoints=web,websecure \
+                    --label traefik.http.routers.teste.techupsistemas.com.tls.certresolver=le \
+                    --label traefik.http.services.teste.techupsistemas.com.loadbalancer.server.port=8000 \
                     liftoff/gateone
                 """,
             ]
