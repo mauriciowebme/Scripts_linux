@@ -100,7 +100,7 @@ class Docker(Executa_comados):
         comandos = [
             f"""docker run -d \
                 --name traefik \
-                --restart always \
+                --restart=always \
                 -p 80:80 \
                 -p 443:443 \
                 -p 8080:8080 \
@@ -139,7 +139,7 @@ class Docker(Executa_comados):
             f"touch {self.install_principal}/database_filebrowser/database.db",
             f"""docker run -d \
                     --name filebrowser \
-                    --restart always \
+                    --restart=always \
                     -p 8082:80 \
                     -v /:/srv \
                     -v {self.install_principal}/database_filebrowser/database.db:/database.db \
