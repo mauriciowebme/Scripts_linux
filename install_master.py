@@ -8,7 +8,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.39
+Versão 1.40
 ===========================================================================
 ===========================================================================
 """)
@@ -21,7 +21,7 @@ class Executa_comados():
         # for comando in comandos:
         #     processo = subprocess.Popen(comando, shell=True)
         #     processo.wait()
-        resultados = []
+        resultados = {}
         for comando in comandos:
             print("\n" + "*" * 40)
             print(" " * 5 + "---> Executando comando: <---")
@@ -36,9 +36,9 @@ class Executa_comados():
             )
 
             # Lê e exibe cada linha da saída conforme é produzida
-            resultado = [] 
+            resultados[comando] = []
             for linha in processo.stdout:
-                resultado += [linha]
+                resultados[comando] += [linha]
                 print(linha, end="")
             
             print('\n')
@@ -47,14 +47,12 @@ class Executa_comados():
             processo.wait()
             if processo.returncode != 0:
                 print(f"\nErro ao executar comando: {comando}\n")
-                resultado += ['Erro:True']
-                resultados += [resultado]
+                resultados[comando] += ['Erro:True']
                 for linha in processo.stderr:
                     print(linha, end="")
                 if not ignorar_erros:
                     print("Saindo...")
                     exit()
-            resultados += [resultado]
                     
         return resultados
 
@@ -210,7 +208,7 @@ class Docker(Executa_comados):
 
             # Executa todos os comandos de instalação do Docker
             resultados = self.executar_comandos(comandos, ignorar_erros=True)
-            if 'erro:true' not in resultados[-1]:
+            if 'erro:true' not in resultados[comandos[-1]][-1]:
                 break
             else:
                 comandos = [
