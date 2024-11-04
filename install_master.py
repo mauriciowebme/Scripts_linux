@@ -23,10 +23,11 @@ class Executa_comados():
         #     processo.wait()
         resultados = {}
         for comando in comandos:
-            print("\n" + "*" * 40)
-            print(" " * 5 + "---> Executando comando: <---")
-            print(" " * 5 + f"{comando}")
-            print("*" * 40 + "\n")
+            if exibir_resultados:
+                print("\n" + "*" * 40)
+                print(" " * 5 + "---> Executando comando: <---")
+                print(" " * 5 + f"{comando}")
+                print("*" * 40 + "\n")
             processo = subprocess.Popen(
                 comando, 
                 shell=True, 
@@ -165,7 +166,7 @@ class Docker(Executa_comados):
         comandos = [
             f"hostname -I | tr ' ' '\n'",
             ]
-        resultados = self.executar_comandos(comandos, exibir_resultados=False)
+        resultados = self.executar_comandos(comandos)
         print('Porta de acesso: 9443')
         
     def instala_webserver_ssh(self,):
