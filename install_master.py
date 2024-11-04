@@ -58,6 +58,7 @@ class Executa_comados():
 class Docker(Executa_comados):
     def __init__(self):
         Executa_comados.__init__(self)
+        self.install_principal = '/install_principal'
 
     def cria_rede_docker(self):
         network_name = "net"
@@ -93,9 +94,58 @@ class Docker(Executa_comados):
             ]
         resultados = self.executar_comandos(comandos)
     
+    def instala_traefik(self,):
+        # self.remove_container('traefik')
+        comandos = [
+            f"""docker run -d \
+                --name traefik \
+                --restart always \
+                -p 80:80 \
+                -p 443:443 \
+                -p 8080:8080 \
+                -v /var/run/docker.sock:/var/run/docker.sock:ro \
+                -v {self.install_principal}/traefik/lets-encrypt:/letsencrypt \
+                -v {self.install_principal}/traefik:/etc/traefik/ \
+                traefik:latest \
+                --entrypoints.web.address=:80 \
+                --entrypoints.websecure.address=:443 \
+                --entrypoints.traefik.address=:8080 \
+                --providers.docker=true \
+                --providers.file.filename=/etc/traefik/dynamic_conf.yml \
+                --providers.docker.exposedbydefault=false \
+                --api.dashboard=true \
+                --api.insecure=true \
+                --certificatesResolvers.le.acme.email=mauriciowebme@gmail.com \
+                --certificatesResolvers.le.acme.storage=/letsencrypt/acme.json \
+                --certificatesResolvers.le.acme.httpChallenge.entryPoint=web \
+                --log.level=INFO
+                """,
+            ]
+        resultados = self.executar_comandos(comandos)
+        self.cria_rede_docker()
+        
+    def instala_filebrowser(self,):
+        # self.remove_container('filebrowser')
+        # --label traefik.enable=true \
+        # --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
+        # --label traefik.http.routers.filebrowser.rule="Host(`filebrowser.techupsistemas.com`)" \
+        # --label traefik.http.routers.filebrowser.entrypoints=web,websecure \
+        # --label traefik.http.routers.filebrowser.tls.certresolver=le \
+        # --label traefik.http.services.filebrowser.loadbalancer.server.port=80 \
+        comandos = [
+            f"""docker run -d \
+                    --name filebrowser \
+                    --restart always \
+                    -p 8082:80 \
+                    -v /:/srv \
+                    -v {self.install_principal}/database_filebrowser/database.db:/database.db \
+                    filebrowser/filebrowser
+                """,
+            ]
+        resultados = self.executar_comandos(comandos)
+        self.cria_rede_docker()
+        
     def instala_webserver_ssh(self,):
-        #your_server = input("\nDigite o usuario@endereço para conexão ssh: ")
-        # porta para acesso 8080
         self.remove_container('webssh')
         comandos = [
             f"""docker run -d \
