@@ -194,10 +194,10 @@ class Docker(Executa_comados):
                     -p 8001:8000 \
                     --label traefik.enable=true \
                     --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
-                    --label traefik.http.routers.teste.techupsistemas.com.rule=\"Host('teste.techupsistemas.com')\" \
-                    --label traefik.http.routers.teste.techupsistemas.com.entrypoints=web,websecure \
-                    --label traefik.http.routers.teste.techupsistemas.com.tls.certresolver=le \
-                    --label traefik.http.services.teste.techupsistemas.com.loadbalancer.server.port=8000 \
+                    --label traefik.http.routers.teste.rule=\"Host('teste.techupsistemas.com')\" \
+                    --label traefik.http.routers.teste.entrypoints=web,websecure \
+                    --label traefik.http.routers.teste.tls.certresolver=le \
+                    --label traefik.http.services.teste.loadbalancer.server.port=8000 \
                     liftoff/gateone
                 """,
             ]
