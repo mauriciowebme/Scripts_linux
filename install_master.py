@@ -176,11 +176,11 @@ class Docker(Executa_comados):
 
     def instala_docker(self,):
         # Executa o comando para verificar se o Docker está instalado
-        resultados = self.executar_comandos(["command -v docker"], ignorar_erros=True)
-        # Verifica se há saída para o comando
         comando = "command -v docker"
+        resultados = self.executar_comandos([comando], ignorar_erros=True)
         if resultados[comando]:
-            print("Docker está instalado.")
+            pass
+            # print("Docker está instalado.")
         else:
             print("Docker não está instalado.")
             comandos = [
@@ -328,9 +328,9 @@ class Sistema(Docker, Executa_comados):
         
     def menu_docker(self):
         print("\nBem-vindo ao Gerenciador Docker\n")
+        self.instala_docker()
         """Menu de opções"""
         opcoes_menu = [
-            ("Instala docker", self.instala_docker),
             ("Instala portainer", self.instala_portainer),
             ("Instala traefik", self.instala_traefik),
             ("Instala filebrowser", self.instala_filebrowser),
