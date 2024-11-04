@@ -181,7 +181,7 @@ class Docker(Executa_comados):
         resultados = self.executar_comandos([comando], ignorar_erros=True)
         if resultados[comando]:
             pass
-            # print("Docker está instalado.")
+            print("Intalação docker ok.")
         else:
             print("Docker não está instalado.")
             for i in range(2):
