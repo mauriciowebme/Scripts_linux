@@ -8,7 +8,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.42
+Versão 1.43
 ===========================================================================
 ===========================================================================
 """)
@@ -183,7 +183,7 @@ class Docker(Executa_comados):
     def instala_webserver_ssh(self,):
         self.remove_container('webssh')
         resposta = input('Deseja redirecionar com traefik?: S ou N')
-        if resposta == 'S':
+        if resposta.lower() == 'S':
             dominio = input('Digite o dominio:')
             porta = input('Digite a porta do container:')
             self.adiciona_redirecionamento_traefik
@@ -194,7 +194,7 @@ class Docker(Executa_comados):
                     -p 8001:8000 \
                     --label traefik.enable=true \
                     --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
-                    --label traefik.http.routers.teste.rule=\"Host('teste.techupsistemas.com')\" \
+                    --label traefik.http.routers.teste.rule=\"Host(\"teste.techupsistemas.com\")\" \
                     --label traefik.http.routers.teste.entrypoints=web,websecure \
                     --label traefik.http.routers.teste.tls.certresolver=le \
                     --label traefik.http.services.teste.loadbalancer.server.port=8000 \
