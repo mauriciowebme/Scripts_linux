@@ -8,7 +8,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.45
+Versão 1.46
 ===========================================================================
 ===========================================================================
 """)
@@ -98,7 +98,7 @@ class Docker(Executa_comados):
     def adiciona_redirecionamento_traefik(self, dominio, porta):
         dados = f""" --label traefik.enable=true \
                 --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
-                --label traefik.http.routers.{dominio}.rule=\"Host(`{dominio}`)\" \
+                --label traefik.http.routers.{dominio}.rule=\"Host(\`{dominio}\`)\" \
                 --label traefik.http.routers.{dominio}.entrypoints=web,websecure \
                 --label traefik.http.routers.{dominio}.tls.certresolver=le \
                 --label traefik.http.services.{dominio}.loadbalancer.server.port={porta} \
