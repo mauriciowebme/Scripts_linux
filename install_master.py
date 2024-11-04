@@ -145,6 +145,21 @@ class Docker(Executa_comados):
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker()
         
+    def instala_portainer(self,):
+        comandos = [
+            f"""sudo docker run -d \
+                    --name portainer \
+                    --restart=always \
+                    -p 8000:8000 \
+                    -p 9443:9443 \
+                    -v /var/run/docker.sock:/var/run/docker.sock \
+                    -v {self.install_principal}/portainer:/data \
+                    portainer/portainer-ce:latest
+                """,
+            ]
+        resultados = self.executar_comandos(comandos)
+        self.cria_rede_docker()
+        
     def instala_webserver_ssh(self,):
         self.remove_container('webssh')
         comandos = [
@@ -316,6 +331,9 @@ class Sistema(Docker, Executa_comados):
         """Menu de opções"""
         opcoes_menu = [
             ("Instala docker", self.instala_docker),
+            ("Instala portainer", self.instala_portainer),
+            ("Instala traefik", self.instala_traefik),
+            ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
         ]
         self.mostrar_menu(opcoes_menu)
