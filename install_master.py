@@ -8,7 +8,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.47
+Versão 1.48
 ===========================================================================
 ===========================================================================
 """)
@@ -95,16 +95,40 @@ class Docker(Executa_comados):
             ]
         resultados = self.executar_comandos(comandos)
         
-    def adiciona_redirecionamento_traefik(self, dominio, porta):
+    def adiciona_redirecionamento_traefik(self, container):
+        """
+        Exemplo de uso:
+        
+        container = f"docker run -d \
+                        --name webssh \
+                        --restart=always \
+                        -p 8001:8000 \
+                        liftoff/gateone
+                    "
+        OBS: Coloque 3 aspas no lugar de uma.
+                    
+        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
+        if resposta.lower() == 's':
+            container = self.adiciona_redirecionamento_traefik(container)
+        
+        """
+        dominio = input('Digite o dominio:')
+        porta = input('Digite a porta do container:')
+        
+        container = container.replace( '  ', '' ).replace( '\n', '' )
+        imagem = container.split()[-1]
+        container = container[:-len(imagem)].rstrip()
+        
         dominio_ = dominio.replace('.', '_')
-        dados = f""" --label traefik.enable=true \
+        labels = f""" --label traefik.enable=true \
                 --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
                 --label traefik.http.routers.{dominio_}.rule=\"Host(\`{dominio}\`)\" \
                 --label traefik.http.routers.{dominio_}.entrypoints=web,websecure \
                 --label traefik.http.routers.{dominio_}.tls.certresolver=le \
                 --label traefik.http.services.{dominio_}.loadbalancer.server.port={porta} \
             """
-        return dados
+        container = container + labels.replace( '  ', '' ) + imagem
+        return container
     
     def instala_traefik(self,):
         self.remove_container('traefik')
@@ -183,32 +207,23 @@ class Docker(Executa_comados):
         
     def instala_webserver_ssh(self,):
         self.remove_container('webssh')
-        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
+        print('Porta interna para uso: 8080')
         container = f"""docker run -d \
                         --name webssh \
                         --restart=always \
-                        -p 8001:8000 \
+                        -p 8081:8080 \
+                        --mount source=shellngn-data,target=/home/node/server/data \
+                        -e HOST=0.0.0.0 \
+                        shellngn/pro:latest
                     """
+                    
+        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
         if resposta.lower() == 's':
-            dominio = input('Digite o dominio:')
-            porta = input('Digite a porta do container:')
-            dados = self.adiciona_redirecionamento_traefik(dominio, porta)
-            container += dados
+            container = self.adiciona_redirecionamento_traefik(container)
             
-        container += 'liftoff/gateone'
         comandos = [
             container,
             ]
-        # comandos = [
-        #     f"""docker run -d \
-        #             --name webssh \
-                    # --restart=always \
-        #             -p 8081:8080 \
-        #             --mount source=shellngn-data,target=/home/node/server/data \
-        #             -e HOST=0.0.0.0 \
-        #             shellngn/pro:latest
-        #         """,
-        #     ]
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker()
 
