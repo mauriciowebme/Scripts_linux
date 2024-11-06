@@ -8,7 +8,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.49
+Versão 1.50
 ===========================================================================
 ===========================================================================
 """)
@@ -242,9 +242,6 @@ class Docker(Executa_comados):
         porta = '80'
         
         dominio_ = dominio.replace('.', '_')
-        
-        self.remove_container(f'wp_{dominio_}_bd')
-        self.remove_container(f'wp_{dominio_}')
         container_db = f"""docker run -d \
                         --name wp_{dominio_}_bd \
                         --restart=always \
@@ -269,7 +266,9 @@ class Docker(Executa_comados):
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
         if resposta.lower() == 's':
             container = self.adiciona_redirecionamento_traefik(container, dominio, porta)
-            
+        
+        self.remove_container(f'wp_{dominio_}_bd')
+        self.remove_container(f'wp_{dominio_}')
         comandos = [
             container_db,
             container,
