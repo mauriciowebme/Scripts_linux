@@ -124,9 +124,11 @@ class Docker(Executa_comados):
         dominio_ = dominio.replace('.', '_')
         labels = f""" --label traefik.enable=true \
                 --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
+                    
                 --label traefik.http.routers.{dominio_}.rule=\"Host(\`{dominio}\`)\" \
                 --label traefik.http.routers.{dominio_}.entrypoints=web,websecure \
                 --label traefik.http.routers.{dominio_}.tls.certresolver=le \
+                    
                 --label traefik.http.services.{dominio_}.loadbalancer.server.port={porta} \
             """
         container = container + labels.replace( '  ', '' ) + imagem
@@ -243,10 +245,10 @@ class Docker(Executa_comados):
         
         dominio_ = dominio.replace('.', '_')
         
-        self.remove_container(f'{dominio_}_wp_bd')
-        self.remove_container(f'{dominio_}_wp')
+        self.remove_container(f'wp_{dominio_}_bd')
+        self.remove_container(f'wp_{dominio_}')
         container_db = f"""docker run -d \
-                        --name {dominio_}_wp_bd \
+                        --name wp_{dominio_}_bd \
                         --restart=always \
                         -e MYSQL_DATABASE=wordpress \
                         -e MYSQL_USER=wordpress \
@@ -256,9 +258,9 @@ class Docker(Executa_comados):
                         mysql:5.7
                     """
         container = f"""docker run -d \
-                        --name {dominio_}_wp \
+                        --name wp_{dominio_} \
                         --restart=always \
-                        -e WORDPRESS_DB_HOST={dominio_}_wp_bd:3306 \
+                        -e WORDPRESS_DB_HOST=wp_{dominio_}_bd:3306 \
                         -e WORDPRESS_DB_USER=wordpress \
                         -e WORDPRESS_DB_PASSWORD=wordpress \
                         -e WORDPRESS_DB_NAME=wordpress \
