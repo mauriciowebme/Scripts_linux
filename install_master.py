@@ -281,7 +281,7 @@ class Docker(Executa_comados):
         container_db = f"""docker run -d \
                         --name wp_{dominio_}_bd \
                         --restart=always \
-                        --network {self.nome_rede_principal_traefik}
+                        --network {self.nome_rede_principal_traefik} \
                         -e MYSQL_DATABASE=wordpress \
                         -e MYSQL_USER=wordpress \
                         -e MYSQL_PASSWORD=wordpress \
