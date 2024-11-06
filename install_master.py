@@ -236,6 +236,25 @@ class Docker(Executa_comados):
         self.cria_rede_docker()
         
     def instala_wordpress(self,):
+        """
+        docker run -d \
+            --name wp_teste_techupsistemas_com \
+            --restart=always \
+            -p 8083:8080 \
+            -e WORDPRESS_DB_HOST=wp_teste_techupsistemas_com_bd:3306 \
+            -e WORDPRESS_DB_USER=wordpress \
+            -e WORDPRESS_DB_PASSWORD=wordpress \
+            -e WORDPRESS_DB_NAME=wordpress \
+            -v /install_principal/wordpress/teste_techupsistemas_com:/var/www/html \
+            --label traefik.enable=true \
+            --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
+            --label traefik.http.routers.teste_techupsistemas_com.rule="Host(\`teste.techupsistemas.com\`)" \
+            --label traefik.http.routers.teste_techupsistemas_com.entrypoints=web,websecure \
+            --label traefik.http.routers.teste_techupsistemas_com.tls.certresolver=le \
+            --label traefik.http.services.teste_techupsistemas_com.loadbalancer.server.port=80 \
+            wordpress:latest
+        """
+        
         print('Instalando o wordpress.\n')
         print('Porta interna para uso: 80')
         dominio = input('Digite o dominio:')
