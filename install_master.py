@@ -149,6 +149,33 @@ class Docker(Executa_comados):
         container = container + labels.replace( '  ', '' ) + imagem
         return container
     
+    def iniciar_monitoramento(self):
+        comandos = [
+            f"""docker run -d \
+                --name prometheus \
+                --restart=always \
+                -p 9090:9090 \
+                -v /path/to/your/prometheus.yml:/etc/prometheus/prometheus.yml \
+                prom/prometheus
+            """,
+            
+            f"""docker run -d \
+                --name node-exporter \
+                --restart=always \
+                -p 9100:9100 \
+                prom/node-exporter
+            """,
+            
+            f"""docker run -d \
+                --name grafana \
+                --restart=always \
+                -p 3000:3000 \
+                grafana/grafana
+            """,
+        ]
+
+        self.executar_comandos(comandos)
+    
     def instala_traefik(self,):
         self.remove_container('traefik')
         comandos = [
@@ -387,6 +414,41 @@ class Sistema(Docker, Executa_comados):
             f"echo 'Teste ok!'"
         ]
         resultado = self.executar_comandos(comandos)
+        
+    def ecaminhamentos_portas_tuneis(self,):
+        comandos = [
+            "",
+            "habilitando encaminhamentos portas tuneis.",
+            "",
+            "Tunel do servidor para maquina que solicita.",
+            "ssh -R 180:localhost:80 master@179.105.50.81",
+            "Isso significa que qualquer requisição feita para o SERVIDOR na porta 180 será redirecionada para localhost:80 na sua máquina local.",
+            "",
+            "Tunel da maquina que solicita para o servidor.",
+            "ssh -L 17080:localhost:7080 master@179.105.50.81",
+            "Esse comando fará com que todo o tráfego na porta 8080 da sua máquina local seja redirecionado para localhost:7080 no seu servidor.",
+            "",
+            "Use isso para listar os tuneis no servidor:",
+            "ps aux | grep \"ssh -fN -L\"",
+            "",
+            "Use isso para matar os processos de tuneis no servidor:",
+            "pkill -f \"ssh -fN -L\"",
+            "",
+            "Habilitando encaminhamentos de portas:",
+            "",
+            "Criando backup",
+            "sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak",
+            "",
+            "nano /etc/ssh/sshd_config",
+            "Procure no arquivo por GatewayPorts e PermitRootLogin e remova o # dos dois",
+            "GatewayPorts yes: assim que a linha tem que ficar.",
+            "PermitRootLogin yes: assim que a linha tem que ficar.",
+            "",
+            "Reinicie o ssh.",
+            "sudo systemctl restart ssh"
+        ]
+
+        resultado = self.executar_comandos(comandos)
     
     def adicionar_ao_fstab(self, dispositivo, ponto_montagem):
         try:
@@ -486,6 +548,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
             ("Instala wordpress", self.instala_wordpress),
+            ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
         ]
         self.mostrar_menu(opcoes_menu)
     
@@ -544,6 +607,7 @@ def main():
         ("verificando status do sistema", servicos.verificando_status_sistema),
         ("Menu operações de sistema", servicos.opcoes_sistema),
         ("Menu Docker", servicos.menu_docker),
+        ("Ecaminhamentos portas tuneis", servicos.ecaminhamentos_portas_tuneis),
     ]
     servicos.mostrar_menu(opcoes_menu, principal=True)
 
