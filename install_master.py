@@ -95,7 +95,7 @@ class Docker(Executa_comados):
             ]
         resultados = self.executar_comandos(comandos)
         
-    def adiciona_redirecionamento_traefik(self, container):
+    def adiciona_redirecionamento_traefik(self, container, dominio=None, porta=None):
         """
         Exemplo de uso:
         
@@ -112,8 +112,10 @@ class Docker(Executa_comados):
             container = self.adiciona_redirecionamento_traefik(container)
         
         """
-        dominio = input('Digite o dominio:')
-        porta = input('Digite a porta do container:')
+        if dominio == None:
+            dominio = input('Digite o dominio:')
+        if porta == None:
+            porta = input('Digite a porta do container:')
         
         container = container.replace( '  ', '' ).replace( '\n', '' )
         imagem = container.split()[-1]
@@ -159,6 +161,12 @@ class Docker(Executa_comados):
             ]
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker()
+        print('\nIPs possíveis para acesso:')
+        comandos = [
+            f"hostname -I | tr ' ' '\n'",
+            ]
+        resultados = self.executar_comandos(comandos)
+        print('Porta de acesso: 8080')
         
     def instala_filebrowser(self,):
         # --label traefik.enable=true \
@@ -222,6 +230,48 @@ class Docker(Executa_comados):
             container = self.adiciona_redirecionamento_traefik(container)
             
         comandos = [
+            container,
+            ]
+        resultados = self.executar_comandos(comandos)
+        self.cria_rede_docker()
+        
+    def instala_wordpress(self,):
+        print('Instalando o wordpress.\n')
+        print('Porta interna para uso: 80')
+        dominio = input('Digite o dominio:')
+        porta = '80'
+        
+        dominio_ = dominio.replace('.', '_')
+        
+        self.remove_container(f'{dominio_}_wp_bd')
+        self.remove_container(f'{dominio_}_wp')
+        container_db = f"""docker run -d \
+                        --name {dominio_}_wp_bd \
+                        --restart=always \
+                        -e MYSQL_DATABASE=wordpress \
+                        -e MYSQL_USER=wordpress \
+                        -e MYSQL_PASSWORD=wordpress \
+                        -e MYSQL_RANDOM_ROOT_PASSWORD=wordpress \
+                        -v {self.install_principal}/wordpress/{dominio_}/mysql:/var/lib/mysql \
+                        mysql:5.7
+                    """
+        container = f"""docker run -d \
+                        --name {dominio_}_wp \
+                        --restart=always \
+                        -e WORDPRESS_DB_HOST={dominio_}_wp_bd:3306 \
+                        -e WORDPRESS_DB_USER=wordpress \
+                        -e WORDPRESS_DB_PASSWORD=wordpress \
+                        -e WORDPRESS_DB_NAME=wordpress \
+                        -v {self.install_principal}/wordpress/{dominio_}:/var/www/html \
+                        wordpress:latest
+                    """
+                    
+        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
+        if resposta.lower() == 's':
+            container = self.adiciona_redirecionamento_traefik(container, dominio, porta)
+            
+        comandos = [
+            container_db,
             container,
             ]
         resultados = self.executar_comandos(comandos)
@@ -400,6 +450,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala traefik", self.instala_traefik),
             ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
+            ("Instala wordpress", self.instala_wordpress),
         ]
         self.mostrar_menu(opcoes_menu)
     
