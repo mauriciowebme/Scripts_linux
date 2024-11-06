@@ -61,16 +61,19 @@ class Docker(Executa_comados):
         Executa_comados.__init__(self)
         self.install_principal = '/install_principal'
         self.nome_rede_principal_traefik = "net"
+        self.nome_rede_principal_interno = "interno"
 
     def cria_rede_docker(self, associar_container_nome=False, associar_todos=False):
         # Verifica se a rede já existe
         result = subprocess.run(["docker", "network", "ls"], capture_output=True, text=True)
-        if self.nome_rede_principal_traefik not in result.stdout:
-            print(f"Rede '{self.nome_rede_principal_traefik}' não encontrada. Criando rede...")
-            subprocess.run(["docker", "network", "create", self.nome_rede_principal_traefik])
-            print(f"Rede '{self.nome_rede_principal_traefik}' criada com sucesso.")
-        # else:
-        #     print(f"Rede '{network_name}' já existe.")
+        redes = [self.nome_rede_principal_traefik, self.nome_rede_principal_interno]
+        for rede in redes:
+            if rede not in result.stdout:
+                print(f"Rede '{rede}' não encontrada. Criando rede...")
+                subprocess.run(["docker", "network", "create", rede])
+                print(f"Rede '{rede}' criada com sucesso.")
+            # else:
+            #     print(f"Rede '{network_name}' já existe.")
         
         if associar_container_nome:
             # Tenta conectar o container à rede e captura o erro, se houver
@@ -277,6 +280,7 @@ class Docker(Executa_comados):
         container_db = f"""docker run -d \
                         --name wp_{dominio_}_bd \
                         --restart=always \
+                        --network {self.nome_rede_principal_interno}
                         -e MYSQL_DATABASE=wordpress \
                         -e MYSQL_USER=wordpress \
                         -e MYSQL_PASSWORD=wordpress \
@@ -287,6 +291,7 @@ class Docker(Executa_comados):
         container = f"""docker run -d \
                         --name wp_{dominio_} \
                         --restart=always \
+                        --network {self.nome_rede_principal_interno}
                         -e WORDPRESS_DB_HOST=wp_{dominio_}_bd:3306 \
                         -e WORDPRESS_DB_USER=wordpress \
                         -e WORDPRESS_DB_PASSWORD=wordpress \
