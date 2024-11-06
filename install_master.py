@@ -150,22 +150,36 @@ class Docker(Executa_comados):
         return container
     
     def iniciar_monitoramento(self):
+        conteudo = """global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+"""
+        caminho = f'{self.install_principal}/prometheus/prometheus.yml'
         comandos = [
+            f"mkdir {self.install_principal}/prometheus/",
+            f"touch {caminho}",
+            f"echo '{conteudo}' > {caminho}",
             f"""docker run -d \
                 --name prometheus \
                 --restart=always \
                 -p 9090:9090 \
-                -v /path/to/your/prometheus.yml:/etc/prometheus/prometheus.yml \
+                -v {self.install_principal}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
                 prom/prometheus
             """,
-            
             f"""docker run -d \
                 --name node-exporter \
                 --restart=always \
                 -p 9100:9100 \
                 prom/node-exporter
             """,
-            
             f"""docker run -d \
                 --name grafana \
                 --restart=always \
