@@ -276,11 +276,12 @@ class Docker(Executa_comados):
         dominio = input('Digite o dominio:')
         porta = '80'
         
+        # --network {self.nome_rede_principal_interno}
         dominio_ = dominio.replace('.', '_')
         container_db = f"""docker run -d \
                         --name wp_{dominio_}_bd \
                         --restart=always \
-                        --network {self.nome_rede_principal_interno}
+                        --network {self.nome_rede_principal_traefik}
                         -e MYSQL_DATABASE=wordpress \
                         -e MYSQL_USER=wordpress \
                         -e MYSQL_PASSWORD=wordpress \
@@ -291,12 +292,12 @@ class Docker(Executa_comados):
         container = f"""docker run -d \
                         --name wp_{dominio_} \
                         --restart=always \
-                        --network {self.nome_rede_principal_interno}
                         -e WORDPRESS_DB_HOST=wp_{dominio_}_bd:3306 \
                         -e WORDPRESS_DB_USER=wordpress \
                         -e WORDPRESS_DB_PASSWORD=wordpress \
                         -e WORDPRESS_DB_NAME=wordpress \
                         -v {self.install_principal}/wordpress/{dominio_}:/var/www/html \
+                        --network {self.nome_rede_principal_interno}
                         wordpress:latest
                     """
                     
