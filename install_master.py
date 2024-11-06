@@ -8,7 +8,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.51
+Versão 1.52
 ===========================================================================
 ===========================================================================
 """)
@@ -297,7 +297,6 @@ class Docker(Executa_comados):
                         -e WORDPRESS_DB_PASSWORD=wordpress \
                         -e WORDPRESS_DB_NAME=wordpress \
                         -v {self.install_principal}/wordpress/{dominio_}:/var/www/html \
-                        --network {self.nome_rede_principal_interno}
                         wordpress:latest
                     """
                     
