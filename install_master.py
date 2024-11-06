@@ -8,7 +8,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.48
+Versão 1.49
 ===========================================================================
 ===========================================================================
 """)
@@ -124,11 +124,9 @@ class Docker(Executa_comados):
         dominio_ = dominio.replace('.', '_')
         labels = f""" --label traefik.enable=true \
                 --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
-                    
                 --label traefik.http.routers.{dominio_}.rule=\"Host(\`{dominio}\`)\" \
                 --label traefik.http.routers.{dominio_}.entrypoints=web,websecure \
                 --label traefik.http.routers.{dominio_}.tls.certresolver=le \
-                    
                 --label traefik.http.services.{dominio_}.loadbalancer.server.port={porta} \
             """
         container = container + labels.replace( '  ', '' ) + imagem
