@@ -253,6 +253,7 @@ scrape_configs:
         # --label traefik.http.routers.filebrowser.entrypoints=web,websecure \
         # --label traefik.http.routers.filebrowser.tls.certresolver=le \
         # --label traefik.http.services.filebrowser.loadbalancer.server.port=80 \
+        print('Porta interna para uso: 80')
         container = f"""docker run -d \
                     --name filebrowser \
                     --restart=always \
