@@ -253,19 +253,23 @@ scrape_configs:
         # --label traefik.http.routers.filebrowser.entrypoints=web,websecure \
         # --label traefik.http.routers.filebrowser.tls.certresolver=le \
         # --label traefik.http.services.filebrowser.loadbalancer.server.port=80 \
-        
-        comandos = [
-            f"rm -r {self.install_principal}/database_filebrowser",
-            f"mkdir {self.install_principal}/database_filebrowser",
-            f"touch {self.install_principal}/database_filebrowser/database.db",
-            f"""docker run -d \
+        container = f"""docker run -d \
                     --name filebrowser \
                     --restart=always \
                     -p 8082:80 \
                     -v /:/srv \
                     -v {self.install_principal}/database_filebrowser/database.db:/database.db \
                     filebrowser/filebrowser
-                """,
+                """
+        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
+        if resposta.lower() == 's':
+            container = self.adiciona_redirecionamento_traefik(container)
+        
+        comandos = [
+            f"rm -r {self.install_principal}/database_filebrowser",
+            f"mkdir {self.install_principal}/database_filebrowser",
+            f"touch {self.install_principal}/database_filebrowser/database.db",
+            container,
             ]
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
