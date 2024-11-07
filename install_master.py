@@ -140,8 +140,8 @@ class Docker(Executa_comados):
         container = container[:-len(imagem)].rstrip()
         
         dominio_ = dominio.replace('.', '_')
-        labels = f""" --network {self.rede_principal_traefik} \
-                --label traefik.enable=true \
+        # --network {self.redes_docker[0]} \
+        labels = f""" --label traefik.enable=true \
                 --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
                 --label traefik.http.routers.{dominio_}.rule=\"Host(\`{dominio}\`)\" \
                 --label traefik.http.routers.{dominio_}.entrypoints=web,websecure \
@@ -274,6 +274,7 @@ scrape_configs:
             ]
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
+        self.cria_rede_docker(associar_container_nome='filebrowser', numero_rede=0)
         
     def instala_portainer(self,):
         self.remove_container('portainer')
