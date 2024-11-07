@@ -8,7 +8,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.52
+Versão 1.53
 ===========================================================================
 ===========================================================================
 """)
@@ -255,6 +255,7 @@ scrape_configs:
         # --label traefik.http.services.filebrowser.loadbalancer.server.port=80 \
         
         comandos = [
+            f"rm -r {self.install_principal}/database_filebrowser",
             f"mkdir {self.install_principal}/database_filebrowser",
             f"touch {self.install_principal}/database_filebrowser/database.db",
             f"""docker run -d \
