@@ -60,14 +60,12 @@ class Docker(Executa_comados):
     def __init__(self):
         Executa_comados.__init__(self)
         self.install_principal = '/install_principal'
-        self.nome_rede_principal_traefik = "net"
-        self.nome_rede_principal_interno = "interno"
+        self.redes_docker = ['net', 'interno']
 
-    def cria_rede_docker(self, associar_container_nome=False, associar_todos=False):
+    def cria_rede_docker(self, associar_todos=False, associar_container_nome=False, numero_rede=None):
         # Verifica se a rede já existe
         result = subprocess.run(["docker", "network", "ls"], capture_output=True, text=True)
-        redes = [self.nome_rede_principal_traefik, self.nome_rede_principal_interno]
-        for rede in redes:
+        for rede in self.redes_docker:
             if rede not in result.stdout:
                 print(f"Rede '{rede}' não encontrada. Criando rede...")
                 subprocess.run(["docker", "network", "create", rede])
@@ -76,34 +74,38 @@ class Docker(Executa_comados):
             #     print(f"Rede '{network_name}' já existe.")
         
         if associar_container_nome:
+            if numero_rede != None:
+                self.redes_docker = [self.redes_docker[numero_rede]]
             # Tenta conectar o container à rede e captura o erro, se houver
-            connect_result = subprocess.run(
-                ["docker", "network", "connect", self.nome_rede_principal_traefik, associar_container_nome],
-                capture_output=True, text=True
-            )
+            for rede in self.redes_docker:
+                connect_result = subprocess.run(
+                    ["docker", "network", "connect", rede, associar_container_nome],
+                    capture_output=True, text=True
+                )
 
-            # Verifica se o container foi associado com sucesso ou já estava na rede
-            if connect_result.returncode == 0:
-                print(f"Container {associar_container_nome} associado à rede '{self.nome_rede_principal_traefik}' com sucesso.")
-            # elif "already exists in network" not in connect_result.stderr:
-            #     print(f"Erro ao associar o container {container_id}: {connect_result.stderr.strip()}")
+                # Verifica se o container foi associado com sucesso ou já estava na rede
+                if connect_result.returncode == 0:
+                    print(f"Container {associar_container_nome} associado à rede '{self.rede_principal_traefik}' com sucesso.")
+                # elif "already exists in network" not in connect_result.stderr:
+                #     print(f"Erro ao associar o container {container_id}: {connect_result.stderr.strip()}")
         
         if associar_todos:
             # Associa todos os containers existentes à rede
             result = subprocess.run(["docker", "ps", "-q"], capture_output=True, text=True)
             container_ids = result.stdout.strip().splitlines()
             for container_id in container_ids:
-                # Tenta conectar o container à rede e captura o erro, se houver
-                connect_result = subprocess.run(
-                    ["docker", "network", "connect", self.nome_rede_principal_traefik, container_id],
-                    capture_output=True, text=True
-                )
+                for rede in self.redes_docker:
+                    # Tenta conectar o container à rede e captura o erro, se houver
+                    connect_result = subprocess.run(
+                        ["docker", "network", "connect", rede, container_id],
+                        capture_output=True, text=True
+                    )
 
-                # Verifica se o container foi associado com sucesso ou já estava na rede
-                if connect_result.returncode == 0:
-                    print(f"Container {container_id} associado à rede '{self.nome_rede_principal_traefik}' com sucesso.")
-                # elif "already exists in network" not in connect_result.stderr:
-                #     print(f"Erro ao associar o container {container_id}: {connect_result.stderr.strip()}")
+                    # Verifica se o container foi associado com sucesso ou já estava na rede
+                    if connect_result.returncode == 0:
+                        print(f"Container {container_id} associado à rede '{rede}' com sucesso.")
+                    # elif "already exists in network" not in connect_result.stderr:
+                    #     print(f"Erro ao associar o container {container_id}: {connect_result.stderr.strip()}")
 
     def remove_container(self, nome_container):
         comandos = [
@@ -138,7 +140,7 @@ class Docker(Executa_comados):
         container = container[:-len(imagem)].rstrip()
         
         dominio_ = dominio.replace('.', '_')
-        labels = f""" --network {self.nome_rede_principal_traefik} \
+        labels = f""" --network {self.rede_principal_traefik} \
                 --label traefik.enable=true \
                 --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
                 --label traefik.http.routers.{dominio_}.rule=\"Host(\`{dominio}\`)\" \
@@ -218,13 +220,31 @@ scrape_configs:
                 """,
             ]
         resultados = self.executar_comandos(comandos)
-        self.cria_rede_docker(associar_container_nome='traefik')
+        self.cria_rede_docker(associar_container_nome='traefik', numero_rede=0)
         print('\nIPs possíveis para acesso:')
         comandos = [
             f"hostname -I | tr ' ' '\n'",
             ]
         resultados = self.executar_comandos(comandos)
         print('Porta de acesso: 8080')
+        
+    def configura_rede(self,):
+        print('\nAdicionando rede no container.')
+        
+        result = subprocess.run(
+            ["docker", "ps", "--format", "{{.ID}} {{.Names}}"],
+            capture_output=True,
+            text=True
+        )
+        container_info = result.stdout.strip().splitlines()
+        for info in container_info:
+            print(info)
+            
+        nome_container = input('\nDigite o nome ou ID do container:')
+        for x, y in enumerate(self.redes_docker):
+            print(f'Rede:{x} {y}')
+        rede_numero = input('\nDigite o numero da rede:')
+        self.cria_rede_docker(associar_container_nome=nome_container, numero_rede=int(rede_numero))
         
     def instala_filebrowser(self,):
         # --label traefik.enable=true \
@@ -233,7 +253,7 @@ scrape_configs:
         # --label traefik.http.routers.filebrowser.entrypoints=web,websecure \
         # --label traefik.http.routers.filebrowser.tls.certresolver=le \
         # --label traefik.http.services.filebrowser.loadbalancer.server.port=80 \
-        self.remove_container('filebrowser')
+        
         comandos = [
             f"mkdir {self.install_principal}/database_filebrowser",
             f"touch {self.install_principal}/database_filebrowser/database.db",
@@ -246,6 +266,7 @@ scrape_configs:
                     filebrowser/filebrowser
                 """,
             ]
+        self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
         
     def instala_portainer(self,):
@@ -291,7 +312,6 @@ scrape_configs:
             ]
         resultados = self.executar_comandos(comandos)
         
-        
     def instala_wordpress(self,):
         """
         docker run -d \
@@ -322,7 +342,7 @@ scrape_configs:
         container_db = f"""docker run -d \
                         --name wp_{dominio_}_bd \
                         --restart=always \
-                        --network {self.nome_rede_principal_traefik} \
+                        --network {self.rede_principal_traefik} \
                         -e MYSQL_DATABASE=wordpress \
                         -e MYSQL_USER=wordpress \
                         -e MYSQL_PASSWORD=wordpress \
@@ -559,6 +579,7 @@ class Sistema(Docker, Executa_comados):
             ("Força instalação docker", self.instala_docker_force),
             ("Instala portainer", self.instala_portainer),
             ("Instala traefik", self.instala_traefik),
+            ("Configura rede do container", self.configura_rede),
             ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
             ("Instala wordpress", self.instala_wordpress),
