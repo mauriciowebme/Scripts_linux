@@ -10,7 +10,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.63
+Versão 1.64
 ===========================================================================
 ===========================================================================
 """)
@@ -417,7 +417,7 @@ certificatesResolvers:
         dominio = input('Digite o dominio:')
         
         dominio_ = dominio.replace('.', '_')
-        comando = f"docker exec -i mysql_wordpress mysql -wordpress -wordpress -e \"CREATE DATABASE {dominio_}; CREATE USER 'wordpress'@'%' IDENTIFIED BY 'wordpress'; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
+        comando = f"docker exec -i mysql_wordpress mysql -uwordpress -pwordpress -e \"CREATE DATABASE {dominio_}; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
         self.executar_comandos([comando])
         container = f"""docker run -d \
                         --name wp_{dominio_} \
