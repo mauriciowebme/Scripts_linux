@@ -8,7 +8,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.57
+Versão 1.58
 ===========================================================================
 ===========================================================================
 """)
@@ -60,9 +60,9 @@ class Docker(Executa_comados):
     def __init__(self):
         Executa_comados.__init__(self)
         self.install_principal = '/install_principal'
-        self.redes_docker = ['net', 'interno']
 
     def cria_rede_docker(self, associar_todos=False, associar_container_nome=False, numero_rede=None):
+        self.redes_docker = ['net', 'interno']
         # Verifica se a rede já existe
         result = subprocess.run(["docker", "network", "ls"], capture_output=True, text=True)
         for rede in self.redes_docker:
