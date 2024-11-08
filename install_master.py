@@ -85,7 +85,7 @@ class Docker(Executa_comados):
                 
                 # Verifica se o container foi associado com sucesso ou já estava na rede
                 if connect_result.returncode == 0:
-                    print(f"Container {associar_container_nome} desconectado da rede '{rede}' com sucesso.")
+                    print(f"Container {associar_container_nome} desconectado da rede bridge com sucesso.")
                 # elif "already exists in network" not in connect_result.stderr:
                 #     print(f"Erro ao associar o container {container_id}: {connect_result.stderr.strip()}")
                 
