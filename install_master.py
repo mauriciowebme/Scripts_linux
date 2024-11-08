@@ -120,6 +120,7 @@ class Docker(Executa_comados):
         container = f"docker run -d \
                         --name webssh \
                         --restart=always \
+                        --network none \
                         -p 8001:8000 \
                         liftoff/gateone
                     "
@@ -172,6 +173,7 @@ scrape_configs:
             f"""docker run -d \
                 --name prometheus \
                 --restart=always \
+                --network none \
                 -p 9090:9090 \
                 -v {self.install_principal}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
                 prom/prometheus
@@ -179,12 +181,14 @@ scrape_configs:
             f"""docker run -d \
                 --name node-exporter \
                 --restart=always \
+                --network none \
                 -p 9100:9100 \
                 prom/node-exporter
             """,
             f"""docker run -d \
                 --name grafana \
                 --restart=always \
+                --network none \
                 -p 3000:3000 \
                 grafana/grafana
             """,
@@ -201,6 +205,7 @@ scrape_configs:
             f"""docker run -d \
                 --name traefik \
                 --restart=always \
+                --network none \
                 -p 80:80 \
                 -p 443:443 \
                 -p 8080:8080 \
@@ -260,6 +265,7 @@ scrape_configs:
         container = f"""docker run -d \
                     --name filebrowser \
                     --restart=always \
+                    --network none \
                     -p 8082:80 \
                     -v /:/srv \
                     -v {self.install_principal}/database_filebrowser/database.db:/database.db \
@@ -285,6 +291,7 @@ scrape_configs:
             f"""sudo docker run -d \
                     --name portainer \
                     --restart=always \
+                    --network none \
                     -p 8000:8000 \
                     -p 9443:9443 \
                     -v /var/run/docker.sock:/var/run/docker.sock \
@@ -307,6 +314,7 @@ scrape_configs:
         container = f"""docker run -d \
                         --name webssh \
                         --restart=always \
+                        --network none \
                         -p 8081:8080 \
                         --mount source=shellngn-data,target=/home/node/server/data \
                         -e HOST=0.0.0.0 \
@@ -321,6 +329,7 @@ scrape_configs:
             container,
             ]
         resultados = self.executar_comandos(comandos)
+        self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=1)
         
     def instala_wordpress(self,):
         print('Instalando o wordpress.\n')
@@ -332,6 +341,7 @@ scrape_configs:
         container_db = f"""docker run -d \
                         --name wp_{dominio_}_bd \
                         --restart=always \
+                        --network none \
                         -e MYSQL_DATABASE=wordpress \
                         -e MYSQL_USER=wordpress \
                         -e MYSQL_PASSWORD=wordpress \
@@ -342,6 +352,7 @@ scrape_configs:
         container = f"""docker run -d \
                         --name wp_{dominio_} \
                         --restart=always \
+                        --network none \
                         -e WORDPRESS_DB_HOST=wp_{dominio_}_bd:3306 \
                         -e WORDPRESS_DB_USER=wordpress \
                         -e WORDPRESS_DB_PASSWORD=wordpress \
@@ -438,6 +449,7 @@ CMD ["sh", "-c", "\
         container = f"""docker run -d \
                             --name rsync-inotify \
                             --restart=always \
+                            --network none
                             -v {source_path}:/data/source \
                             -v {target_path}:/data/target \
                             -v /logs:/log \
