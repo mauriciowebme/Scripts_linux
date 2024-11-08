@@ -9,7 +9,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.60
+Versão 1.61
 ===========================================================================
 ===========================================================================
 """)
@@ -733,6 +733,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
             ("Instala wordpress", self.instala_wordpress),
+            ("Instala wordpress puro", self.instala_wordpress_puro),
             ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
             ("Start sync pastas", self.start_sync_pastas),
         ]
