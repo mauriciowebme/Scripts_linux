@@ -399,6 +399,9 @@ certificatesResolvers:
         self.cria_rede_docker(associar_container_nome=f'mysql_wordpress', numero_rede=1)
         
     def instala_wordpress_puro(self,):
+        print('Instalando o wordpress.\n')
+        dominio = input('Digite o dominio:')
+        
         result = subprocess.run(
             ["docker", "ps", "--format", "{{.ID}} {{.Names}}"],
             capture_output=True,
@@ -412,9 +415,7 @@ certificatesResolvers:
                 break
         if not db_encontrado:
             self.instala_mysql_wordpress()
-            
-        print('Instalando o wordpress.\n')
-        dominio = input('Digite o dominio:')
+            time.sleep(10)
         
         dominio_ = dominio.replace('.', '_')
         comando = f"docker exec -i mysql_wordpress mysql -uroot -prootpassword -e \"CREATE DATABASE IF NOT EXISTS {dominio_}; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
