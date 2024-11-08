@@ -8,7 +8,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.54
+Versão 1.55
 ===========================================================================
 ===========================================================================
 """)
@@ -255,12 +255,6 @@ scrape_configs:
         self.cria_rede_docker(associar_container_nome=nome_container, numero_rede=int(rede_numero))
         
     def instala_filebrowser(self,):
-        # --label traefik.enable=true \
-        # --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
-        # --label traefik.http.routers.filebrowser.rule="Host(`filebrowser.techupsistemas.com`)" \
-        # --label traefik.http.routers.filebrowser.entrypoints=web,websecure \
-        # --label traefik.http.routers.filebrowser.tls.certresolver=le \
-        # --label traefik.http.services.filebrowser.loadbalancer.server.port=80 \
         print('Porta interna para uso: 80')
         container = f"""docker run -d \
                     --name filebrowser \
