@@ -365,8 +365,8 @@ scrape_configs:
             ]
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'wp_{dominio_}_bd', numero_rede=1)
-        self.cria_rede_docker(associar_container_nome=f'wp_{dominio_}', numero_rede=1)
         self.cria_rede_docker(associar_container_nome=f'wp_{dominio_}', numero_rede=0)
+        self.cria_rede_docker(associar_container_nome=f'wp_{dominio_}', numero_rede=1)
 
     def instala_docker(self,):
         # Executa o comando para verificar se o Docker está instalado
