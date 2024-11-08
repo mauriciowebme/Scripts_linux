@@ -10,7 +10,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.70
+Versão 1.71
 ===========================================================================
 ===========================================================================
 """)
@@ -415,7 +415,7 @@ certificatesResolvers:
                 break
         if not db_encontrado:
             self.instala_mysql_wordpress()
-            time.sleep(20)
+            time.sleep(30)
         
         dominio_ = dominio.replace('.', '_')
         comando = f"docker exec -i mysql_wordpress mysql -uroot -prootpassword -e \"CREATE DATABASE IF NOT EXISTS {dominio_}; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
