@@ -10,7 +10,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.67
+Versão 1.68
 ===========================================================================
 ===========================================================================
 """)
@@ -429,6 +429,11 @@ certificatesResolvers:
                         -v {self.install_principal}/wordpress/{dominio_}:/var/www/html \
                         wordpress:latest
                     """
+        
+        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
+        if resposta.lower() == 's':
+            container = self.adiciona_redirecionamento_traefik(container, dominio, porta='80')
+        
         self.remove_container(f'wp_{dominio_}')
         comandos = [
             container,
