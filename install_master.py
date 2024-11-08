@@ -325,7 +325,7 @@ certificatesResolvers:
             container = self.adiciona_redirecionamento_traefik(container, porta='80')
         
         comandos = [
-            f"rm -r {self.install_principal}/database_filebrowser",
+            # f"rm -r {self.install_principal}/database_filebrowser",
             f"mkdir -p {self.install_principal}/database_filebrowser",
             f"touch {self.install_principal}/database_filebrowser/database.db",
             container,
