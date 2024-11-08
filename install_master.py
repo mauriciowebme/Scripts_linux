@@ -422,7 +422,7 @@ certificatesResolvers:
         container = f"""docker run -d \
                         --name wp_{dominio_} \
                         --restart=always \
-                        -e WORDPRESS_DB_HOST=wp_{dominio_}_bd:3306 \
+                        -e WORDPRESS_DB_HOST=mysql_wordpress:3306 \
                         -e WORDPRESS_DB_USER=wordpress \
                         -e WORDPRESS_DB_PASSWORD=wordpress \
                         -e WORDPRESS_DB_NAME={dominio_} \
