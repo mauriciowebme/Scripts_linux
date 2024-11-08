@@ -8,7 +8,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.56
+Versão 1.57
 ===========================================================================
 ===========================================================================
 """)
@@ -434,7 +434,7 @@ RUN apk add --no-cache inotify-tools
 CMD ["sh", "-c", "\
     inotifywait -m -r -e modify,create,delete /data/source | \
     while read; do \
-        rsync -av /data/source/ /data/target/ >> /log/rsync_sync.log; \
+        rsync -av --delete /data/source/ /data/target/ >> /log/rsync_sync.log; \
         tail -n 1000 /log/rsync_sync.log > /log/rsync_sync.tmp && mv /log/rsync_sync.tmp /log/rsync_sync.log; \
         sleep 5; \
     done \
