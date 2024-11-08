@@ -435,7 +435,7 @@ CMD ["sh", "-c", "\
 "]
 """)
         # Comando para executar o container
-        container = f"""docker run -d 
+        container = f"""docker run -d \
                             --name rsync-inotify \
                             --restart=always \
                             -v '{source_path}:/data/source' \
