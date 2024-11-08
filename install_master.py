@@ -4,6 +4,7 @@
 
 import os
 import subprocess
+import time
 
 print("""
 ===========================================================================
@@ -569,6 +570,16 @@ class Sistema(Docker, Executa_comados):
     def __init__(self):
         Docker.__init__(self)
         Executa_comados.__init__(self)
+        
+    def contagem_regressiva(segundos):
+        while segundos:
+            mins, secs = divmod(segundos, 60)
+            timer = '{:02d}:{:02d}'.format(mins, secs)
+            print(f'\r{timer}', end='')  # Atualiza a linha no terminal
+            time.sleep(1)
+            segundos -= 1
+
+        print('\nTempo esgotado!')
     
     def mostrar_menu(self, opcoes_menu, principal=False):
         """Mostra o menu de opções para o usuário de forma dinâmica."""
@@ -592,12 +603,6 @@ class Sistema(Docker, Executa_comados):
                         
             else:
                 print("\nOpção inválida. Tente novamente.\n")
-    
-    def testes(self,):
-        comandos = [
-            f"echo 'Teste ok!'"
-        ]
-        resultado = self.executar_comandos(comandos)
         
     def ecaminhamentos_portas_tuneis(self,):
         comandos = [
@@ -789,7 +794,7 @@ def main():
     """Função principal que controla o menu."""
     servicos = Sistema()
     opcoes_menu = [
-        ("Testes", servicos.testes),
+        ("Contagem regressiva", servicos.contagem_regressiva),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
         ("verificando status do sistema", servicos.verificando_status_sistema),
         ("Menu operações de sistema", servicos.opcoes_sistema),
