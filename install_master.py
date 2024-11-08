@@ -2,13 +2,14 @@
 #Execute com:
 #wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
+import os
 import subprocess
 
 print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.58
+Versão 1.59
 ===========================================================================
 ===========================================================================
 """)
@@ -60,9 +61,9 @@ class Docker(Executa_comados):
     def __init__(self):
         Executa_comados.__init__(self)
         self.install_principal = '/install_principal'
+        self.redes_docker = ['net', 'interno']
 
     def cria_rede_docker(self, associar_todos=False, associar_container_nome=False, numero_rede=None):
-        self.redes_docker = ['net', 'interno']
         # Verifica se a rede já existe
         result = subprocess.run(["docker", "network", "ls"], capture_output=True, text=True)
         for rede in self.redes_docker:
@@ -75,9 +76,11 @@ class Docker(Executa_comados):
         
         if associar_container_nome:
             if numero_rede != None:
-                self.redes_docker = [self.redes_docker[numero_rede]]
+                redes = [self.redes_docker[numero_rede]]
+            else:
+                redes = self.redes_docker
             # Tenta conectar o container à rede e captura o erro, se houver
-            for rede in self.redes_docker:
+            for rede in redes:
                 connect_result = subprocess.run(
                     ["docker", "network", "disconnect", "bridge", associar_container_nome],
                     capture_output=True, text=True
@@ -151,7 +154,8 @@ class Docker(Executa_comados):
         container = container[:-len(imagem)].rstrip()
         
         dominio_ = dominio.replace('.', '_')
-        labels = f""" --label traefik.enable=true \
+        labels = f""" --network {self.redes_docker[0]} \
+                --label traefik.enable=true \
                 --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
                 --label traefik.http.routers.{dominio_}.rule=\"Host(\`{dominio}\`)\" \
                 --label traefik.http.routers.{dominio_}.entrypoints=web,websecure \
@@ -206,6 +210,52 @@ scrape_configs:
         self.cria_rede_docker(associar_container_nome='grafana', numero_rede=0)
     
     def instala_traefik(self,):
+        file_path = f'{self.install_principal}/traefik'
+    
+        # Verifica se o arquivo já existe
+        if os.path.exists(file_path):
+            print("O arquivo de configuração do Traefik já existe. Nenhuma ação foi realizada.")
+        else:
+            with open(f'{self.install_principal}/traefik', "w") as f:
+                f.write("""\
+http:
+  routers:
+    #teste:
+    #  rule: "Host(`teste.techupsistemas.com`)"
+    #  entryPoints:
+    #    - web
+    #    - websecure
+    #  service: teste
+    #  tls:
+    #    certResolver: le
+
+  services:
+    #teste:
+    #  loadBalancer:
+    #    servers:
+    #      - url: "http://webssh:8080"
+          
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  websecure:
+    address: ":443"
+
+certificatesResolvers:
+  le:
+    acme:
+      email: "mauriciowebme@gmail.com"
+      storage: "/letsencrypt/acme.json"
+      httpChallenge:
+        entryPoint: web
+""")
         self.remove_container('traefik')
         comandos = [
             f"""docker run -d \
