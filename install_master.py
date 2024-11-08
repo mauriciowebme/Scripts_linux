@@ -417,7 +417,7 @@ certificatesResolvers:
         dominio = input('Digite o dominio:')
         
         dominio_ = dominio.replace('.', '_')
-        comando = f"docker exec -i mysql_wordpress mysql -uroot -prootpassword -e \"CREATE DATABASE {dominio_}; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
+        comando = f"docker exec -i mysql_wordpress mysql -uroot -prootpassword -e \"CREATE DATABASE IF NOT EXISTS {dominio_}; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
         self.executar_comandos([comando])
         container = f"""docker run -d \
                         --name wp_{dominio_} \
