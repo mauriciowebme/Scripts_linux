@@ -151,7 +151,6 @@ class Docker(Executa_comados):
         container = container[:-len(imagem)].rstrip()
         
         dominio_ = dominio.replace('.', '_')
-        # --network {self.redes_docker[0]} \
         labels = f""" --label traefik.enable=true \
                 --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
                 --label traefik.http.routers.{dominio_}.rule=\"Host(\`{dominio}\`)\" \
