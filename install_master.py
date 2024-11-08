@@ -61,7 +61,7 @@ class Docker(Executa_comados):
     def __init__(self):
         Executa_comados.__init__(self)
         self.install_principal = '/install_principal'
-        self.redes_docker = ['net', 'interno']
+        self.redes_docker = ['_traefik', 'interno']
 
     def cria_rede_docker(self, associar_todos=False, associar_container_nome=False, numero_rede=None):
         # Verifica se a rede já existe
@@ -216,6 +216,7 @@ scrape_configs:
         if os.path.exists(file_path):
             print("O arquivo de configuração do Traefik já existe. Nenhuma ação foi realizada.")
         else:
+            os.makedirs(file_path, exist_ok=True)
             with open(f'{self.install_principal}/traefik', "w") as f:
                 f.write("""\
 http:
@@ -233,6 +234,7 @@ http:
     #teste:
     #  loadBalancer:
     #    servers:
+           # Lembre-se de configurar a mesma rede do traefik no container
     #      - url: "http://webssh:8080"
           
 entryPoints:
