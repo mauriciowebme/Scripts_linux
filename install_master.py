@@ -255,7 +255,7 @@ scrape_configs:
         self.cria_rede_docker(associar_container_nome=nome_container, numero_rede=int(rede_numero))
         
     def instala_filebrowser(self,):
-        print('Porta interna para uso: 80')
+        #print('Porta interna para uso: 80')
         container = f"""docker run -d \
                     --name filebrowser \
                     --restart=always \
@@ -267,7 +267,7 @@ scrape_configs:
                 """
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
         if resposta.lower() == 's':
-            container = self.adiciona_redirecionamento_traefik(container)
+            container = self.adiciona_redirecionamento_traefik(container, porta='80')
         
         comandos = [
             f"rm -r {self.install_principal}/database_filebrowser",
