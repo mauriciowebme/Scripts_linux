@@ -10,7 +10,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.71
+Versão 1.72
 ===========================================================================
 ===========================================================================
 """)
@@ -401,6 +401,7 @@ certificatesResolvers:
     def instala_wordpress_puro(self,):
         print('Instalando o wordpress.\n')
         dominio = input('Digite o dominio:')
+        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
         
         result = subprocess.run(
             ["docker", "ps", "--format", "{{.ID}} {{.Names}}"],
@@ -415,6 +416,7 @@ certificatesResolvers:
                 break
         if not db_encontrado:
             self.instala_mysql_wordpress()
+            print('aguarde terminando de instalar o banco de dados...')
             time.sleep(30)
         
         dominio_ = dominio.replace('.', '_')
@@ -431,7 +433,6 @@ certificatesResolvers:
                         wordpress:latest
                     """
         
-        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
         if resposta.lower() == 's':
             container = self.adiciona_redirecionamento_traefik(container, dominio, porta='80')
         
