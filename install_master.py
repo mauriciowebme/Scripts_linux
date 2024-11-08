@@ -10,7 +10,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.66
+Versão 1.67
 ===========================================================================
 ===========================================================================
 """)
@@ -573,13 +573,13 @@ class Sistema(Docker, Executa_comados):
         Executa_comados.__init__(self)
         
     def contagem_regressiva(segundos):
-        segundos = 60
+        segundos = 90
         while True:
             print(f'\r{segundos}', end='')  # Atualiza a linha no terminal
             time.sleep(1)
             segundos -= 1
             if segundos <=1:
-                break
+                exit()
 
         print('\nTempo esgotado!')
     
