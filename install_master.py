@@ -10,7 +10,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.62
+Versão 1.63
 ===========================================================================
 ===========================================================================
 """)
@@ -380,13 +380,14 @@ certificatesResolvers:
         
     def instala_mysql_wordpress(self,):
         print('Instalando o mysql_wordpress.\n')
+        # -e MYSQL_RANDOM_ROOT_PASSWORD=wordpress \
         container_db = f"""docker run -d \
                         --name mysql_wordpress \
                         --restart=always \
                         -e MYSQL_DATABASE=wordpress \
                         -e MYSQL_USER=wordpress \
                         -e MYSQL_PASSWORD=wordpress \
-                        -e MYSQL_RANDOM_ROOT_PASSWORD=wordpress \
+                        -e MYSQL_ROOT_PASSWORD=wordpress \
                         -v {self.install_principal}/wordpress/mysql_bd:/var/lib/mysql \
                         mysql:5.7
                     """
