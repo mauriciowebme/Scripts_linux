@@ -410,8 +410,7 @@ certificatesResolvers:
                 db_encontrado = True
                 break
         if not db_encontrado:
-            pass
-        self.instala_mysql_wordpress
+            self.instala_mysql_wordpress()
             
         print('Instalando o wordpress.\n')
         dominio = input('Digite o dominio:')
