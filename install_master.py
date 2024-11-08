@@ -166,7 +166,7 @@ scrape_configs:
 """
         caminho = f'{self.install_principal}/prometheus/prometheus.yml'
         comandos = [
-            f"mkdir {self.install_principal}/prometheus/",
+            f"mkdir -p {self.install_principal}/prometheus/",
             f"touch {caminho}",
             f"echo '{conteudo}' > {caminho}",
             f"""docker run -d \
@@ -271,7 +271,7 @@ scrape_configs:
         
         comandos = [
             f"rm -r {self.install_principal}/database_filebrowser",
-            f"mkdir {self.install_principal}/database_filebrowser",
+            f"mkdir -p {self.install_principal}/database_filebrowser",
             f"touch {self.install_principal}/database_filebrowser/database.db",
             container,
             ]
@@ -407,6 +407,53 @@ scrape_configs:
                 self.executar_comandos(comandos)
         self.cria_rede_docker()
 
+    def start_sync_pastas(self):
+        # Solicita ao usuário os caminhos da pasta de origem e destino
+        source_path = input("Digite o caminho da pasta de origem: ")
+        target_path = input("Digite o caminho da pasta de destino: ")
+
+        # Verifica se os parâmetros foram preenchidos
+        if not source_path or not target_path:
+            print("Erro: Ambos os caminhos de origem e destino são obrigatórios.")
+            exit()
+
+        # Define o caminho para o Dockerfile temporário em /tmp
+        temp_dockerfile = "/tmp/Dockerfile-rsync-inotify"
+
+        # Cria o Dockerfile temporário em /tmp
+        with open(temp_dockerfile, "w") as f:
+            f.write("""\
+FROM eeacms/rsync
+RUN apk add --no-cache inotify-tools
+CMD ["sh", "-c", "\
+    inotifywait -m -r -e modify,create,delete /data/source | \
+    while read; do \
+        rsync -av /data/source/ /data/target/ >> /log/rsync_sync.log; \
+        tail -n 1000 /log/rsync_sync.log > /log/rsync_sync.tmp && mv /log/rsync_sync.tmp /log/rsync_sync.log; \
+        sleep 5; \
+    done \
+"]
+""")
+        # Comando para executar o container
+        container = f"""docker run -d 
+                        --name rsync-inotify \
+                        --restart=always \
+                        -v '{source_path}:/data/source' \
+                        -v '{target_path}:/data/target' \
+                        -v /logs:/log' \
+                        rsync-inotify
+                    """
+        comandos = [
+            f"rm {temp_dockerfile}",
+            f"mkdir -p {source_path}",
+            f"mkdir -p {target_path}",
+            f"docker build -t rsync-inotify -f {temp_dockerfile} .",
+            container,
+        ]
+        self.remove_container(f'rsync-inotify')
+        resultados = self.executar_comandos(comandos)
+        # self.cria_rede_docker(associar_container_nome=f'rsync-inotify', numero_rede=0)
+ 
 class Sistema(Docker, Executa_comados):
     def __init__(self):
         Docker.__init__(self)
@@ -576,6 +623,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala webserver ssh", self.instala_webserver_ssh),
             ("Instala wordpress", self.instala_wordpress),
             ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
+            ("Start sync pastas", self.start_sync_pastas),
         ]
         self.mostrar_menu(opcoes_menu)
     
