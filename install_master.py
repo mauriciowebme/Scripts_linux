@@ -447,6 +447,9 @@ CMD ["sh", "-c", "\
             f"rm {temp_dockerfile}",
             f"mkdir -p {source_path}",
             f"mkdir -p {target_path}",
+        ]
+        resultados = self.executar_comandos(comandos, ignorar_erros=True)
+        comandos = [
             f"docker build -t rsync-inotify -f {temp_dockerfile} .",
             container,
         ]
