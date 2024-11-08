@@ -436,21 +436,21 @@ CMD ["sh", "-c", "\
 """)
         # Comando para executar o container
         container = f"""docker run -d 
-                        --name rsync-inotify \
-                        --restart=always \
-                        -v '{source_path}:/data/source' \
-                        -v '{target_path}:/data/target' \
-                        -v /logs:/log' \
-                        rsync-inotify
+                            --name rsync-inotify \
+                            --restart=always \
+                            -v '{source_path}:/data/source' \
+                            -v '{target_path}:/data/target' \
+                            -v /logs:/log' \
+                            rsync-inotify
                     """
         comandos = [
-            f"rm {temp_dockerfile}",
             f"mkdir -p {source_path}",
             f"mkdir -p {target_path}",
         ]
         resultados = self.executar_comandos(comandos, ignorar_erros=True)
         comandos = [
             f"docker build -t rsync-inotify -f {temp_dockerfile} .",
+            f"rm {temp_dockerfile}",
             container,
         ]
         self.remove_container(f'rsync-inotify')
