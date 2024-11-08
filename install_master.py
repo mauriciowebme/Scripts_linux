@@ -377,6 +377,63 @@ certificatesResolvers:
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=1)
         
+    def instala_mysql_wordpress(self,):
+        print('Instalando o mysql_wordpress.\n')
+        container_db = f"""docker run -d \
+                        --name mysql_wordpress \
+                        --restart=always \
+                        -e MYSQL_DATABASE=wordpress \
+                        -e MYSQL_USER=wordpress \
+                        -e MYSQL_PASSWORD=wordpress \
+                        -e MYSQL_RANDOM_ROOT_PASSWORD=wordpress \
+                        -v {self.install_principal}/wordpress/mysql_bd:/var/lib/mysql \
+                        mysql:5.7
+                    """
+        self.remove_container(f'mysql_wordpress')
+        comandos = [
+            container_db,
+            ]
+        resultados = self.executar_comandos(comandos)
+        self.cria_rede_docker(associar_container_nome=f'mysql_wordpress', numero_rede=1)
+        
+    def instala_wordpress_puro(self,):
+        result = subprocess.run(
+            ["docker", "ps", "--format", "{{.ID}} {{.Names}}"],
+            capture_output=True,
+            text=True
+        )
+        container_info = result.stdout.strip().splitlines()
+        db_encontrado = False
+        for info in container_info:
+            if 'mysql_wordpress' in info:
+                db_encontrado = True
+                break
+        if not db_encontrado:
+            self.instala_mysql_wordpress
+            
+        print('Instalando o wordpress.\n')
+        dominio = input('Digite o dominio:')
+        
+        dominio_ = dominio.replace('.', '_')
+        comando = f"docker exec -i mysql_wordpress mysql -wordpress -wordpress -e \"CREATE DATABASE {dominio_}; CREATE USER 'wordpress'@'%' IDENTIFIED BY 'wordpress'; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
+        self.executar_comandos([comando])
+        container = f"""docker run -d \
+                        --name wp_{dominio_} \
+                        --restart=always \
+                        -e WORDPRESS_DB_HOST=wp_{dominio_}_bd:3306 \
+                        -e WORDPRESS_DB_USER=wordpress \
+                        -e WORDPRESS_DB_PASSWORD=wordpress \
+                        -e WORDPRESS_DB_NAME={dominio_} \
+                        -v {self.install_principal}/wordpress/{dominio_}:/var/www/html \
+                        wordpress:latest
+                    """
+        self.remove_container(f'wp_{dominio_}')
+        comandos = [
+            container,
+            ]
+        resultados = self.executar_comandos(comandos)
+        self.cria_rede_docker(associar_container_nome=f'wp_{dominio_}', numero_rede=1)
+        
     def instala_wordpress(self,):
         print('Instalando o wordpress.\n')
         dominio = input('Digite o dominio:')
