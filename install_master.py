@@ -9,7 +9,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.59
+Versão 1.60
 ===========================================================================
 ===========================================================================
 """)
@@ -425,11 +425,12 @@ certificatesResolvers:
             pass
             print("Intalação docker ok.")
         else:
+            print("Docker não está instalado.")
             self.instala_docker_force()
+        self.cria_rede_docker()
             
     def instala_docker_force(self,):
-        print("Docker não está instalado.")
-        # self.cria_rede_docker()
+        print("Instalando docker...")
         for i in range(2):
             comandos = [
                 "apt update && apt upgrade -y",
@@ -457,7 +458,6 @@ certificatesResolvers:
                     f"""sudo rm /etc/apt/sources.list.d/docker.list""",
                     ]
                 self.executar_comandos(comandos)
-        self.cria_rede_docker()
 
     def start_sync_pastas(self):
         # Solicita ao usuário os caminhos da pasta de origem e destino
