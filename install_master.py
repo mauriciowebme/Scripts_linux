@@ -207,7 +207,6 @@ scrape_configs:
         self.cria_rede_docker(associar_container_nome='prometheus', numero_rede=1)
         self.cria_rede_docker(associar_container_nome='node-exporter', numero_rede=1)
         self.cria_rede_docker(associar_container_nome='grafana', numero_rede=1)
-        self.cria_rede_docker(associar_container_nome='grafana', numero_rede=0)
     
     def instala_traefik(self,):
         file_path = f'{self.install_principal}/traefik'
@@ -333,7 +332,6 @@ certificatesResolvers:
             ]
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
-        self.cria_rede_docker(associar_container_nome='filebrowser', numero_rede=0)
         
     def instala_portainer(self,):
         self.remove_container('portainer')
@@ -417,7 +415,6 @@ certificatesResolvers:
             ]
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'wp_{dominio_}_bd', numero_rede=1)
-        self.cria_rede_docker(associar_container_nome=f'wp_{dominio_}', numero_rede=0)
         self.cria_rede_docker(associar_container_nome=f'wp_{dominio_}', numero_rede=1)
 
     def instala_docker(self,):
@@ -510,7 +507,6 @@ CMD ["sh", "-c", "\
         ]
         self.remove_container(f'rsync-inotify')
         resultados = self.executar_comandos(comandos)
-        # self.cria_rede_docker(associar_container_nome=f'rsync-inotify', numero_rede=0)
  
 class Sistema(Docker, Executa_comados):
     def __init__(self):
