@@ -573,12 +573,13 @@ class Sistema(Docker, Executa_comados):
         Executa_comados.__init__(self)
         
     def contagem_regressiva(segundos):
-        while segundos:
-            mins, secs = divmod(segundos, 60)
-            timer = '{:02d}:{:02d}'.format(mins, secs)
-            print(f'\r{timer}', end='')  # Atualiza a linha no terminal
+        segundos = 30
+        while True:
+            print(f'\r{segundos}', end='')  # Atualiza a linha no terminal
             time.sleep(1)
             segundos -= 1
+            if segundos <=1:
+                break
 
         print('\nTempo esgotado!')
     
