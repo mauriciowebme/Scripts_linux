@@ -330,9 +330,7 @@ scrape_configs:
         
     def instala_wordpress(self,):
         print('Instalando o wordpress.\n')
-        print('Porta interna para uso: 80')
         dominio = input('Digite o dominio:')
-        porta = '80'
         
         dominio_ = dominio.replace('.', '_')
         container_db = f"""docker run -d \
@@ -358,7 +356,7 @@ scrape_configs:
                     
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
         if resposta.lower() == 's':
-            container = self.adiciona_redirecionamento_traefik(container, dominio, porta)
+            container = self.adiciona_redirecionamento_traefik(container, dominio, porta='80')
         
         self.remove_container(f'wp_{dominio_}_bd')
         self.remove_container(f'wp_{dominio_}')
