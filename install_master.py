@@ -388,7 +388,7 @@ certificatesResolvers:
                         -e MYSQL_USER=mysql \
                         -e MYSQL_PASSWORD=mysql \
                         -e MYSQL_ROOT_PASSWORD=rootpassword \
-                        -v {self.install_principal}/wordpress/mysql_bd:/var/lib/mysql \
+                        -v {self.install_principal}/mysql_bd:/var/lib/mysql \
                         mysql:5.7
                     """
         comandos = [
