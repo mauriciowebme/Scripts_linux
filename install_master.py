@@ -11,7 +11,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.75
+Versão 1.76
 ===========================================================================
 ===========================================================================
 """)
@@ -263,6 +263,8 @@ certificatesResolvers:
         dominio = input('Digite o dominio: ')
         endereco = input('Coloque o endereço do container ou ip da rede que deseja apontar: ')
         porta = input('Digite a porta: ')
+        
+        self.cria_rede_docker(associar_container_nome=endereco, numero_rede=0)
         
         dynamic_conf = self.cria_dynamic_conf_traefik()
         
