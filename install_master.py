@@ -5,6 +5,7 @@
 import os
 import subprocess
 import time
+import yaml
 
 print("""
 ===========================================================================
@@ -165,7 +166,7 @@ class Docker(Executa_comados):
             """
         container = container + labels.replace( '  ', '' ) + imagem
         return container
-    
+
     def iniciar_monitoramento(self):
         conteudo = """global:
   scrape_interval: 15s
@@ -209,34 +210,35 @@ scrape_configs:
         self.cria_rede_docker(associar_container_nome='node-exporter', numero_rede=1)
         self.cria_rede_docker(associar_container_nome='grafana', numero_rede=1)
     
-    def instala_traefik(self,):
-        file_path = f'{self.install_principal}/traefik'
     
-        # Verifica se o arquivo já existe
-        if os.path.exists(file_path):
-            print("O arquivo de configuração do Traefik já existe. Nenhuma ação foi realizada.")
-        else:
-            os.makedirs(file_path, exist_ok=True)
-            with open(f'{self.install_principal}/traefik', "w") as f:
-                f.write("""\
+    def add_router_service(self,):
+        dominio = input('Digite o dominio: ')
+        endereco = input('Coloque o endereço do container ou ip da rede que deseja apontar: ')
+        porta = input('Digite a porta: ')
+        
+        dynamic_conf = f'{self.install_principal}/traefik/dynamic_conf.yml'
+        # dynamic_conf = f'C:\TESTES_C\dynamic_conf.yml'
+        if not os.path.exists(dynamic_conf):
+            email = input('Digite um e-mail para gerar o certificado: ')
+            with open(dynamic_conf, "w") as f:
+                f.write(f"""\
 http:
   routers:
-    #teste:
-    #  rule: "Host(`teste.techupsistemas.com`)"
-    #  entryPoints:
-    #    - web
-    #    - websecure
-    #  service: teste
-    #  tls:
-    #    certResolver: le
+    exemplo_meu_dominio_com:
+      rule: "Host(`exemplo.meu_dominio.com`)"
+      entryPoints:
+        - web
+        - websecure
+      service: exemplo_meu_dominio_com
+      tls:
+        certResolver: le
 
   services:
-    #teste:
-    #  loadBalancer:
-    #    servers:
-           # Lembre-se de configurar a mesma rede do traefik no container
-    #      - url: "http://webssh:8080"
-          
+    exemplo_meu_dominio_com:
+      loadBalancer:
+        servers:
+          - url: "http://<ip>:<porta>"
+
 entryPoints:
   web:
     address: ":80"
@@ -253,10 +255,100 @@ entryPoints:
 certificatesResolvers:
   le:
     acme:
-      email: "mauriciowebme@gmail.com"
+      email: "{email}"
       storage: "/letsencrypt/acme.json"
       httpChallenge:
         entryPoint: web
+
+""")
+        
+        # Carregar o arquivo de configuração YAML existente
+        with open(dynamic_conf, 'r') as file:
+            config = yaml.safe_load(file)
+
+        # Definir o nome do serviço e do roteador com base no domínio
+        router_name = dominio.replace('.', '_')
+        service_name = f"{router_name}_service"
+        
+        if 'http' not in config:
+            config['http'] = {}
+        
+        if 'routers' not in config['http']:
+            config['http']['routers'] = {}
+            
+        if 'services' not in config['http']:
+            config['http']['services'] = {}
+
+        # Criar o roteador para o domínio
+        config['http']['routers'][router_name] = {
+            'rule': f"Host(`{dominio}`)",
+            'entryPoints': ['web', 'websecure'],
+            'service': service_name,
+            'tls': {
+                'certResolver': 'le'
+            }
+        }
+        print(f"Roteador adicionado para o domínio: {dominio}")
+    
+        # Criar o serviço para o domínio com o URL de destino e a porta
+        config['http']['services'][service_name] = {
+            'loadBalancer': {
+                'servers': [
+                    {'url': f"http://{endereco}:{porta}"}
+                ]
+            }
+        }
+        print(f"Serviço adicionado para o domínio: {dominio}")
+
+        # Salvar o arquivo de configuração atualizado
+        with open(dynamic_conf, 'w') as file:
+            yaml.dump(config, file)
+
+    def instala_traefik(self,):
+        dynamic_conf = f'{self.install_principal}/traefik/dynamic_conf.yml'
+        # dynamic_conf = f'C:\TESTES_C\dynamic_conf.yml'
+        if not os.path.exists(dynamic_conf):
+            email = input('Digite um e-mail para gerar o certificado: ')
+            with open(dynamic_conf, "w") as f:
+                f.write(f"""\
+http:
+  routers:
+    exemplo_meu_dominio_com:
+      rule: "Host(`exemplo.meu_dominio.com`)"
+      entryPoints:
+        - web
+        - websecure
+      service: exemplo_meu_dominio_com
+      tls:
+        certResolver: le
+
+  services:
+    exemplo_meu_dominio_com:
+      loadBalancer:
+        servers:
+          - url: "http://<ip>:<porta>"
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  websecure:
+    address: ":443"
+
+certificatesResolvers:
+  le:
+    acme:
+      email: "{email}"
+      storage: "/letsencrypt/acme.json"
+      httpChallenge:
+        entryPoint: web
+
 """)
         self.remove_container('traefik')
         comandos = [
@@ -738,12 +830,13 @@ class Sistema(Docker, Executa_comados):
         
     def menu_docker(self):
         print("\nBem-vindo ao Gerenciador Docker\n")
-        self.instala_docker()
+        # self.instala_docker()
         """Menu de opções"""
         opcoes_menu = [
             ("Força instalação docker", self.instala_docker_force),
             ("Instala portainer", self.instala_portainer),
             ("Instala traefik", self.instala_traefik),
+            ("Adiciona roteamento e serviço ao traefik", self.add_router_service),
             ("Configura rede do container", self.configura_rede),
             ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
