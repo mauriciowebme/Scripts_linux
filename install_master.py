@@ -378,25 +378,25 @@ certificatesResolvers:
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=1)
         
-    def instala_mysql_wordpress(self,):
-        print('Instalando o mysql_wordpress.\n')
+    def instala_mysql_5_7(self,):
+        print('Instalando o mysql.\n')
         # -e MYSQL_RANDOM_ROOT_PASSWORD=wordpress \
         container_db = f"""docker run -d \
-                        --name mysql_wordpress \
+                        --name mysql_5_7 \
                         --restart=always \
-                        -e MYSQL_DATABASE=wordpress \
-                        -e MYSQL_USER=wordpress \
-                        -e MYSQL_PASSWORD=wordpress \
+                        -e MYSQL_DATABASE=mysql \
+                        -e MYSQL_USER=mysql \
+                        -e MYSQL_PASSWORD=mysql \
                         -e MYSQL_ROOT_PASSWORD=rootpassword \
                         -v {self.install_principal}/wordpress/mysql_bd:/var/lib/mysql \
                         mysql:5.7
                     """
-        self.remove_container(f'mysql_wordpress')
+        self.remove_container(f'mysql_5_7')
         comandos = [
             container_db,
             ]
         resultados = self.executar_comandos(comandos)
-        self.cria_rede_docker(associar_container_nome=f'mysql_wordpress', numero_rede=1)
+        self.cria_rede_docker(associar_container_nome=f'mysql_5_7', numero_rede=1)
         
     def instala_wordpress_puro(self,):
         print('Instalando o wordpress.\n')
@@ -411,21 +411,21 @@ certificatesResolvers:
         container_info = result.stdout.strip().splitlines()
         db_encontrado = False
         for info in container_info:
-            if 'mysql_wordpress' in info:
+            if 'mysql_5_7' in info:
                 db_encontrado = True
                 break
         if not db_encontrado:
-            self.instala_mysql_wordpress()
+            self.instala_mysql_5_7()
             print('aguarde terminando de instalar o banco de dados...')
             time.sleep(30)
         
         dominio_ = dominio.replace('.', '_')
-        comando = f"docker exec -i mysql_wordpress mysql -uroot -prootpassword -e \"CREATE DATABASE IF NOT EXISTS {dominio_}; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
+        comando = f"docker exec -i mysql_5_7 mysql -uroot -prootpassword -e \"CREATE DATABASE IF NOT EXISTS {dominio_}; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
         self.executar_comandos([comando])
         container = f"""docker run -d \
                         --name wp_{dominio_} \
                         --restart=always \
-                        -e WORDPRESS_DB_HOST=mysql_wordpress:3306 \
+                        -e WORDPRESS_DB_HOST=mysql_5_7:3306 \
                         -e WORDPRESS_DB_USER=wordpress \
                         -e WORDPRESS_DB_PASSWORD=wordpress \
                         -e WORDPRESS_DB_NAME={dominio_} \
@@ -746,6 +746,7 @@ class Sistema(Docker, Executa_comados):
             ("Configura rede do container", self.configura_rede),
             ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
+            ("Instala mysql_5_7", self.instala_mysql_5_7),
             ("Instala wordpress", self.instala_wordpress),
             ("Instala wordpress puro", self.instala_wordpress_puro),
             ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
