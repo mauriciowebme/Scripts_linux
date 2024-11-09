@@ -391,10 +391,10 @@ certificatesResolvers:
                         -v {self.install_principal}/wordpress/mysql_bd:/var/lib/mysql \
                         mysql:5.7
                     """
-        self.remove_container(f'mysql_5_7')
         comandos = [
             container_db,
             ]
+        self.remove_container(f'mysql_5_7')
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'mysql_5_7', numero_rede=1)
         
