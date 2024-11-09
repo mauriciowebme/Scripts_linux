@@ -10,7 +10,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.72
+Versão 1.73
 ===========================================================================
 ===========================================================================
 """)
@@ -384,7 +384,7 @@ certificatesResolvers:
         container_db = f"""docker run -d \
                         --name mysql_5_7 \
                         --restart=always \
-                        -e MYSQL_DATABASE=mysql \
+                        -e MYSQL_DATABASE=db_ini \
                         -e MYSQL_USER=mysql \
                         -e MYSQL_PASSWORD=mysql \
                         -e MYSQL_ROOT_PASSWORD=rootpassword \
