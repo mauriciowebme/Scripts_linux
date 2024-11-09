@@ -233,7 +233,7 @@ http:
     exemplo_meu_dominio_com:
       loadBalancer:
         servers:
-          - url: "http://<ip>:<porta>"
+          - url: "http://10.0.0.1:80"
 
 entryPoints:
   web:
