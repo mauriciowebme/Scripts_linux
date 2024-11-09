@@ -211,11 +211,7 @@ scrape_configs:
         self.cria_rede_docker(associar_container_nome='grafana', numero_rede=1)
     
     
-    def add_router_service(self,):
-        dominio = input('Digite o dominio: ')
-        endereco = input('Coloque o endereço do container ou ip da rede que deseja apontar: ')
-        porta = input('Digite a porta: ')
-        
+    def cria_dynamic_conf_traefik(self,):
         dynamic_conf = f'{self.install_principal}/traefik/dynamic_conf.yml'
         # dynamic_conf = f'C:\TESTES_C\dynamic_conf.yml'
         if not os.path.exists(dynamic_conf):
@@ -261,6 +257,14 @@ certificatesResolvers:
         entryPoint: web
 
 """)
+        return dynamic_conf
+        
+    def add_router_service(self,):
+        dominio = input('Digite o dominio: ')
+        endereco = input('Coloque o endereço do container ou ip da rede que deseja apontar: ')
+        porta = input('Digite a porta: ')
+        
+        dynamic_conf = self.cria_dynamic_conf_traefik()
         
         # Carregar o arquivo de configuração YAML existente
         with open(dynamic_conf, 'r') as file:
@@ -305,51 +309,8 @@ certificatesResolvers:
             yaml.dump(config, file)
 
     def instala_traefik(self,):
-        dynamic_conf = f'{self.install_principal}/traefik/dynamic_conf.yml'
-        # dynamic_conf = f'C:\TESTES_C\dynamic_conf.yml'
-        if not os.path.exists(dynamic_conf):
-            email = input('Digite um e-mail para gerar o certificado: ')
-            with open(dynamic_conf, "w") as f:
-                f.write(f"""\
-http:
-  routers:
-    exemplo_meu_dominio_com:
-      rule: "Host(`exemplo.meu_dominio.com`)"
-      entryPoints:
-        - web
-        - websecure
-      service: exemplo_meu_dominio_com
-      tls:
-        certResolver: le
-
-  services:
-    exemplo_meu_dominio_com:
-      loadBalancer:
-        servers:
-          - url: "http://<ip>:<porta>"
-
-entryPoints:
-  web:
-    address: ":80"
-    http:
-      redirections:
-        entryPoint:
-          to: websecure
-          scheme: https
-          permanent: true
-
-  websecure:
-    address: ":443"
-
-certificatesResolvers:
-  le:
-    acme:
-      email: "{email}"
-      storage: "/letsencrypt/acme.json"
-      httpChallenge:
-        entryPoint: web
-
-""")
+        dynamic_conf = self.cria_dynamic_conf_traefik()
+        
         self.remove_container('traefik')
         comandos = [
             f"""docker run -d \
