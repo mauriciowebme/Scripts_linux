@@ -441,6 +441,7 @@ certificatesResolvers:
             self.add_router_service(nome_dominio, endereco='openlitespeed', porta='8088')
         sites_dir = f"{self.install_principal}/openlitespeed"
         # Diretório do site
+        #/usr/local/lsws/
         site_dir = os.path.join(sites_dir, "vhosts", nome_dominio_)
         public_html = os.path.join(site_dir, "public_html")
         conf_dir = os.path.join(sites_dir, "conf", "vhosts", nome_dominio_)
@@ -463,6 +464,11 @@ certificatesResolvers:
 docRoot                   /var/www/vhosts/{nome_dominio_}/
 vhDomain                  {nome_dominio}
 """)
+        
+        comandos = [
+            f"sudo chmod -R 755 {conf_dir}",
+            ]
+        resultados = self.executar_comandos(comandos)
         
         # Configuração do Virtual Host e Listener no httpd_config.conf
         virtualhost_config = f"""
