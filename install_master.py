@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.82
+Versão 1.83
 ===========================================================================
 ===========================================================================
 """)
@@ -603,7 +603,7 @@ app.listen(PORT, () => {{
                     
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
         if resposta.lower() == 's':
-            self.adiciona_roteador_servico_traefik(self, dominio=nome_dominio, endereco=nome_dominio_, porta=porta)
+            self.adiciona_roteador_servico_traefik(dominio=nome_dominio, endereco=nome_dominio_, porta=porta)
 
         container += " bash -c \"npm install && npm start\""
         
