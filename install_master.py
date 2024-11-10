@@ -466,7 +466,7 @@ vhDomain                  {nome_dominio}
 """)
         
         comandos = [
-            f"sudo chmod -R 755 {conf_dir}",
+            f"sudo chmod -R 777 {conf_dir}",
             ]
         resultados = self.executar_comandos(comandos)
         
