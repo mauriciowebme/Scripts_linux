@@ -455,7 +455,7 @@ certificatesResolvers:
         index_path = os.path.join(public_html, "index.php")
         if not os.path.exists(index_path):
             with open(index_path, "w") as index_file:
-                index_file.write("<?php echo 'Olá, este é o site ' . $_SERVER['HTTP_HOST']; ?>")
+                index_file.write("<?php echo 'Site criado com sucesso! ' . $_SERVER['HTTP_HOST']; ?>")
         
         # Configuração do Virtual Host
         vhost_conf_path = os.path.join(conf_dir, "vhconf.conf")
