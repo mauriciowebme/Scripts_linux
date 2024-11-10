@@ -11,7 +11,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.79
+Versão 1.80
 ===========================================================================
 ===========================================================================
 """)
@@ -259,10 +259,13 @@ certificatesResolvers:
 """)
         return dynamic_conf
         
-    def add_router_service(self,):
-        dominio = input('Digite o dominio: ')
-        endereco = input('Coloque o endereço do container ou ip da rede que deseja apontar: ')
-        porta = input('Digite a porta: ')
+    def add_router_service(self, dominio=None, endereco=None, porta=None):
+        if dominio == None:
+            dominio = input('Digite o dominio: ')
+        if endereco == None:
+            endereco = input('Coloque o endereço do container ou ip da rede que deseja apontar: ')
+        if porta == None:
+            porta = input('Digite a porta: ')
         
         self.cria_rede_docker(associar_container_nome=endereco, numero_rede=0)
         
@@ -432,11 +435,15 @@ certificatesResolvers:
     
     def controle_sites_openlitespeed(self,):
         nome_dominio = input('Digite o dominio: ')
+        nome_dominio_ = nome_dominio.replace('.', '_')
+        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
+        if resposta.lower() == 's':
+            self.add_router_service(nome_dominio, endereco='openlitespeed', porta='8088')
         sites_dir = f"{self.install_principal}/openlitespeed"
         # Diretório do site
-        site_dir = os.path.join(sites_dir, "vhosts", nome_dominio)
+        site_dir = os.path.join(sites_dir, "vhosts", nome_dominio_)
         public_html = os.path.join(site_dir, "public_html")
-        conf_dir = os.path.join(sites_dir, "conf", "vhosts", nome_dominio)
+        conf_dir = os.path.join(sites_dir, "conf", "vhosts", nome_dominio_)
         listener_conf_path = os.path.join(sites_dir, "conf", "httpd_config.conf")
         
         # Cria os diretórios necessários
@@ -453,14 +460,14 @@ certificatesResolvers:
         vhost_conf_path = os.path.join(conf_dir, "vhconf.conf")
         with open(vhost_conf_path, "w") as vhost_file:
             vhost_file.write(f"""\
-docRoot                   /var/www/vhosts/{nome_dominio}/
+docRoot                   /var/www/vhosts/{nome_dominio_}/
 vhDomain                  {nome_dominio}
 """)
         
         # Configuração do Virtual Host e Listener no httpd_config.conf
         virtualhost_config = f"""
-virtualhost {nome_dominio} {{
-  vhRoot                  /var/www/vhosts/{nome_dominio}/
+virtualhost {nome_dominio_} {{
+  vhRoot                  /var/www/vhosts/{nome_dominio_}/
   configFile              $SERVER_ROOT/conf/vhosts/$VH_NAME/vhconf.conf
   allowSymbolLink         1
   enableScript            1
@@ -472,7 +479,7 @@ listener Default {{
   address                 *:8088
   secure                  0
   map                     Example *
-  map                     {nome_dominio} {nome_dominio}
+  map                     {nome_dominio_} {nome_dominio}
 }}
 """
         
@@ -481,17 +488,17 @@ listener Default {{
             content = listener_file.read()
             if virtualhost_config.strip() not in content:
                 listener_file.write(virtualhost_config)
-                print(f"Virtual Host para '{nome_dominio}' adicionado.")
+                print(f"Virtual Host para '{nome_dominio_}' adicionado.")
             else:
-                print(f"Virtual Host para '{nome_dominio}' já existe.")
+                print(f"Virtual Host para '{nome_dominio_}' já existe.")
             
             if listener_config.strip() not in content:
                 listener_file.write(listener_config)
-                print(f"Listener para '{nome_dominio}' adicionado.")
+                print(f"Listener para '{nome_dominio_}' adicionado.")
             else:
-                print(f"Listener para '{nome_dominio}' já existe.")
+                print(f"Listener para '{nome_dominio_}' já existe.")
         
-        print(f"Configuração do site '{nome_dominio}' criada com sucesso!")
+        print(f"Configuração do site '{nome_dominio_}' criada com sucesso!")
         print(f"Arquivos criados em: {site_dir}")
         
     def instala_portainer(self,):
