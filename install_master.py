@@ -11,7 +11,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.76
+Versão 1.77
 ===========================================================================
 ===========================================================================
 """)
@@ -453,15 +453,15 @@ certificatesResolvers:
         vhost_conf_path = os.path.join(conf_dir, "vhconf.conf")
         with open(vhost_conf_path, "w") as vhost_file:
             vhost_file.write(f"""\
-docRoot                   {public_html}
+docRoot                   /var/www/vhosts/{nome_dominio}/
 vhDomain                  {nome_dominio}
 """)
         
         # Configuração do Virtual Host e Listener no httpd_config.conf
         virtualhost_config = f"""\
 virtualhost {nome_dominio} {{
-vhRoot                  {site_dir}
-configFile              $SERVER_ROOT/conf/vhosts/{nome_dominio}/vhconf.conf
+vhRoot                  /var/www/vhosts/{nome_dominio}/
+configFile              $SERVER_ROOT/conf/vhosts/$VH_NAME/vhconf.conf
 allowSymbolLink         1
 enableScript            1
 restrained              1
