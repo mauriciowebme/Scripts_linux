@@ -11,7 +11,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.78
+Versão 1.79
 ===========================================================================
 ===========================================================================
 """)
@@ -458,7 +458,7 @@ vhDomain                  {nome_dominio}
 """)
         
         # Configuração do Virtual Host e Listener no httpd_config.conf
-        virtualhost_config = f"""\
+        virtualhost_config = f"""
 virtualhost {nome_dominio} {{
   vhRoot                  /var/www/vhosts/{nome_dominio}/
   configFile              $SERVER_ROOT/conf/vhosts/$VH_NAME/vhconf.conf
@@ -467,7 +467,7 @@ virtualhost {nome_dominio} {{
   restrained              1
 }}
 """
-        listener_config = f"""\
+        listener_config = f"""
 listener Default {{
   address                 *:8088
   secure                  0
