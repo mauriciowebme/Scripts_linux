@@ -557,6 +557,7 @@ listener Default {{
         container_db = f"""docker run -d \
                         --name mysql_5_7 \
                         --restart=always \
+                        -p 3306:3306 \
                         -e MYSQL_DATABASE=db_testes \
                         -e MYSQL_USER=mysql \
                         -e MYSQL_PASSWORD=mysql \
