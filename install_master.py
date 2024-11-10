@@ -611,7 +611,7 @@ app.listen(PORT, () => {{
             ]
         self.remove_container(nome_dominio_)
         resultados = self.executar_comandos(comandos)
-        self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=1)
+        self.cria_rede_docker(associar_container_nome=nome_dominio_, numero_rede=0)
         
     def instala_webserver_ssh(self,):
         self.remove_container('webssh')
