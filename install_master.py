@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.81
+Versão 1.82
 ===========================================================================
 ===========================================================================
 """)
@@ -273,7 +273,7 @@ certificatesResolvers:
 """)
         return dynamic_conf
         
-    def add_router_service(self, dominio=None, endereco=None, porta=None):
+    def adiciona_roteador_servico_traefik(self, dominio=None, endereco=None, porta=None):
         if dominio == None:
             dominio = input('Digite o dominio: ')
         if endereco == None:
@@ -452,7 +452,7 @@ certificatesResolvers:
         nome_dominio_ = nome_dominio.replace('.', '_')
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
         if resposta.lower() == 's':
-            self.add_router_service(nome_dominio, endereco='openlitespeed', porta='8088')
+            self.adiciona_roteador_servico_traefik(nome_dominio, endereco='openlitespeed', porta='8088')
         sites_dir = f"{self.install_principal}/openlitespeed"
         # Diretório do site
         #/usr/local/lsws/
@@ -595,6 +595,7 @@ app.listen(PORT, () => {{
         container = f"""docker run -d \
                         --name {nome_dominio_} \
                         --restart=always \
+                        -p {porta}:{porta} \
                         -v {diretorio_projeto}:/usr/src/app \
                         -w /usr/src/app \
                         node:latest 
@@ -602,7 +603,7 @@ app.listen(PORT, () => {{
                     
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
         if resposta.lower() == 's':
-            container = self.adiciona_redirecionamento_traefik(container, nome_dominio, porta)
+            self.adiciona_roteador_servico_traefik(self, dominio=nome_dominio, endereco=nome_dominio_, porta=porta)
 
         container += " bash -c \"npm install && npm start\""
         
@@ -1002,7 +1003,7 @@ class Sistema(Docker, Executa_comados):
             ("Força instalação docker", self.instala_docker_force),
             ("Instala portainer", self.instala_portainer),
             ("Instala traefik", self.instala_traefik),
-            ("Adiciona roteamento e serviço ao traefik", self.add_router_service),
+            ("Adiciona roteamento e serviço ao traefik", self.adiciona_roteador_servico_traefik),
             ("Configura rede do container", self.configura_rede),
             ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
