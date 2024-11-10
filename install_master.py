@@ -389,6 +389,111 @@ certificatesResolvers:
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
         
+    def instala_openlitespeed(self,):
+        print("Instalando openlitespeed.")
+        container = f"""docker run -d \
+                            --name openlitespeed \
+                            --restart=always \
+                            -p 8088:8088 \
+                            -p 7080:7080 \
+                            -v {self.install_principal}/openlitespeed/vhosts:/var/www/vhosts/ \
+                            -v {self.install_principal}/openlitespeed/conf:/usr/local/lsws/conf \
+                            litespeedtech/openlitespeed:latest
+                    """
+            
+        self.remove_container('openlitespeed')
+        comandos = [
+            container,
+            ]
+        resultados = self.executar_comandos(comandos)
+        self.cria_rede_docker(associar_container_nome=f'openlitespeed', numero_rede=0)
+        
+        print(" ")
+        print("Configurações de openlitespeed concluídas.")
+        print(" ")
+        print("Caminho de instalação:")
+        print(f"{self.install_principal}/vhosts")
+        print(" ")
+        print('\nIPs possíveis para acesso:')
+        comandos = [
+            f"hostname -I | tr ' ' '\n'",
+            ]
+        resultados = self.executar_comandos(comandos)
+        print("Porta de acesso: 7080")
+        print(" ")
+        print("Acesso padrão:")
+        print("Usuario: admin")
+        print("Senha: 123456")
+        print(" ")
+        print("Vá para a seção Security no painel de administração.")
+        print("Escolha a opção Admin Password.")
+        print("Insira a nova senha desejada e salve as alterações.")
+        print(" ")
+    
+    def controle_sites_openlitespeed(self,):
+        nome_dominio = input('Digite o dominio: ')
+        sites_dir = f"{self.install_principal}/openlitespeed"
+        # Diretório do site
+        site_dir = os.path.join(sites_dir, "vhosts", nome_dominio)
+        public_html = os.path.join(site_dir, "public_html")
+        conf_dir = os.path.join(sites_dir, "conf", "vhosts", nome_dominio)
+        listener_conf_path = os.path.join(sites_dir, "conf", "httpd_config.conf")
+        
+        # Cria os diretórios necessários
+        os.makedirs(public_html, exist_ok=True)
+        os.makedirs(conf_dir, exist_ok=True)
+        
+        # Cria um arquivo de índice básico
+        index_path = os.path.join(public_html, "index.php")
+        if not os.path.exists(index_path):
+            with open(index_path, "w") as index_file:
+                index_file.write("<?php echo 'Olá, este é o site ' . $_SERVER['HTTP_HOST']; ?>")
+        
+        # Configuração do Virtual Host
+        vhost_conf_path = os.path.join(conf_dir, "vhconf.conf")
+        with open(vhost_conf_path, "w") as vhost_file:
+            vhost_file.write(f"""\
+docRoot                   {public_html}
+vhDomain                  {nome_dominio}
+""")
+        
+        # Configuração do Virtual Host e Listener no httpd_config.conf
+        virtualhost_config = f"""\
+virtualhost {nome_dominio} {{
+vhRoot                  {site_dir}
+configFile              $SERVER_ROOT/conf/vhosts/{nome_dominio}/vhconf.conf
+allowSymbolLink         1
+enableScript            1
+restrained              1
+}}
+"""
+        listener_config = f"""\
+listener Default {{
+address                 *:8088
+secure                  0
+map                     Example *
+map                     {nome_dominio} {nome_dominio}
+}}
+"""
+        
+        # Adiciona a configuração do Virtual Host e Listener se não existirem
+        with open(listener_conf_path, "r+") as listener_file:
+            content = listener_file.read()
+            if virtualhost_config.strip() not in content:
+                listener_file.write(virtualhost_config)
+                print(f"Virtual Host para '{nome_dominio}' adicionado.")
+            else:
+                print(f"Virtual Host para '{nome_dominio}' já existe.")
+            
+            if listener_config.strip() not in content:
+                listener_file.write(listener_config)
+                print(f"Listener para '{nome_dominio}' adicionado.")
+            else:
+                print(f"Listener para '{nome_dominio}' já existe.")
+        
+        print(f"Configuração do site '{nome_dominio}' criada com sucesso!")
+        print(f"Arquivos criados em: {site_dir}")
+        
     def instala_portainer(self,):
         self.remove_container('portainer')
         comandos = [
@@ -806,6 +911,8 @@ class Sistema(Docker, Executa_comados):
             ("Instala mysql_5_7", self.instala_mysql_5_7),
             ("Instala wordpress", self.instala_wordpress),
             ("Instala wordpress puro", self.instala_wordpress_puro),
+            ("Instala openlitespeed", self.instala_openlitespeed),
+            ("Controle de sites openlitespeed", self.controle_sites_openlitespeed),
             ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
             ("Start sync pastas", self.start_sync_pastas),
         ]
