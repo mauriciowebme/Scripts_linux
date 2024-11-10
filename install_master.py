@@ -3,15 +3,17 @@
 #wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
 import os
+import socket
 import subprocess
 import time
 import yaml
+import json
 
 print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.80
+Versão 1.81
 ===========================================================================
 ===========================================================================
 """)
@@ -64,6 +66,18 @@ class Docker(Executa_comados):
         Executa_comados.__init__(self)
         self.install_principal = '/install_principal'
         self.redes_docker = ['_traefik', 'interno']
+        
+    def escolher_porta_disponivel(self, inicio=40000, fim=40500):
+        for porta in range(inicio, fim + 1):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                # Tenta se conectar na porta; se falhar, a porta está disponível
+                if s.connect_ex(('localhost', porta)) != 0:
+                    print(f"Porta {porta} está disponível e será usada.")
+                    return porta
+        
+        # Se não houver portas disponíveis no intervalo
+        print(f"Nenhuma porta disponível entre {inicio} e {fim}.")
+        return None
 
     def cria_rede_docker(self, associar_todos=False, associar_container_nome=False, numero_rede=None):
         # Verifica se a rede já existe
@@ -529,6 +543,76 @@ listener Default {{
         resultados = self.executar_comandos(comandos)
         print('Porta de acesso: 9443')
         
+    def instala_app_nodejs(self,):
+        nome_dominio = input('Digite o dominio ou nome do projeto: ')
+        nome_dominio_ = nome_dominio.replace('.', '_')
+        porta = self.escolher_porta_disponivel()
+        diretorio_projeto = f"{self.install_principal}/node/{nome_dominio_}"
+        os.makedirs(diretorio_projeto, exist_ok=True)
+        
+         # Define a estrutura do package.json
+        package_json = {
+            "name": nome_dominio_,
+            "version": "1.0",
+            "main": "index.js",
+            "scripts": {
+                "start": "node index.js"
+            },
+            "dependencies": {
+                "express": "^4.17.1"
+            }
+        }
+        # Caminho para o arquivo package.json
+        caminho_package_json = os.path.join(diretorio_projeto, "package.json")
+        if not os.path.exists(caminho_package_json):
+            # Escreve o conteúdo no arquivo package.json
+            with open(caminho_package_json, "w") as arquivo:
+                json.dump(package_json, arquivo, indent=4)
+            print(f"Arquivo package.json criado em {caminho_package_json}")
+        
+        index_js = f"""\
+const express = require('express');
+const app = express();
+const PORT = {porta};
+
+app.get('/', (req, res) => {{
+  res.send('Servidor Node.js com Express funcionando!');
+}});
+
+app.listen(PORT, () => {{
+  console.log(`Servidor rodando na porta {porta}`);
+}});
+"""
+        # Caminho para o arquivo index.js
+        caminho_index_js = os.path.join(diretorio_projeto, "index.js")
+        if not os.path.exists(caminho_index_js):
+            # Escreve o conteúdo no arquivo package.json
+            with open(caminho_index_js, "w") as arquivo:
+                arquivo.write(index_js)
+            print(f"Arquivo index.js criado em {caminho_index_js}")
+        
+        print(f'Porta interna para uso: {porta}')
+        container = f"""docker run -d \
+                        --name {nome_dominio_} \
+                        --restart=always \
+                        -v {diretorio_projeto}:/usr/src/app \
+                        -w /usr/src/app \
+                        node:latest 
+                    """
+                    
+        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
+        if resposta.lower() == 's':
+            container = self.adiciona_redirecionamento_traefik(container, nome_dominio, porta)
+
+        container += " bash -c \"npm install && npm start\""
+        
+        comandos = [
+            container,
+            ]
+        self.remove_container(nome_dominio_)
+        resultados = self.executar_comandos(comandos)
+        self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=1)
+        
     def instala_webserver_ssh(self,):
         self.remove_container('webssh')
         print('Porta interna para uso: 8080')
@@ -927,6 +1011,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala wordpress puro", self.instala_wordpress_puro),
             ("Instala openlitespeed", self.instala_openlitespeed),
             ("Controle de sites openlitespeed", self.controle_sites_openlitespeed),
+            ("Instala app nodejs", self.instala_app_nodejs),
             ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
             ("Start sync pastas", self.start_sync_pastas),
         ]
