@@ -461,7 +461,7 @@ certificatesResolvers:
         vhost_conf_path = os.path.join(conf_dir, "vhconf.conf")
         with open(vhost_conf_path, "w") as vhost_file:
             vhost_file.write(f"""\
-docRoot                   /var/www/vhosts/{nome_dominio_}/
+docRoot                   /var/www/vhosts/{nome_dominio_}/public_html
 vhDomain                  {nome_dominio}
 """)
         
