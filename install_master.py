@@ -692,7 +692,7 @@ app.listen(PORT, () => {{
         comando2 = f"docker exec -i mysql_5_7 mysql -uroot -prootpassword -e \"CREATE DATABASE IF NOT EXISTS {dominio_}; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
         self.executar_comandos([comando1, comando2])
         container = f"""docker run -d \
-                        --name wp_{dominio_} \
+                        --name {dominio_} \
                         --restart=always \
                         -e WORDPRESS_DB_HOST=mysql_5_7:3306 \
                         -e WORDPRESS_DB_USER=wordpress \
@@ -705,12 +705,12 @@ app.listen(PORT, () => {{
         if resposta.lower() == 's':
             container = self.adiciona_redirecionamento_traefik(container, dominio, porta='80')
         
-        self.remove_container(f'wp_{dominio_}')
+        self.remove_container(f'{dominio_}')
         comandos = [
             container,
             ]
         resultados = self.executar_comandos(comandos)
-        self.cria_rede_docker(associar_container_nome=f'wp_{dominio_}', numero_rede=1)
+        self.cria_rede_docker(associar_container_nome=f'{dominio_}', numero_rede=1)
         
     def instala_wordpress(self,):
         print('Instalando o wordpress.\n')
@@ -718,7 +718,7 @@ app.listen(PORT, () => {{
         
         dominio_ = dominio.replace('.', '_')
         container_db = f"""docker run -d \
-                        --name wp_{dominio_}_bd \
+                        --name {dominio_}_bd \
                         --restart=always \
                         -e MYSQL_DATABASE=wordpress \
                         -e MYSQL_USER=wordpress \
@@ -728,9 +728,9 @@ app.listen(PORT, () => {{
                         mysql:5.7
                     """
         container = f"""docker run -d \
-                        --name wp_{dominio_} \
+                        --name {dominio_} \
                         --restart=always \
-                        -e WORDPRESS_DB_HOST=wp_{dominio_}_bd:3306 \
+                        -e WORDPRESS_DB_HOST={dominio_}_bd:3306 \
                         -e WORDPRESS_DB_USER=wordpress \
                         -e WORDPRESS_DB_PASSWORD=wordpress \
                         -e WORDPRESS_DB_NAME=wordpress \
@@ -742,15 +742,15 @@ app.listen(PORT, () => {{
         if resposta.lower() == 's':
             container = self.adiciona_redirecionamento_traefik(container, dominio, porta='80')
         
-        self.remove_container(f'wp_{dominio_}_bd')
-        self.remove_container(f'wp_{dominio_}')
+        self.remove_container(f'{dominio_}_bd')
+        self.remove_container(f'{dominio_}')
         comandos = [
             container_db,
             container,
             ]
         resultados = self.executar_comandos(comandos)
-        self.cria_rede_docker(associar_container_nome=f'wp_{dominio_}_bd', numero_rede=1)
-        self.cria_rede_docker(associar_container_nome=f'wp_{dominio_}', numero_rede=1)
+        self.cria_rede_docker(associar_container_nome=f'{dominio_}_bd', numero_rede=1)
+        self.cria_rede_docker(associar_container_nome=f'{dominio_}', numero_rede=1)
 
     def instala_docker(self,):
         # Executa o comando para verificar se o Docker está instalado
