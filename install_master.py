@@ -447,11 +447,37 @@ certificatesResolvers:
         print("Insira a nova senha desejada e salve as alterações.")
         print(" ")
     
+    def verifica_container_existe(self, container_name, install_function):
+        """
+        Exemplo de uso:
+        self.verifica_container_existe('openlitespeed', self.instala_openlitespeed)
+        """
+        
+        # Verifica se o container existe antes de instalar
+        result = subprocess.run(
+            ["docker", "ps", "--format", "{{.ID}} {{.Names}}"],
+            capture_output=True,
+            text=True
+        )
+        container_info = result.stdout.strip().splitlines()
+        db_encontrado = False
+        for info in container_info:
+            if container_name in info:
+                db_encontrado = True
+                break
+        if not db_encontrado:
+            install_function
+            print('Aguarde terminando de instalar...')
+            time.sleep(30)
+    
     def controle_sites_openlitespeed(self,):
+        
+        self.verifica_container_existe('openlitespeed', self.instala_openlitespeed)
+        
         nome_dominio = input('Digite o dominio: ')
         nome_dominio_ = nome_dominio.replace('.', '_')
-        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
-        if resposta.lower() == 's':
+        resposta_traefik = input('Deseja redirecionar com traefik?: S ou N: ')
+        if resposta_traefik.lower() == 's':
             self.adiciona_roteador_servico_traefik(nome_dominio, endereco='openlitespeed', porta='8088')
         sites_dir = f"{self.install_principal}/openlitespeed"
         # Diretório do site
@@ -545,6 +571,7 @@ listener Default {{
         
     def instala_app_nodejs(self,):
         nome_dominio = input('Digite o dominio ou nome do projeto: ')
+        resposta_traefik = input('Deseja redirecionar com traefik?: S ou N: ')
         nome_dominio_ = nome_dominio.replace('.', '_')
         porta = self.escolher_porta_disponivel()
         diretorio_projeto = f"{self.install_principal}/node/{nome_dominio_}"
@@ -601,17 +628,14 @@ app.listen(PORT, () => {{
                         node:latest \
                         /bin/sh -c \"npm install && npm start\"
                     """
-                    
-        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
-        if resposta.lower() == 's':
-            self.adiciona_roteador_servico_traefik(dominio=nome_dominio, endereco=nome_dominio_, porta=porta)
         
         comandos = [
             container,
             ]
         self.remove_container(nome_dominio_)
         resultados = self.executar_comandos(comandos)
-        self.cria_rede_docker(associar_container_nome=nome_dominio_, numero_rede=0)
+        if resposta_traefik.lower() == 's':
+            self.adiciona_roteador_servico_traefik(dominio=nome_dominio, endereco=nome_dominio_, porta=porta)
         
     def instala_webserver_ssh(self,):
         self.remove_container('webssh')
@@ -661,21 +685,7 @@ app.listen(PORT, () => {{
         dominio = input('Digite o dominio:')
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
         
-        result = subprocess.run(
-            ["docker", "ps", "--format", "{{.ID}} {{.Names}}"],
-            capture_output=True,
-            text=True
-        )
-        container_info = result.stdout.strip().splitlines()
-        db_encontrado = False
-        for info in container_info:
-            if 'mysql_5_7' in info:
-                db_encontrado = True
-                break
-        if not db_encontrado:
-            self.instala_mysql_5_7()
-            print('aguarde terminando de instalar o banco de dados...')
-            time.sleep(30)
+        self.verifica_container_existe('mysql_5_7', self.instala_mysql_5_7)
         
         dominio_ = dominio.replace('.', '_')
         comando1 = f"docker exec -i mysql_5_7 mysql -uroot -prootpassword -e \"CREATE USER IF NOT EXISTS 'wordpress'@'%' IDENTIFIED BY 'wordpress';\""
@@ -846,8 +856,6 @@ class Sistema(Docker, Executa_comados):
             segundos -= 1
             if segundos <=1:
                 exit()
-
-        print('\nTempo esgotado!')
     
     def mostrar_menu(self, opcoes_menu, principal=False):
         """Mostra o menu de opções para o usuário de forma dinâmica."""
