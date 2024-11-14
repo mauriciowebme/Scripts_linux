@@ -337,6 +337,7 @@ certificatesResolvers:
                 --restart=always \
                 -p 80:80 \
                 -p 443:443 \
+                -p 3306:3306 \
                 -p 8080:8080 \
                 -v /var/run/docker.sock:/var/run/docker.sock:ro \
                 -v {self.install_principal}/traefik/lets-encrypt:/letsencrypt \
@@ -344,6 +345,7 @@ certificatesResolvers:
                 traefik:latest \
                 --entrypoints.web.address=:80 \
                 --entrypoints.websecure.address=:443 \
+                --entrypoints.mysql.address=:3306 \
                 --entrypoints.traefik.address=:8080 \
                 --providers.docker=true \
                 --providers.file.filename=/etc/traefik/dynamic_conf.yml \
