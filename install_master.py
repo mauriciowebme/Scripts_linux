@@ -669,7 +669,8 @@ app.listen(PORT, () => {{
                         -p 2222:22 \
                         -v {self.install_principal}:/home \
                         -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp-users.conf:ro \
-                        atmoz/sftp
+                        atmoz/sftp \
+                        sh -c "ssh-keygen -A && /entrypoint"
                     """
         comandos = [
             container_db,
