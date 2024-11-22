@@ -663,7 +663,7 @@ app.listen(PORT, () => {{
         resultados = self.executar_comandos(comandos)
         # self.cria_rede_docker(associar_container_nome=f'mysql_5_7', numero_rede=1)
         
-    def gerenciar_usuarios_sftp(self, acao, username=None, password=None, folder=None):
+    def gerenciar_usuarios_sftp(self, conf_manual=None, acao=None, username=None, password=None, folder=None):
         """
         Gerencia usuários no SFTP e seus diretórios.
         
@@ -674,6 +674,19 @@ app.listen(PORT, () => {{
         :param password: Senha do usuário (obrigatório para adicionar).
         :param folder: Pasta associada ao usuário (obrigatório para adicionar).
         """
+        if not conf_manual:
+            acao = input('Ação: 1 - Adicionar, 2 - Remover: ')
+            if '1' in acao:
+                acao = "adicionar"
+            elif '2' in acao:
+                acao = "remover"
+            else:
+                acao = None
+                
+            username = input('Digite o usuario: ')
+            password = input('Digite o senha: ')
+            folder = input('Digite a pasta: ')
+        
         config_path = self.atmoz_sftp_arquivo_conf
         
         self.verifica_container_existe('atmoz_sftp', self.instala_atmoz_sftp)
@@ -1113,6 +1126,7 @@ class Sistema(Docker, Executa_comados):
             ("Configura rede do container", self.configura_rede),
             ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
+            ("Gerenciador SFTP", self.gerenciar_usuarios_sftp),
             ("Instala mysql_5_7", self.instala_mysql_5_7),
             ("Instala wordpress", self.instala_wordpress),
             ("Instala wordpress puro", self.instala_wordpress_puro),
