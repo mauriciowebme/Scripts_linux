@@ -873,7 +873,8 @@ app.listen(PORT, () => {{
         comando = "command -v docker"
         resultados = self.executar_comandos([comando], ignorar_erros=True, exibir_resultados=False)
         if resultados[comando] and 'Erro:True' not in resultados[comando][0]:
-            print("Intalação docker ok.")
+            pass
+            #print("Intalação docker ok.")
         else:
             print("Docker não está instalado.")
             self.instala_docker_force()
