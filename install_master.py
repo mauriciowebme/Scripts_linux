@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.92
+Versão 1.93
 ===========================================================================
 ===========================================================================
 """)
@@ -1138,6 +1138,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
             ("Gerenciador SFTP", self.gerenciar_usuarios_sftp),
+            ("Instala atmoz SFTP", self.instala_atmoz_sftp),
             ("Instala mysql_5_7", self.instala_mysql_5_7),
             ("Instala wordpress", self.instala_wordpress),
             ("Instala wordpress puro", self.instala_wordpress_puro),
