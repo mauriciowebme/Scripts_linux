@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.89
+Versão 1.90
 ===========================================================================
 ===========================================================================
 """)
@@ -873,7 +873,7 @@ app.listen(PORT, () => {{
         comando = "command -v docker"
         resultados = self.executar_comandos([comando], ignorar_erros=True, exibir_resultados=False)
         print(resultados)
-        if resultados[comando] and 'Erro ao executar comando' not in resultados[comando]:
+        if resultados[comando] and 'Erro:True' not in resultados[comando]:
             print("Intalação docker ok.")
         else:
             print("Docker não está instalado.")
