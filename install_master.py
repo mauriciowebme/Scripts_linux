@@ -689,7 +689,7 @@ app.listen(PORT, () => {{
                 
             username = input('Digite o usuario: ')
             password = input('Digite o senha: ')
-            folder = input('Digite a pasta: ')
+            folder = input('Digite o caminho da pasta começando com /install_principal/: ')
         
         config_path = self.atmoz_sftp_arquivo_conf
         
