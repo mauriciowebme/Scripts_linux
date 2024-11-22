@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.85
+Versão 1.86
 ===========================================================================
 ===========================================================================
 """)
@@ -867,7 +867,7 @@ app.listen(PORT, () => {{
     def instala_docker(self,):
         # Executa o comando para verificar se o Docker está instalado
         comando = "command -v docker"
-        resultados = self.executar_comandos([comando], ignorar_erros=True)
+        resultados = self.executar_comandos([comando], ignorar_erros=True, exibir_resultados=False)
         if resultados[comando]:
             pass
             print("Intalação docker ok.")
@@ -1116,7 +1116,7 @@ class Sistema(Docker, Executa_comados):
         
     def menu_docker(self):
         print("\nBem-vindo ao Gerenciador Docker\n")
-        # self.instala_docker()
+        self.instala_docker()
         """Menu de opções"""
         opcoes_menu = [
             ("Força instalação docker", self.instala_docker_force),
