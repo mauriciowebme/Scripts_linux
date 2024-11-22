@@ -66,6 +66,7 @@ class Docker(Executa_comados):
         Executa_comados.__init__(self)
         self.install_principal = '/install_principal'
         self.redes_docker = ['_traefik', 'interno']
+        self.atmoz_sftp_arquivo_conf = os.path.join(f"{self.install_principal}/atmoz_sftp/", "sftp-users.conf")
         
     def escolher_porta_disponivel(self, inicio=40000, fim=40500):
         for porta in range(inicio, fim + 1):
@@ -638,7 +639,103 @@ app.listen(PORT, () => {{
         resultados = self.executar_comandos(comandos)
         if resposta_traefik.lower() == 's':
             self.adiciona_roteador_servico_traefik(dominio=nome_dominio, endereco=nome_dominio_, porta=porta)
+    
+    def instala_atmoz_sftp(self,):
+        print('Instalando o atmoz_sftp.\n')
         
+        if not os.path.exists(self.atmoz_sftp_arquivo_conf):
+            with open(self.atmoz_sftp_arquivo_conf, "w") as arquivo:
+                arquivo.write(f"user1:password1:::user1")
+            print(f"Arquivo sftp-users.conf criado.")
+        
+        container_db = f"""docker run -d \
+                        --name atmoz_sftp \
+                        --restart=always \
+                        -p 2222:22 \
+                        -v {self.install_principal}:/home \
+                        -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp-users.conf:ro \
+                        atmoz/sftp
+                    """
+        comandos = [
+            container_db,
+            ]
+        self.remove_container(f'atmoz_sftp')
+        resultados = self.executar_comandos(comandos)
+        # self.cria_rede_docker(associar_container_nome=f'mysql_5_7', numero_rede=1)
+        
+    def gerenciar_usuarios_sftp(self, acao, username=None, password=None, folder=None):
+        """
+        Gerencia usuários no SFTP e seus diretórios.
+        
+        :param acao: 'adicionar' ou 'remover'.
+        :param config_path: Caminho para o arquivo de configuração de usuários.
+        :param container_name: Nome do container SFTP.
+        :param username: Nome do usuário.
+        :param password: Senha do usuário (obrigatório para adicionar).
+        :param folder: Pasta associada ao usuário (obrigatório para adicionar).
+        """
+        config_path = self.atmoz_sftp_arquivo_conf
+        
+        self.verifica_container_existe('atmoz_sftp', self.instala_atmoz_sftp)
+        
+        # Lê o arquivo de configuração
+        try:
+            with open(config_path, "r") as file:
+                users = file.readlines()
+        except FileNotFoundError:
+            users = []
+            
+        # Cria o diretório do usuário no host
+        user_dir = os.path.join(self.install_principal, folder)
+        if not os.path.exists(user_dir):
+            os.makedirs(user_dir, exist_ok=True)
+            os.chmod(user_dir, 0o755)
+
+        # Processar usuários existentes
+        users_dict = {}
+        for line in users:
+            parts = line.strip().split(":")
+            if len(parts) >= 4:
+                users_dict[parts[0]] = line.strip()
+
+        if acao == "adicionar":
+            if not username or not password or not folder:
+                raise ValueError("Os parâmetros 'username', 'password' e 'folder' são obrigatórios para adicionar um usuário.")
+
+            if username in users_dict:
+                print(f"Usuário '{username}' já existe!")
+                return
+
+            # Adiciona o novo usuário no arquivo de configuração
+            new_user_line = f"{username}:{password}:::{folder}\n"
+            with open(config_path, "a") as file:
+                file.write(new_user_line)
+
+            print(f"Usuário '{username}' adicionado com sucesso.")
+
+        elif acao == "remover":
+            if not username:
+                raise ValueError("O parâmetro 'username' é obrigatório para remover um usuário.")
+
+            if username not in users_dict:
+                print(f"Usuário '{username}' não encontrado!")
+                return
+
+            # Remove o usuário do arquivo de configuração
+            users_dict.pop(username)
+            with open(config_path, "w") as file:
+                for user_line in users_dict.values():
+                    file.write(user_line + "\n")
+
+            print(f"Usuário '{username}' removido com sucesso.")
+
+        else:
+            raise ValueError("Ação inválida. Use 'adicionar' ou 'remover'.")
+
+        # Reinicia o container para aplicar mudanças
+        print("Reiniciando o container SFTP...")
+        subprocess.run(["docker", "restart", 'atmoz_sftp'], check=True)
+    
     def instala_webserver_ssh(self,):
         self.remove_container('webssh')
         print('Porta interna para uso: 8080')
