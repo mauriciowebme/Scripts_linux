@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.91
+Versão 1.92
 ===========================================================================
 ===========================================================================
 """)
@@ -391,11 +391,11 @@ certificatesResolvers:
         self.cria_rede_docker(associar_container_nome=nome_container, numero_rede=int(rede_numero))
         
     def instala_filebrowser(self,):
-        #print('Porta interna para uso: 80')
+        porta = self.escolher_porta_disponivel()
         container = f"""docker run -d \
                     --name filebrowser \
                     --restart=always \
-                    -p 8082:80 \
+                    -p {porta}:80 \
                     -v /:/srv \
                     -v {self.install_principal}/database_filebrowser/database.db:/database.db \
                     filebrowser/filebrowser
@@ -412,6 +412,7 @@ certificatesResolvers:
             ]
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
+        print(f'Porta para uso local: {porta}')
         
     def instala_openlitespeed(self,):
         print("Instalando openlitespeed.")
