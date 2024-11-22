@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.86
+Versão 1.87
 ===========================================================================
 ===========================================================================
 """)
@@ -82,61 +82,65 @@ class Docker(Executa_comados):
 
     def cria_rede_docker(self, associar_todos=False, associar_container_nome=False, numero_rede=None):
         # Verifica se a rede já existe
-        result = subprocess.run(["docker", "network", "ls"], capture_output=True, text=True)
-        for rede in self.redes_docker:
-            if rede not in result.stdout:
-                print(f"Rede '{rede}' não encontrada. Criando rede...")
-                subprocess.run(["docker", "network", "create", rede])
-                print(f"Rede '{rede}' criada com sucesso.")
-            # else:
-            #     print(f"Rede '{network_name}' já existe.")
+        try:
+            result = subprocess.run(["docker", "network", "ls"], capture_output=True, text=True)
+            for rede in self.redes_docker:
+                if rede not in result.stdout:
+                    print(f"Rede '{rede}' não encontrada. Criando rede...")
+                    subprocess.run(["docker", "network", "create", rede])
+                    print(f"Rede '{rede}' criada com sucesso.")
+                # else:
+                #     print(f"Rede '{network_name}' já existe.")
         
-        if associar_container_nome:
-            if numero_rede != None:
-                redes = [self.redes_docker[numero_rede]]
-            else:
-                redes = self.redes_docker
-            # Tenta conectar o container à rede e captura o erro, se houver
-            for rede in redes:
-                connect_result = subprocess.run(
-                    ["docker", "network", "disconnect", "bridge", associar_container_nome],
-                    capture_output=True, text=True
-                )
-                
-                # Verifica se o container foi associado com sucesso ou já estava na rede
-                if connect_result.returncode == 0:
-                    print(f"Container {associar_container_nome} desconectado da rede bridge com sucesso.")
-                # elif "already exists in network" not in connect_result.stderr:
-                #     print(f"Erro ao associar o container {container_id}: {connect_result.stderr.strip()}")
-                
-                connect_result = subprocess.run(
-                    ["docker", "network", "connect", rede, associar_container_nome],
-                    capture_output=True, text=True
-                )
-
-                # Verifica se o container foi associado com sucesso ou já estava na rede
-                if connect_result.returncode == 0:
-                    print(f"Container {associar_container_nome} associado à rede '{rede}' com sucesso.")
-                # elif "already exists in network" not in connect_result.stderr:
-                #     print(f"Erro ao associar o container {container_id}: {connect_result.stderr.strip()}")
-        
-        if associar_todos:
-            # Associa todos os containers existentes à rede
-            result = subprocess.run(["docker", "ps", "-q"], capture_output=True, text=True)
-            container_ids = result.stdout.strip().splitlines()
-            for container_id in container_ids:
-                for rede in self.redes_docker:
-                    # Tenta conectar o container à rede e captura o erro, se houver
+            if associar_container_nome:
+                if numero_rede != None:
+                    redes = [self.redes_docker[numero_rede]]
+                else:
+                    redes = self.redes_docker
+                # Tenta conectar o container à rede e captura o erro, se houver
+                for rede in redes:
                     connect_result = subprocess.run(
-                        ["docker", "network", "connect", rede, container_id],
+                        ["docker", "network", "disconnect", "bridge", associar_container_nome],
+                        capture_output=True, text=True
+                    )
+                    
+                    # Verifica se o container foi associado com sucesso ou já estava na rede
+                    if connect_result.returncode == 0:
+                        print(f"Container {associar_container_nome} desconectado da rede bridge com sucesso.")
+                    # elif "already exists in network" not in connect_result.stderr:
+                    #     print(f"Erro ao associar o container {container_id}: {connect_result.stderr.strip()}")
+                    
+                    connect_result = subprocess.run(
+                        ["docker", "network", "connect", rede, associar_container_nome],
                         capture_output=True, text=True
                     )
 
                     # Verifica se o container foi associado com sucesso ou já estava na rede
                     if connect_result.returncode == 0:
-                        print(f"Container {container_id} associado à rede '{rede}' com sucesso.")
+                        print(f"Container {associar_container_nome} associado à rede '{rede}' com sucesso.")
                     # elif "already exists in network" not in connect_result.stderr:
                     #     print(f"Erro ao associar o container {container_id}: {connect_result.stderr.strip()}")
+            
+            if associar_todos:
+                # Associa todos os containers existentes à rede
+                result = subprocess.run(["docker", "ps", "-q"], capture_output=True, text=True)
+                container_ids = result.stdout.strip().splitlines()
+                for container_id in container_ids:
+                    for rede in self.redes_docker:
+                        # Tenta conectar o container à rede e captura o erro, se houver
+                        connect_result = subprocess.run(
+                            ["docker", "network", "connect", rede, container_id],
+                            capture_output=True, text=True
+                        )
+
+                        # Verifica se o container foi associado com sucesso ou já estava na rede
+                        if connect_result.returncode == 0:
+                            print(f"Container {container_id} associado à rede '{rede}' com sucesso.")
+                        # elif "already exists in network" not in connect_result.stderr:
+                        #     print(f"Erro ao associar o container {container_id}: {connect_result.stderr.strip()}")
+        
+        except Exception as ex:
+            pass
 
     def remove_container(self, nome_container):
         comandos = [
