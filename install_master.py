@@ -474,12 +474,13 @@ certificatesResolvers:
             text=True
         )
         container_info = result.stdout.strip().splitlines()
-        db_encontrado = False
+        encontrado = False
         for info in container_info:
             if container_name in info:
-                db_encontrado = True
+                encontrado = True
                 break
-        if not db_encontrado:
+        if not encontrado:
+            print(f"Container não {container_name} encontrado, instalando...")
             install_function
             print('Aguarde terminando de instalar...')
             time.sleep(30)
