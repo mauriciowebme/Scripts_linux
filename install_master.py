@@ -412,7 +412,13 @@ certificatesResolvers:
             ]
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
+        print(f"Possiveis ip's para acesso:")
+        comandos = [
+            "ip addr show | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1",
+        ]
+        self.executar_comandos(comandos)
         print(f'Porta para uso local: {porta}')
+        print(f'Usuario e senha padrão: admin, admin')
         
     def instala_openlitespeed(self,):
         print("Instalando openlitespeed.")
