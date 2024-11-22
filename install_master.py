@@ -655,6 +655,7 @@ app.listen(PORT, () => {{
         print('Instalando o atmoz_sftp.\n')
         
         if not os.path.exists(self.atmoz_sftp_arquivo_conf):
+            os.makedirs(os.path.dirname(self.atmoz_sftp_arquivo_conf), exist_ok=True)
             with open(self.atmoz_sftp_arquivo_conf, "w") as arquivo:
                 arquivo.write(f"user1:password1:::user1")
             print(f"Arquivo sftp-users.conf criado.")
