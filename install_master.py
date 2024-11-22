@@ -872,8 +872,7 @@ app.listen(PORT, () => {{
         # Executa o comando para verificar se o Docker está instalado
         comando = "command -v docker"
         resultados = self.executar_comandos([comando], ignorar_erros=True, exibir_resultados=False)
-        if resultados[comando]:
-            pass
+        if resultados[comando] and 'Erro ao executar comando' not in resultados[comando]:
             print("Intalação docker ok.")
         else:
             print("Docker não está instalado.")
