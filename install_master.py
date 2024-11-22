@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.93
+Versão 1.94
 ===========================================================================
 ===========================================================================
 """)
@@ -466,7 +466,7 @@ certificatesResolvers:
         Exemplo de uso:
         self.verifica_container_existe('openlitespeed', self.instala_openlitespeed)
         """
-        
+
         # Verifica se o container existe antes de instalar
         result = subprocess.run(
             ["docker", "ps", "--format", "{{.ID}} {{.Names}}"],
@@ -479,11 +479,13 @@ certificatesResolvers:
             if container_name in info:
                 encontrado = True
                 break
+
         if not encontrado:
-            print(f"Container não {container_name} encontrado, instalando...")
-            install_function
+            print(f"Container {container_name} não encontrado, instalando...")
+            install_function()  # Chamada correta da função
             print('Aguarde terminando de instalar...')
-            time.sleep(30)
+            time.sleep(30)  # Aguarda 30 segundos ou um tempo adequado
+            print(f"Container {container_name} instalado com sucesso.")
     
     def controle_sites_openlitespeed(self,):
         
