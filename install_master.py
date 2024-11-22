@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.95
+Versão 1.96
 ===========================================================================
 ===========================================================================
 """)
@@ -700,7 +700,8 @@ app.listen(PORT, () => {{
                 
             username = input('Digite o usuario: ')
             password = input('Digite o senha: ')
-            folder = input('Digite o caminho da pasta começando com /install_principal/: ')
+            print('Se sua pasta não existir em /install_principal/ ela sera criada automaticamente.')
+            folder = input('Digite o caminho da pasta: ')
         
         config_path = self.atmoz_sftp_arquivo_conf
         
