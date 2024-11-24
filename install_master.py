@@ -597,7 +597,8 @@ listener Default {{
         except (KeyError, IndexError) as e:
             print(f"Erro ao verificar o dispositivo KVM: {e}")
             return
-        
+        print('Iniciando instalação do container Windows.')
+        local_install = input('Digite o local onde deseja instalar: ')
         self.remove_container('windows')
         comandos = [
             f"""sudo docker run -d \
@@ -611,8 +612,8 @@ listener Default {{
                     -e RAM_SIZE="8G" \
                     -e CPU_CORES="4" \
                     -e DISK_SIZE="50G" \
-                    -v {self.install_principal}/windows/win:/storage \
-                    -v {self.install_principal}/windows/data:/data \
+                    -v {local_install}/windows/win:/storage \
+                    -v {local_install}/windows/data:/data \
                     dockurr/windows:latest
                 """
         ]
