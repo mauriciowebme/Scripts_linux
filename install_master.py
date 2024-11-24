@@ -185,18 +185,6 @@ class Docker(Executa_comados):
             """
         container = container + labels.replace( '  ', '' ) + imagem
         return container
-    
-    def setup_wifi(self):
-        print('Instalando gerenciador de WIFI nmtui.')
-        comandos = [
-            "sudo apt update",
-            "sudo apt install -y network-manager",
-            "sudo systemctl enable NetworkManager",
-            "sudo systemctl start NetworkManager",
-            "sudo nmtui"
-        ]
-        print("Configurando Wi-Fi com NetworkManager...")
-        self.executar_comandos(comandos)
 
     def iniciar_monitoramento(self):
         conteudo = """global:
@@ -1055,6 +1043,50 @@ class Sistema(Docker, Executa_comados):
         ]
 
         resultado = self.executar_comandos(comandos)
+        
+    def instalar_interface_xfce(self,):
+        """
+        Instala a interface XFCE4 se ainda não estiver instalada e a inicia.
+        """
+        try:
+            print("Verificando se o XFCE4 já está instalado...")
+            
+            # Verifica se o XFCE4 está instalado
+            processo = subprocess.run(
+                "dpkg -l | grep -q xfce4",
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            
+            if processo.returncode == 0:
+                print("XFCE4 já está instalado.")
+            else:
+                print("XFCE4 não encontrado. Instalando XFCE4...")
+                subprocess.run("sudo apt update", shell=True, check=True)
+                subprocess.run("sudo apt install -y xfce4", shell=True, check=True)
+                print("XFCE4 instalado com sucesso.")
+            
+            # Inicia o XFCE4
+            print("Iniciando XFCE4...")
+            subprocess.run("startxfce4", shell=True, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Erro durante a execução do comando: {e}")
+        except Exception as e:
+            print(f"Ocorreu um erro inesperado: {e}")
+    
+    def setup_wifi(self,):
+        print('Instalando gerenciador de WIFI nmtui.')
+        comandos = [
+            "sudo apt update",
+            "sudo apt install -y network-manager",
+            "sudo systemctl enable NetworkManager",
+            "sudo systemctl start NetworkManager",
+            "sudo nmtui"
+        ]
+        print("Configurando Wi-Fi com NetworkManager...")
+        self.executar_comandos(comandos)
     
     def adicionar_ao_fstab(self, dispositivo, ponto_montagem):
         try:
@@ -1164,7 +1196,6 @@ class Sistema(Docker, Executa_comados):
             ("Controle de sites openlitespeed", self.controle_sites_openlitespeed),
             ("Instala app nodejs", self.instala_app_nodejs),
             ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
-            ("Instala gerenciador de WIFI nmtui", self.setup_wifi),
             ("Start sync pastas", self.start_sync_pastas),
         ]
         self.mostrar_menu(opcoes_menu)
@@ -1224,7 +1255,9 @@ def main():
         ("verificando status do sistema", servicos.verificando_status_sistema),
         ("Menu operações de sistema", servicos.opcoes_sistema),
         ("Menu Docker", servicos.menu_docker),
+        ("Instala interface xfce", servicos.instalar_interface_xfce),
         ("Ecaminhamentos portas tuneis", servicos.ecaminhamentos_portas_tuneis),
+        ("Instala gerenciador de WIFI nmtui", servicos.setup_wifi),
     ]
     servicos.mostrar_menu(opcoes_menu, principal=True)
 
