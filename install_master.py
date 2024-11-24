@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.99
+Versão 1.100
 ===========================================================================
 ===========================================================================
 """)
@@ -599,19 +599,23 @@ listener Default {{
             return
         print('\nIniciando instalação do container Windows.')
         local_install = input('\nDigite o local onde deseja instalar: ')
-        self.remove_container('windows')
+        nome_container = input('O nome para o container Windows: ')
+        print('\n')
+        porta = self.escolher_porta_disponivel()
+        self.remove_container(f'windows_{nome_container}')
+        # -p 3389:3389/tcp \
+        # -p 3389:3389/udp \
         comandos = [
             f"""sudo docker run -d \
-                    --name windows \
+                    --name windows_{nome_container} \
                     --restart=always \
-                    -p 8006:8006 \
-                    -p 3389:3389/tcp \
-                    -p 3389:3389/udp \
+                    -p {porta}:8006 \
                     --device=/dev/kvm \
                     --cap-add=NET_ADMIN \
-                    -e RAM_SIZE="8G" \
+                    -e RAM_SIZE="4G" \
                     -e CPU_CORES="4" \
                     -e DISK_SIZE="50G" \
+                    -e LANGUAGE="pt-BR" \
                     -v {local_install}/windows/win:/storage \
                     -v {local_install}/windows/data:/data \
                     dockurr/windows:latest
@@ -625,7 +629,7 @@ listener Default {{
         ]
         resultados = self.executar_comandos(comandos)
         print('Portas de acesso:')
-        print(' - Porta Web: 8006')
+        print(f' - Porta Web: {porta}')
         print(' - Porta RDP: 3389')
         
     def instala_portainer(self,):
