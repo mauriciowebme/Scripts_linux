@@ -1042,7 +1042,7 @@ class Sistema(Docker, Executa_comados):
         Executa_comados.__init__(self)
         
     def contagem_regressiva(segundos):
-        segundos = 90
+        segundos = 120
         while True:
             print(f'\r{segundos}', end='')  # Atualiza a linha no terminal
             time.sleep(1)
