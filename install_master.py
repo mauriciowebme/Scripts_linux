@@ -737,7 +737,7 @@ app.listen(PORT, () => {{
         if not os.path.exists(self.atmoz_sftp_arquivo_conf):
             os.makedirs(os.path.dirname(self.atmoz_sftp_arquivo_conf), exist_ok=True)
             with open(self.atmoz_sftp_arquivo_conf, "w") as arquivo:
-                arquivo.write(f"teste:teste:::upload")
+                arquivo.write(f"teste:teste:::dados")
             print(f"Arquivo sftp-users.conf criado.")
             
         """
@@ -758,7 +758,7 @@ app.listen(PORT, () => {{
                         --name atmoz_sftp \
                         --restart=always \
                         -p 2222:22 \
-                        -v mySftpVolume:/home \
+                        -v {self.install_principal}:/home \
                         -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp/users.conf:ro \
                         atmoz/sftp
                     """
