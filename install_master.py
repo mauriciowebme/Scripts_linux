@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.104
+Versão 1.105
 ===========================================================================
 ===========================================================================
 """)
@@ -66,7 +66,7 @@ class Docker(Executa_comados):
         Executa_comados.__init__(self)
         self.install_principal = '/install_principal'
         self.redes_docker = ['_traefik', 'interno']
-        self.atmoz_sftp_arquivo_conf = os.path.join(f"{self.install_principal}/atmoz_sftp/", "sftp-users.conf")
+        self.atmoz_sftp_arquivo_conf = os.path.join(f"{self.install_principal}/atmoz_sftp/", "users.conf")
         
     def escolher_porta_disponivel(self, inicio=40000, fim=40500):
         for porta in range(inicio, fim + 1):
