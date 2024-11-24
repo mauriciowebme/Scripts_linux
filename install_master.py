@@ -14,7 +14,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.110
+Versão 1.111
 ===========================================================================
 ===========================================================================
 """)
@@ -738,25 +738,29 @@ app.listen(PORT, () => {{
         os.makedirs(f"{self.install_principal}/teste_ftp", exist_ok=True)
         
         # Define a estrutura do package.json
-        package_json = {
-            [
-                {
-                    "username": "teste",
-                    "password": "teste",
-                    "filesystem": {
-                        "provider": "local",
-                        "baseDirectory": "/mnt/host/teste_ftp"
-                    },
-                    "permissions": ["read", "write", "list"]
-                }
-            ]
-        }
+        package_json = [
+            {
+                "username": "teste",
+                "password": "teste",
+                "filesystem": {
+                    "provider": "local",
+                    "baseDirectory": "/mnt/host/teste_ftp"
+                },
+                "permissions": ["read", "write", "list"]
+            }
+        ]
+
+        # Caminho do arquivo users.json
         caminho_json = os.path.join(f"{self.install_principal}/sftpgo_ftp", "users.json")
         os.makedirs(os.path.dirname(caminho_json), exist_ok=True)
+
+        # Criação do arquivo se ele ainda não existir
         if not os.path.exists(caminho_json):
             with open(caminho_json, "w") as arquivo:
                 json.dump(package_json, arquivo, indent=4)
             print(f"Arquivo users.json criado em {caminho_json}")
+        else:
+            print(f"Arquivo users.json já existe em {caminho_json}")
             
         container = f"""docker run -d \
                         --name sftpgo_ftp \
