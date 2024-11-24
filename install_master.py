@@ -14,7 +14,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.112
+Versão 1.113
 ===========================================================================
 ===========================================================================
 """)
@@ -765,8 +765,8 @@ app.listen(PORT, () => {{
         container = f"""docker run -d \
                         --name sftpgo_ftp \
                         --restart=always \
-                        -p 20220:2022 \
-                        -p 80800:8080 \
+                        -p 2025:2022 \
+                        -p 8085:8080 \
                         -v {self.install_principal}:/mnt/host \
                         -v {self.install_principal}/sftpgo_ftp/users.json:/mnt/conf \
                         drakkan/sftpgo
