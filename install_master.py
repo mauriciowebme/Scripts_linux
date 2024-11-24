@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.102
+Versão 1.103
 ===========================================================================
 ===========================================================================
 """)
@@ -747,6 +747,7 @@ app.listen(PORT, () => {{
                         -v {self.install_principal}:/home \
                         -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp-users.conf:ro \
                         atmoz/sftp \
+                        sh -c "ssh-keygen -A && /entrypoint" \
                         teste_ftp:teste_ftp:::teste_ftp
                     """
         comandos = [
