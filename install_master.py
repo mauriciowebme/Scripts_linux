@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.97
+Versão 1.98
 ===========================================================================
 ===========================================================================
 """)
@@ -613,7 +613,7 @@ listener Default {{
                     -e DISK_SIZE="50G" \
                     -v {self.install_principal}/windows/win:/storage \
                     -v {self.install_principal}/windows/data:/data \
-                    dockur/windows:latest
+                    dockurr/windows:latest
                 """
         ]
         resultados = self.executar_comandos(comandos)
