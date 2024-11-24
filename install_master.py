@@ -1222,7 +1222,7 @@ class Sistema(Docker, Executa_comados):
             ("Configura rede do container", self.configura_rede),
             ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
-            # ("Gerenciador SFTP", self.gerenciar_usuarios_sftp),
+            ("Gerenciador SFTP", self.gerenciar_usuarios_sftp),
             ("Instala sftpgo SFTP", self.instala_sftpgo_ftp),
             ("Instala mysql_5_7", self.instala_mysql_5_7),
             ("Instala wordpress", self.instala_wordpress),
