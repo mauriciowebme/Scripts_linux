@@ -602,6 +602,7 @@ listener Default {{
         print('\nIniciando instalação do container Windows.')
         local_install = input('\nDigite o local onde deseja instalar: ')
         nome_container = input('Digite o nome para o container Windows: ')
+        senha = input('Digite a senha para acessar o Windows(o usuario sempre sera admin): ')
         memoria = input('Digite a quantidade de memoria (apenas numeros): ')
         cpu = input('Digite a quantidade de CPUs (apenas numeros): ')
         disco = input('Digite tamanho do disco (apenas numeros): ')
@@ -620,6 +621,9 @@ listener Default {{
                     -e RAM_SIZE="{memoria}G" \
                     -e CPU_CORES="{cpu}" \
                     -e DISK_SIZE="{disco}G" \
+                    -e LANGUAGE="pt-BR" \
+                    -e USERNAME: "admin" \
+                    -e PASSWORD: "senha" \
                     -e LANGUAGE="pt-BR" \
                     -v {local_install}/windows_{nome_container}/win:/storage \
                     -v {local_install}/windows_{nome_container}/data:/data \
