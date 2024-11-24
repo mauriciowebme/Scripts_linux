@@ -565,18 +565,37 @@ listener Default {{
         print(f"Arquivos criados em: {site_dir}")
         
     def instala_windows_docker(self,):
-        # Verifica suporte à virtualização
+         # Verifica suporte à virtualização
         print("Verificando suporte à virtualização...")
-        virtualizacao = int(self.executar_comandos(["egrep -c '(vmx|svm)' /proc/cpuinfo"])[0])
-        if virtualizacao == 0:
-            print("Erro: Sua máquina não suporta virtualização. Ative o suporte na BIOS antes de continuar.")
+        try:
+            comandos_virtualizacao = ["egrep -c '(vmx|svm)' /proc/cpuinfo"]
+            resultado_virtualizacao = self.executar_comandos(comandos_virtualizacao)
+            # Captura a saída do comando
+            virtualizacao_output = resultado_virtualizacao.get(comandos_virtualizacao[0], [])
+            if not virtualizacao_output or "Erro:True" in virtualizacao_output:
+                print("Erro ao executar o comando para verificar suporte à virtualização.")
+                return
+            # Converte a saída para inteiro
+            virtualizacao = int(virtualizacao_output[0].strip())
+            if virtualizacao == 0:
+                print("Erro: Sua máquina não suporta virtualização. Ative o suporte na BIOS antes de continuar.")
+                return
+        except (KeyError, ValueError, IndexError) as e:
+            print(f"Erro ao verificar suporte à virtualização: {e}")
             return
 
         # Verifica dispositivo KVM
         print("Verificando dispositivo KVM...")
-        kvm_disponivel = self.executar_comandos(["ls -l /dev/kvm"])
-        if "No such file or directory" in kvm_disponivel[0]:
-            print("Erro: O dispositivo KVM não está disponível. Instale e configure KVM antes de continuar.")
+        try:
+            comandos_kvm = ["ls -l /dev/kvm"]
+            resultado_kvm = self.executar_comandos(comandos_kvm)
+            # Captura a saída do comando
+            kvm_output = resultado_kvm.get(comandos_kvm[0], [])
+            if not kvm_output or "No such file or directory" in kvm_output[0]:
+                print("Erro: O dispositivo KVM não está disponível. Instale e configure KVM antes de continuar.")
+                return
+        except (KeyError, IndexError) as e:
+            print(f"Erro ao verificar o dispositivo KVM: {e}")
             return
         
         self.remove_container('windows')
