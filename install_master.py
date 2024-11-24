@@ -600,7 +600,7 @@ listener Default {{
             print(f"Erro ao verificar o dispositivo KVM: {e}")
             return
         print('\nIniciando instalação do container Windows.')
-        local_install = input('\nDigite o local onde deseja instalar: ')
+        local_install = input('\nDigite o local onde deseja instalar sem o / no final: ')
         nome_container = input('Digite o nome para o container Windows: ')
         senha = input('Digite a senha para acessar o Windows(o usuario sempre sera admin): ')
         memoria = input('Digite a quantidade de memoria (apenas numeros): ')
