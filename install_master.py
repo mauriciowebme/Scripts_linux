@@ -954,12 +954,24 @@ app.listen(PORT, () => {{
         self.cria_rede_docker(associar_container_nome=f'{dominio_}_bd', numero_rede=1)
         self.cria_rede_docker(associar_container_nome=f'{dominio_}', numero_rede=1)
 
+    def limpeza_containers(self,):
+        comandos = [
+            "docker image prune -a -f",
+            "docker container prune -f",
+            "docker volume prune -f",
+            "docker network prune -f",
+            "docker builder prune -f",
+            "docker system prune -a --volumes -f",
+        ]
+        # "docker system df",
+        resultados = self.executar_comandos(comandos, ignorar_erros=True, exibir_resultados=False)
+        
     def instala_docker(self,):
         # Executa o comando para verificar se o Docker está instalado
         comando = "command -v docker"
         resultados = self.executar_comandos([comando], ignorar_erros=True, exibir_resultados=False)
         if resultados[comando] and 'Erro:True' not in resultados[comando][0]:
-            pass
+            self.limpeza_containers()
             #print("Intalação docker ok.")
         else:
             print("Docker não está instalado.")
