@@ -623,7 +623,7 @@ listener Default {{
                     -e DISK_SIZE="{disco}G" \
                     -e LANGUAGE="pt-BR" \
                     -e USERNAME: "admin" \
-                    -e PASSWORD: "senha" \
+                    -e PASSWORD: "{senha}" \
                     -e LANGUAGE="pt-BR" \
                     -v {local_install}/windows_{nome_container}/win:/storage \
                     -v {local_install}/windows_{nome_container}/data:/data \
