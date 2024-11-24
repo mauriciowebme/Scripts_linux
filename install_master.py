@@ -747,9 +747,8 @@ app.listen(PORT, () => {{
                         --restart=always \
                         -p 2222:22 \
                         -v {self.install_principal}:/home \
-                        -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp-users.conf:ro \
-                        atmoz/sftp \
-                        teste:teste:::teste
+                        -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp/users.conf:ro \
+                        atmoz/sftp
                     """
         comandos = [
             container_db,
@@ -1069,7 +1068,7 @@ class Sistema(Docker, Executa_comados):
         Executa_comados.__init__(self)
         
     def contagem_regressiva(segundos):
-        segundos = 120
+        segundos = 150
         while True:
             print(f'\r{segundos}', end='')  # Atualiza a linha no terminal
             time.sleep(1)
