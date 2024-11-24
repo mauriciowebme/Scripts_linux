@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.98
+Versão 1.99
 ===========================================================================
 ===========================================================================
 """)
@@ -1193,10 +1193,10 @@ class Sistema(Docker, Executa_comados):
         
         comandos = [
             f"sudo mkdir -p {ponto_montagem}",
-            f"sudo parted -s /dev/{disco} mklabel gpt",                              # Define o tipo de tabela de partição como GPT
-            f"sudo parted -s -a opt /dev/{disco} mkpart primary ext4 0% 100%",       # Cria a partição ocupando todo o disco
-            f"sudo mkfs.ext4 /dev/{disco}1"                                       # Formata a nova partição como ext4
-            f"sudo mount /dev/{disco}1 {ponto_montagem}"                                       # Formata a nova partição como ext4
+            f"sudo parted -s /dev/{disco} mklabel gpt",                            # Define o tipo de tabela de partição como GPT
+            f"sudo parted -s -a opt /dev/{disco} mkpart primary ext4 0% 100%",     # Cria a partição ocupando todo o disco
+            f"sudo mkfs.ext4 /dev/{disco}1",                                       # Formata a nova partição como ext4
+            f"sudo mount /dev/{disco}1 {ponto_montagem}",                          # Monta partição
         ]
         
         # Executa os comandos
