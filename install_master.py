@@ -597,8 +597,8 @@ listener Default {{
         except (KeyError, IndexError) as e:
             print(f"Erro ao verificar o dispositivo KVM: {e}")
             return
-        print('Iniciando instalação do container Windows.')
-        local_install = input('Digite o local onde deseja instalar: ')
+        print('\nIniciando instalação do container Windows.')
+        local_install = input('\nDigite o local onde deseja instalar: ')
         self.remove_container('windows')
         comandos = [
             f"""sudo docker run -d \
