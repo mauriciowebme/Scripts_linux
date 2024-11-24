@@ -565,6 +565,8 @@ listener Default {{
         print(f"Arquivos criados em: {site_dir}")
         
     def instala_windows_docker(self,):
+        # link do projeto: https://github.com/dockur/windows
+        
          # Verifica suporte à virtualização
         print("Verificando suporte à virtualização...")
         try:
@@ -599,7 +601,10 @@ listener Default {{
             return
         print('\nIniciando instalação do container Windows.')
         local_install = input('\nDigite o local onde deseja instalar: ')
-        nome_container = input('O nome para o container Windows: ')
+        nome_container = input('Digite o nome para o container Windows: ')
+        memoria = input('Digite a quantidade de memoria (apenas numeros): ')
+        cpu = input('Digite a quantidade de CPUs (apenas numeros): ')
+        disco = input('Digite tamanho do disco (apenas numeros): ')
         print('\n')
         porta = self.escolher_porta_disponivel()
         self.remove_container(f'windows_{nome_container}')
@@ -612,9 +617,9 @@ listener Default {{
                     -p {porta}:8006 \
                     --device=/dev/kvm \
                     --cap-add=NET_ADMIN \
-                    -e RAM_SIZE="4G" \
-                    -e CPU_CORES="4" \
-                    -e DISK_SIZE="50G" \
+                    -e RAM_SIZE="{memoria}G" \
+                    -e CPU_CORES="{cpu}" \
+                    -e DISK_SIZE="{disco}G" \
                     -e LANGUAGE="pt-BR" \
                     -v {local_install}/windows_{nome_container}/win:/storage \
                     -v {local_install}/windows_{nome_container}/data:/data \
