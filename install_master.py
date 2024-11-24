@@ -185,6 +185,18 @@ class Docker(Executa_comados):
             """
         container = container + labels.replace( '  ', '' ) + imagem
         return container
+    
+    def setup_wifi(self):
+        print('Instalando gerenciador de WIFI nmtui.')
+        comandos = [
+            "sudo apt update",
+            "sudo apt install -y network-manager",
+            "sudo systemctl enable NetworkManager",
+            "sudo systemctl start NetworkManager",
+            "sudo nmtui"
+        ]
+        print("Configurando Wi-Fi com NetworkManager...")
+        self.executar_comandos(comandos)
 
     def iniciar_monitoramento(self):
         conteudo = """global:
@@ -1152,6 +1164,7 @@ class Sistema(Docker, Executa_comados):
             ("Controle de sites openlitespeed", self.controle_sites_openlitespeed),
             ("Instala app nodejs", self.instala_app_nodejs),
             ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
+            ("Instala gerenciador de WIFI nmtui", self.setup_wifi),
             ("Start sync pastas", self.start_sync_pastas),
         ]
         self.mostrar_menu(opcoes_menu)
