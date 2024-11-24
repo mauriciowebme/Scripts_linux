@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.100
+Versão 1.101
 ===========================================================================
 ===========================================================================
 """)
@@ -622,8 +622,8 @@ listener Default {{
                     -e CPU_CORES="{cpu}" \
                     -e DISK_SIZE="{disco}G" \
                     -e LANGUAGE="pt-BR" \
-                    -e USERNAME: "admin" \
-                    -e PASSWORD: "{senha}" \
+                    -e USERNAME="admin" \
+                    -e PASSWORD="{senha}" \
                     -e LANGUAGE="pt-BR" \
                     -v {local_install}/windows_{nome_container}/win:/storage \
                     -v {local_install}/windows_{nome_container}/data:/data \
