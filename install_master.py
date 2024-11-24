@@ -737,8 +737,19 @@ app.listen(PORT, () => {{
         if not os.path.exists(self.atmoz_sftp_arquivo_conf):
             os.makedirs(os.path.dirname(self.atmoz_sftp_arquivo_conf), exist_ok=True)
             with open(self.atmoz_sftp_arquivo_conf, "w") as arquivo:
-                arquivo.write(f"")
+                arquivo.write(f"teste:teste:::upload")
             print(f"Arquivo sftp-users.conf criado.")
+            
+        """
+        sed -i 's/\r//' /install_principal/atmoz_sftp/users.conf
+
+        docker run -d \
+        --name atmoz_sftp \
+        -v /install_principal/atmoz_sftp/users.conf:/etc/sftp/users.conf:ro \
+        -v mySftpVolume:/home \
+        -p 2222:22 -d atmoz/sftp
+        """
+
         # sh -c "ssh-keygen -A && /entrypoint"
         # -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp-users.conf:ro \
         # docker run -d --name atmoz_sftp -p 2222:22 atmoz/sftp teste:teste:::teste
@@ -748,10 +759,10 @@ app.listen(PORT, () => {{
                         -p 2222:22 \
                         -v {self.install_principal}:/home \
                         -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp/users.conf:ro \
-                        atmoz/sftp \
-                        sh -c "ssh-keygen -A && /entrypoint"
+                        atmoz/sftp
                     """
         comandos = [
+            f"sed -i 's/\r//' {self.atmoz_sftp_arquivo_conf}",
             container_db,
             ]
         self.remove_container(f'atmoz_sftp')
