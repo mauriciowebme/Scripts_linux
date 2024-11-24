@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.108
+Versão 1.109
 ===========================================================================
 ===========================================================================
 """)
@@ -737,7 +737,7 @@ app.listen(PORT, () => {{
         if not os.path.exists(self.atmoz_sftp_arquivo_conf):
             os.makedirs(os.path.dirname(self.atmoz_sftp_arquivo_conf), exist_ok=True)
             with open(self.atmoz_sftp_arquivo_conf, "w") as arquivo:
-                arquivo.write(f"teste:teste:::/")
+                arquivo.write(f"teste:teste:::{self.install_principal}/teste")
             print(f"Arquivo sftp-users.conf criado.")
             
         """
