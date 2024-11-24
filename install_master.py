@@ -768,7 +768,7 @@ app.listen(PORT, () => {{
                         -p 2025:2022 \
                         -p 8085:8080 \
                         -v {self.install_principal}:/mnt/host \
-                        -v {self.install_principal}/sftpgo_ftp/users.json:/mnt/conf \
+                        -v {self.install_principal}/sftpgo_ftp:/mnt/conf \
                         drakkan/sftpgo
                     """
         comandos = [
@@ -779,91 +779,11 @@ app.listen(PORT, () => {{
         # self.cria_rede_docker(associar_container_nome=f'mysql_5_7', numero_rede=1)
         
     def gerenciar_usuarios_sftp(self, conf_manual=None, acao=None, username=None, password=None, folder=None):
-        """
-        Gerencia usuários no SFTP e seus diretórios.
-        
-        :param acao: 'adicionar' ou 'remover'.
-        :param config_path: Caminho para o arquivo de configuração de usuários.
-        :param container_name: Nome do container SFTP.
-        :param username: Nome do usuário.
-        :param password: Senha do usuário (obrigatório para adicionar).
-        :param folder: Pasta associada ao usuário (obrigatório para adicionar).
-        """
-        if not conf_manual:
-            acao = input('Ação: 1 - Adicionar, 2 - Remover: ')
-            if '1' in acao:
-                acao = "adicionar"
-            elif '2' in acao:
-                acao = "remover"
-            else:
-                acao = None
-                
-            username = input('Digite o usuario: ')
-            password = input('Digite o senha: ')
-            print('Se sua pasta não existir em /install_principal/ ela sera criada automaticamente.')
-            folder = input('Digite o caminho da pasta: ')
-        
-        config_path = self.atmoz_sftp_arquivo_conf
-        
-        self.verifica_container_existe('atmoz_sftp', self.instala_sftpgo_ftp)
-        
-        # Lê o arquivo de configuração
-        try:
-            with open(config_path, "r") as file:
-                users = file.readlines()
-        except FileNotFoundError:
-            users = []
-            
-        # Cria o diretório do usuário no host
-        user_dir = os.path.join(self.install_principal, folder)
-        if not os.path.exists(user_dir):
-            os.makedirs(user_dir, exist_ok=True)
-            os.chmod(user_dir, 0o755)
+        comandos = [
+            "docker exec -it sftpgo_ftp sftpgo-admin users import /mnt/conf/users.json",
+            ]
+        resultados = self.executar_comandos(comandos)
 
-        # Processar usuários existentes
-        users_dict = {}
-        for line in users:
-            parts = line.strip().split(":")
-            if len(parts) >= 4:
-                users_dict[parts[0]] = line.strip()
-
-        if acao == "adicionar":
-            if not username or not password or not folder:
-                raise ValueError("Os parâmetros 'username', 'password' e 'folder' são obrigatórios para adicionar um usuário.")
-
-            if username in users_dict:
-                print(f"Usuário '{username}' já existe!")
-                return
-
-            # Adiciona o novo usuário no arquivo de configuração
-            new_user_line = f"{username}:{password}:::{folder}\n"
-            with open(config_path, "a") as file:
-                file.write(new_user_line)
-
-            print(f"Usuário '{username}' adicionado com sucesso.")
-
-        elif acao == "remover":
-            if not username:
-                raise ValueError("O parâmetro 'username' é obrigatório para remover um usuário.")
-
-            if username not in users_dict:
-                print(f"Usuário '{username}' não encontrado!")
-                return
-
-            # Remove o usuário do arquivo de configuração
-            users_dict.pop(username)
-            with open(config_path, "w") as file:
-                for user_line in users_dict.values():
-                    file.write(user_line + "\n")
-
-            print(f"Usuário '{username}' removido com sucesso.")
-
-        else:
-            raise ValueError("Ação inválida. Use 'adicionar' ou 'remover'.")
-
-        # Reinicia o container para aplicar mudanças
-        print("Reiniciando o container SFTP...")
-        subprocess.run(["docker", "restart", 'atmoz_sftp'], check=True)
     
     def instala_webserver_ssh(self,):
         self.remove_container('webssh')
