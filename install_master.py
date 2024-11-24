@@ -3,6 +3,7 @@
 #wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
 import os
+import os.path
 import socket
 import subprocess
 import time
@@ -671,7 +672,7 @@ listener Default {{
         diretorio_projeto = f"{self.install_principal}/node/{nome_dominio_}"
         os.makedirs(diretorio_projeto, exist_ok=True)
         
-         # Define a estrutura do package.json
+        # Define a estrutura do package.json
         package_json = {
             "name": nome_dominio_,
             "version": "1.0",
@@ -731,42 +732,45 @@ app.listen(PORT, () => {{
         if resposta_traefik.lower() == 's':
             self.adiciona_roteador_servico_traefik(dominio=nome_dominio, endereco=nome_dominio_, porta=porta)
     
-    def instala_atmoz_sftp(self,):
-        print('Instalando o atmoz_sftp.\n')
+    def instala_sftpgo_ftp(self,):
+        print('Instalando o sftpgo_ftp.\n')
         
-        if not os.path.exists(self.atmoz_sftp_arquivo_conf):
-            os.makedirs(os.path.dirname(self.atmoz_sftp_arquivo_conf), exist_ok=True)
-            with open(self.atmoz_sftp_arquivo_conf, "w") as arquivo:
-                arquivo.write(f"teste:teste::/dados")
-            print(f"Arquivo users.conf criado.")
+        os.makedirs(f"{self.install_principal}/teste_ftp", exist_ok=True)
+        
+        # Define a estrutura do package.json
+        package_json = {
+            [
+                {
+                    "username": "teste",
+                    "password": "teste",
+                    "filesystem": {
+                        "provider": "local",
+                        "baseDirectory": "/mnt/host/teste_ftp"
+                    },
+                    "permissions": ["read", "write", "list"]
+                }
+            ]
+        }
+        caminho_json = os.path.join(f"{self.install_principal}/sftpgo_ftp", "users.json")
+        os.makedirs(os.path.dirname(caminho_json), exist_ok=True)
+        if not os.path.exists(caminho_json):
+            with open(caminho_json, "w") as arquivo:
+                json.dump(package_json, arquivo, indent=4)
+            print(f"Arquivo users.json criado em {caminho_json}")
             
-        """
-        sed -i 's/\r//' /install_principal/atmoz_sftp/users.conf
-
-        docker run -d \
-        --name atmoz_sftp \
-        -v /install_principal/atmoz_sftp/users.conf:/etc/sftp/users.conf:ro \
-        -v mySftpVolume:/home \
-        -p 2222:22 -d atmoz/sftp
-        """
-
-        # -v {self.install_principal}:/home \
-        # sh -c "ssh-keygen -A && /entrypoint"
-        # -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp-users.conf:ro \
-        # docker run -d --name atmoz_sftp -p 2222:22 atmoz/sftp teste:teste:::teste
-        container_db = f"""docker run -d \
-                        --name atmoz_sftp \
+        container = f"""docker run -d \
+                        --name sftpgo_ftp \
                         --restart=always \
-                        -p 2222:22 \
-                        -v {self.install_principal}/atmoz_sftp:/home \
-                        -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp/users.conf:ro \
-                        atmoz/sftp
+                        -p 2022:2022 \
+                        -p 8080:8080 \
+                        -v {self.install_principal}:/mnt/host \
+                        -v {self.install_principal}/sftpgo_ftp/users.json:/mnt/conf \
+                        drakkan/sftpgo
                     """
         comandos = [
-            # f"sed -i \'s/\r//\' {self.atmoz_sftp_arquivo_conf}",
-            container_db,
+            container,
             ]
-        self.remove_container(f'atmoz_sftp')
+        self.remove_container(f'sftpgo_ftp')
         resultados = self.executar_comandos(comandos)
         # self.cria_rede_docker(associar_container_nome=f'mysql_5_7', numero_rede=1)
         
@@ -797,7 +801,7 @@ app.listen(PORT, () => {{
         
         config_path = self.atmoz_sftp_arquivo_conf
         
-        self.verifica_container_existe('atmoz_sftp', self.instala_atmoz_sftp)
+        self.verifica_container_existe('atmoz_sftp', self.instala_sftpgo_ftp)
         
         # Lê o arquivo de configuração
         try:
@@ -1294,8 +1298,8 @@ class Sistema(Docker, Executa_comados):
             ("Configura rede do container", self.configura_rede),
             ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
-            ("Gerenciador SFTP", self.gerenciar_usuarios_sftp),
-            ("Instala atmoz SFTP", self.instala_atmoz_sftp),
+            # ("Gerenciador SFTP", self.gerenciar_usuarios_sftp),
+            ("Instala sftpgo SFTP", self.instala_sftpgo_ftp),
             ("Instala mysql_5_7", self.instala_mysql_5_7),
             ("Instala wordpress", self.instala_wordpress),
             ("Instala wordpress puro", self.instala_wordpress_puro),
