@@ -616,8 +616,8 @@ listener Default {{
                     -e CPU_CORES="4" \
                     -e DISK_SIZE="50G" \
                     -e LANGUAGE="pt-BR" \
-                    -v {local_install}/windows/win:/storage \
-                    -v {local_install}/windows/data:/data \
+                    -v {local_install}/windows_{nome_container}/win:/storage \
+                    -v {local_install}/windows_{nome_container}/data:/data \
                     dockurr/windows:latest
                 """
         ]
