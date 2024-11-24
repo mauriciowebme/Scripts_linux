@@ -740,15 +740,15 @@ app.listen(PORT, () => {{
                 arquivo.write(f"")
             print(f"Arquivo sftp-users.conf criado.")
         # sh -c "ssh-keygen -A && /entrypoint"
+        # -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp-users.conf:ro \
+        # docker run -d --name atmoz_sftp -p 2222:22 atmoz/sftp teste:teste:::teste
         container_db = f"""docker run -d \
                         --name atmoz_sftp \
                         --restart=always \
                         -p 2222:22 \
                         -v {self.install_principal}:/home \
-                        -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp-users.conf:ro \
                         atmoz/sftp \
-                        sh -c "ssh-keygen -A && /entrypoint" \
-                        teste_ftp:teste_ftp:::teste_ftp
+                        teste:teste:::teste
                     """
         comandos = [
             container_db,
