@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.105
+Versão 1.106
 ===========================================================================
 ===========================================================================
 """)
@@ -750,6 +750,7 @@ app.listen(PORT, () => {{
         -p 2222:22 -d atmoz/sftp
         """
 
+        # -v {self.install_principal}:/home \
         # sh -c "ssh-keygen -A && /entrypoint"
         # -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp-users.conf:ro \
         # docker run -d --name atmoz_sftp -p 2222:22 atmoz/sftp teste:teste:::teste
@@ -757,7 +758,7 @@ app.listen(PORT, () => {{
                         --name atmoz_sftp \
                         --restart=always \
                         -p 2222:22 \
-                        -v {self.install_principal}:/home \
+                        -v mySftpVolume:/home \
                         -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp/users.conf:ro \
                         atmoz/sftp
                     """
