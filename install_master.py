@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.101
+Versão 1.102
 ===========================================================================
 ===========================================================================
 """)
@@ -1262,6 +1262,9 @@ class Sistema(Docker, Executa_comados):
             ("cria_particao", self.cria_particao),
             ("listar_particoes", self.listar_particoes),
             ("fecha_tela_noot", self.fecha_tela_noot),
+            ("Instala interface xfce", self.instalar_interface_xfce),
+            ("Ecaminhamentos portas tuneis", self.ecaminhamentos_portas_tuneis),
+            ("Instala gerenciador de WIFI nmtui", self.setup_wifi),
         ]
         self.mostrar_menu(opcoes_menu)
         
@@ -1344,11 +1347,8 @@ def main():
         ("Contagem regressiva", servicos.contagem_regressiva),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
         ("verificando status do sistema", servicos.verificando_status_sistema),
-        ("Menu operações de sistema", servicos.opcoes_sistema),
+        ("Menu de outras opções", servicos.opcoes_sistema),
         ("Menu Docker", servicos.menu_docker),
-        ("Instala interface xfce", servicos.instalar_interface_xfce),
-        ("Ecaminhamentos portas tuneis", servicos.ecaminhamentos_portas_tuneis),
-        ("Instala gerenciador de WIFI nmtui", servicos.setup_wifi),
     ]
     servicos.mostrar_menu(opcoes_menu, principal=True)
 
