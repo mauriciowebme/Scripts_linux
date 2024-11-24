@@ -13,7 +13,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.96
+Versão 1.97
 ===========================================================================
 ===========================================================================
 """)
@@ -563,6 +563,50 @@ listener Default {{
         
         print(f"Configuração do site '{nome_dominio_}' criada com sucesso!")
         print(f"Arquivos criados em: {site_dir}")
+        
+    def instala_windows_docker(self,):
+        # Verifica suporte à virtualização
+        print("Verificando suporte à virtualização...")
+        virtualizacao = int(self.executar_comandos(["egrep -c '(vmx|svm)' /proc/cpuinfo"])[0])
+        if virtualizacao == 0:
+            print("Erro: Sua máquina não suporta virtualização. Ative o suporte na BIOS antes de continuar.")
+            return
+
+        # Verifica dispositivo KVM
+        print("Verificando dispositivo KVM...")
+        kvm_disponivel = self.executar_comandos(["ls -l /dev/kvm"])
+        if "No such file or directory" in kvm_disponivel[0]:
+            print("Erro: O dispositivo KVM não está disponível. Instale e configure KVM antes de continuar.")
+            return
+        
+        self.remove_container('windows')
+        comandos = [
+            f"""sudo docker run -d \
+                    --name windows \
+                    --restart=always \
+                    -p 8006:8006 \
+                    -p 3389:3389/tcp \
+                    -p 3389:3389/udp \
+                    --device=/dev/kvm \
+                    --cap-add=NET_ADMIN \
+                    -e RAM_SIZE="8G" \
+                    -e CPU_CORES="4" \
+                    -e DISK_SIZE="50G" \
+                    -v {self.install_principal}/windows/win:/storage \
+                    -v {self.install_principal}/windows/data:/data \
+                    dockur/windows:latest
+                """
+        ]
+        resultados = self.executar_comandos(comandos)
+
+        print('\nIPs possíveis para acesso:')
+        comandos = [
+            f"hostname -I | tr ' ' '\n'",
+        ]
+        resultados = self.executar_comandos(comandos)
+        print('Portas de acesso:')
+        print(' - Porta Web: 8006')
+        print(' - Porta RDP: 3389')
         
     def instala_portainer(self,):
         self.remove_container('portainer')
@@ -1196,7 +1240,8 @@ class Sistema(Docker, Executa_comados):
             ("Controle de sites openlitespeed", self.controle_sites_openlitespeed),
             ("Instala app nodejs", self.instala_app_nodejs),
             ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
-            ("Start sync pastas", self.start_sync_pastas),
+            ("Start sync pastas com RSYNC", self.start_sync_pastas),
+            ("Instala windows docker", self.instala_windows_docker),
         ]
         self.mostrar_menu(opcoes_menu)
     
