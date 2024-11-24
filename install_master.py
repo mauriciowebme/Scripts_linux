@@ -747,6 +747,7 @@ app.listen(PORT, () => {{
                         -v {self.install_principal}:/home \
                         -v {self.atmoz_sftp_arquivo_conf}:/etc/sftp-users.conf:ro \
                         atmoz/sftp \
+                        teste_ftp:teste_ftp:::teste_ftp \
                         sh -c "ssh-keygen -A && /entrypoint"
                     """
         comandos = [
