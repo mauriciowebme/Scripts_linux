@@ -805,10 +805,10 @@ app.listen(PORT, () => {{
             simples_usuario = input('Digite o nome de usuario: ')
             simples_senha = input('Digite uma senha: ')
             simples_base_diretorio = input('Digite um diretorio dentro de /install_principal começando com /: ')
-            if '/' != simples_base_diretorio.split()[0]:
-                simples_base_diretorio = '/'+simples_base_diretorio
             print('\n')
-        
+            
+        if '/' != simples_base_diretorio.split()[0]:
+            simples_base_diretorio = '/'+simples_base_diretorio
         caminho_host = '/install_principal'+simples_base_diretorio
         os.makedirs(caminho_host, exist_ok=True)
         os.chmod(caminho_host, 0o777)
