@@ -787,14 +787,14 @@ app.listen(PORT, () => {{
         https://sftpgo.stoplight.io/docs/sftpgo/vjevihcqw0gy4-get-a-new-admin-access-token
         """
         
-        print('Usuario e senha para permissão de administração FTP:')
+        print('\nUsuario e senha para permissão de administração FTP:')
         admin_usuario = input('Usuario admin: ')
         admin_senha = input('Senha: ')
         
-        url = "http://192.168.0.2:8085/api/v2/token"
+        url = "http://localhost:8085/api/v2/token"
         response = requests.get(url, auth=HTTPBasicAuth(admin_usuario, admin_senha))
         if response.status_code == 200:
-            #print("Token JWT gerado com sucesso:")
+            print("Logado com sucesso\n")
             token = response.json()['access_token']
         else:
             print(f"Erro: {response.status_code}")
