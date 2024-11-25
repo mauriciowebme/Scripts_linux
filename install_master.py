@@ -9,6 +9,8 @@ import subprocess
 import time
 import yaml
 import json
+import requests
+from requests.auth import HTTPBasicAuth
 
 print("""
 ===========================================================================
@@ -778,12 +780,69 @@ app.listen(PORT, () => {{
         resultados = self.executar_comandos(comandos)
         # self.cria_rede_docker(associar_container_nome=f'mysql_5_7', numero_rede=1)
         
-    def gerenciar_usuarios_sftp(self, conf_manual=None, acao=None, username=None, password=None, folder=None):
-        comandos = [
-            "docker exec -it sftpgo_ftp sftpgo-admin users import /mnt/conf/users.json",
-            ]
-        resultados = self.executar_comandos(comandos)
+    def gerenciar_usuarios_sftp(self, manual=True, simples_usuario=None, simples_senha=None, simples_base_diretorio=None):
+        """
+        Documentação:
+        
+        https://sftpgo.stoplight.io/docs/sftpgo/vjevihcqw0gy4-get-a-new-admin-access-token
+        """
+        
+        print('Usuario e senha para permissão de administração FTP:')
+        admin_usuario = input('Usuario admin: ')
+        admin_senha = input('Senha: ')
+        
+        url = "http://192.168.0.2:8085/api/v2/token"
+        response = requests.get(url, auth=HTTPBasicAuth(admin_usuario, admin_senha))
+        if response.status_code == 200:
+            #print("Token JWT gerado com sucesso:")
+            token = response.json()['access_token']
+        else:
+            print(f"Erro: {response.status_code}")
+            print(response.json())
+            
+        if manual:
+            simples_usuario = input('Digite o nome de usuario: ')
+            simples_senha = input('Digite uma senha: ')
+            simples_base_diretorio = input('Digite um diretorio dentro de /install_principal começando com /: ')
+        
+        caminho_host = '/install_principal'+simples_base_diretorio
+        os.makedirs(caminho_host, exist_ok=True)
+        os.chmod(caminho_host, 0o777)
+        simples_base_diretorio_container = "/mnt/host"+simples_base_diretorio
+        
+        # URL do endpoint para criar usuários
+        url = "http://localhost:8085/api/v2/users"
+        # Cabeçalhos com o token de autenticação
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+        # Corpo da requisição
+        payload = {
+            "status": 1,
+            "username": simples_usuario,
+            "password": simples_senha,
+            "home_dir" : simples_base_diretorio_container ,
+            "filesystem": {
+                "provider": 0
+            },
+            "permissions": {
+                "/": [
+                "*"
+                ]
+            },
+        }
 
+        # Requisição POST para criar o usuário
+        response = requests.post(url, json=payload, headers=headers)
+
+        if response.status_code == 201:
+            print(f"Usuário '{simples_usuario}' criado com sucesso!")
+            print(response.json())
+        else:
+            print(f"Erro ao criar usuário '{simples_usuario}': {response.status_code}")
+            print(response.json())
+        pass
     
     def instala_webserver_ssh(self,):
         self.remove_container('webssh')
@@ -1291,6 +1350,7 @@ def main():
         ("verificando status do sistema", servicos.verificando_status_sistema),
         ("Menu de outras opções", servicos.opcoes_sistema),
         ("Menu Docker", servicos.menu_docker),
+        ("gerenciar_usuarios_sftp", servicos.gerenciar_usuarios_sftp),
     ]
     servicos.mostrar_menu(opcoes_menu, principal=True)
 
