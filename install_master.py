@@ -495,6 +495,7 @@ certificatesResolvers:
         self.verifica_container_existe('openlitespeed', self.instala_openlitespeed)
         
         nome_dominio = input('Digite o dominio: ')
+        senha_ftp = input('Digite uma senha para o ftp: ')
         nome_dominio_ = nome_dominio.replace('.', '_')
         resposta_traefik = input('Deseja redirecionar com traefik?: S ou N: ')
         if resposta_traefik.lower() == 's':
@@ -563,6 +564,8 @@ listener Default {{
                 print(f"Listener para '{nome_dominio_}' adicionado.")
             else:
                 print(f"Listener para '{nome_dominio_}' já existe.")
+        
+        self.gerenciar_usuarios_sftp(manual=False, simples_usuario=nome_dominio_, simples_senha=senha_ftp, simples_base_diretorio=public_html)
         
         print(f"Configuração do site '{nome_dominio_}' criada com sucesso!")
         print(f"Arquivos criados em: {site_dir}")
@@ -787,6 +790,8 @@ app.listen(PORT, () => {{
         https://sftpgo.stoplight.io/docs/sftpgo/vjevihcqw0gy4-get-a-new-admin-access-token
         """
         
+        self.verifica_container_existe('sftpgo_ftp', self.instala_sftpgo_ftp)
+        
         print('\nUsuario e senha para permissão de administração FTP:')
         admin_usuario = input('Usuario admin: ')
         admin_senha = input('Senha: ')
@@ -812,8 +817,8 @@ app.listen(PORT, () => {{
         if '/' != simples_base_diretorio.split()[0]:
             simples_base_diretorio = '/'+simples_base_diretorio
         caminho_host = '/install_principal'+simples_base_diretorio
-        os.makedirs(caminho_host, exist_ok=True)
-        os.chmod(caminho_host, 0o777)
+        os.makedirs(caminho_host, mode=0o777, exist_ok=True)
+        # os.chmod(caminho_host, 0o777)
         simples_base_diretorio_container = "/mnt/host"+simples_base_diretorio
         
         # URL do endpoint para criar usuários
@@ -1287,8 +1292,8 @@ class Sistema(Docker, Executa_comados):
             ("Configura rede do container", self.configura_rede),
             ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
-            ("Gerenciador SFTP", self.gerenciar_usuarios_sftp),
-            ("Instala sftpgo SFTP", self.instala_sftpgo_ftp),
+            ("Gerenciador SFTP sftpgo", self.gerenciar_usuarios_sftp),
+            ("Instala SFTP sftpgo", self.instala_sftpgo_ftp),
             ("Instala mysql_5_7", self.instala_mysql_5_7),
             ("Instala wordpress", self.instala_wordpress),
             ("Instala wordpress puro", self.instala_wordpress_puro),
@@ -1356,7 +1361,7 @@ def main():
         ("verificando status do sistema", servicos.verificando_status_sistema),
         ("Menu de outras opções", servicos.opcoes_sistema),
         ("Menu Docker", servicos.menu_docker),
-        ("gerenciar_usuarios_sftp", servicos.gerenciar_usuarios_sftp),
+        # ("gerenciar_usuarios_sftp", servicos.gerenciar_usuarios_sftp),
     ]
     servicos.mostrar_menu(opcoes_menu, principal=True)
 
