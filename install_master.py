@@ -737,49 +737,25 @@ app.listen(PORT, () => {{
         if resposta_traefik.lower() == 's':
             self.adiciona_roteador_servico_traefik(dominio=nome_dominio, endereco=nome_dominio_, porta=porta)
     
-    def instala_sftpgo_ftp(self,):
-        print('Instalando o sftpgo_ftp.\n')
+    def instala_ftp_sftpgo(self,):
+        print('Instalando o ftp_sftpgo.\n')
         
-        os.makedirs(f"{self.install_principal}/teste_ftp", exist_ok=True)
-        
-        # Define a estrutura do package.json
-        package_json = [
-            {
-                "username": "teste",
-                "password": "teste",
-                "filesystem": {
-                    "provider": "local",
-                    "baseDirectory": "/mnt/host/teste_ftp"
-                },
-                "permissions": ["read", "write", "list"]
-            }
-        ]
-
-        # Caminho do arquivo users.json
-        caminho_json = os.path.join(f"{self.install_principal}/sftpgo_ftp", "users.json")
-        os.makedirs(os.path.dirname(caminho_json), exist_ok=True)
-
-        # Criação do arquivo se ele ainda não existir
-        if not os.path.exists(caminho_json):
-            with open(caminho_json, "w") as arquivo:
-                json.dump(package_json, arquivo, indent=4)
-            print(f"Arquivo users.json criado em {caminho_json}")
-        else:
-            print(f"Arquivo users.json já existe em {caminho_json}")
+        os.makedirs(f"{self.install_principal}/ftp_sftpgo", exist_ok=True)
             
         container = f"""docker run -d \
-                        --name sftpgo_ftp \
+                        --name ftp_sftpgo \
                         --restart=always \
                         -p 2025:2022 \
                         -p 8085:8080 \
-                        -v {self.install_principal}:/mnt/host \
-                        -v {self.install_principal}/sftpgo_ftp:/mnt/conf \
+                        -v {self.install_principal}:/install_principal \
+                        -v {self.install_principal}/ftp_sftpgo/config:/etc/sftpgo \
+                        -v {self.install_principal}/ftp_sftpgo/dados:/var/lib/sftpgo \
                         drakkan/sftpgo
                     """
         comandos = [
             container,
             ]
-        self.remove_container(f'sftpgo_ftp')
+        self.remove_container(f'ftp_sftpgo')
         resultados = self.executar_comandos(comandos)
         # self.cria_rede_docker(associar_container_nome=f'mysql_5_7', numero_rede=1)
         
@@ -790,7 +766,7 @@ app.listen(PORT, () => {{
         https://sftpgo.stoplight.io/docs/sftpgo/vjevihcqw0gy4-get-a-new-admin-access-token
         """
         
-        self.verifica_container_existe('sftpgo_ftp', self.instala_sftpgo_ftp)
+        self.verifica_container_existe('ftp_sftpgo', self.instala_ftp_sftpgo)
         
         print('\nUsuario e senha para permissão de administração FTP:')
         admin_usuario = input('Usuario admin: ')
@@ -813,13 +789,15 @@ app.listen(PORT, () => {{
             simples_senha = input('Digite uma senha: ')
             simples_base_diretorio = input('Digite um diretorio dentro de /install_principal começando com /: ')
             print('\n')
-            
+
         if '/' != simples_base_diretorio.split()[0]:
             simples_base_diretorio = '/'+simples_base_diretorio
-        caminho_host = '/install_principal'+simples_base_diretorio
-        os.makedirs(caminho_host, mode=0o777, exist_ok=True)
+        simples_base_diretorio = simples_base_diretorio.replace('//', '/')
+        if '/install_principal' not in simples_base_diretorio:
+            simples_base_diretorio = '/install_principal'+simples_base_diretorio
+        
+        os.makedirs(simples_base_diretorio, mode=0o777, exist_ok=True)
         # os.chmod(caminho_host, 0o777)
-        simples_base_diretorio_container = "/mnt/host"+simples_base_diretorio
         
         # URL do endpoint para criar usuários
         url = "http://localhost:8085/api/v2/users"
@@ -833,7 +811,7 @@ app.listen(PORT, () => {{
             "status": 1,
             "username": simples_usuario,
             "password": simples_senha,
-            "home_dir" : simples_base_diretorio_container ,
+            "home_dir" : simples_base_diretorio ,
             "filesystem": {
                 "provider": 0
             },
@@ -1293,7 +1271,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
             ("Gerenciador SFTP sftpgo", self.gerenciar_usuarios_sftp),
-            ("Instala SFTP sftpgo", self.instala_sftpgo_ftp),
+            ("Instala SFTP sftpgo", self.instala_ftp_sftpgo),
             ("Instala mysql_5_7", self.instala_mysql_5_7),
             ("Instala wordpress", self.instala_wordpress),
             ("Instala wordpress puro", self.instala_wordpress_puro),
