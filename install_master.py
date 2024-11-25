@@ -801,9 +801,11 @@ app.listen(PORT, () => {{
             print(response.json())
             
         if manual:
+            print('Digite os dados para criação do novo usuario FTP:')
             simples_usuario = input('Digite o nome de usuario: ')
             simples_senha = input('Digite uma senha: ')
             simples_base_diretorio = input('Digite um diretorio dentro de /install_principal começando com /: ')
+            print('\n')
         
         caminho_host = '/install_principal'+simples_base_diretorio
         os.makedirs(caminho_host, exist_ok=True)
@@ -838,7 +840,7 @@ app.listen(PORT, () => {{
 
         if response.status_code == 201:
             print(f"Usuário '{simples_usuario}' criado com sucesso!")
-            print(response.json())
+            #print(response.json())
         else:
             print(f"Erro ao criar usuário '{simples_usuario}': {response.status_code}")
             print(response.json())
