@@ -797,8 +797,10 @@ app.listen(PORT, () => {{
             print("Logado com sucesso\n")
             token = response.json()['access_token']
         else:
-            print(f"Erro: {response.status_code}")
-            print(response.json())
+            print(f"Usuario sem pemissão ou não existe.")
+            exit()
+            # print(f"Erro: {response.status_code}")
+            # print(response.json())
             
         if manual:
             print('Digite os dados para criação do novo usuario FTP:')
