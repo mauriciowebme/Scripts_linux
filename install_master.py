@@ -425,17 +425,47 @@ certificatesResolvers:
         
     def instala_openlitespeed(self,):
         print("Instalando openlitespeed.")
-        os.makedirs(f"{self.install_principal}/openlitespeed/conf_php", exist_ok=True)
-        os.chmod(f"{self.install_principal}/openlitespeed/conf_php", 0o777)
-        # -v {self.install_principal}/openlitespeed/conf_php:/usr/local/lsws/lsphp81/etc/php/8.1/litespeed \
+        conf_completa = f"{self.install_principal}/openlitespeed/conf_completa"
+        copiar = False
+        if os.path.exists(conf_completa):
+            if os.path.isdir(conf_completa):
+                if not os.listdir(conf_completa):  # Retorna vazio se a pasta não contém arquivos ou subpastas
+                    # return f"A pasta '{conf_completa}' existe e está vazia."
+                    copiar = True
+                else:
+                    # return f"A pasta '{conf_completa}' existe, mas não está vazia."
+                    pass
+            else:
+                # return f"O caminho '{conf_completa}' existe, mas não é uma pasta."
+                copiar = True
+        else:
+            # return f"A pasta '{conf_completa}' não existe."
+            copiar = True
+        
+        if copiar:
+            os.rmdir(conf_completa)
+            os.makedirs(conf_completa, exist_ok=True)
+            os.chmod(conf_completa, 0o777)
+            container = f"""docker run -d \
+                            --name openlitespeed \
+                            --restart=always \
+                            litespeedtech/openlitespeed:latest
+                    """
+            
+            self.remove_container('openlitespeed')
+            comandos = [
+                container,
+                f"docker cp openlitespeed:/usr/local/lsws {conf_completa}",
+                ]
+            resultados = self.executar_comandos(comandos)
+        
         container = f"""docker run -d \
                             --name openlitespeed \
                             --restart=always \
                             -p 8088:8088 \
                             -p 7080:7080 \
                             -v {self.install_principal}/openlitespeed/vhosts:/var/www/vhosts \
-                            -v {self.install_principal}/openlitespeed/conf:/usr/local/lsws/conf \
-                            -v {self.install_principal}/openlitespeed/conf_php:/usr/local/lsws/lsphp81/etc/php/8.1/litespeed \
+                            -v {conf_completa}:/usr/local/lsws \
                             litespeedtech/openlitespeed:latest
                     """
             
