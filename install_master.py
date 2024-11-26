@@ -423,6 +423,32 @@ certificatesResolvers:
         print(f'Porta para uso local: {porta}')
         print(f'Usuario e senha padrão: admin, admin')
         
+    def verifica_container_existe(self, container_name, install_function):
+        """
+        Exemplo de uso:
+        self.verifica_container_existe('openlitespeed', self.instala_openlitespeed)
+        """
+
+        # Verifica se o container existe antes de instalar
+        result = subprocess.run(
+            ["docker", "ps", "--format", "{{.ID}} {{.Names}}"],
+            capture_output=True,
+            text=True
+        )
+        container_info = result.stdout.strip().splitlines()
+        encontrado = False
+        for info in container_info:
+            if container_name in info:
+                encontrado = True
+                break
+
+        if not encontrado:
+            print(f"Container {container_name} não encontrado, instalando...")
+            install_function()  # Chamada correta da função
+            print('Aguarde terminando de instalar...')
+            time.sleep(30)  # Aguarda 30 segundos ou um tempo adequado
+            print(f"Container {container_name} instalado com sucesso.")
+        
     def instala_openlitespeed(self,):
         print("Instalando openlitespeed.")
         conf_completa = f"{self.install_principal}/openlitespeed/conf_completa"
@@ -498,32 +524,6 @@ certificatesResolvers:
         print("Insira a nova senha desejada e salve as alterações.")
         print(" ")
     
-    def verifica_container_existe(self, container_name, install_function):
-        """
-        Exemplo de uso:
-        self.verifica_container_existe('openlitespeed', self.instala_openlitespeed)
-        """
-
-        # Verifica se o container existe antes de instalar
-        result = subprocess.run(
-            ["docker", "ps", "--format", "{{.ID}} {{.Names}}"],
-            capture_output=True,
-            text=True
-        )
-        container_info = result.stdout.strip().splitlines()
-        encontrado = False
-        for info in container_info:
-            if container_name in info:
-                encontrado = True
-                break
-
-        if not encontrado:
-            print(f"Container {container_name} não encontrado, instalando...")
-            install_function()  # Chamada correta da função
-            print('Aguarde terminando de instalar...')
-            time.sleep(30)  # Aguarda 30 segundos ou um tempo adequado
-            print(f"Container {container_name} instalado com sucesso.")
-    
     def controle_sites_openlitespeed(self,):
         
         self.verifica_container_existe('openlitespeed', self.instala_openlitespeed)
@@ -539,8 +539,8 @@ certificatesResolvers:
         #/usr/local/lsws/
         site_dir = os.path.join(sites_dir, "vhosts", nome_dominio_)
         public_html = os.path.join(site_dir, "public_html")
-        conf_dir = os.path.join(sites_dir, "conf", "vhosts", nome_dominio_)
-        listener_conf_path = os.path.join(sites_dir, "conf", "httpd_config.conf")
+        conf_dir = os.path.join(sites_dir, "conf_completa", "conf", "vhosts", nome_dominio_)
+        listener_conf_path = os.path.join(sites_dir, "conf_completa", "conf", "httpd_config.conf")
         
         # Cria os diretórios necessários
         os.makedirs(public_html, exist_ok=True)
