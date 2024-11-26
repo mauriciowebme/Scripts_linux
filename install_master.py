@@ -960,9 +960,9 @@ app.listen(PORT, () => {{
         self.cria_rede_docker(associar_container_nome=f'{dominio_}', numero_rede=1)
 
     def limpeza_containers(self,):
+        # "docker container prune -f",
         comandos = [
             "docker image prune -a -f",
-            "docker container prune -f",
             "docker volume prune -f",
             "docker network prune -f",
             "docker builder prune -f",
