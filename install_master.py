@@ -425,6 +425,7 @@ certificatesResolvers:
         
     def instala_openlitespeed(self,):
         print("Instalando openlitespeed.")
+        # -v {self.install_principal}/openlitespeed/conf_php:/usr/local/lsws/lsphp81/etc/php/ \
         container = f"""docker run -d \
                             --name openlitespeed \
                             --restart=always \
@@ -432,7 +433,6 @@ certificatesResolvers:
                             -p 7080:7080 \
                             -v {self.install_principal}/openlitespeed/vhosts:/var/www/vhosts/ \
                             -v {self.install_principal}/openlitespeed/conf:/usr/local/lsws/conf \
-                            -v {self.install_principal}/openlitespeed/conf_php:/usr/local/lsws/lsphp81/etc/php/ \
                             litespeedtech/openlitespeed:latest
                     """
             
