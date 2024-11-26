@@ -455,7 +455,7 @@ certificatesResolvers:
             self.remove_container('openlitespeed')
             comandos = [
                 container,
-                f"docker cp openlitespeed:/usr/local/lsws {conf_completa}",
+                f"docker cp openlitespeed:/usr/local/lsws/ {conf_completa}",
                 ]
             resultados = self.executar_comandos(comandos)
         
