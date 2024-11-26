@@ -16,7 +16,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.117
+Versão 1.118
 ===========================================================================
 ===========================================================================
 """)
@@ -742,9 +742,11 @@ app.listen(PORT, () => {{
         
         dir_dados = f"{self.install_principal}/ftp_sftpgo/dados"
         dir_config = f"{self.install_principal}/ftp_sftpgo/config"
-        os.makedirs(dir_dados, mode=0o777, exist_ok=True)
-        os.makedirs(dir_config, mode=0o777, exist_ok=True)
-        # -v {dir_config}:/etc/sftpgo \
+        os.makedirs(dir_dados, exist_ok=True)
+        os.chmod(dir_dados, 0o777)
+        os.makedirs(dir_config, exist_ok=True)
+        os.chmod(dir_config, 0o777)
+        
         container = f"""docker run -d \
                         --name ftp_sftpgo \
                         --restart=always \
@@ -752,6 +754,7 @@ app.listen(PORT, () => {{
                         -p 8085:8080 \
                         -v {self.install_principal}:/install_principal \
                         -v {dir_dados}:/var/lib/sftpgo \
+                        -v {dir_config}:/etc/sftpgo \
                         drakkan/sftpgo
                     """
         comandos = [
