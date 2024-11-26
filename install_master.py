@@ -401,9 +401,8 @@ certificatesResolvers:
                     filebrowser/filebrowser
                 """
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
-        if resposta.lower() == 's':
-            self.adiciona_roteador_servico_traefik(endereco='filebrowser', porta='80')
-            # container = self.adiciona_redirecionamento_traefik(container, porta='80')
+        # if resposta.lower() == 's':
+        #     container = self.adiciona_redirecionamento_traefik(container, porta='80')
         
         comandos = [
             # f"rm -r {self.install_principal}/database_filebrowser",
@@ -413,6 +412,9 @@ certificatesResolvers:
             ]
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
+        if resposta.lower() == 's':
+            self.adiciona_roteador_servico_traefik(endereco='filebrowser', porta='80')
+            self.cria_rede_docker(associar_container_nome=f'filebrowser', numero_rede=0)
         print(f"Possiveis ip's para acesso:")
         comandos = [
             "ip addr show | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1",
@@ -845,13 +847,16 @@ app.listen(PORT, () => {{
                     """
                     
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
-        if resposta.lower() == 's':
-            container = self.adiciona_redirecionamento_traefik(container)
-            
+        # if resposta.lower() == 's':
+        #     container = self.adiciona_redirecionamento_traefik(container)
+        
         comandos = [
             container,
             ]
         resultados = self.executar_comandos(comandos)
+        if resposta.lower() == 's':
+            self.adiciona_roteador_servico_traefik(endereco='webssh', porta='8080')
+            self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=0)
         self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=1)
         
     def instala_mysql_5_7(self,):
@@ -897,14 +902,17 @@ app.listen(PORT, () => {{
                         wordpress:latest
                     """
         
-        if resposta.lower() == 's':
-            container = self.adiciona_redirecionamento_traefik(container, dominio, porta='80')
+        # if resposta.lower() == 's':
+        #     container = self.adiciona_redirecionamento_traefik(container, dominio, porta='80')
         
         self.remove_container(f'{dominio_}')
         comandos = [
             container,
             ]
         resultados = self.executar_comandos(comandos)
+        if resposta.lower() == 's':
+            self.adiciona_roteador_servico_traefik(dominio, endereco=f'{dominio_}', porta='80')
+            self.cria_rede_docker(associar_container_nome=f'{dominio_}', numero_rede=0)
         self.cria_rede_docker(associar_container_nome=f'{dominio_}', numero_rede=1)
         
     def instala_wordpress(self,):
@@ -934,8 +942,8 @@ app.listen(PORT, () => {{
                     """
                     
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
-        if resposta.lower() == 's':
-            container = self.adiciona_redirecionamento_traefik(container, dominio, porta='80')
+        # if resposta.lower() == 's':
+        #     container = self.adiciona_redirecionamento_traefik(container, dominio, porta='80')
         
         self.remove_container(f'{dominio_}_bd')
         self.remove_container(f'{dominio_}')
@@ -944,6 +952,9 @@ app.listen(PORT, () => {{
             container,
             ]
         resultados = self.executar_comandos(comandos)
+        if resposta.lower() == 's':
+            self.adiciona_roteador_servico_traefik(dominio, endereco=f'{dominio_}', porta='80')
+            self.cria_rede_docker(associar_container_nome=f'{dominio_}', numero_rede=0)
         self.cria_rede_docker(associar_container_nome=f'{dominio_}_bd', numero_rede=1)
         self.cria_rede_docker(associar_container_nome=f'{dominio_}', numero_rede=1)
 
