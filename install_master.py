@@ -430,6 +430,7 @@ certificatesResolvers:
         os.chmod(f'{self.install_principal}/openlitespeed/vhosts', 0o777)
         os.makedirs(f'{self.install_principal}/openlitespeed/conf_completa', exist_ok=True)
         os.chmod(f'{self.install_principal}/openlitespeed/conf_completa', 0o777)
+        
         container = f"""docker run -d \
                             --name openlitespeed \
                             --restart=always \
@@ -440,10 +441,10 @@ certificatesResolvers:
                             litespeedtech/openlitespeed:latest
                     """
             
-        self.remove_container('openlitespeed')
         comandos = [
             container,
             ]
+        self.remove_container('openlitespeed')
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'openlitespeed', numero_rede=0)
         
