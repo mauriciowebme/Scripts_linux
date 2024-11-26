@@ -16,7 +16,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.122
+Versão 1.123
 ===========================================================================
 ===========================================================================
 """)
@@ -1337,6 +1337,13 @@ class Sistema(Docker, Executa_comados):
         if adicionar_fstab.lower() == "s":
             self.adicionar_ao_fstab(f"/dev/{disco}1", ponto_montagem)
     
+    def ver_uso_espaco_pasta(self):
+        pasta = input('Digite o caminho da pasta que deseja ver o tamanho')
+        comandos = [
+            f"du -h --max-depth=1 /{pasta} | sort -hr",
+            ]
+        resultados = self.executar_comandos(comandos)
+        
     def fecha_tela_noot(self):
         # Caminho do arquivo de configuração
         config_path = "/etc/systemd/logind.conf"
@@ -1369,6 +1376,8 @@ class Sistema(Docker, Executa_comados):
             ("Ecaminhamentos portas tuneis", self.ecaminhamentos_portas_tuneis),
             ("Instala gerenciador de WIFI nmtui", self.setup_wifi),
             ("Configura ip fixo", self.configura_ip_fixo),
+            ("Configura ip fixo", self.configura_ip_fixo),
+            ("Ver uso do espaço em pasta", self.ver_uso_espaco_pasta),
         ]
         self.mostrar_menu(opcoes_menu)
         
