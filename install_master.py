@@ -1338,9 +1338,11 @@ class Sistema(Docker, Executa_comados):
             self.adicionar_ao_fstab(f"/dev/{disco}1", ponto_montagem)
     
     def ver_uso_espaco_pasta(self):
-        pasta = input('Digite o caminho da pasta que deseja ver o tamanho')
+        pasta = input('Digite o caminho absoluto da pasta que deseja ver o tamanho: ')
+        if '/' != pasta.split()[0]:
+            pasta = '/'+pasta
         comandos = [
-            f"du -h --max-depth=1 /{pasta} | sort -hr",
+            f"du -h --max-depth=1 {pasta} | sort -hr",
             ]
         resultados = self.executar_comandos(comandos)
         
