@@ -425,25 +425,21 @@ certificatesResolvers:
         
     def instala_openlitespeed(self,):
         print("Instalando openlitespeed.")
-        # -v {self.install_principal}/openlitespeed/conf:/usr/local/lsws/conf \
-        # os.makedirs(f'{self.install_principal}/openlitespeed/vhosts', exist_ok=True)
-        # os.chmod(f'{self.install_principal}/openlitespeed/vhosts', 0o777)
-        # os.makedirs(f'{self.install_principal}/openlitespeed/conf_completa', exist_ok=True)
-        # os.chmod(f'{self.install_principal}/openlitespeed/conf_completa', 0o777)
-        # -v {self.install_principal}/openlitespeed/conf_completa:/usr/local/lsws/ \
         container = f"""docker run -d \
                             --name openlitespeed \
                             --restart=always \
                             -p 8088:8088 \
                             -p 7080:7080 \
                             -v {self.install_principal}/openlitespeed/vhosts:/var/www/vhosts/ \
+                            -v {self.install_principal}/openlitespeed/conf:/usr/local/lsws/conf \
+                            -v {self.install_principal}/openlitespeed/conf_php:/usr/local/lsws/lsphp81/etc/php/ \
                             litespeedtech/openlitespeed:latest
                     """
             
+        self.remove_container('openlitespeed')
         comandos = [
             container,
             ]
-        self.remove_container('openlitespeed')
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'openlitespeed', numero_rede=0)
         
@@ -510,8 +506,8 @@ certificatesResolvers:
         #/usr/local/lsws/
         site_dir = os.path.join(sites_dir, "vhosts", nome_dominio_)
         public_html = os.path.join(site_dir, "public_html")
-        conf_dir = os.path.join(sites_dir, "conf_completa", "conf", "vhosts", nome_dominio_)
-        listener_conf_path = os.path.join(sites_dir, "conf_completa", "conf", "httpd_config.conf")
+        conf_dir = os.path.join(sites_dir, "conf", "vhosts", nome_dominio_)
+        listener_conf_path = os.path.join(sites_dir, "conf", "httpd_config.conf")
         
         # Cria os diretórios necessários
         os.makedirs(public_html, exist_ok=True)
