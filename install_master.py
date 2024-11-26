@@ -741,11 +741,8 @@ app.listen(PORT, () => {{
         print('Instalando o ftp_sftpgo.\n')
         
         dir_dados = f"{self.install_principal}/ftp_sftpgo/dados"
-        dir_config = f"{self.install_principal}/ftp_sftpgo/config"
         os.makedirs(dir_dados, exist_ok=True)
         os.chmod(dir_dados, 0o777)
-        os.makedirs(dir_config, exist_ok=True)
-        os.chmod(dir_config, 0o777)
         
         container = f"""docker run -d \
                         --name ftp_sftpgo \
@@ -754,7 +751,6 @@ app.listen(PORT, () => {{
                         -p 8085:8080 \
                         -v {self.install_principal}:/install_principal \
                         -v {dir_dados}:/var/lib/sftpgo \
-                        -v {dir_config}:/etc/sftpgo \
                         drakkan/sftpgo
                     """
         comandos = [
