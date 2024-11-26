@@ -16,7 +16,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.121
+Versão 1.122
 ===========================================================================
 ===========================================================================
 """)
@@ -443,7 +443,7 @@ certificatesResolvers:
             copiar = True
         
         if copiar:
-            os.rmdir(conf_completa)
+            # os.rmdir(conf_completa)
             os.makedirs(conf_completa, exist_ok=True)
             os.chmod(conf_completa, 0o777)
             container = f"""docker run -d \
