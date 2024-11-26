@@ -1367,14 +1367,9 @@ class Sistema(Docker, Executa_comados):
     def verificando_status_sistema(self,):
         print("Verificando status do sistema...")
         comandos = [
-            "echo ' '",
-            "ip addr show | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1",
-            "echo ' '",
-            "echo 'Tempo em execução'",
             "uptime",
-            "echo ' '",
             "df -h",
-            "echo ' '"
+            "ip addr show | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1",
         ]
         self.executar_comandos(comandos)
     
