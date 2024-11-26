@@ -402,7 +402,8 @@ certificatesResolvers:
                 """
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
         if resposta.lower() == 's':
-            container = self.adiciona_redirecionamento_traefik(container, porta='80')
+            self.adiciona_roteador_servico_traefik(endereco='filebrowser', porta='80')
+            # container = self.adiciona_redirecionamento_traefik(container, porta='80')
         
         comandos = [
             # f"rm -r {self.install_principal}/database_filebrowser",
