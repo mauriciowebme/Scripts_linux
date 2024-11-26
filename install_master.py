@@ -16,7 +16,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.119
+Versão 1.120
 ===========================================================================
 ===========================================================================
 """)
@@ -425,14 +425,15 @@ certificatesResolvers:
         
     def instala_openlitespeed(self,):
         print("Instalando openlitespeed.")
-        # -v {self.install_principal}/openlitespeed/conf_php:/usr/local/lsws/lsphp81/etc/php/ \
+        # -v {self.install_principal}/openlitespeed/conf_php:/usr/local/lsws/lsphp81/etc/php/8.1/litespeed \
         container = f"""docker run -d \
                             --name openlitespeed \
                             --restart=always \
                             -p 8088:8088 \
                             -p 7080:7080 \
-                            -v {self.install_principal}/openlitespeed/vhosts:/var/www/vhosts/ \
+                            -v {self.install_principal}/openlitespeed/vhosts:/var/www/vhosts \
                             -v {self.install_principal}/openlitespeed/conf:/usr/local/lsws/conf \
+                            -v {self.install_principal}/openlitespeed/conf_php:/usr/local/lsws/lsphp81/etc/php/8.1/litespeed \
                             litespeedtech/openlitespeed:latest
                     """
             
