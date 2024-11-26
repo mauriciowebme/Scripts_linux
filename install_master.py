@@ -16,7 +16,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.123
+Versão 1.124
 ===========================================================================
 ===========================================================================
 """)
@@ -1339,8 +1339,16 @@ class Sistema(Docker, Executa_comados):
     
     def ver_uso_espaco_pasta(self):
         pasta = input('Digite o caminho absoluto da pasta que deseja ver o tamanho: ')
-        if '/' != pasta.split()[0]:
-            pasta = '/'+pasta
+        # Garantir que o caminho seja absoluto
+        if not pasta.startswith('/'):
+            pasta = '/' + pasta
+        
+        # Validar se o caminho existe
+        if not os.path.exists(pasta):
+            print(f"O caminho '{pasta}' não existe.")
+            return
+        
+        # Comando para obter tamanhos
         comandos = [
             f"du -h --max-depth=1 {pasta} | sort -hr",
             ]
