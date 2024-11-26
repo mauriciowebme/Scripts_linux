@@ -16,7 +16,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.118
+Versão 1.119
 ===========================================================================
 ===========================================================================
 """)
@@ -801,8 +801,8 @@ app.listen(PORT, () => {{
         if '/install_principal' not in simples_base_diretorio:
             simples_base_diretorio = '/install_principal'+simples_base_diretorio
         
-        os.makedirs(simples_base_diretorio, mode=0o777, exist_ok=True)
-        # os.chmod(caminho_host, 0o777)
+        os.makedirs(simples_base_diretorio, exist_ok=True)
+        os.chmod(simples_base_diretorio, 0o777)
         
         # URL do endpoint para criar usuários
         url = "http://localhost:8085/api/v2/users"
