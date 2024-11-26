@@ -430,14 +430,13 @@ certificatesResolvers:
         # os.chmod(f'{self.install_principal}/openlitespeed/vhosts', 0o777)
         # os.makedirs(f'{self.install_principal}/openlitespeed/conf_completa', exist_ok=True)
         # os.chmod(f'{self.install_principal}/openlitespeed/conf_completa', 0o777)
-        
+        # -v {self.install_principal}/openlitespeed/conf_completa:/usr/local/lsws/ \
         container = f"""docker run -d \
                             --name openlitespeed \
                             --restart=always \
                             -p 8088:8088 \
                             -p 7080:7080 \
                             -v {self.install_principal}/openlitespeed/vhosts:/var/www/vhosts/ \
-                            -v {self.install_principal}/openlitespeed/conf_completa:/usr/local/lsws/ \
                             litespeedtech/openlitespeed:latest
                     """
             
