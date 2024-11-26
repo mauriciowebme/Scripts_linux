@@ -1192,6 +1192,75 @@ class Sistema(Docker, Executa_comados):
         ]
         resultado = self.executar_comandos(comandos)
         
+    def configura_ip_fixo(self,):
+        # Lista interfaces de rede disponíveis
+        print("Interfaces de rede disponíveis:")
+        interfaces = subprocess.check_output(["ip", "addr"])
+        interfaces = interfaces.decode("utf-8").splitlines()
+        for line in interfaces:
+            if ":" in line:
+                print(line.split(":")[1].strip())
+
+        # Solicita o nome da interface
+        interface = input("Digite o nome da interface de rede (ex: enp2s0f5): ")
+
+        # Verifica se a interface de rede existe
+        try:
+            subprocess.check_output(["ip", "addr", "show", interface])
+        except subprocess.CalledProcessError:
+            print(f"Interface {interface} não encontrada. Verifique o nome e tente novamente.")
+            return
+
+        # Solicita o endereço IP e máscara
+        ip_address = input("Digite o endereço IP com a máscara (ex: 192.168.0.80/24): ")
+
+        # Solicita o gateway
+        gateway = input("Digite o endereço do gateway (ex: 192.168.0.1): ")
+
+        # Solicita os servidores de DNS
+        dns = input("Digite os endereços de DNS separados por vírgula (ex: 8.8.8.8,8.8.4.4): ")
+        dns_list = [dns.strip() for dns in dns.split(",")]
+
+        # Nome do arquivo de configuração do Netplan
+        config_file = "/etc/netplan/00-installer-config.yaml"
+
+        # Fazendo backup do arquivo de configuração existente
+        print("Criando backup do arquivo de configuração existente...")
+        backup_file = config_file + "_old"
+        subprocess.run(["sudo", "cp", config_file, backup_file], check=True)
+
+        # Gerando a estrutura de configuração
+        config_data = {
+            "network": {
+                "version": 2,
+                "renderer": "networkd",
+                "ethernets": {
+                    interface: {
+                        "addresses": [ip_address],
+                        "routes": [{"to": "default", "via": gateway}],
+                        "nameservers": {"addresses": dns_list}
+                    }
+                }
+            }
+        }
+
+        # Escrevendo o novo arquivo de configuração em YAML
+        print("Gerando novo arquivo de configuração...")
+        try:
+            with open(config_file, "w") as file:
+                yaml.dump(config_data, file, default_flow_style=False)
+        except IOError as e:
+            print(f"Erro ao escrever no arquivo de configuração: {e}")
+            return
+
+        # Aplicando as configurações
+        print("Aplicando as configurações...")
+        try:
+            subprocess.run(["sudo", "netplan", "apply"], check=True)
+            print("Configuração concluída com sucesso!")
+        except subprocess.CalledProcessError as e:
+            print(f"Erro ao aplicar as configurações: {e}")
+        
     def cria_particao(self,):
         self.listar_particoes()
         # Solicita o nome do disco ao usuário
@@ -1256,6 +1325,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala interface xfce", self.instalar_interface_xfce),
             ("Ecaminhamentos portas tuneis", self.ecaminhamentos_portas_tuneis),
             ("Instala gerenciador de WIFI nmtui", self.setup_wifi),
+            ("Configura ip fixo", self.configura_ip_fixo),
         ]
         self.mostrar_menu(opcoes_menu)
         
