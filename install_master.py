@@ -426,6 +426,10 @@ certificatesResolvers:
     def instala_openlitespeed(self,):
         print("Instalando openlitespeed.")
         # -v {self.install_principal}/openlitespeed/conf:/usr/local/lsws/conf \
+        os.makedirs(f'{self.install_principal}/openlitespeed/vhosts', exist_ok=True)
+        os.chmod(f'{self.install_principal}/openlitespeed/vhosts', 0o777)
+        os.makedirs(f'{self.install_principal}/openlitespeed/conf_completa', exist_ok=True)
+        os.chmod(f'{self.install_principal}/openlitespeed/conf_completa', 0o777)
         container = f"""docker run -d \
                             --name openlitespeed \
                             --restart=always \
