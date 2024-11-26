@@ -425,13 +425,14 @@ certificatesResolvers:
         
     def instala_openlitespeed(self,):
         print("Instalando openlitespeed.")
+        # -v {self.install_principal}/openlitespeed/conf:/usr/local/lsws/conf \
         container = f"""docker run -d \
                             --name openlitespeed \
                             --restart=always \
                             -p 8088:8088 \
                             -p 7080:7080 \
                             -v {self.install_principal}/openlitespeed/vhosts:/var/www/vhosts/ \
-                            -v {self.install_principal}/openlitespeed/conf:/usr/local/lsws/conf \
+                            -v {self.install_principal}/openlitespeed/conf_completa:/usr/local/lsws/ \
                             litespeedtech/openlitespeed:latest
                     """
             
@@ -505,8 +506,8 @@ certificatesResolvers:
         #/usr/local/lsws/
         site_dir = os.path.join(sites_dir, "vhosts", nome_dominio_)
         public_html = os.path.join(site_dir, "public_html")
-        conf_dir = os.path.join(sites_dir, "conf", "vhosts", nome_dominio_)
-        listener_conf_path = os.path.join(sites_dir, "conf", "httpd_config.conf")
+        conf_dir = os.path.join(sites_dir, "conf_completa", "conf", "vhosts", nome_dominio_)
+        listener_conf_path = os.path.join(sites_dir, "conf_completa", "conf", "httpd_config.conf")
         
         # Cria os diretórios necessários
         os.makedirs(public_html, exist_ok=True)
