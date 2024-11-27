@@ -1371,14 +1371,20 @@ class Sistema(Docker, Executa_comados):
             # Alterar permissões de subpastas e arquivos
             for root, dirs, files in os.walk(pasta):
                 for nome in dirs:
-                    caminho = os.path.join(root, nome)
-                    os.chmod(caminho, novas_permissoes)
-                    print(f"Permissões alteradas para pasta: {caminho}")
+                    try:
+                        caminho = os.path.join(root, nome)
+                        os.chmod(caminho, novas_permissoes)
+                        print(f"Permissões alteradas para a pasta: {caminho}")
+                    except:
+                        print(f"Erro ao alterar permissões para a pasta: {caminho}")
                 
                 for nome in files:
-                    caminho = os.path.join(root, nome)
-                    os.chmod(caminho, novas_permissoes)
-                    print(f"Permissões alteradas para arquivo: {caminho}")
+                    try:
+                        caminho = os.path.join(root, nome)
+                        os.chmod(caminho, novas_permissoes)
+                        print(f"Permissões alteradas para o arquivo: {caminho}")
+                    except:
+                        print(f"Erro ao alterar permissões para o arquivo: {caminho}")
         except ValueError:
             print("Erro: Permissões inválidas. Certifique-se de digitar um número octal válido.")
         except PermissionError:
