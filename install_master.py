@@ -1441,7 +1441,6 @@ class Sistema(Docker, Executa_comados):
             ("Ecaminhamentos portas tuneis", self.ecaminhamentos_portas_tuneis),
             ("Instala gerenciador de WIFI nmtui", self.setup_wifi),
             ("Configura ip fixo", self.configura_ip_fixo),
-            ("Configura ip fixo", self.configura_ip_fixo),
             ("Ver uso do espaço em pasta", self.ver_uso_espaco_pasta),
             ("Gerenciar permissoes de pasta", self.gerenciar_permissoes),
         ]
