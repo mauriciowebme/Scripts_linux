@@ -16,7 +16,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.124
+Versão 1.125
 ===========================================================================
 ===========================================================================
 """)
@@ -1337,6 +1337,45 @@ class Sistema(Docker, Executa_comados):
         if adicionar_fstab.lower() == "s":
             self.adicionar_ao_fstab(f"/dev/{disco}1", ponto_montagem)
     
+    def gerenciar_permissoes(self):
+        """
+        Gerencia as permissões de uma pasta no Ubuntu solicitando informações ao usuário.
+        O usuário pode visualizar as permissões ou alterá-las.
+        """
+        # Solicitar caminho da pasta
+        pasta = input("Digite o caminho da pasta: ").strip()
+        
+        if not os.path.exists(pasta):
+            print(f"A pasta '{pasta}' não existe.")
+            return
+        
+        if not os.path.isdir(pasta):
+            print(f"'{pasta}' não é uma pasta.")
+            return
+        
+        # Exibir permissões atuais
+        permissoes_atual = os.stat(pasta).st_mode
+        permissoes_octal = oct(permissoes_atual & 0o777)
+        print(f"Permissões atuais de '{pasta}': {permissoes_octal}")
+        
+        # Perguntar se o usuário deseja alterar as permissões
+        alterar = input("Deseja alterar as permissões? (s/n): ").strip().lower()
+        
+        if alterar == 's':
+            try:
+                novas_permissoes = input("Digite as novas permissões em formato octal (ex: 755): ").strip()
+                novas_permissoes = int(novas_permissoes, 8)  # Converter de string octal para inteiro
+                os.chmod(pasta, novas_permissoes)
+                print(f"Permissões de '{pasta}' alteradas para: {oct(novas_permissoes)}")
+            except ValueError:
+                print("Erro: Permissões inválidas. Certifique-se de digitar um número octal válido.")
+            except PermissionError:
+                print("Erro: Permissão negada. Execute o script como root para alterar permissões.")
+            except Exception as e:
+                print(f"Erro ao alterar permissões: {e}")
+        else:
+            print("Nenhuma alteração foi feita.")
+        
     def ver_uso_espaco_pasta(self):
         pasta = input('Digite o caminho absoluto da pasta que deseja ver o tamanho: ')
         # Garantir que o caminho seja absoluto
@@ -1388,6 +1427,7 @@ class Sistema(Docker, Executa_comados):
             ("Configura ip fixo", self.configura_ip_fixo),
             ("Configura ip fixo", self.configura_ip_fixo),
             ("Ver uso do espaço em pasta", self.ver_uso_espaco_pasta),
+            ("Gerenciar permissoes de pasta", self.gerenciar_permissoes),
         ]
         self.mostrar_menu(opcoes_menu)
         
