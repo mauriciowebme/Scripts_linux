@@ -16,7 +16,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.126
+Versão 1.127
 ===========================================================================
 ===========================================================================
 """)
@@ -1432,7 +1432,7 @@ class Sistema(Docker, Executa_comados):
         self.executar_comandos(comandos)
         
     def verificar_instalacao(self, pacote):
-        """Verifica se o pacote está instalado."""
+        print("Verifica se o pacote está instalado.")
         try:
             resultado = subprocess.run(
                 ["dpkg", "-l", pacote],
