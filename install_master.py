@@ -16,7 +16,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.128
+Versão 1.129
 ===========================================================================
 ===========================================================================
 """)
@@ -1448,7 +1448,8 @@ class Sistema(Docker, Executa_comados):
         if not self.verificar_instalacao("lm-sensors"):
             comandos = [
                 "sudo apt update",
-                "sudo apt install -y lm-sensors"
+                "sudo apt install -y lm-sensors",
+                "yes | sudo sensors-detect",
             ]
             self.executar_comandos(comandos)
         # Executar o comando sensors
