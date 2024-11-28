@@ -1430,14 +1430,29 @@ class Sistema(Docker, Executa_comados):
             "sudo systemctl restart systemd-logind",
             ]
         self.executar_comandos(comandos)
+        
+    def verificar_instalacao(self, pacote):
+        """Verifica se o pacote está instalado."""
+        try:
+            resultado = subprocess.run(
+                ["dpkg", "-l", pacote],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            return resultado.returncode == 0
+        except subprocess.CalledProcessError:
+            return False
     
     def verifica_temperatura(self):
-        comandos = [
-            "sudo apt update",
-            "sudo apt install -y lm-sensors",
-            "sensors"
+        if not self.verificar_instalacao("lm-sensors"):
+            comandos = [
+                "sudo apt update",
+                "sudo apt install -y lm-sensors"
             ]
-        self.executar_comandos(comandos)
+            self.executar_comandos(comandos)
+        # Executar o comando sensors
+        self.executar_comandos(["sensors"])
         
     def opcoes_sistema(self):
         print("\nMenu de sistema.\n")
