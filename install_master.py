@@ -1431,6 +1431,14 @@ class Sistema(Docker, Executa_comados):
             ]
         self.executar_comandos(comandos)
     
+    def verifica_temperatura(self):
+        comandos = [
+            "sudo apt update",
+            "sudo apt install -y lm-sensors",
+            "sensors"
+            ]
+        self.executar_comandos(comandos)
+        
     def opcoes_sistema(self):
         print("\nMenu de sistema.\n")
         """Menu de opções"""
@@ -1444,6 +1452,7 @@ class Sistema(Docker, Executa_comados):
             ("Configura ip fixo", self.configura_ip_fixo),
             ("Ver uso do espaço em pasta", self.ver_uso_espaco_pasta),
             ("Gerenciar permissoes de pasta", self.gerenciar_permissoes),
+            ("Verificar temperatura", self.verifica_temperatura),
         ]
         self.mostrar_menu(opcoes_menu)
         
