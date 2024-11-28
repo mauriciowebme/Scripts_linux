@@ -642,7 +642,7 @@ listener Default {{
         print('\nIniciando instalação do container Windows.')
         local_install = input('\nDigite o local onde deseja instalar sem o / no final: ')
         nome_container = input('Digite o nome para o container Windows: ')
-        senha = input('Digite a senha para acessar o Windows(o usuario sempre sera admin): ')
+        senha = input('Digite a senha para acessar o Windows(o usuario sempre sera admin_win): ')
         memoria = input('Digite a quantidade de memoria (apenas numeros): ')
         cpu = input('Digite a quantidade de CPUs (apenas numeros): ')
         disco = input('Digite tamanho do disco (apenas numeros): ')
@@ -662,7 +662,7 @@ listener Default {{
                     -e CPU_CORES="{cpu}" \
                     -e DISK_SIZE="{disco}G" \
                     -e LANGUAGE="pt-BR" \
-                    -e USERNAME="admin" \
+                    -e USERNAME="admin_win" \
                     -e PASSWORD="{senha}" \
                     -e LANGUAGE="pt-BR" \
                     -v {local_install}/windows_{nome_container}/win:/storage \
@@ -678,6 +678,7 @@ listener Default {{
         ]
         resultados = self.executar_comandos(comandos)
         print('Portas de acesso:')
+        print(' - Usuario: admin_win')
         print(f' - Porta Web: {porta}')
         print(' - Porta RDP: 3389')
         
