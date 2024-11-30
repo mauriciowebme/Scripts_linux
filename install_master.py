@@ -1443,7 +1443,7 @@ class Sistema(Docker, Executa_comados):
             return resultado.returncode == 0
         except subprocess.CalledProcessError:
             return False
-    
+        
     def verifica_temperatura(self):
         if not self.verificar_instalacao("lm-sensors"):
             comandos = [
@@ -1503,7 +1503,19 @@ class Sistema(Docker, Executa_comados):
         comandos = [
             "uptime",
             "df -h",
-            "ip addr show | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1",
+            "ip addr show | grep -vE '(docker|br-)' | grep 'inet ' | awk '{split($2, a, \"/\"); print a[1], $NF}'",
+        ]
+        self.executar_comandos(comandos)
+        
+        input('Pressione enter para abrir o monitor de recusos')
+        if not self.verificar_instalacao("glances"):
+            comandos = [
+                "sudo apt update",
+                "sudo apt install glances",
+            ]
+            self.executar_comandos(comandos)
+        comandos = [
+            "glances",
         ]
         self.executar_comandos(comandos)
     
