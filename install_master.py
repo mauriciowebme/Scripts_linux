@@ -19,7 +19,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.131
+Versão 1.132
 ===========================================================================
 ===========================================================================
 """)
@@ -1518,12 +1518,13 @@ class Sistema(Docker, Executa_comados):
             "ip addr show | grep -vE '(docker|br-)' | grep 'inet ' | awk '{split($2, a, \"/\"); print a[1], $NF}'",
         ]
         self.executar_comandos(comandos)
+        print('\n')
         
         input('Pressione enter para abrir o monitor de recusos')
         if not self.verificar_instalacao("glances"):
             comandos = [
                 "sudo apt update",
-                "sudo apt install glances",
+                "sudo apt install glances -y",
             ]
             self.executar_comandos(comandos, comando_direto=True)
         comandos = [
