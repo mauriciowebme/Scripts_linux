@@ -19,7 +19,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.130
+Versão 1.131
 ===========================================================================
 ===========================================================================
 """)
@@ -28,42 +28,51 @@ class Executa_comados():
     def __init__(self):
         pass
     
-    def executar_comandos(self, comandos:list=[], ignorar_erros=False, exibir_resultados=True):
+    def executar_comandos(self, comandos:list=[], ignorar_erros=False, exibir_resultados=True, comando_direto=False):
         # for comando in comandos:
         #     processo = subprocess.Popen(comando, shell=True)
         #     processo.wait()
         resultados = {}
         for comando in comandos:
-            if exibir_resultados:
-                print("\n" + "*" * 40)
-                print(" " * 5 + "---> Executando comando: <---")
-                print(" " * 5 + f"{comando}")
-                print("*" * 40 + "\n")
-            processo = subprocess.Popen(
-                comando, 
-                shell=True, 
-                stdout=subprocess.PIPE, 
-                stderr=subprocess.PIPE, 
-                text=True
-            )
-
-            # Lê e exibe cada linha da saída conforme é produzida
             resultados[comando] = []
-            for linha in processo.stdout:
-                resultados[comando] += [linha]
+            if comando_direto:
+                comando_convertido = comando.split()
+                try:
+                    subprocess.run(comando_convertido, check=True)
+                except subprocess.CalledProcessError as e:
+                    print(f"Erro ao executar o comando: {e}")
+                    print(f"Código de saída: {e.returncode}")
+                    resultados[comando] += [e.returncode]
+            else:
                 if exibir_resultados:
-                    print(linha, end="")
+                    print("\n" + "*" * 40)
+                    print(" " * 5 + "---> Executando comando: <---")
+                    print(" " * 5 + f"{comando}")
+                    print("*" * 40 + "\n")
+                processo = subprocess.Popen(
+                    comando, 
+                    shell=True, 
+                    stdout=subprocess.PIPE, 
+                    stderr=subprocess.PIPE, 
+                    text=True
+                )
 
-            # Espera o processo terminar e captura possíveis erros
-            processo.wait()
-            if processo.returncode != 0:
-                print(f"\nErro ao executar comando: {comando}\n")
-                resultados[comando] += ['Erro:True']
-                for linha in processo.stderr:
-                    print(linha, end="")
-                if not ignorar_erros:
-                    print("Saindo...")
-                    exit()
+                # Lê e exibe cada linha da saída conforme é produzida
+                for linha in processo.stdout:
+                    resultados[comando] += [linha]
+                    if exibir_resultados:
+                        print(linha, end="")
+
+                # Espera o processo terminar e captura possíveis erros
+                processo.wait()
+                if processo.returncode != 0:
+                    print(f"\nErro ao executar comando: {comando}\n")
+                    resultados[comando] += ['Erro:True']
+                    for linha in processo.stderr:
+                        print(linha, end="")
+                    if not ignorar_erros:
+                        print("Saindo...")
+                        exit()
                     
         return resultados
 
@@ -1516,8 +1525,11 @@ class Sistema(Docker, Executa_comados):
                 "sudo apt update",
                 "sudo apt install glances",
             ]
-            self.executar_comandos(comandos)
-        subprocess.run(["glances"], check=True)
+            self.executar_comandos(comandos, comando_direto=True)
+        comandos = [
+                "glances",
+            ]
+        self.executar_comandos(comandos, comando_direto=True)
     
     def menu_atualizacoes(self,):
         """Menu de opções"""
