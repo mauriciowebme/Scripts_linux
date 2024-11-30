@@ -19,7 +19,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.129
+Versão 1.130
 ===========================================================================
 ===========================================================================
 """)
@@ -1517,10 +1517,7 @@ class Sistema(Docker, Executa_comados):
                 "sudo apt install glances",
             ]
             self.executar_comandos(comandos)
-        comandos = [
-            "glances",
-        ]
-        self.executar_comandos(comandos)
+        subprocess.run(["glances"], check=True)
     
     def menu_atualizacoes(self,):
         """Menu de opções"""
