@@ -1513,8 +1513,6 @@ class Sistema(Docker, Executa_comados):
     def verificando_status_sistema(self,):
         print("Verificando status do sistema...")
         comandos = [
-            "uptime",
-            "df -h",
             "ip addr show | grep -vE '(docker|br-)' | grep 'inet ' | awk '{split($2, a, \"/\"); print a[1], $NF}'",
         ]
         self.executar_comandos(comandos)
