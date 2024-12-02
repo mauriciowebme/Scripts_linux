@@ -1561,13 +1561,13 @@ class Sistema(Docker, Executa_comados):
     def atualizar_sistema_simples(self,):
         """Executa o comando para atualizar o sistema."""
         print("Atualizando o sistema com update...")
-        self.executar_comandos(['sudo apt-get update'])
+        self.executar_comandos(['apt-get update'])
         
     def atualizar_sistema_completa(self,):
         """Executa o comando para atualizar o sistema."""
         print("Atualizando o sistema com upgrade...")
         self.atualizar_sistema_simples()
-        self.executar_comandos(['sudo apt-get upgrade -y'])
+        self.executar_comandos(['apt-get upgrade -y'])
         
     def atualizar_sistema_completa_reiniciar(self,):
         """Executa o comando para atualizar o sistema."""
