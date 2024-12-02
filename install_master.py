@@ -1193,6 +1193,15 @@ class Sistema(Docker, Executa_comados):
 
         resultado = self.executar_comandos(comandos)
         
+    def instalar_interface_gnome_minimal(self,):
+        processo = subprocess.run(
+            "sudo apt install gnome-shell gnome-session gdm3 gnome-terminal -y",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
     def instalar_interface_xfce(self,):
         """
         Instala a interface XFCE4 se ainda não estiver instalada e a inicia.
@@ -1488,6 +1497,7 @@ class Sistema(Docker, Executa_comados):
             ("listar_particoes", self.listar_particoes),
             ("fecha_tela_noot", self.fecha_tela_noot),
             ("Instala interface xfce", self.instalar_interface_xfce),
+            ("Instala interface gnome minimal", self.instalar_interface_gnome_minimal),
             ("Ecaminhamentos portas tuneis", self.ecaminhamentos_portas_tuneis),
             ("Instala gerenciador de WIFI nmtui", self.setup_wifi),
             ("Configura ip fixo", self.configura_ip_fixo),
