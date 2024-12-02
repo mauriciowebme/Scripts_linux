@@ -1214,7 +1214,7 @@ class Sistema(Docker, Executa_comados):
         Instala a interface XFCE4 se ainda não estiver instalada e a inicia.
         """
         try:
-            print("Verificando se o XFCE4 já está instalado...")
+            print("Verificando se o lxqt já está instalado...")
             
             # Verifica se o XFCE4 está instalado
             # processo = subprocess.run(
@@ -1225,23 +1225,23 @@ class Sistema(Docker, Executa_comados):
             #     text=True
             # )
             
-            if not self.verificar_instalacao('xfce4'):
-                print("XFCE4 já está instalado.")
+            if not self.verificar_instalacao('lxqt'):
+                print("lxqt já está instalado.")
             else:
-                print("XFCE4 não encontrado. Instalando XFCE4...")
+                print("lxqt não encontrado. Instalando XFCE4...")
                 self.atualizar_sistema_completa()
                 comandos = [
-                    "sudo apt install xfce4 xfce4-session -y",
-                    "sudo apt install lightdm",
-                    "sudo systemctl enable lightdm",
-                    "sudo systemctl start lightdm",
+                    "sudo apt install lxqt -y",
+                    # "sudo apt install lightdm",
+                    # "sudo systemctl enable lightdm",
+                    # "sudo systemctl start lightdm",
                 ]
                 self.executar_comandos(comandos, comando_direto=True)
-                print("XFCE4 instalado com sucesso.")
+                print("lxqt instalado com sucesso.")
             
-            # Inicia o XFCE4
-            print("Iniciando XFCE4...")
-            self.executar_comandos(["startxfce4 "], comando_direto=True)
+            # Inicia o lxqt
+            # print("Iniciando lxqt...")
+            # self.executar_comandos(["startxfce4 "], comando_direto=True)
         except subprocess.CalledProcessError as e:
             print(f"Erro durante a execução do comando: {e}")
         except Exception as e:
