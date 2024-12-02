@@ -1216,19 +1216,10 @@ class Sistema(Docker, Executa_comados):
         try:
             print("Verificando se o lxqt já está instalado...")
             
-            # Verifica se o XFCE4 está instalado
-            # processo = subprocess.run(
-            #     "dpkg -l | grep -q xfce4",
-            #     shell=True,
-            #     stdout=subprocess.PIPE,
-            #     stderr=subprocess.PIPE,
-            #     text=True
-            # )
-            
             if not self.verificar_instalacao('lxqt'):
                 print("lxqt já está instalado.")
             else:
-                print("lxqt não encontrado. Instalando XFCE4...")
+                print("lxqt não encontrado. Instalando lxqt...")
                 self.atualizar_sistema_completa()
                 comandos = [
                     "sudo apt install lxqt -y",
