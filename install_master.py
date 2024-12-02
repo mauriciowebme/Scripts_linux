@@ -1201,8 +1201,12 @@ class Sistema(Docker, Executa_comados):
     def instalar_deb(self,):
         caminho = input('Insira o caminho absoluto do .deb para instalar: ')
         self.atualizar_sistema_completa()
-        self.executar_comandos(f"sudo dpkg -i {caminho}", comando_direto=True)
-        self.executar_comandos(f"sudo apt-get install -f", comando_direto=True)
+        
+        comandos = [
+                f"sudo dpkg -i {caminho}",
+                f"sudo apt-get install -f",
+            ]
+        self.executar_comandos(comandos, comando_direto=True)
         self.atualizar_sistema_completa()
         
     def instalar_interface_xfce(self,):
@@ -1213,25 +1217,25 @@ class Sistema(Docker, Executa_comados):
             print("Verificando se o XFCE4 já está instalado...")
             
             # Verifica se o XFCE4 está instalado
-            processo = subprocess.run(
-                "dpkg -l | grep -q xfce4",
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
+            # processo = subprocess.run(
+            #     "dpkg -l | grep -q xfce4",
+            #     shell=True,
+            #     stdout=subprocess.PIPE,
+            #     stderr=subprocess.PIPE,
+            #     text=True
+            # )
             
-            if processo.returncode == 0:
+            if not self.verificar_instalacao('xfce4'):
                 print("XFCE4 já está instalado.")
             else:
                 print("XFCE4 não encontrado. Instalando XFCE4...")
                 self.atualizar_sistema_completa()
-                self.executar_comandos("sudo apt install xfce4 -y", comando_direto=True)
+                self.executar_comandos(["sudo apt install xfce4 -y"], comando_direto=True)
                 print("XFCE4 instalado com sucesso.")
             
             # Inicia o XFCE4
             print("Iniciando XFCE4...")
-            self.executar_comandos("startxfce4", comando_direto=True)
+            self.executar_comandos(["startxfce4"], comando_direto=True)
         except subprocess.CalledProcessError as e:
             print(f"Erro durante a execução do comando: {e}")
         except Exception as e:
@@ -1469,7 +1473,14 @@ class Sistema(Docker, Executa_comados):
         self.executar_comandos(comandos)
         
     def verificar_instalacao(self, pacote):
-        """Verifica se um pacote está instalado no sistema."""
+        """
+        Verifica se um pacote está instalado no sistema.
+        Exemplo:
+        if not self.verificar_instalacao("nome_pacote"):
+            pass
+            #instale o pacote
+        
+        """
         try:
             resultado = subprocess.run(
                 ["dpkg", "-s", pacote],
@@ -1570,20 +1581,20 @@ class Sistema(Docker, Executa_comados):
     def atualizar_sistema_simples(self,):
         """Executa o comando para atualizar o sistema."""
         print("Atualizando o sistema com update...")
-        self.executar_comandos('sudo apt-get update', comando_direto=True)
+        self.executar_comandos(['sudo apt-get update'], comando_direto=True)
         
     def atualizar_sistema_completa(self,):
         """Executa o comando para atualizar o sistema."""
         print("Atualizando o sistema com upgrade...")
         self.atualizar_sistema_simples()
-        self.executar_comandos("sudo apt-get upgrade -y", comando_direto=True)
+        self.executar_comandos(["sudo apt-get upgrade -y"], comando_direto=True)
         
     def atualizar_sistema_completa_reiniciar(self,):
         """Executa o comando para atualizar o sistema."""
         print("Reiniciando o sistema...")
         self.atualizar_sistema_simples()
         self.atualizar_sistema_completa()
-        self.executar_comandos('reboot ', comando_direto=True)
+        self.executar_comandos(['reboot '], comando_direto=True)
 
     def sair(self,):
         """Sai do programa."""
