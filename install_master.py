@@ -35,6 +35,12 @@ class Executa_comados():
         resultados = {}
         for comando in comandos:
             resultados[comando] = []
+            if exibir_resultados:
+                print("\n" + "*" * 40)
+                print(" " * 5 + "---> Executando comando: <---")
+                print(" " * 5 + f"{comando}")
+                print("*" * 40 + "\n")
+                
             if comando_direto:
                 comando_convertido = comando.split()
                 try:
@@ -44,11 +50,6 @@ class Executa_comados():
                     print(f"Código de saída: {e.returncode}")
                     resultados[comando] += [e.returncode]
             else:
-                if exibir_resultados:
-                    print("\n" + "*" * 40)
-                    print(" " * 5 + "---> Executando comando: <---")
-                    print(" " * 5 + f"{comando}")
-                    print("*" * 40 + "\n")
                 processo = subprocess.Popen(
                     comando, 
                     shell=True, 
@@ -1197,6 +1198,13 @@ class Sistema(Docker, Executa_comados):
         self.atualizar_sistema_completa()
         self.executar_comandos(["sudo apt install ubuntu-gnome-desktop -y"], comando_direto=True)
         
+    def instalar_deb(self,):
+        caminho = input('Insira o caminho absoluto do .deb para instalar: ')
+        self.atualizar_sistema_completa()
+        self.executar_comandos(f"sudo dpkg -i {caminho}", comando_direto=True)
+        self.executar_comandos(f"sudo apt-get install -f", comando_direto=True)
+        self.atualizar_sistema_completa()
+        
     def instalar_interface_xfce(self,):
         """
         Instala a interface XFCE4 se ainda não estiver instalada e a inicia.
@@ -1490,6 +1498,7 @@ class Sistema(Docker, Executa_comados):
         opcoes_menu = [
             ("cria_particao", self.cria_particao),
             ("listar_particoes", self.listar_particoes),
+            ("instalar deb", self.instalar_deb),
             ("fecha_tela_noot", self.fecha_tela_noot),
             ("Instala interface xfce", self.instalar_interface_xfce),
             ("Instala interface gnome", self.instalar_interface_gnome),
@@ -1561,20 +1570,20 @@ class Sistema(Docker, Executa_comados):
     def atualizar_sistema_simples(self,):
         """Executa o comando para atualizar o sistema."""
         print("Atualizando o sistema com update...")
-        self.executar_comandos(['apt-get update'])
+        self.executar_comandos('sudo apt-get update', comando_direto=True)
         
     def atualizar_sistema_completa(self,):
         """Executa o comando para atualizar o sistema."""
         print("Atualizando o sistema com upgrade...")
         self.atualizar_sistema_simples()
-        self.executar_comandos(['apt-get upgrade -y'])
+        self.executar_comandos("sudo apt-get upgrade -y", comando_direto=True)
         
     def atualizar_sistema_completa_reiniciar(self,):
         """Executa o comando para atualizar o sistema."""
         print("Reiniciando o sistema...")
         self.atualizar_sistema_simples()
         self.atualizar_sistema_completa()
-        self.executar_comandos(['reboot'])
+        self.executar_comandos('reboot', comando_direto=True)
 
     def sair(self,):
         """Sai do programa."""
