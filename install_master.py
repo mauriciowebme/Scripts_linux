@@ -1217,13 +1217,13 @@ class Sistema(Docker, Executa_comados):
                 print("XFCE4 já está instalado.")
             else:
                 print("XFCE4 não encontrado. Instalando XFCE4...")
-                subprocess.run("sudo apt update", shell=True, check=True)
-                subprocess.run("sudo apt install xfce4 -y", shell=True, check=True)
+                self.atualizar_sistema_completa()
+                self.executar_comandos("sudo apt install xfce4 -y", comando_direto=True)
                 print("XFCE4 instalado com sucesso.")
             
             # Inicia o XFCE4
             print("Iniciando XFCE4...")
-            subprocess.run("startxfce4", shell=True, check=True)
+            self.executar_comandos("startxfce4", comando_direto=True)
         except subprocess.CalledProcessError as e:
             print(f"Erro durante a execução do comando: {e}")
         except Exception as e:
