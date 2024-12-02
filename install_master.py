@@ -1214,7 +1214,7 @@ class Sistema(Docker, Executa_comados):
             else:
                 print("XFCE4 não encontrado. Instalando XFCE4...")
                 subprocess.run("sudo apt update", shell=True, check=True)
-                subprocess.run("sudo apt install -y xfce4", shell=True, check=True)
+                subprocess.run("sudo apt install lightdm xfce4 -y", shell=True, check=True)
                 print("XFCE4 instalado com sucesso.")
             
             # Inicia o XFCE4
