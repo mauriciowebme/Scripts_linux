@@ -1583,7 +1583,7 @@ class Sistema(Docker, Executa_comados):
         print("Reiniciando o sistema...")
         self.atualizar_sistema_simples()
         self.atualizar_sistema_completa()
-        self.executar_comandos('reboot', comando_direto=True)
+        self.executar_comandos('reboot ', comando_direto=True)
 
     def sair(self,):
         """Sai do programa."""
