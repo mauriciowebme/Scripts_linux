@@ -1230,7 +1230,13 @@ class Sistema(Docker, Executa_comados):
             else:
                 print("XFCE4 não encontrado. Instalando XFCE4...")
                 self.atualizar_sistema_completa()
-                self.executar_comandos(["sudo apt install xfce4 xfce4-session -y"], comando_direto=True)
+                comandos = [
+                    "sudo apt install xfce4 xfce4-session -y",
+                    "sudo apt install lightdm",
+                    "sudo systemctl enable lightdm",
+                    "sudo systemctl start lightdm",
+                ]
+                self.executar_comandos(comandos, comando_direto=True)
                 print("XFCE4 instalado com sucesso.")
             
             # Inicia o XFCE4
