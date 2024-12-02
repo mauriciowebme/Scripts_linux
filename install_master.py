@@ -1194,13 +1194,7 @@ class Sistema(Docker, Executa_comados):
         resultado = self.executar_comandos(comandos)
         
     def instalar_interface_gnome_minimal(self,):
-        processo = subprocess.run(
-            "sudo apt install gnome-shell gnome-session gdm3 gnome-terminal -y",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
+        self.executar_comandos(["sudo apt install gnome-shell gnome-session gdm3 gnome-terminal -y"], comando_direto=True)
         
     def instalar_interface_xfce(self,):
         """
