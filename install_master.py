@@ -694,6 +694,19 @@ listener Default {{
         print(f' - Porta Web: {porta}')
         print(' - Porta RDP: 3389')
         
+    def instala_rustdesk(self,):
+        comandos = [
+            f"""docker run -d \
+                    --name rustdesk \
+                    -p 21115:21115 \
+                    -p 21116:21116 \
+                    -v {self.install_principal}/rustdesk/config:/config \
+                    rustdesk/rustdesk-server
+                """,
+            ]
+        self.remove_container('rustdesk')
+        resultados = self.executar_comandos(comandos)
+        
     def instala_portainer(self,):
         self.remove_container('portainer')
         comandos = [
@@ -1507,6 +1520,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
             ("Start sync pastas com RSYNC", self.start_sync_pastas),
             ("Instala windows docker", self.instala_windows_docker),
+            ("Instala rustdesk", self.instala_rustdesk),
         ]
         self.mostrar_menu(opcoes_menu)
     
