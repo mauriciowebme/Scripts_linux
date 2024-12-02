@@ -1230,12 +1230,12 @@ class Sistema(Docker, Executa_comados):
             else:
                 print("XFCE4 não encontrado. Instalando XFCE4...")
                 self.atualizar_sistema_completa()
-                self.executar_comandos(["sudo apt install xfce4 -y"], comando_direto=True)
+                self.executar_comandos(["sudo apt install xfce4 xfce4-session -y"], comando_direto=True)
                 print("XFCE4 instalado com sucesso.")
             
             # Inicia o XFCE4
             print("Iniciando XFCE4...")
-            self.executar_comandos(["startxfce4"], comando_direto=True)
+            self.executar_comandos(["startxfce4 "], comando_direto=True)
         except subprocess.CalledProcessError as e:
             print(f"Erro durante a execução do comando: {e}")
         except Exception as e:
