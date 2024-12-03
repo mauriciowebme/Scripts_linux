@@ -810,6 +810,7 @@ app.listen(PORT, () => {{
                         --restart=always \
                         -p 2025:2022 \
                         -p 8085:8080 \
+                        -e SFTPGO_SFTPD__MAX_CONNECTIONS_PER_IP=100 \
                         -v {self.install_principal}:/install_principal \
                         -v {dir_dados}:/var/lib/sftpgo \
                         drakkan/sftpgo
