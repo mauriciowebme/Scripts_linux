@@ -576,8 +576,9 @@ certificatesResolvers:
         vhost_conf_path = os.path.join(conf_dir, "vhconf.conf")
         with open(vhost_conf_path, "w") as vhost_file:
             vhost_file.write(f"""\
-docRoot                   /var/www/vhosts/{nome_dominio_}/public_html
+docRoot                   /var/www/vhosts/{nome_dominio_}/public_html/
 vhDomain                  {nome_dominio}
+indexFiles                index.php, index.html
 """)
         
         comandos = [
@@ -599,7 +600,6 @@ virtualhost {nome_dominio_} {{
 listener Default {{
   address                 *:8088
   secure                  0
-  map                     Example *
   map                     {nome_dominio_} {nome_dominio}
 }}
 """
@@ -620,6 +620,7 @@ listener Default {{
                 print(f"Listener para '{nome_dominio_}' já existe.")
         
         self.gerenciar_usuarios_sftp(manual=False, simples_usuario=nome_dominio_, simples_senha=senha_ftp, simples_base_diretorio=public_html)
+        self.executar_comandos(['docker restart openlitespeed'], comando_direto=True)
         
         print(f"Configuração do site '{nome_dominio_}' criada com sucesso!")
         print(f"Arquivos criados em: {site_dir}")
