@@ -705,6 +705,10 @@ listener Default {{
         print(' - Porta RDP: 3389')
         
     def instala_pritunel(self,):
+        caminho_pritunl = f'{self.install_principal}/pritunl'
+        os.makedirs(caminho_pritunl, exist_ok=True)
+        os.chmod(caminho_pritunl, 0o777)
+        self.executar_comandos([f'{caminho_pritunl}/pritunl.conf'], comando_direto=True)
         comandos = [
             f"""docker run -d \
                     --name pritunl \
@@ -718,9 +722,9 @@ listener Default {{
                     --dns 127.0.0.1 \
                     --restart=unless-stopped \
                     --detach \
-                    --volume {self.install_principal}/pritunl.conf:/etc/pritunl.conf \
-                    --volume {self.install_principal}/pritunl:/var/lib/pritunl \
-                    --volume {self.install_principal}/mongodb:/var/lib/mongodb \
+                    --volume {caminho_pritunl}/pritunl.conf:/etc/pritunl.conf \
+                    --volume {caminho_pritunl}:/var/lib/pritunl \
+                    --volume {caminho_pritunl}/mongodb:/var/lib/mongodb \
                     ghcr.io/jippi/docker-pritunl
                 """,
             ]
