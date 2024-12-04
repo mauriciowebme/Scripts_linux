@@ -1529,6 +1529,9 @@ class Sistema(Docker, Executa_comados):
     def menu_docker(self):
         print("\nBem-vindo ao Gerenciador Docker\n")
         self.instala_docker()
+        if not os.path.exists(self.install_principal):
+            os.makedirs(self.install_principal, exist_ok=True)
+            os.chmod(self.install_principal, 0o777)
         """Menu de opções"""
         opcoes_menu = [
             ("Força instalação docker", self.instala_docker_force),
