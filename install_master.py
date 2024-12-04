@@ -600,6 +600,7 @@ virtualhost {nome_dominio_} {{
 listener Default {{
   address                 *:8088
   secure                  0
+  map                     Example *
   map                     {nome_dominio_} {nome_dominio}
 }}
 """
