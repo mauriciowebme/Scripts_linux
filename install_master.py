@@ -19,7 +19,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.136
+Versão 1.137
 ===========================================================================
 ===========================================================================
 """)
@@ -708,7 +708,7 @@ listener Default {{
         caminho_pritunl = f'{self.install_principal}/pritunl'
         os.makedirs(caminho_pritunl, exist_ok=True)
         os.chmod(caminho_pritunl, 0o777)
-        self.executar_comandos([f'{caminho_pritunl}/pritunl.conf'], comando_direto=True)
+        self.executar_comandos([f'sudo touch {caminho_pritunl}/pritunl.conf'], comando_direto=True)
         comandos = [
             f"""docker run -d \
                     --name pritunl \
