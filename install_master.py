@@ -19,7 +19,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.135
+Versão 1.136
 ===========================================================================
 ===========================================================================
 """)
@@ -248,7 +248,9 @@ scrape_configs:
     
     def cria_dynamic_conf_traefik(self,):
         dynamic_conf = f'{self.install_principal}/traefik/dynamic_conf.yml'
-        # dynamic_conf = f'C:\TESTES_C\dynamic_conf.yml'
+        if not os.path.exists(f'{self.install_principal}/traefik/'):
+            os.makedirs(f'{self.install_principal}/traefik/', exist_ok=True)
+            os.chmod(f'{self.install_principal}/traefik/', 0o777)
         if not os.path.exists(dynamic_conf):
             email = input('Digite um e-mail para gerar o certificado: ')
             with open(dynamic_conf, "w") as f:
