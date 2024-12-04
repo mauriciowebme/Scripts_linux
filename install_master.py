@@ -19,7 +19,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.135
+Versão 1.136
 ===========================================================================
 ===========================================================================
 """)
@@ -248,7 +248,9 @@ scrape_configs:
     
     def cria_dynamic_conf_traefik(self,):
         dynamic_conf = f'{self.install_principal}/traefik/dynamic_conf.yml'
-        # dynamic_conf = f'C:\TESTES_C\dynamic_conf.yml'
+        if not os.path.exists(f'{self.install_principal}/traefik/'):
+            os.makedirs(f'{self.install_principal}/traefik/', exist_ok=True)
+            os.chmod(f'{self.install_principal}/traefik/', 0o777)
         if not os.path.exists(dynamic_conf):
             email = input('Digite um e-mail para gerar o certificado: ')
             with open(dynamic_conf, "w") as f:
@@ -574,8 +576,9 @@ certificatesResolvers:
         vhost_conf_path = os.path.join(conf_dir, "vhconf.conf")
         with open(vhost_conf_path, "w") as vhost_file:
             vhost_file.write(f"""\
-docRoot                   /var/www/vhosts/{nome_dominio_}/public_html
+docRoot                   /var/www/vhosts/{nome_dominio_}/public_html/
 vhDomain                  {nome_dominio}
+indexFiles                index.php, index.html
 """)
         
         comandos = [
@@ -618,6 +621,7 @@ listener Default {{
                 print(f"Listener para '{nome_dominio_}' já existe.")
         
         self.gerenciar_usuarios_sftp(manual=False, simples_usuario=nome_dominio_, simples_senha=senha_ftp, simples_base_diretorio=public_html)
+        self.executar_comandos(['docker restart openlitespeed'], comando_direto=True)
         
         print(f"Configuração do site '{nome_dominio_}' criada com sucesso!")
         print(f"Arquivos criados em: {site_dir}")
@@ -1569,6 +1573,9 @@ class Sistema(Docker, Executa_comados):
     def menu_docker(self):
         print("\nBem-vindo ao Gerenciador Docker\n")
         self.instala_docker()
+        if not os.path.exists(self.install_principal):
+            os.makedirs(self.install_principal, exist_ok=True)
+            os.chmod(self.install_principal, 0o777)
         """Menu de opções"""
         opcoes_menu = [
             ("Força instalação docker", self.instala_docker_force),
