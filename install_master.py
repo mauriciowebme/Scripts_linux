@@ -676,7 +676,7 @@ listener Default {{
         comandos = [
             f"""sudo docker run -d \
                     --name windows_{nome_container} \
-                    --restart=always \
+                    --restart=unless-stopped \
                     -p {porta}:8006 \
                     --device=/dev/kvm \
                     --cap-add=NET_ADMIN \
