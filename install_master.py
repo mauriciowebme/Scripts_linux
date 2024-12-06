@@ -671,13 +671,14 @@ listener Default {{
         print('\n')
         porta = self.escolher_porta_disponivel()
         self.remove_container(f'windows_{nome_container}')
-        # -p 3389:3389/tcp \
-        # -p 3389:3389/udp \
+
+        # -p {porta}:8006 \
         comandos = [
             f"""sudo docker run -d \
                     --name windows_{nome_container} \
                     --restart=unless-stopped \
-                    -p {porta}:8006 \
+                    -p {porta}:3389/tcp \
+                    -p {porta}:3389/udp \
                     --device=/dev/kvm \
                     --cap-add=NET_ADMIN \
                     -e RAM_SIZE="{memoria}G" \
@@ -701,8 +702,8 @@ listener Default {{
         resultados = self.executar_comandos(comandos)
         print('Portas de acesso:')
         print(' - Usuario: admin_win')
-        print(f' - Porta Web: {porta}')
-        print(' - Porta RDP: 3389')
+        print(f' - Porta Web: 8006, essa porta está desabilitada, ative no painel do portainer para usar!')
+        print(f' - Porta RDP: {porta}')
         
     def instala_pritunel(self,):
         caminho_pritunl = f'{self.install_principal}/pritunl'
