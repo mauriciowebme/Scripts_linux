@@ -256,11 +256,6 @@ scrape_configs:
             with open(dynamic_conf, "w") as f:
                 f.write(f"""\
 http:
-#   middlewares:
-#     large-body-size:
-#       headers:
-#         customRequestHeaders:
-#           Content-Length: "5242880000" # 5GB em bytes
   routers:
     exemplo_meu_dominio_com:
       rule: "Host(`exemplo.meu_dominio.com`)"
@@ -706,6 +701,7 @@ listener Default {{
         print(f' - Porta RDP: {porta}')
         
     def instala_pritunel(self,):
+        # Projeto: https://github.com/jippi/docker-pritunl
         caminho_pritunl = f'{self.install_principal}/pritunl'
         os.makedirs(caminho_pritunl, exist_ok=True)
         os.chmod(caminho_pritunl, 0o777)
