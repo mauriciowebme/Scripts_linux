@@ -1077,12 +1077,12 @@ app.listen(PORT, () => {{
     def limpeza_containers(self,):
         # "docker container prune -f",
         # "docker system prune -a --volumes -f",
+        # "docker system prune --volumes -f",
         comandos = [
             "docker image prune -a -f",
             "docker volume prune -f",
             "docker network prune -f",
             "docker builder prune -f",
-            "docker system prune --volumes -f",
         ]
         # "docker system df",
         resultados = self.executar_comandos(comandos, ignorar_erros=True, exibir_resultados=False)
