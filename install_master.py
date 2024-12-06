@@ -711,6 +711,7 @@ listener Default {{
                     --name pritunl \
                     --restart=always \
                     --privileged \
+                    --publish 9700:9700 \
                     --publish 81:80 \
                     --publish 447:443 \
                     --publish 446:446 \
