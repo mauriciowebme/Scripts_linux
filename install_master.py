@@ -1055,6 +1055,7 @@ app.listen(PORT, () => {{
         self.remove_container(f'mysql_5_7')
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'mysql_5_7', numero_rede=1)
+        time.sleep(30)
         print('Instalação do Mysql completa.')
         print('Acesso:')
         print(' - Usuario: root')
