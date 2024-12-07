@@ -19,7 +19,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.137
+Versão 1.138
 ===========================================================================
 ===========================================================================
 """)
@@ -317,11 +317,6 @@ scrape_configs:
             with open(dynamic_conf, "w") as f:
                 f.write(f"""\
 http:
-#   middlewares:
-#     large-body-size:
-#       headers:
-#         customRequestHeaders:
-#           Content-Length: "5242880000" # 5GB em bytes
   routers:
     exemplo_meu_dominio_com:
       rule: "Host(`exemplo.meu_dominio.com`)"
@@ -732,13 +727,14 @@ listener Default {{
         print('\n')
         porta = self.escolher_porta_disponivel()
         self.remove_container(f'windows_{nome_container}')
-        # -p 3389:3389/tcp \
-        # -p 3389:3389/udp \
+
+        # -p {porta}:8006 \
         comandos = [
             f"""sudo docker run -d \
                     --name windows_{nome_container} \
-                    --restart=always \
-                    -p {porta}:8006 \
+                    --restart=unless-stopped \
+                    -p {porta}:3389/tcp \
+                    -p {porta}:3389/udp \
                     --device=/dev/kvm \
                     --cap-add=NET_ADMIN \
                     -e RAM_SIZE="{memoria}G" \
@@ -762,10 +758,11 @@ listener Default {{
         resultados = self.executar_comandos(comandos)
         print('Portas de acesso:')
         print(' - Usuario: admin_win')
-        print(f' - Porta Web: {porta}')
-        print(' - Porta RDP: 3389')
+        print(f' - Porta Web: 8006, essa porta está desabilitada, ative no painel do portainer para usar!')
+        print(f' - Porta RDP: {porta}')
         
     def instala_pritunel(self,):
+        # Projeto: https://github.com/jippi/docker-pritunl
         caminho_pritunl = f'{self.install_principal}/pritunl'
         os.makedirs(caminho_pritunl, exist_ok=True)
         os.chmod(caminho_pritunl, 0o777)
@@ -775,6 +772,7 @@ listener Default {{
                     --name pritunl \
                     --restart=always \
                     --privileged \
+                    --publish 9700:9700 \
                     --publish 81:80 \
                     --publish 447:443 \
                     --publish 446:446 \
@@ -1138,12 +1136,13 @@ app.listen(PORT, () => {{
 
     def limpeza_containers(self,):
         # "docker container prune -f",
+        # "docker system prune -a --volumes -f",
+        # "docker system prune --volumes -f",
         comandos = [
             "docker image prune -a -f",
             "docker volume prune -f",
             "docker network prune -f",
             "docker builder prune -f",
-            "docker system prune -a --volumes -f",
         ]
         # "docker system df",
         resultados = self.executar_comandos(comandos, ignorar_erros=True, exibir_resultados=False)
