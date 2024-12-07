@@ -1008,7 +1008,7 @@ app.listen(PORT, () => {{
             print(f"Erro ao criar usuário '{simples_usuario}': {response.status_code}")
             print(response.json())
         pass
-    
+        
     def instala_webserver_ssh(self,):
         self.remove_container('webssh')
         print('Porta interna para uso: 8080')
@@ -1567,6 +1567,16 @@ class Sistema(Docker, Executa_comados):
         # Executar o comando sensors
         self.executar_comandos(["sensors"])
         
+    def verifica_velocidade(self):
+        if not self.verificar_instalacao("speedtest"):
+            comandos = [
+                "sudo apt update",
+                "sudo apt-get install -y speedtest-cli",
+            ]
+            self.executar_comandos(comandos)
+        # Executar o comando sensors
+        self.executar_comandos(["speedtest "], comando_direto=True)
+        
     def opcoes_sistema(self):
         print("\nMenu de sistema.\n")
         """Menu de opções"""
@@ -1583,6 +1593,7 @@ class Sistema(Docker, Executa_comados):
             ("Ver uso do espaço em pasta", self.ver_uso_espaco_pasta),
             ("Gerenciar permissoes de pasta", self.gerenciar_permissoes),
             ("Verificar temperatura", self.verifica_temperatura),
+            ("Verificar velocidade da internet", self.verifica_velocidade),
         ]
         self.mostrar_menu(opcoes_menu)
         
