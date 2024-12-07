@@ -163,6 +163,67 @@ class Docker(Executa_comados):
             f'docker rm -f {nome_container}',
             ]
         resultados = self.executar_comandos(comandos)
+    
+    def gerenciar_permissoes(self, pasta:str=None, permissao:str=None):
+        """
+        Altera as permissões de uma pasta e de suas subpastas/arquivos recursivamente.
+        Solicita informações ao usuário interativamente.
+        """
+        # Solicitar o caminho da pasta
+        if pasta == None:
+            pasta = input("Digite o caminho da pasta: ").strip()
+        else:
+            os.makedirs(pasta, exist_ok=True)
+        
+        if not os.path.exists(pasta):
+            print(f"A pasta '{pasta}' não existe.")
+            return
+        
+        if not os.path.isdir(pasta):
+            print(f"'{pasta}' não é uma pasta.")
+            return
+        
+        # Exibir permissões atuais da pasta principal
+        permissoes_atual = os.stat(pasta).st_mode
+        permissoes_octal = oct(permissoes_atual & 0o777)
+        print(f"Permissões atuais de '{pasta}': {permissoes_octal}")
+        
+        # Solicitar novas permissões
+        if permissao == None:
+            novas_permissoes = input("Digite as novas permissões em formato octal (ex: 755): ").strip()
+        else:
+            novas_permissoes = permissao.strip()
+        
+        try:
+            novas_permissoes = int(novas_permissoes, 8)  # Converter de string octal para inteiro
+            
+            # Alterar permissões da pasta principal
+            os.chmod(pasta, novas_permissoes)
+            print(f"Permissões de '{pasta}' alteradas para: {oct(novas_permissoes)}")
+            
+            # Alterar permissões de subpastas e arquivos
+            for root, dirs, files in os.walk(pasta):
+                for nome in dirs:
+                    try:
+                        caminho = os.path.join(root, nome)
+                        os.chmod(caminho, novas_permissoes)
+                        print(f"Permissões alteradas para a pasta: {caminho}")
+                    except:
+                        print(f"Erro ao alterar permissões para a pasta: {caminho}")
+                
+                for nome in files:
+                    try:
+                        caminho = os.path.join(root, nome)
+                        os.chmod(caminho, novas_permissoes)
+                        print(f"Permissões alteradas para o arquivo: {caminho}")
+                    except:
+                        print(f"Erro ao alterar permissões para o arquivo: {caminho}")
+        except ValueError:
+            print("Erro: Permissões inválidas. Certifique-se de digitar um número octal válido.")
+        except PermissionError:
+            print("Erro: Permissão negada. Execute o script como root para alterar permissões.")
+        except Exception as e:
+            print(f"Erro ao alterar permissões: {e}")
         
     def adiciona_redirecionamento_traefik(self, container, dominio=None, porta=None):
         """
@@ -976,6 +1037,7 @@ app.listen(PORT, () => {{
         self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=1)
         
     def instala_mysql_5_7(self,):
+        self.gerenciar_permissoes(f"{self.install_principal}/mysql_bd", permissao="777")
         print('Instalando o mysql.\n')
         # -e MYSQL_RANDOM_ROOT_PASSWORD=wordpress \
         container_db = f"""docker run -d \
@@ -1430,61 +1492,6 @@ class Sistema(Docker, Executa_comados):
         adicionar_fstab = input("Deseja adicionar essa partição ao /etc/fstab para montagem automática? (s/n): ")
         if adicionar_fstab.lower() == "s":
             self.adicionar_ao_fstab(f"/dev/{disco}1", ponto_montagem)
-    
-    def gerenciar_permissoes(self):
-        """
-        Altera as permissões de uma pasta e de suas subpastas/arquivos recursivamente.
-        Solicita informações ao usuário interativamente.
-        """
-        # Solicitar o caminho da pasta
-        pasta = input("Digite o caminho da pasta: ").strip()
-        
-        if not os.path.exists(pasta):
-            print(f"A pasta '{pasta}' não existe.")
-            return
-        
-        if not os.path.isdir(pasta):
-            print(f"'{pasta}' não é uma pasta.")
-            return
-        
-        # Exibir permissões atuais da pasta principal
-        permissoes_atual = os.stat(pasta).st_mode
-        permissoes_octal = oct(permissoes_atual & 0o777)
-        print(f"Permissões atuais de '{pasta}': {permissoes_octal}")
-        
-        # Solicitar novas permissões
-        novas_permissoes = input("Digite as novas permissões em formato octal (ex: 755): ").strip()
-        
-        try:
-            novas_permissoes = int(novas_permissoes, 8)  # Converter de string octal para inteiro
-            
-            # Alterar permissões da pasta principal
-            os.chmod(pasta, novas_permissoes)
-            print(f"Permissões de '{pasta}' alteradas para: {oct(novas_permissoes)}")
-            
-            # Alterar permissões de subpastas e arquivos
-            for root, dirs, files in os.walk(pasta):
-                for nome in dirs:
-                    try:
-                        caminho = os.path.join(root, nome)
-                        os.chmod(caminho, novas_permissoes)
-                        print(f"Permissões alteradas para a pasta: {caminho}")
-                    except:
-                        print(f"Erro ao alterar permissões para a pasta: {caminho}")
-                
-                for nome in files:
-                    try:
-                        caminho = os.path.join(root, nome)
-                        os.chmod(caminho, novas_permissoes)
-                        print(f"Permissões alteradas para o arquivo: {caminho}")
-                    except:
-                        print(f"Erro ao alterar permissões para o arquivo: {caminho}")
-        except ValueError:
-            print("Erro: Permissões inválidas. Certifique-se de digitar um número octal válido.")
-        except PermissionError:
-            print("Erro: Permissão negada. Execute o script como root para alterar permissões.")
-        except Exception as e:
-            print(f"Erro ao alterar permissões: {e}")
         
     def ver_uso_espaco_pasta(self):
         pasta = input('Digite o caminho absoluto da pasta que deseja ver o tamanho: ')
