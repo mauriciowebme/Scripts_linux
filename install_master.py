@@ -1035,7 +1035,7 @@ app.listen(PORT, () => {{
         self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=1)
         
     def instala_mysql_5_7(self,):
-        self.gerenciar_permissoes(f"{self.install_principal}/mysql_bd", permissao="777")
+        # self.gerenciar_permissoes(f"{self.install_principal}/mysql_bd", permissao="777")
         print('Instalando o mysql.\n')
         # -e MYSQL_RANDOM_ROOT_PASSWORD=wordpress \
         container_db = f"""docker run -d \
