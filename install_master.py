@@ -1568,7 +1568,7 @@ class Sistema(Docker, Executa_comados):
         self.executar_comandos(["sensors"])
         
     def verifica_velocidade(self):
-        if not self.verificar_instalacao("speedtest"):
+        if not self.verificar_instalacao("speedtest-cli"):
             comandos = [
                 "sudo apt update",
                 "sudo apt-get install -y speedtest-cli",
