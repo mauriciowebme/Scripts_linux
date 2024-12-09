@@ -1392,7 +1392,7 @@ class Sistema(Docker, Executa_comados):
             "sudo nmtui"
         ]
         print("Configurando Wi-Fi com NetworkManager...")
-        self.executar_comandos(comandos)
+        self.executar_comandos(comandos, comando_direto=True)
     
     def adicionar_ao_fstab(self, dispositivo, ponto_montagem):
         try:
