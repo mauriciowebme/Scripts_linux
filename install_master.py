@@ -1648,6 +1648,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala windows docker", self.instala_windows_docker),
             ("Instala rustdesk", self.instala_rustdesk),
             ("Instala pritunel", self.instala_pritunel),
+            ("Instala nextcloud", self.instala_nextcloud),
         ]
         self.mostrar_menu(opcoes_menu)
     
