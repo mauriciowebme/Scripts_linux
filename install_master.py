@@ -28,14 +28,14 @@ class Executa_comados():
     def __init__(self):
         pass
     
-    def executar_comandos(self, comandos:list=[], ignorar_erros=False, exibir_resultados=True, comando_direto=False):
+    def executar_comandos(self, comandos:list=[], ignorar_erros=False, exibir_resultados=True, comando_direto=False, exibir_executando=True):
         # for comando in comandos:
         #     processo = subprocess.Popen(comando, shell=True)
         #     processo.wait()
         resultados = {}
         for comando in comandos:
             resultados[comando] = []
-            if exibir_resultados:
+            if exibir_resultados and exibir_executando:
                 print("\n" + "*" * 40)
                 print(" " * 5 + "---> Executando comando: <---")
                 print(" " * 5 + f"{comando}")
@@ -763,18 +763,13 @@ listener Default {{
         
     def instala_nextcloud(self,):
         print('Instalando nextcloud...')
-        caminho_nextcloud = f'{self.install_principal}/nextcloud'
         local = input('Digite o local para armazenamento dos dados: ')
-        # -v nextcloud:/var/www/html \
-        # -v theme:/var/www/html/themes/<YOUR_CUSTOM_THEME> \
         comandos = [
             f"""docker run -d \
                     --name nextcloud \
                     --restart=always \
                     -p 8585:80 \
-                    -v {caminho_nextcloud}/apps:/var/www/html/custom_apps \
-                    -v {caminho_nextcloud}/config:/var/www/html/config \
-                    -v {local}:/var/www/html/data \
+                    -v {local}:/var/www/html \
                     nextcloud
                 """,
             ]
@@ -782,6 +777,11 @@ listener Default {{
         resultados = self.executar_comandos(comandos)
         time.sleep(10)
         print("Instalação concluída. Nextcloud está pronto para uso.")
+        print('\nIPs possíveis para acesso:')
+        comandos = [
+            f"hostname -I | tr ' ' '\n'",
+            ]
+        resultados = self.executar_comandos(comandos, exibir_executando=False)
         print("porta de acesso: 8585")
         
     def instala_pritunel(self,):
