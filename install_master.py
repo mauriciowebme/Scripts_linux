@@ -795,7 +795,6 @@ listener Default {{
                     --name pritunl \
                     --restart=always \
                     --privileged \
-                    --publish 9700:9700 \
                     --publish 81:80 \
                     --publish 447:443 \
                     --publish 446:446 \
@@ -827,7 +826,7 @@ listener Default {{
         comandos = [
             f"hostname -I | tr ' ' '\n'",
             ]
-        resultados = self.executar_comandos(comandos)
+        resultados = self.executar_comandos(comandos, exibir_executando=False)
         
     def instala_rustdesk(self,):
         comandos = [
