@@ -761,6 +761,29 @@ listener Default {{
         print(f' - Porta Web: 8006, essa porta está desabilitada, ative no painel do portainer para usar!')
         print(f' - Porta RDP: {porta}')
         
+    def instala_nextcloud(self,):
+        print('Instalando nextcloud...')
+        caminho_nextcloud = f'{self.install_principal}/nextcloud'
+        local = input('Digite o local para armazenamento dos dados: ')
+        # -v nextcloud:/var/www/html \
+        # -v theme:/var/www/html/themes/<YOUR_CUSTOM_THEME> \
+        comandos = [
+            f"""docker run -d \
+                    --name nextcloud \
+                    --restart=always \
+                    -p 8585:80
+                    -v {caminho_nextcloud}/apps:/var/www/html/custom_apps \
+                    -v {caminho_nextcloud}/config:/var/www/html/config \
+                    -v {local}:/var/www/html/data \
+                    nextcloud
+                """,
+            ]
+        self.remove_container('nextcloud')
+        resultados = self.executar_comandos(comandos)
+        time.sleep(10)
+        print("Instalação concluída. Nextcloud está pronto para uso.")
+        print("porta de acesso: 8585")
+        
     def instala_pritunel(self,):
         # Projeto: https://github.com/jippi/docker-pritunl
         caminho_pritunl = f'{self.install_principal}/pritunl'
