@@ -1449,6 +1449,8 @@ class Sistema(Docker, Executa_comados):
 
         # Nome do arquivo de configuração do Netplan
         config_file = "/etc/netplan/00-installer-config.yaml"
+        if not os.path.exists(config_file):
+            config_file = "/etc/netplan/50-cloud-init.yaml"
 
         # Fazendo backup do arquivo de configuração existente
         print("Criando backup do arquivo de configuração existente...")
