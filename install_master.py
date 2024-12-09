@@ -19,7 +19,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.138
+Versão 1.139
 ===========================================================================
 ===========================================================================
 """)
@@ -771,7 +771,7 @@ listener Default {{
             f"""docker run -d \
                     --name nextcloud \
                     --restart=always \
-                    -p 8585:80
+                    -p 8585:80 \
                     -v {caminho_nextcloud}/apps:/var/www/html/custom_apps \
                     -v {caminho_nextcloud}/config:/var/www/html/config \
                     -v {local}:/var/www/html/data \
