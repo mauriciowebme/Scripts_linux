@@ -1034,12 +1034,12 @@ app.listen(PORT, () => {{
     def instala_webserver_ssh(self,):
         self.remove_container('webssh')
         print('Porta interna para uso: 8080')
+        # -e HOST=0.0.0.0 \
         container = f"""docker run -d \
                         --name webssh \
                         --restart=always \
                         -p 8081:8080 \
-                        --mount source=shellngn-data,target=/home/node/server/data \
-                        -e HOST=0.0.0.0 \
+                        -v {self.install_principal}/webssh:/home/node/server/data \
                         shellngn/pro:latest
                     """
                     
