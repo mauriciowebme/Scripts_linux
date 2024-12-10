@@ -789,6 +789,7 @@ listener Default {{
         self.remove_container('nextcloud')
         resultados = self.executar_comandos(comandos)
         time.sleep(10)
+        self.cria_rede_docker(associar_container_nome=f'nextcloud', numero_rede=1)
         print("Instalação concluída. Nextcloud está pronto para uso.")
         print('\nIPs possíveis para acesso:')
         comandos = [
