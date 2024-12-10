@@ -164,7 +164,7 @@ class Docker(Executa_comados):
             ]
         resultados = self.executar_comandos(comandos)
     
-    def gerenciar_permissoes(self, pasta:str=None, permissao:str=None):
+    def gerenciar_permissoes_pasta(self, pasta:str=None, permissao:str=None):
         """
         Altera as permissões de uma pasta e de suas subpastas/arquivos recursivamente.
         Solicita informações ao usuário interativamente.
@@ -1035,7 +1035,7 @@ app.listen(PORT, () => {{
         
     def instala_webserver_ssh(self,):
         caminho_webssh = f"{self.install_principal}/webssh"
-        self.gerenciar_permissoes(caminho_webssh, '777')
+        self.gerenciar_permissoes_pasta(caminho_webssh, '777')
         print('Porta interna para uso: 8080')
         # -e HOST=0.0.0.0 \
         container = f"""docker run -d \
@@ -1586,6 +1586,28 @@ class Sistema(Docker, Executa_comados):
         if adicionar_fstab.lower() == "s":
             self.adicionar_ao_fstab(f"/dev/{disco}1", ponto_montagem)
         
+    def monta_particao(self,):
+        self.listar_particoes()
+        particao = input('\nDigite a partição que deseja monta (sda1): ')
+        print('\nO ponto de montagem sera criado com 777 caso não exista!')
+        ponto_montagem = input('Digite o ponto de montagem (/mnt/dados): ')
+        self.gerenciar_permissoes_pasta(ponto_montagem, '777')
+        comandos = [
+            f"sudo mount /dev/{particao} {ponto_montagem}",
+        ]
+        resultado = self.executar_comandos(comandos)
+        self.listar_particoes()
+        
+    def menu_particoes(self):
+        print("\nMenu de partições.\n")
+        """Menu de opções"""
+        opcoes_menu = [
+            ("cria_particao", self.cria_particao),
+            ("listar_particoes", self.listar_particoes),
+            ("monta_particao", self.monta_particao),
+        ]
+        self.mostrar_menu(opcoes_menu)
+    
     def ver_uso_espaco_pasta(self):
         pasta = input('Digite o caminho absoluto da pasta que deseja ver o tamanho: ')
         # Garantir que o caminho seja absoluto
@@ -1669,8 +1691,7 @@ class Sistema(Docker, Executa_comados):
         print("\nMenu de sistema.\n")
         """Menu de opções"""
         opcoes_menu = [
-            ("cria_particao", self.cria_particao),
-            ("listar_particoes", self.listar_particoes),
+            ("Menu partições", self.menu_particoes),
             ("Menu swap", self.menu_swap),
             ("instalar deb", self.instalar_deb),
             ("fecha_tela_noot", self.fecha_tela_noot),
@@ -1680,7 +1701,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala gerenciador de WIFI nmtui", self.setup_wifi),
             ("Configura ip fixo", self.configura_ip_fixo),
             ("Ver uso do espaço em pasta", self.ver_uso_espaco_pasta),
-            ("Gerenciar permissoes de pasta", self.gerenciar_permissoes),
+            ("Gerenciar permissoes de pasta", self.gerenciar_permissoes_pasta),
             ("Verificar temperatura", self.verifica_temperatura),
             ("Verificar velocidade da internet", self.verifica_velocidade),
         ]
