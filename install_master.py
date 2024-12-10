@@ -1251,6 +1251,8 @@ CMD ["sh", "-c", "\
         container = f"""docker run -d \
                             --name rsync-inotify \
                             --restart=always \
+                            --memory=256m \
+                            --cpus=0.2 \
                             -v {source_path}:/data/source \
                             -v {target_path}:/data/target \
                             -v /logs:/log \
