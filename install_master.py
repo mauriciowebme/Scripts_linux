@@ -769,8 +769,8 @@ listener Default {{
                     --name nextcloud \
                     --restart=always \
                     -p 8585:80 \
-                    --memory=5g \
-                    --cpus=2 \
+                    --memory=1g \
+                    --cpus=1 \
                     -v {local}:/var/www/html \
                     nextcloud
                 """,
