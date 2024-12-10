@@ -1602,9 +1602,9 @@ class Sistema(Docker, Executa_comados):
         print("\nMenu de partições.\n")
         """Menu de opções"""
         opcoes_menu = [
-            ("cria_particao", self.cria_particao),
             ("listar_particoes", self.listar_particoes),
             ("monta_particao", self.monta_particao),
+            ("cria_particao", self.cria_particao),
         ]
         self.mostrar_menu(opcoes_menu)
     
