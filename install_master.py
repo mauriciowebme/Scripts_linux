@@ -1032,17 +1032,17 @@ app.listen(PORT, () => {{
         pass
         
     def instala_webserver_ssh(self,):
-        self.remove_container('webssh')
+        caminho_webssh = f"{self.install_principal}/webssh"
+        self.gerenciar_permissoes(caminho_webssh, '777')
         print('Porta interna para uso: 8080')
         # -e HOST=0.0.0.0 \
         container = f"""docker run -d \
                         --name webssh \
                         --restart=always \
                         -p 8081:8080 \
-                        -v {self.install_principal}/webssh:/home/node/server/data \
+                        -v {caminho_webssh}:/home/node/server/data \
                         shellngn/pro:latest
                     """
-                    
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
         # if resposta.lower() == 's':
         #     container = self.adiciona_redirecionamento_traefik(container)
@@ -1050,6 +1050,7 @@ app.listen(PORT, () => {{
         comandos = [
             container,
             ]
+        self.remove_container('webssh')
         resultados = self.executar_comandos(comandos)
         if resposta.lower() == 's':
             self.adiciona_roteador_servico_traefik(endereco='webssh', porta='8080')
