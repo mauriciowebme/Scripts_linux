@@ -1362,7 +1362,7 @@ class Sistema(Docker, Executa_comados):
             comandos += [f"sudo mkswap /swap.img"]
             comandos += [f"sudo swapon /swap.img"]
         
-        self.executar_comandos(comandos, comando_direto=True)
+        self.executar_comandos(comandos, comando_direto=True, exibir_executando=False)
             
         try:
             # Definir o swappiness temporariamente
