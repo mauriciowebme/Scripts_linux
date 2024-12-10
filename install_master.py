@@ -1456,22 +1456,55 @@ class Sistema(Docker, Executa_comados):
         print("Configurando Wi-Fi com NetworkManager...")
         self.executar_comandos(comandos, comando_direto=True)
     
-    def adicionar_ao_fstab(self, dispositivo, ponto_montagem):
+    def gerenciar_fstab(self, ponto_montagem, acao='adicionar', dispositivo=None):
         try:
-            # Verifica se o dispositivo ou ponto de montagem já está no /etc/fstab
+            # Lê o conteúdo atual do /etc/fstab
             with open("/etc/fstab", "r") as fstab:
-                conteudo_fstab = fstab.read()
-                if dispositivo in conteudo_fstab or ponto_montagem in conteudo_fstab:
-                    print(f"A partição {dispositivo} já está presente no /etc/fstab.")
-                    return
+                linhas = fstab.readlines()
             
-            # Se não estiver, adiciona ao /etc/fstab
-            linha_fstab = f"{dispositivo} {ponto_montagem} ext4 defaults 0 0\n"
-            with open("/etc/fstab", "a") as fstab:
-                fstab.write(linha_fstab)
-            print(f"Partição {dispositivo} adicionada ao /etc/fstab para montagem automática em {ponto_montagem}.")
+            # Identifica a linha correspondente ao ponto de montagem
+            linha_existente = None
+
+            for linha in linhas:
+                if ponto_montagem in linha and 'ext4' in linha:
+                    linha_existente = linha
+                    break
+
+            if acao == 'adicionar':
+                if not dispositivo:
+                    print("Erro: Para adicionar, você deve fornecer o dispositivo.")
+                    return
+
+                if linha_existente:
+                    print(f"O ponto de montagem {ponto_montagem} já está presente no /etc/fstab.")
+                    return
+                
+                # Adiciona a nova linha ao /etc/fstab
+                linha_fstab = f"{dispositivo} {ponto_montagem} ext4 defaults 0 0\n"
+                with open("/etc/fstab", "a") as fstab:
+                    fstab.write(linha_fstab)
+                print(f"Partição {dispositivo} adicionada ao /etc/fstab para montagem automática em {ponto_montagem}.")
+
+            elif acao == 'desmontar':
+                if linha_existente:
+                    # Comenta a linha existente
+                    novas_linhas = []
+                    for x in linhas:
+                        if ponto_montagem in x and 'ext4' in x:
+                            novas_linhas.append(f"#{x}")
+                        else:
+                            novas_linhas.append(x)
+
+                    with open("/etc/fstab", "w") as fstab:
+                        fstab.writelines(novas_linhas)
+                    print(f"Ponto de montagem {ponto_montagem} comentado no /etc/fstab para evitar montagem automática.")
+                else:
+                    print(f"O ponto de montagem {ponto_montagem} não está presente no /etc/fstab.")
+
         except PermissionError:
             print("Erro: Permissões insuficientes para modificar /etc/fstab. Execute o script com sudo.")
+        except Exception as e:
+            print(f"Erro: {e}")
     
     def listar_particoes(self,):
         print("Listando discos disponiveis:")
@@ -1584,7 +1617,7 @@ class Sistema(Docker, Executa_comados):
         # Opcional: Adicionar ao /etc/fstab para montagem automática
         adicionar_fstab = input("Deseja adicionar essa partição ao /etc/fstab para montagem automática? (s/n): ")
         if adicionar_fstab.lower() == "s":
-            self.adicionar_ao_fstab(f"/dev/{disco}1", ponto_montagem)
+            self.gerenciar_fstab(dispositivo=f"/dev/{disco}1", ponto_montagem=ponto_montagem)
         
     def monta_particao(self,):
         self.listar_particoes()
@@ -1599,14 +1632,26 @@ class Sistema(Docker, Executa_comados):
         self.listar_particoes()
         adicionar_fstab = input("\nDeseja adicionar essa partição ao /etc/fstab para montagem automática? (s/n): ")
         if adicionar_fstab.lower() == "s":
-            self.adicionar_ao_fstab(f"/dev/{particao}", ponto_montagem)
+            self.gerenciar_fstab(dispositivo=f"/dev/{particao}", ponto_montagem=ponto_montagem)
+    
+    def desmontar_particao(self,):
+        self.listar_particoes()
+        ponto_montagem = input('Digite o ponto de montagem para desmontar (/mnt/dados): ')
+        comandos = [
+            f"sudo umount /mnt/sdc1",
+        ]
+        resultado = self.executar_comandos(comandos)
+        self.listar_particoes()
         
+        self.gerenciar_fstab(ponto_montagem=ponto_montagem, acao='desmontar')
+    
     def menu_particoes(self):
         print("\nMenu de partições.\n")
         """Menu de opções"""
         opcoes_menu = [
             ("listar_particoes", self.listar_particoes),
             ("monta_particao", self.monta_particao),
+            ("desmontar_particao", self.desmontar_particao),
             ("cria_particao", self.cria_particao),
         ]
         self.mostrar_menu(opcoes_menu)
