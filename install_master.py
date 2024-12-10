@@ -19,7 +19,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.142
+Versão 1.143
 ===========================================================================
 ===========================================================================
 """)
@@ -1367,7 +1367,8 @@ class Sistema(Docker, Executa_comados):
         try:
             # Definir o swappiness temporariamente
             value = '20'
-            subprocess.run(['sudo', 'sysctl', f'vm.swappiness={value}'], check=True)
+            self.executar_comandos([f'sudo sysctl vm.swappiness={value}'], comando_direto=False, exibir_resultados=False)
+            # subprocess.run(['sudo', 'sysctl', f'vm.swappiness={value}'], check=True)
             
             # Verificar se a configuração já existe em /etc/sysctl.conf
             with open('/etc/sysctl.conf', 'r') as f:
@@ -1391,7 +1392,8 @@ class Sistema(Docker, Executa_comados):
                 f.writelines(lines)
             
             # Aplicar a configuração permanente
-            subprocess.run(['sudo', 'sysctl', '-p'], check=True)
+            self.executar_comandos([f'sudo sysctl -p'], comando_direto=False, exibir_resultados=False)
+            # subprocess.run(['sudo', 'sysctl', '-p'], check=True)
             
             # print(f"vm.swappiness definido para {value} com sucesso.")
         except subprocess.CalledProcessError as e:
