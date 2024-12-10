@@ -1586,9 +1586,10 @@ class Sistema(Docker, Executa_comados):
         except subprocess.CalledProcessError as e:
             print(f"Erro ao aplicar as configurações: {e}")
         
-    def cria_particao(self,):
+    def formata_cria_particao(self,):
         self.listar_particoes()
         # Solicita o nome do disco ao usuário
+        print("O disco sera formatado e montado.")
         disco = input("Digite o nome do disco (ex: sdb) onde deseja criar a partição: ")
         ponto_montagem = input("Digite o local onde deseja montar a partição (ex: /mnt/dados): ")
         
@@ -1652,7 +1653,7 @@ class Sistema(Docker, Executa_comados):
             ("listar_particoes", self.listar_particoes),
             ("monta_particao", self.monta_particao),
             ("desmontar_particao", self.desmontar_particao),
-            ("cria_particao", self.cria_particao),
+            ("Formata o disco, cria partição e monta", self.formata_cria_particao),
         ]
         self.mostrar_menu(opcoes_menu)
     
