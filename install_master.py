@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#pip install PyYAML requests
+# pip install PyYAML requests
 
-#Execute com:
-#wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
+# Execute com:
+# wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
 import os
 import os.path
