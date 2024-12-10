@@ -1511,6 +1511,8 @@ class Sistema(Docker, Executa_comados):
         config_file = "/etc/netplan/00-installer-config.yaml"
         if not os.path.exists(config_file):
             config_file = "/etc/netplan/50-cloud-init.yaml"
+            with open("/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg", "w") as file:
+                file.write("network: {config: disabled}")
 
         # Fazendo backup do arquivo de configuração existente
         print("Criando backup do arquivo de configuração existente...")
