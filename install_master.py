@@ -764,6 +764,13 @@ listener Default {{
     def instala_nextcloud(self,):
         print('Instalando nextcloud...')
         local = input('Digite o local para armazenamento dos dados: ')
+        
+        self.verifica_container_existe('mysql_5_7', self.instala_mysql_5_7)
+        
+        comando1 = f"docker exec -i mysql_5_7 mysql -uroot -prootpassword -e \"CREATE USER IF NOT EXISTS 'nextcloud'@'%' IDENTIFIED BY 'nextcloud';\""
+        comando2 = f"docker exec -i mysql_5_7 mysql -uroot -prootpassword -e \"CREATE DATABASE IF NOT EXISTS nextcloud_db; GRANT ALL PRIVILEGES ON nextcloud_db.* TO 'nextcloud'@'%'; FLUSH PRIVILEGES;\""
+        self.executar_comandos([comando1, comando2])
+        
         comandos = [
             f"""docker run -d \
                     --name nextcloud \
@@ -771,6 +778,10 @@ listener Default {{
                     -p 8585:80 \
                     --memory=1g \
                     --cpus=1 \
+                    -e MYSQL_DATABASE=nextcloud_db \
+                    -e MYSQL_PASSWORD=nextcloud \
+                    -e MYSQL_USER=nextcloud \
+                    -e MYSQL_HOST=mysql_5_7:3306 \
                     -v {local}:/var/www/html \
                     nextcloud
                 """,
