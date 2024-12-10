@@ -19,7 +19,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.139
+Versão 1.140
 ===========================================================================
 ===========================================================================
 """)
@@ -1664,7 +1664,7 @@ class Sistema(Docker, Executa_comados):
         opcoes_menu = [
             ("cria_particao", self.cria_particao),
             ("listar_particoes", self.listar_particoes),
-            ("Menu swap", self.instalar_deb),
+            ("Menu swap", self.menu_swap),
             ("instalar deb", self.instalar_deb),
             ("fecha_tela_noot", self.fecha_tela_noot),
             ("Instala interface xfce", self.instalar_interface_xfce),
