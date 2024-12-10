@@ -1345,6 +1345,60 @@ class Sistema(Docker, Executa_comados):
         self.atualizar_sistema_completa()
         self.executar_comandos(["sudo apt install ubuntu-gnome-desktop -y"], comando_direto=True)
         
+    def menu_swap(self,):
+        menu = input('Digite: \n1 para ver a memoria \n2 para configurar')
+        comandos = []
+        if menu == '1':
+            print("Verificando o arquivo de swap existente...")
+            comandos =+ ["sudo swapon --show"]
+            comandos =+ ["free -h"]
+        elif menu == '2':
+            novo_tamanho = input('Digite o novo tamanho da swap: ')
+            print("Realizando configuração...")
+            comandos =+ ["sudo swapoff /swap.img"]
+            comandos =+ ["sudo rm /swap.img"]
+            comandos =+ [f"sudo fallocate -l {novo_tamanho} /swap.img"]
+            comandos =+ [f"sudo chmod 600 /swap.img"]
+            comandos =+ [f"sudo mkswap /swap.img"]
+            comandos =+ [f"sudo swapon /swap.img"]
+        
+        self.executar_comandos(comandos, comando_direto=True)
+            
+        try:
+            # Definir o swappiness temporariamente
+            value = '20'
+            subprocess.run(['sudo', 'sysctl', f'vm.swappiness={value}'], check=True)
+            
+            # Verificar se a configuração já existe em /etc/sysctl.conf
+            with open('/etc/sysctl.conf', 'r') as f:
+                lines = f.readlines()
+            
+            # Se a configuração já existe, atualizar o valor; caso contrário, adicionar a linha
+            swappiness_line = f'vm.swappiness={value}\n'
+            found = False
+            
+            for i, line in enumerate(lines):
+                if line.startswith('vm.swappiness='):
+                    lines[i] = swappiness_line
+                    found = True
+                    break
+            
+            if not found:
+                lines.append(swappiness_line)
+            
+            # Escrever as alterações de volta ao arquivo
+            with open('/etc/sysctl.conf', 'w') as f:
+                f.writelines(lines)
+            
+            # Aplicar a configuração permanente
+            subprocess.run(['sudo', 'sysctl', '-p'], check=True)
+            
+            # print(f"vm.swappiness definido para {value} com sucesso.")
+        except subprocess.CalledProcessError as e:
+            print(f"Erro ao definir vm.swappiness: {e}")
+        except PermissionError:
+            print("Erro: Permissão negada. Execute o script com permissões de superusuário (sudo).")
+        
     def instalar_deb(self,):
         caminho = input('Insira o caminho absoluto do .deb para instalar: ')
         self.atualizar_sistema_completa()
@@ -1610,6 +1664,7 @@ class Sistema(Docker, Executa_comados):
         opcoes_menu = [
             ("cria_particao", self.cria_particao),
             ("listar_particoes", self.listar_particoes),
+            ("Menu swap", self.instalar_deb),
             ("instalar deb", self.instalar_deb),
             ("fecha_tela_noot", self.fecha_tela_noot),
             ("Instala interface xfce", self.instalar_interface_xfce),
