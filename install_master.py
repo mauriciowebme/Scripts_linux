@@ -1222,6 +1222,8 @@ app.listen(PORT, () => {{
 
     def start_sync_pastas(self):
         # Solicita ao usuário os caminhos da pasta de origem e destino
+        nome = input("Digite um nome para o sincronizador: ")
+        print("O sincronizador vai copiar o conteudo da pasta de origem para dentro da pasta de destino.")
         source_path = input("Digite o caminho da pasta de origem: ")
         target_path = input("Digite o caminho da pasta de destino: ")
 
@@ -1249,10 +1251,10 @@ CMD ["sh", "-c", "\
 """)
         # Comando para executar o container
         container = f"""docker run -d \
-                            --name rsync-inotify \
+                            --name rsync-inotify-{nome} \
                             --restart=always \
-                            --memory=256m \
-                            --cpus=0.2 \
+                            --memory=100m \
+                            --cpus=0.1 \
                             -v {source_path}:/data/source \
                             -v {target_path}:/data/target \
                             -v /logs:/log \
@@ -1264,11 +1266,11 @@ CMD ["sh", "-c", "\
         ]
         resultados = self.executar_comandos(comandos, ignorar_erros=True)
         comandos = [
-            f"docker build -t rsync-inotify -f {temp_dockerfile} .",
+            f"docker build -t rsync-inotify-{nome} -f {temp_dockerfile} .",
             f"rm {temp_dockerfile}",
             container,
         ]
-        self.remove_container(f'rsync-inotify')
+        self.remove_container(f'rsync-inotify-{nome}')
         resultados = self.executar_comandos(comandos)
  
 class Sistema(Docker, Executa_comados):
