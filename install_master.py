@@ -1597,6 +1597,9 @@ class Sistema(Docker, Executa_comados):
         ]
         resultado = self.executar_comandos(comandos)
         self.listar_particoes()
+        adicionar_fstab = input("\nDeseja adicionar essa partição ao /etc/fstab para montagem automática? (s/n): ")
+        if adicionar_fstab.lower() == "s":
+            self.adicionar_ao_fstab(f"/dev/{particao}", ponto_montagem)
         
     def menu_particoes(self):
         print("\nMenu de partições.\n")
