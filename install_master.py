@@ -19,7 +19,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.141
+Versão 1.142
 ===========================================================================
 ===========================================================================
 """)
@@ -1353,11 +1353,11 @@ class Sistema(Docker, Executa_comados):
             comandos += ["sudo swapon --show"]
             comandos += ["free -h"]
         elif menu == '2':
-            novo_tamanho = input('Digite o novo tamanho da swap: ')
+            novo_tamanho = input('Digite o novo tamanho em GB da swap (apenas numeros): ')
             print("Realizando configuração...")
             comandos += ["sudo swapoff /swap.img"]
             comandos += ["sudo rm /swap.img"]
-            comandos += [f"sudo fallocate -l {novo_tamanho} /swap.img"]
+            comandos += [f"sudo fallocate -l {novo_tamanho}G /swap.img"]
             comandos += [f"sudo chmod 600 /swap.img"]
             comandos += [f"sudo mkswap /swap.img"]
             comandos += [f"sudo swapon /swap.img"]
