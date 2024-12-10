@@ -1258,7 +1258,7 @@ CMD ["sh", "-c", "\
                             -v {source_path}:/data/source \
                             -v {target_path}:/data/target \
                             -v /logs:/log \
-                            rsync-inotify
+                            rsync-inotify-{nome}
                     """
         comandos = [
             f"mkdir -p {source_path}",
