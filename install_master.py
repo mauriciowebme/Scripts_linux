@@ -19,7 +19,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.140
+Versão 1.141
 ===========================================================================
 ===========================================================================
 """)
@@ -1346,21 +1346,21 @@ class Sistema(Docker, Executa_comados):
         self.executar_comandos(["sudo apt install ubuntu-gnome-desktop -y"], comando_direto=True)
         
     def menu_swap(self,):
-        menu = input('Digite: \n1 para ver a memoria \n2 para configurar')
+        menu = input('Digite: \n1 para ver a memoria \n2 para configurar \n')
         comandos = []
         if menu == '1':
             print("Verificando o arquivo de swap existente...")
-            comandos =+ ["sudo swapon --show"]
-            comandos =+ ["free -h"]
+            comandos += ["sudo swapon --show"]
+            comandos += ["free -h"]
         elif menu == '2':
             novo_tamanho = input('Digite o novo tamanho da swap: ')
             print("Realizando configuração...")
-            comandos =+ ["sudo swapoff /swap.img"]
-            comandos =+ ["sudo rm /swap.img"]
-            comandos =+ [f"sudo fallocate -l {novo_tamanho} /swap.img"]
-            comandos =+ [f"sudo chmod 600 /swap.img"]
-            comandos =+ [f"sudo mkswap /swap.img"]
-            comandos =+ [f"sudo swapon /swap.img"]
+            comandos += ["sudo swapoff /swap.img"]
+            comandos += ["sudo rm /swap.img"]
+            comandos += [f"sudo fallocate -l {novo_tamanho} /swap.img"]
+            comandos += [f"sudo chmod 600 /swap.img"]
+            comandos += [f"sudo mkswap /swap.img"]
+            comandos += [f"sudo swapon /swap.img"]
         
         self.executar_comandos(comandos, comando_direto=True)
             
