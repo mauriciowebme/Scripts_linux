@@ -1192,7 +1192,7 @@ app.listen(PORT, () => {{
             replication_password = 'replication_password'
             
             time.sleep(30)
-            self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta, slave_container, slave_host, slave_user, slave_password, slave_porta, replication_user, replication_password)
+            self.configure_mysql_replication(master_host, master_user, master_password, master_porta, slave_host, slave_user, slave_password, slave_porta, replication_user, replication_password)
         
         self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
         if replicacao == '1':
@@ -1206,7 +1206,7 @@ app.listen(PORT, () => {{
         print(f' - Porta interna: 3306')
         print(f' - Porta externa: {porta}')
         
-    def configure_mysql_replication(master_host, master_user, master_password, master_porta,
+    def configure_mysql_replication(self, master_host, master_user, master_password, master_porta,
                                 slave_host, slave_user, slave_password, slave_porta,
                                 replication_user, replication_password):
         try:
