@@ -10,6 +10,7 @@ import os.path
 import socket
 import subprocess
 import time
+from traceback import print_exc
 import yaml
 import json
 import requests
@@ -1188,68 +1189,63 @@ app.listen(PORT, () => {{
         print(f' - Porta externa: {porta}')
         
     def configure_mysql_replication(self, master_host, master_user, master_password, master_porta, slave_host, slave_user, slave_password, slave_porta, replication_user, replication_password):
-        try:
-            # Conectar ao Master
-            master_conn = mysql.connector.connect(
-                host=master_host,
-                user=master_user,
-                password=master_password,
-                port=master_porta
-            )
-            master_cursor = master_conn.cursor()
-            
-            # Criar usuário de replicação no Master
-            master_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';")
-            master_cursor.execute(f"GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'%';")
-            master_cursor.execute("FLUSH PRIVILEGES;")
-            
-            print("Usuário de replicação criado com sucesso no Master.")
+        # Conectar ao Master
+        master_conn = mysql.connector.connect(
+            host=master_host,
+            user=master_user,
+            password=master_password,
+            port=master_porta
+        )
+        master_cursor = master_conn.cursor()
+        
+        # Criar usuário de replicação no Master
+        master_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';")
+        master_cursor.execute(f"GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'%';")
+        master_cursor.execute("FLUSH PRIVILEGES;")
+        
+        print("Usuário de replicação criado com sucesso no Master.")
 
-            # Obter informações do log binário do Master
-            master_cursor.execute("SHOW MASTER STATUS;")
-            result = master_cursor.fetchone()
-            master_log_file = result[0]
-            master_log_pos = result[1]
-            
-            print(f"Master Log File: {master_log_file}, Position: {master_log_pos}")
+        # Obter informações do log binário do Master
+        master_cursor.execute("SHOW MASTER STATUS;")
+        result = master_cursor.fetchone()
+        master_log_file = result[0]
+        master_log_pos = result[1]
+        
+        print(f"Master Log File: {master_log_file}, Position: {master_log_pos}")
 
-            # Conectar ao Slave
-            slave_conn = mysql.connector.connect(
-                host=slave_host,
-                user=slave_user,
-                password=slave_password,
-                port=slave_porta
-            )
-            slave_cursor = slave_conn.cursor()
+        # Conectar ao Slave
+        slave_conn = mysql.connector.connect(
+            host=slave_host,
+            user=slave_user,
+            password=slave_password,
+            port=slave_porta
+        )
+        slave_cursor = slave_conn.cursor()
 
-            # Configurar o Slave com informações do Master
-            slave_cursor.execute("STOP SLAVE;")
-            slave_cursor.execute(f"""
-                CHANGE MASTER TO
-                MASTER_HOST='{master_host}',
-                MASTER_USER='{replication_user}',
-                MASTER_PASSWORD='{replication_password}',
-                MASTER_LOG_FILE='{master_log_file}',
-                MASTER_LOG_POS={master_log_pos};
-            """)
-            slave_cursor.execute("START SLAVE;")
-            slave_cursor.execute("SHOW SLAVE STATUS;")
-            
-            print("Replicação configurada com sucesso no Slave.")
-            
-            for row in slave_cursor:
-                print(row)
+        # Configurar o Slave com informações do Master
+        slave_cursor.execute("STOP SLAVE;")
+        slave_cursor.execute(f"""
+            CHANGE MASTER TO
+            MASTER_HOST='{master_host}',
+            MASTER_USER='{replication_user}',
+            MASTER_PASSWORD='{replication_password}',
+            MASTER_LOG_FILE='{master_log_file}',
+            MASTER_LOG_POS={master_log_pos};
+        """)
+        slave_cursor.execute("START SLAVE;")
+        slave_cursor.execute("SHOW SLAVE STATUS;")
+        
+        print("Replicação configurada com sucesso no Slave.")
+        
+        for row in slave_cursor:
+            print(row)
 
-        except mysql.connector.Error as err:
-            print(f"Erro: {err}")
-
-        finally:
-            if 'master_conn' in locals() and master_conn.is_connected():
-                master_cursor.close()
-                master_conn.close()
-            if 'slave_conn' in locals() and slave_conn.is_connected():
-                slave_cursor.close()
-                slave_conn.close()
+        if 'master_conn' in locals() and master_conn.is_connected():
+            master_cursor.close()
+            master_conn.close()
+        if 'slave_conn' in locals() and slave_conn.is_connected():
+            slave_cursor.close()
+            slave_conn.close()
 
         
     def instala_wordpress_puro(self,):
