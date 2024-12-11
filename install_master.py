@@ -21,7 +21,7 @@ def ensure_library_installed(library_name):
         __import__(library_name)
     except ImportError:
         print(f"Biblioteca '{library_name}' não encontrada. Instalando...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", library_name])
+        subprocess.check_call([sys.executable, "pip", "install", library_name])
         print(f"Biblioteca '{library_name}' instalada com sucesso.")
 
 # Verificar e instalar 'mysql-connector-python' se necessário
