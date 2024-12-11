@@ -1140,7 +1140,10 @@ app.listen(PORT, () => {{
                         -e MYSQL_PASSWORD=mysql \
                         -e MYSQL_ROOT_PASSWORD=rootpassword \
                         -v {self.install_principal}/mysql/{versao_}:/var/lib/mysql \
-                        mysql:{versao}
+                        mysql:{versao} \
+                        --server-id=1 \
+                        --log-bin=mysql-bin \
+                        --binlog-format=row
                     """
         comandos = [
             container_db,
@@ -1149,7 +1152,7 @@ app.listen(PORT, () => {{
         resultados = self.executar_comandos(comandos)
         
         if replicacao == '1':
-            time.sleep(15)
+            time.sleep(10)
             # self.gerenciar_permissoes_pasta(f"{local_slave}/mysql/{versao_}_slave", permissao="777")
             container_db = f"""docker run -d \
                             --name mysql_{versao_}_slave \
@@ -1160,7 +1163,10 @@ app.listen(PORT, () => {{
                             -e MYSQL_PASSWORD=mysql \
                             -e MYSQL_ROOT_PASSWORD=rootpassword \
                             -v {local_slave}/mysql/{versao_}_slave:/var/lib/mysql \
-                            mysql:{versao}
+                            mysql:{versao} \
+                            --server-id=2 \
+                            --log-bin=mysql-bin \
+                            --binlog-format=row
                         """
             comandos = [
                 container_db,
@@ -1183,17 +1189,14 @@ app.listen(PORT, () => {{
             replication_user = 'replication_user'
             replication_password = 'replication_password'
             
-            time.sleep(30)
-            # comando1 = f"docker exec -i mysql_{versao_} mysql -uroot -prootpassword -e \"ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'rootpassword'; FLUSH PRIVILEGES;\""
-            # comando2 = f"docker exec -i mysql_{versao_}_slave mysql -uroot -prootpassword -e \"ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'rootpassword'; FLUSH PRIVILEGES;\""
-            # self.executar_comandos([comando1, comando2])
+            time.sleep(15)
             self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta, slave_container, slave_host, slave_user, slave_password, slave_porta, replication_user, replication_password)
         
         self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
         if replicacao == '1':
             self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}_slave', numero_rede=1)
         
-        time.sleep(30)
+        time.sleep(10)
         print(f'Instalação do Mysql completa.')
         print(f'Acesso:')
         print(f' - Usuario: root')
