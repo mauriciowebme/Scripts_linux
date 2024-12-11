@@ -1177,13 +1177,13 @@ app.listen(PORT, () => {{
             resultados = self.executar_comandos(comandos)
             
             master_container = f"mysql_{versao_}"
-            master_host = f'localhost'
+            master_host = f'mysql_{versao_}'
             master_user = 'root'
             master_password = 'rootpassword'
             master_porta = f'{porta}'
             
             slave_container = f"mysql_{versao_}_slave"
-            slave_host = f'localhost'
+            slave_host = f'mysql_{versao_}_slave'
             slave_user = 'root'
             slave_password = 'rootpassword'
             slave_porta = f'{porta_slave}'
