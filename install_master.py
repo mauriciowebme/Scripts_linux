@@ -1108,7 +1108,7 @@ app.listen(PORT, () => {{
         self.instala_mysql('8.0')
     
     def instala_mysql(self, selecao=None):
-        # self.gerenciar_permissoes(f"{self.install_principal}/mysql_bd", permissao="777")
+        # self.gerenciar_permissoes_pasta(f"{self.install_principal}/mysql_bd", permissao="777")
         if not selecao:
             selecao = input('Selecione a versão: \n1 - 5.7 \n2 - 8.0\n')
         if selecao == "1" or selecao == "5.7":
@@ -1149,6 +1149,7 @@ app.listen(PORT, () => {{
         
         if replicacao == '1':
             time.sleep(15)
+            self.gerenciar_permissoes_pasta(f"{local_slave}/mysql/{versao_}_slave", permissao="777")
             container_db = f"""docker run -d \
                             --name mysql_{versao_}_slave \
                             --restart=always \
