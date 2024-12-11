@@ -1121,11 +1121,11 @@ app.listen(PORT, () => {{
         else:
             print("Seleção incorreta.")
             return
+        versao_ = versao.replace('.', '_')
         
         replicacao = input('Habilitar a replicação de dados? \n1 - Sim \n2 - Não \n')
         if replicacao == '1':
-            local_slave = input('Informe o local para armazenzar o Mysql SLAVE: ')
-        versao_ = versao.replace('.', '_')
+            local_slave = input(f'Informe o local para armazenzar o Mysql SLAVE (/mnt/dados resultado: /mnt/dados/mysql/{versao_}_slave): ')
         
         print('Instalando o mysql.\n')
         
@@ -1153,7 +1153,7 @@ app.listen(PORT, () => {{
                             --restart=always \
                             -p {porta_slave}:3306 \
                             -e MYSQL_ROOT_PASSWORD=rootpassword \
-                            -v {local_slave}:/var/lib/mysql \
+                            -v {local_slave}/mysql/{versao_}_slave:/var/lib/mysql \
                             mysql:{versao}
                         """
             comandos = [
