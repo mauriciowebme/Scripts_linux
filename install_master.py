@@ -1269,8 +1269,8 @@ app.listen(PORT, () => {{
             for row in slave_cursor:
                 print(row)
 
-        except Exception as e:
-            print(f"Erro: {e}")
+        except Exception as ex:
+            print(f"Erro: {ex}")
 
         finally:
             # Fechar conexões
