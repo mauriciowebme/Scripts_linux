@@ -1073,31 +1073,42 @@ app.listen(PORT, () => {{
         
     def instala_mysql_5_7(self,):
         # self.gerenciar_permissoes(f"{self.install_principal}/mysql_bd", permissao="777")
+        selecao = input('Selecione a versão: \n1 - 5.7 \n2 - 8.0\n')
+        if selecao == "1":
+            versao = '5.7'
+            porta = '3306'
+        elif selecao == "2":
+            versao = '8.0'
+            porta = '3307'
+        else:
+            print("Seleção incorreta.")
+            return
+        versao_ = versao.replace('.', '_')
         print('Instalando o mysql.\n')
         # -e MYSQL_RANDOM_ROOT_PASSWORD=wordpress \
         container_db = f"""docker run -d \
-                        --name mysql_5_7 \
+                        --name mysql_{versao_} \
                         --restart=always \
-                        -p 3306:3306 \
+                        -p {porta}:3306 \
                         -e MYSQL_DATABASE=db_testes \
                         -e MYSQL_USER=mysql \
                         -e MYSQL_PASSWORD=mysql \
                         -e MYSQL_ROOT_PASSWORD=rootpassword \
-                        -v {self.install_principal}/mysql_bd:/var/lib/mysql \
-                        mysql:5.7
+                        -v {self.install_principal}/mysql/{versao_}:/var/lib/mysql \
+                        mysql:{versao}
                     """
         comandos = [
             container_db,
             ]
-        self.remove_container(f'mysql_5_7')
+        self.remove_container(f'mysql_{versao_}')
         resultados = self.executar_comandos(comandos)
-        self.cria_rede_docker(associar_container_nome=f'mysql_5_7', numero_rede=1)
+        self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
         time.sleep(30)
         print('Instalação do Mysql completa.')
         print('Acesso:')
         print(' - Usuario: root')
         print(' - Senha: rootpassword')
-        print(' - Porta: 3306')
+        print(f' - Porta: {porta}')
         
     def instala_wordpress_puro(self,):
         print('Instalando o wordpress.\n')
