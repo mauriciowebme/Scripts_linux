@@ -49,7 +49,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.146
+Versão 1.147
 ===========================================================================
 ===========================================================================
 """)
@@ -1219,7 +1219,8 @@ app.listen(PORT, () => {{
             # Executar os comandos no Master
             print("Configurando o Master...")
             result = subprocess.run(
-                ["docker", "exec", "-i", f"{master_container}", "mysql", f"-h{master_host}", f"-P{master_port}", f"-u{master_user}", f"-p{master_password}", "-e", master_commands],
+                # , f"-h{master_host}", f"-P{master_port}"
+                ["docker", "exec", "-i", f"{master_container}", "mysql", f"-u{master_user}", f"-p{master_password}", "-e", master_commands],
                 capture_output=True,
                 text=True
             )
@@ -1261,7 +1262,8 @@ app.listen(PORT, () => {{
             # Executar os comandos no Slave
             print("Configurando o Slave...")
             result = subprocess.run(
-                ["docker", "exec", "-i", f"{slave_container}", "mysql", f"-h{slave_host}", f"-P{slave_port}", f"-u{slave_user}", f"-p{slave_password}", "-e", slave_commands],
+                # , f"-h{slave_host}", f"-P{slave_port}"
+                ["docker", "exec", "-i", f"{slave_container}", "mysql", f"-u{slave_user}", f"-p{slave_password}", "-e", slave_commands],
                 capture_output=True,
                 text=True
             )
