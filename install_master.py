@@ -1254,10 +1254,11 @@ app.listen(PORT, () => {{
 
             # Configurar o Slave com informações do Master
             slave_cursor.execute("STOP SLAVE;")
+            porta_interna = '3306'
             slave_cursor.execute(f"""
                 CHANGE MASTER TO
                 MASTER_HOST='{master_container}',
-                MASTER_PORT={master_porta},
+                MASTER_PORT={porta_interna},
                 MASTER_USER='{replication_user}',
                 MASTER_PASSWORD='{replication_password}',
                 MASTER_LOG_FILE='{master_log_file}',
