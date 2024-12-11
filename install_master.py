@@ -1147,6 +1147,7 @@ app.listen(PORT, () => {{
         resultados = self.executar_comandos(comandos)
         
         if replicacao == '1':
+            time.sleep(30)
             container_db = f"""docker run -d \
                             --name mysql_{versao_}_slave \
                             --restart=always \
