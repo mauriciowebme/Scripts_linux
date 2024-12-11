@@ -49,7 +49,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.148
+Versão 1.149
 ===========================================================================
 ===========================================================================
 """)
@@ -1191,7 +1191,7 @@ app.listen(PORT, () => {{
             replication_user = 'replication_user'
             replication_password = 'replication_password'
             
-            time.sleep(40)
+            time.sleep(60)
             self.configure_mysql_replication(master_host, master_user, master_password, master_porta, slave_host, slave_user, slave_password, slave_porta, replication_user, replication_password)
         
         self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
