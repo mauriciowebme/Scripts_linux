@@ -1153,6 +1153,9 @@ app.listen(PORT, () => {{
                             --name mysql_{versao_}_slave \
                             --restart=always \
                             -p {porta_slave}:3306 \
+                            -e MYSQL_DATABASE=db_testes \
+                            -e MYSQL_USER=mysql \
+                            -e MYSQL_PASSWORD=mysql \
                             -e MYSQL_ROOT_PASSWORD=rootpassword \
                             -v {local_slave}/mysql/{versao_}_slave:/var/lib/mysql \
                             mysql:{versao}
