@@ -1143,7 +1143,8 @@ app.listen(PORT, () => {{
                         mysql:{versao} \
                         --server-id=1 \
                         --log-bin=mysql-bin \
-                        --binlog-format=row
+                        --binlog-format=row \
+                        --default-authentication-plugin=mysql_native_password
                     """
         comandos = [
             container_db,
@@ -1166,7 +1167,8 @@ app.listen(PORT, () => {{
                             mysql:{versao} \
                             --server-id=2 \
                             --log-bin=mysql-bin \
-                            --binlog-format=row
+                            --binlog-format=row \
+                            --default-authentication-plugin=mysql_native_password
                         """
             comandos = [
                 container_db,
