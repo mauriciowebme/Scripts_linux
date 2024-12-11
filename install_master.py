@@ -1201,7 +1201,7 @@ app.listen(PORT, () => {{
         print(f' - Porta interna: 3306')
         print(f' - Porta externa: {porta}')
         
-    def configure_mysql_replication(master_container, master_host, master_user, master_password, master_port,
+    def configure_mysql_replication(self, master_container, master_host, master_user, master_password, master_port,
                                 slave_container, slave_host, slave_user, slave_password, slave_port,
                                 replication_user, replication_password):
         try:
