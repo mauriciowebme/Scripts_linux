@@ -1151,6 +1151,7 @@ app.listen(PORT, () => {{
             ]
         self.remove_container(f'mysql_{versao_}')
         resultados = self.executar_comandos(comandos)
+        self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
         
         if replicacao == '1':
             # time.sleep(10)
@@ -1175,6 +1176,7 @@ app.listen(PORT, () => {{
                 ]
             self.remove_container(f'mysql_{versao_}_slave')
             resultados = self.executar_comandos(comandos)
+            self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}_slave', numero_rede=1)
             
             master_container = f"mysql_{versao_}"
             master_host = f'localhost'
@@ -1195,10 +1197,6 @@ app.listen(PORT, () => {{
             self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta,
                                              slave_container, slave_host, slave_user, slave_password, slave_porta,
                                              replication_user, replication_password)
-        
-        self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
-        if replicacao == '1':
-            self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}_slave', numero_rede=1)
         
         time.sleep(10)
         print(f'Instalação do Mysql completa.')
@@ -1268,7 +1266,7 @@ app.listen(PORT, () => {{
             print("Replicação configurada com sucesso no Slave.")
 
             # Verificar o status do Slave
-            slave_cursor.execute("SHOW SLAVE STATUS;")
+            slave_cursor.execute("SHOW REPLICA STATUS;")
             for row in slave_cursor:
                 print(row)
 
