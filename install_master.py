@@ -16,12 +16,22 @@ import requests
 from requests.auth import HTTPBasicAuth
 import sys
 
+def ensure_pip_installed():
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "--version"])
+    except subprocess.CalledProcessError:
+        print("pip não encontrado. Instalando pip...")
+        subprocess.check_call([sys.executable, "-m", "ensurepip", "--upgrade"])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
+        print("pip instalado com sucesso.")
+
 def ensure_library_installed(library_name):
     try:
         __import__(library_name)
     except ImportError:
         print(f"Biblioteca '{library_name}' não encontrada. Instalando...")
-        subprocess.check_call([sys.executable, "pip", "install", library_name])
+        ensure_pip_installed()
+        subprocess.check_call([sys.executable, "-m", "pip", "install", library_name])
         print(f"Biblioteca '{library_name}' instalada com sucesso.")
 
 # Verificar e instalar 'mysql-connector-python' se necessário
