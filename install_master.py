@@ -1162,14 +1162,14 @@ app.listen(PORT, () => {{
             self.remove_container(f'mysql_{versao_}_slave')
             resultados = self.executar_comandos(comandos)
             
-            master_host = f'mysql_{versao_}:{porta}'
+            master_host = f'mysql_{versao_}'
             master_user = 'root'
             master_password = 'rootpassword'
-            master_porta = 
-            slave_host = f'mysql_{versao_}_slave:{porta}'
+            master_porta = '3306'
+            slave_host = f'mysql_{versao_}_slave'
             slave_user = 'root'
             slave_password = 'rootpassword'
-            slave_porta = 
+            slave_porta = '3306'
             replication_user = 'replication_user'
             replication_password = 'replication_password'
             self.configure_mysql_replication( master_host, master_user, master_password, master_porta, slave_host, slave_user, slave_password, slave_porta, replication_user, replication_password)
