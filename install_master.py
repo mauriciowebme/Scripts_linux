@@ -1072,12 +1072,19 @@ app.listen(PORT, () => {{
         self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=1)
         
     def instala_mysql_5_7(self,):
+        self.instala_mysql('5.7')
+    
+    def instala_mysql_8_0(self,):
+        self.instala_mysql('8.0')
+    
+    def instala_mysql(self, selecao=None):
         # self.gerenciar_permissoes(f"{self.install_principal}/mysql_bd", permissao="777")
-        selecao = input('Selecione a versão: \n1 - 5.7 \n2 - 8.0\n')
-        if selecao == "1":
+        if not selecao:
+            selecao = input('Selecione a versão: \n1 - 5.7 \n2 - 8.0\n')
+        if selecao == "1" or selecao == "5.7":
             versao = '5.7'
             porta = '3306'
-        elif selecao == "2":
+        elif selecao == "2" or selecao == "8.0":
             versao = '8.0'
             porta = '3307'
         else:
@@ -1108,7 +1115,8 @@ app.listen(PORT, () => {{
         print('Acesso:')
         print(' - Usuario: root')
         print(' - Senha: rootpassword')
-        print(f' - Porta: {porta}')
+        print(f' - Porta interna: 3306')
+        print(f' - Porta externa: {porta}')
         
     def instala_wordpress_puro(self,):
         print('Instalando o wordpress.\n')
