@@ -1806,7 +1806,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala webserver ssh", self.instala_webserver_ssh),
             ("Gerenciador SFTP sftpgo", self.gerenciar_usuarios_sftp),
             ("Instala SFTP sftpgo", self.instala_ftp_sftpgo),
-            ("Instala mysql_5_7", self.instala_mysql_5_7),
+            ("Instala mysql", self.instala_mysql),
             ("Instala wordpress", self.instala_wordpress),
             ("Instala wordpress puro", self.instala_wordpress_puro),
             ("Instala openlitespeed", self.instala_openlitespeed),
