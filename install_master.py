@@ -1174,6 +1174,9 @@ app.listen(PORT, () => {{
             replication_user = 'replication_user'
             replication_password = 'replication_password'
             time.sleep(30)
+            comando1 = f"docker exec -i mysql_{versao_} mysql -uroot -prootpassword -e \"ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'rootpassword'; FLUSH PRIVILEGES;\""
+            comando2 = f"docker exec -i mysql_{versao_}_slave mysql -uroot -prootpassword -e \"ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'rootpassword'; FLUSH PRIVILEGES;\""
+            self.executar_comandos([comando1, comando2])
             self.configure_mysql_replication( master_host, master_user, master_password, master_porta, slave_host, slave_user, slave_password, slave_porta, replication_user, replication_password)
         
         self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
