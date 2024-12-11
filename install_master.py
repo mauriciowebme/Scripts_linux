@@ -1206,79 +1206,156 @@ app.listen(PORT, () => {{
         print(f' - Porta interna: 3306')
         print(f' - Porta externa: {porta}')
         
-    def configure_mysql_replication(self, master_container, master_host, master_user, master_password, master_port,
-                                slave_container, slave_host, slave_user, slave_password, slave_port,
+    def configure_mysql_replication(master_host, master_user, master_password, master_porta,
+                                slave_host, slave_user, slave_password, slave_porta,
                                 replication_user, replication_password):
         try:
-            # Comandos SQL para configurar o Master
-            master_commands = f"""
-            CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';
-            GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'%';
-            FLUSH PRIVILEGES;
-            SHOW MASTER STATUS;
-            """
-
-            # Executar os comandos no Master
-            print("Configurando o Master...")
-            result = subprocess.run(
-                # , f"-h{master_host}", f"-P{master_port}"
-                ["docker", "exec", "-i", f"{master_container}", "mysql", f"-u{master_user}", f"-p{master_password}", "-e", master_commands],
-                capture_output=True,
-                text=True
+            # Conectar ao Master
+            print("Conectando ao Master...")
+            master_conn = mysql.connector.connect(
+                host=master_host,
+                user=master_user,
+                password=master_password,
+                port=master_porta
             )
+            master_cursor = master_conn.cursor()
+            print("Conexão com o Master estabelecida.")
 
-            if result.returncode != 0:
-                print(f"Erro ao configurar o Master: {result.stderr}")
-                return
+            # Criar usuário de replicação no Master
+            master_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';")
+            master_cursor.execute(f"GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'%';")
+            master_cursor.execute("FLUSH PRIVILEGES;")
+            print("Usuário de replicação criado com sucesso no Master.")
 
-            print("Master configurado com sucesso.")
-            print(result.stdout)
+            # Obter informações do log binário do Master
+            master_cursor.execute("SHOW MASTER STATUS;")
+            result = master_cursor.fetchone()
 
-            # Extrair informações do log binário
-            lines = result.stdout.strip().split("\n")
-            if len(lines) < 2:
+            if result:
+                master_log_file = result[0]
+                master_log_pos = result[1]
+                print(f"Master Log File: {master_log_file}, Position: {master_log_pos}")
+            else:
                 print("Erro: Não foi possível obter o status do log binário do Master.")
                 return
 
-            # Pegar a linha com os detalhes do log binário
-            log_info = lines[1].split("\t")
-            master_log_file = log_info[0]
-            master_log_pos = log_info[1]
-
-            print(f"Master Log File: {master_log_file}, Position: {master_log_pos}")
-
-            # Comandos SQL para configurar o Slave
-            slave_commands = f"""
-            STOP SLAVE;
-            CHANGE MASTER TO
-            MASTER_HOST='{master_host}',
-            MASTER_PORT={master_port},
-            MASTER_USER='{replication_user}',
-            MASTER_PASSWORD='{replication_password}',
-            MASTER_LOG_FILE='{master_log_file}',
-            MASTER_LOG_POS={master_log_pos};
-            START SLAVE;
-            SHOW SLAVE STATUS\G;
-            """
-
-            # Executar os comandos no Slave
-            print("Configurando o Slave...")
-            result = subprocess.run(
-                # , f"-h{slave_host}", f"-P{slave_port}"
-                ["docker", "exec", "-i", f"{slave_container}", "mysql", f"-u{slave_user}", f"-p{slave_password}", "-e", slave_commands],
-                capture_output=True,
-                text=True
+            # Conectar ao Slave
+            print("Conectando ao Slave...")
+            slave_conn = mysql.connector.connect(
+                host=slave_host,
+                user=slave_user,
+                password=slave_password,
+                port=slave_porta
             )
+            slave_cursor = slave_conn.cursor()
+            print("Conexão com o Slave estabelecida.")
 
-            if result.returncode != 0:
-                print(f"Erro ao configurar o Slave: {result.stderr}")
-                return
+            # Configurar o Slave com informações do Master
+            slave_cursor.execute("STOP SLAVE;")
+            slave_cursor.execute(f"""
+                CHANGE MASTER TO
+                MASTER_HOST='{master_host}',
+                MASTER_PORT={master_porta},
+                MASTER_USER='{replication_user}',
+                MASTER_PASSWORD='{replication_password}',
+                MASTER_LOG_FILE='{master_log_file}',
+                MASTER_LOG_POS={master_log_pos};
+            """)
+            slave_cursor.execute("START SLAVE;")
+            print("Replicação configurada com sucesso no Slave.")
 
-            print("Slave configurado com sucesso.")
-            print(result.stdout)
+            # Verificar o status do Slave
+            slave_cursor.execute("SHOW SLAVE STATUS;")
+            for row in slave_cursor:
+                print(row)
 
-        except Exception as e:
+        except Error as e:
             print(f"Erro: {e}")
+
+        finally:
+            # Fechar conexões
+            if 'master_conn' in locals() and master_conn.is_connected():
+                master_cursor.close()
+                master_conn.close()
+                print("Conexão com o Master fechada.")
+            if 'slave_conn' in locals() and slave_conn.is_connected():
+                slave_cursor.close()
+                slave_conn.close()
+                print("Conexão com o Slave fechada.")
+        
+    # def configure_mysql_replication(self, master_container, master_host, master_user, master_password, master_port,
+    #                             slave_container, slave_host, slave_user, slave_password, slave_port,
+    #                             replication_user, replication_password):
+    #     try:
+    #         # Comandos SQL para configurar o Master
+    #         master_commands = f"""
+    #         CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';
+    #         GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'%';
+    #         FLUSH PRIVILEGES;
+    #         SHOW MASTER STATUS;
+    #         """
+
+    #         # Executar os comandos no Master
+    #         print("Configurando o Master...")
+    #         result = subprocess.run(
+    #             # , f"-h{master_host}", f"-P{master_port}"
+    #             ["docker", "exec", "-i", f"{master_container}", "mysql", f"-u{master_user}", f"-p{master_password}", "-e", master_commands],
+    #             capture_output=True,
+    #             text=True
+    #         )
+
+    #         if result.returncode != 0:
+    #             print(f"Erro ao configurar o Master: {result.stderr}")
+    #             return
+
+    #         print("Master configurado com sucesso.")
+    #         print(result.stdout)
+
+    #         # Extrair informações do log binário
+    #         lines = result.stdout.strip().split("\n")
+    #         if len(lines) < 2:
+    #             print("Erro: Não foi possível obter o status do log binário do Master.")
+    #             return
+
+    #         # Pegar a linha com os detalhes do log binário
+    #         log_info = lines[1].split("\t")
+    #         master_log_file = log_info[0]
+    #         master_log_pos = log_info[1]
+
+    #         print(f"Master Log File: {master_log_file}, Position: {master_log_pos}")
+
+    #         # Comandos SQL para configurar o Slave
+    #         slave_commands = f"""
+    #         STOP SLAVE;
+    #         CHANGE MASTER TO
+    #         MASTER_HOST='{master_host}',
+    #         MASTER_PORT={master_port},
+    #         MASTER_USER='{replication_user}',
+    #         MASTER_PASSWORD='{replication_password}',
+    #         MASTER_LOG_FILE='{master_log_file}',
+    #         MASTER_LOG_POS={master_log_pos};
+    #         START SLAVE;
+    #         SHOW SLAVE STATUS\G;
+    #         """
+
+    #         # Executar os comandos no Slave
+    #         print("Configurando o Slave...")
+    #         result = subprocess.run(
+    #             # , f"-h{slave_host}", f"-P{slave_port}"
+    #             ["docker", "exec", "-i", f"{slave_container}", "mysql", f"-u{slave_user}", f"-p{slave_password}", "-e", slave_commands],
+    #             capture_output=True,
+    #             text=True
+    #         )
+
+    #         if result.returncode != 0:
+    #             print(f"Erro ao configurar o Slave: {result.stderr}")
+    #             return
+
+    #         print("Slave configurado com sucesso.")
+    #         print(result.stdout)
+
+    #     except Exception as e:
+    #         print(f"Erro: {e}")
         
     def instala_wordpress_puro(self,):
         print('Instalando o wordpress.\n')
