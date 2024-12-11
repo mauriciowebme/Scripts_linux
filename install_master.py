@@ -1145,7 +1145,6 @@ app.listen(PORT, () => {{
             ]
         self.remove_container(f'mysql_{versao_}')
         resultados = self.executar_comandos(comandos)
-        self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
         
         if replicacao == '1':
             container_db = f"""docker run -d \
@@ -1161,7 +1160,6 @@ app.listen(PORT, () => {{
                 ]
             self.remove_container(f'mysql_{versao_}_slave')
             resultados = self.executar_comandos(comandos)
-            self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}_slave', numero_rede=1)
             
             master_host = f'mysql_{versao_}:{porta}'
             master_user = 'root'
@@ -1172,6 +1170,10 @@ app.listen(PORT, () => {{
             replication_user = 'replication_user'
             replication_password = 'replication_password'
             self.configure_mysql_replication(master_host, master_user, master_password, slave_host, slave_user, slave_password, replication_user, replication_password)
+        
+        self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
+        if replicacao == '1':
+            self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}_slave', numero_rede=1)
         
         time.sleep(30)
         print(f'Instalação do Mysql completa.')
