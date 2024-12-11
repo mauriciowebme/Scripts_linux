@@ -1152,7 +1152,7 @@ app.listen(PORT, () => {{
         resultados = self.executar_comandos(comandos)
         
         if replicacao == '1':
-            time.sleep(10)
+            # time.sleep(10)
             # self.gerenciar_permissoes_pasta(f"{local_slave}/mysql/{versao_}_slave", permissao="777")
             container_db = f"""docker run -d \
                             --name mysql_{versao_}_slave \
