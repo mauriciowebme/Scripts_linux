@@ -49,7 +49,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.150
+Versão 1.149
 ===========================================================================
 ===========================================================================
 """)
@@ -1177,13 +1177,13 @@ app.listen(PORT, () => {{
             resultados = self.executar_comandos(comandos)
             
             master_container = f"mysql_{versao_}"
-            master_host = f'mysql_{versao_}'
+            master_host = f'localhost'
             master_user = 'root'
             master_password = 'rootpassword'
             master_porta = f'{porta}'
             
             slave_container = f"mysql_{versao_}_slave"
-            slave_host = f'mysql_{versao_}_slave'
+            slave_host = f'localhost'
             slave_user = 'root'
             slave_password = 'rootpassword'
             slave_porta = f'{porta_slave}'
@@ -1192,7 +1192,9 @@ app.listen(PORT, () => {{
             replication_password = 'replication_password'
             
             time.sleep(60)
-            self.configure_mysql_replication(master_host, master_user, master_password, master_porta, slave_host, slave_user, slave_password, slave_porta, replication_user, replication_password)
+            self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta,
+                                             slave_container, slave_host, slave_user, slave_password, slave_porta,
+                                             replication_user, replication_password)
         
         self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
         if replicacao == '1':
@@ -1206,8 +1208,8 @@ app.listen(PORT, () => {{
         print(f' - Porta interna: 3306')
         print(f' - Porta externa: {porta}')
         
-    def configure_mysql_replication(self, master_host, master_user, master_password, master_porta,
-                                slave_host, slave_user, slave_password, slave_porta,
+    def configure_mysql_replication(self,master_container, master_host, master_user, master_password, master_porta,
+                                slave_container, slave_host, slave_user, slave_password, slave_porta,
                                 replication_user, replication_password):
         try:
             # Conectar ao Master
@@ -1254,7 +1256,7 @@ app.listen(PORT, () => {{
             slave_cursor.execute("STOP SLAVE;")
             slave_cursor.execute(f"""
                 CHANGE MASTER TO
-                MASTER_HOST='{master_host}',
+                MASTER_HOST='{master_container}',
                 MASTER_PORT={master_porta},
                 MASTER_USER='{replication_user}',
                 MASTER_PASSWORD='{replication_password}',
