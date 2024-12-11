@@ -14,6 +14,20 @@ import yaml
 import json
 import requests
 from requests.auth import HTTPBasicAuth
+import sys
+
+def ensure_library_installed(library_name):
+    try:
+        __import__(library_name)
+    except ImportError:
+        print(f"Biblioteca '{library_name}' não encontrada. Instalando...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", library_name])
+        print(f"Biblioteca '{library_name}' instalada com sucesso.")
+
+# Verificar e instalar 'mysql-connector-python' se necessário
+ensure_library_installed("mysql.connector")
+
+import mysql.connector
 
 print("""
 ===========================================================================
@@ -1084,15 +1098,22 @@ app.listen(PORT, () => {{
         if selecao == "1" or selecao == "5.7":
             versao = '5.7'
             porta = '3306'
+            porta_slave = '3308'
         elif selecao == "2" or selecao == "8.0":
             versao = '8.0'
             porta = '3307'
+            porta_slave = '3309'
         else:
             print("Seleção incorreta.")
             return
+        
+        replicacao = input('Habilitar a replicação de dados? \n1 - Sim \n2 - Não \n')
+        if replicacao == '1':
+            local_slave = input('Informe o local para armazenzar o Mysql SLAVE: ')
         versao_ = versao.replace('.', '_')
+        
         print('Instalando o mysql.\n')
-        # -e MYSQL_RANDOM_ROOT_PASSWORD=wordpress \
+        
         container_db = f"""docker run -d \
                         --name mysql_{versao_} \
                         --restart=always \
@@ -1110,13 +1131,103 @@ app.listen(PORT, () => {{
         self.remove_container(f'mysql_{versao_}')
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
+        
+        if replicacao == '1':
+            container_db = f"""docker run -d \
+                            --name mysql_{versao_}_slave \
+                            --restart=always \
+                            -p {porta_slave}:3306 \
+                            -e MYSQL_ROOT_PASSWORD=rootpassword \
+                            -v {local_slave}:/var/lib/mysql \
+                            mysql:{versao}
+                        """
+            comandos = [
+                container_db,
+                ]
+            self.remove_container(f'mysql_{versao_}_slave')
+            resultados = self.executar_comandos(comandos)
+            self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}_slave', numero_rede=1)
+            
+            master_host = f'mysql_{versao_}:{porta}'
+            master_user = 'root'
+            master_password = 'rootpassword'
+            slave_host = f'mysql_{versao_}_slave:{porta}'
+            slave_user = 'root'
+            slave_password = 'rootpassword'
+            replication_user = 'replication_user'
+            replication_password = 'replication_password'
+            self.configure_mysql_replication(master_host, master_user, master_password, slave_host, slave_user, slave_password, replication_user, replication_password)
+        
         time.sleep(30)
-        print('Instalação do Mysql completa.')
-        print('Acesso:')
-        print(' - Usuario: root')
-        print(' - Senha: rootpassword')
+        print(f'Instalação do Mysql completa.')
+        print(f'Acesso:')
+        print(f' - Usuario: root')
+        print(f' - Senha: rootpassword')
         print(f' - Porta interna: 3306')
         print(f' - Porta externa: {porta}')
+        
+    def configure_mysql_replication(self, master_host, master_user, master_password, slave_host, slave_user, slave_password, replication_user, replication_password):
+        try:
+            # Conectar ao Master
+            master_conn = mysql.connector.connect(
+                host=master_host,
+                user=master_user,
+                password=master_password
+            )
+            master_cursor = master_conn.cursor()
+            
+            # Criar usuário de replicação no Master
+            master_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';")
+            master_cursor.execute(f"GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'%';")
+            master_cursor.execute("FLUSH PRIVILEGES;")
+            
+            print("Usuário de replicação criado com sucesso no Master.")
+
+            # Obter informações do log binário do Master
+            master_cursor.execute("SHOW MASTER STATUS;")
+            result = master_cursor.fetchone()
+            master_log_file = result[0]
+            master_log_pos = result[1]
+            
+            print(f"Master Log File: {master_log_file}, Position: {master_log_pos}")
+
+            # Conectar ao Slave
+            slave_conn = mysql.connector.connect(
+                host=slave_host,
+                user=slave_user,
+                password=slave_password
+            )
+            slave_cursor = slave_conn.cursor()
+
+            # Configurar o Slave com informações do Master
+            slave_cursor.execute("STOP SLAVE;")
+            slave_cursor.execute(f"""
+                CHANGE MASTER TO
+                MASTER_HOST='{master_host}',
+                MASTER_USER='{replication_user}',
+                MASTER_PASSWORD='{replication_password}',
+                MASTER_LOG_FILE='{master_log_file}',
+                MASTER_LOG_POS={master_log_pos};
+            """)
+            slave_cursor.execute("START SLAVE;")
+            slave_cursor.execute("SHOW SLAVE STATUS;")
+            
+            print("Replicação configurada com sucesso no Slave.")
+            
+            for row in slave_cursor:
+                print(row)
+
+        except mysql.connector.Error as err:
+            print(f"Erro: {err}")
+
+        finally:
+            if 'master_conn' in locals() and master_conn.is_connected():
+                master_cursor.close()
+                master_conn.close()
+            if 'slave_conn' in locals() and slave_conn.is_connected():
+                slave_cursor.close()
+                slave_conn.close()
+
         
     def instala_wordpress_puro(self,):
         print('Instalando o wordpress.\n')
