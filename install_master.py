@@ -1147,7 +1147,7 @@ app.listen(PORT, () => {{
         resultados = self.executar_comandos(comandos)
         
         if replicacao == '1':
-            time.sleep(30)
+            time.sleep(15)
             container_db = f"""docker run -d \
                             --name mysql_{versao_}_slave \
                             --restart=always \
@@ -1172,6 +1172,7 @@ app.listen(PORT, () => {{
             slave_porta = f'{porta_slave}'
             replication_user = 'replication_user'
             replication_password = 'replication_password'
+            time.sleep(10)
             self.configure_mysql_replication( master_host, master_user, master_password, master_porta, slave_host, slave_user, slave_password, slave_porta, replication_user, replication_password)
         
         self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
