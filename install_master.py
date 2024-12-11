@@ -1269,7 +1269,7 @@ app.listen(PORT, () => {{
             for row in slave_cursor:
                 print(row)
 
-        except Error as e:
+        except Exception as e:
             print(f"Erro: {e}")
 
         finally:
