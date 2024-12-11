@@ -18,12 +18,17 @@ import sys
 
 def ensure_pip_installed():
     try:
+        # Verifica se o pip está instalado
         subprocess.check_call([sys.executable, "-m", "pip", "--version"])
     except subprocess.CalledProcessError:
-        print("pip não encontrado. Instalando pip...")
-        subprocess.check_call([sys.executable, "-m", "ensurepip", "--upgrade"])
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
-        print("pip instalado com sucesso.")
+        print("pip não encontrado. Instalando pip com apt...")
+        try:
+            subprocess.check_call(["sudo", "apt", "update"])
+            subprocess.check_call(["sudo", "apt", "install", "-y", "python3-pip"])
+            print("pip instalado com sucesso.")
+        except subprocess.CalledProcessError as e:
+            print(f"Erro ao instalar pip: {e}")
+            sys.exit(1)
 
 def ensure_library_installed(library_name):
     try:
