@@ -1165,12 +1165,14 @@ app.listen(PORT, () => {{
             master_host = f'mysql_{versao_}:{porta}'
             master_user = 'root'
             master_password = 'rootpassword'
+            master_porta = 
             slave_host = f'mysql_{versao_}_slave:{porta}'
             slave_user = 'root'
             slave_password = 'rootpassword'
+            slave_porta = 
             replication_user = 'replication_user'
             replication_password = 'replication_password'
-            self.configure_mysql_replication(master_host, master_user, master_password, slave_host, slave_user, slave_password, replication_user, replication_password)
+            self.configure_mysql_replication( master_host, master_user, master_password, master_porta, slave_host, slave_user, slave_password, slave_porta, replication_user, replication_password)
         
         self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
         if replicacao == '1':
@@ -1184,13 +1186,14 @@ app.listen(PORT, () => {{
         print(f' - Porta interna: 3306')
         print(f' - Porta externa: {porta}')
         
-    def configure_mysql_replication(self, master_host, master_user, master_password, slave_host, slave_user, slave_password, replication_user, replication_password):
+    def configure_mysql_replication(self, master_host, master_user, master_password, master_porta, slave_host, slave_user, slave_password, slave_porta, replication_user, replication_password):
         try:
             # Conectar ao Master
             master_conn = mysql.connector.connect(
                 host=master_host,
                 user=master_user,
-                password=master_password
+                password=master_password,
+                port=master_porta
             )
             master_cursor = master_conn.cursor()
             
@@ -1213,7 +1216,8 @@ app.listen(PORT, () => {{
             slave_conn = mysql.connector.connect(
                 host=slave_host,
                 user=slave_user,
-                password=slave_password
+                password=slave_password,
+                port=slave_porta
             )
             slave_cursor = slave_conn.cursor()
 
