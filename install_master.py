@@ -1226,7 +1226,7 @@ app.listen(PORT, () => {{
                     master_cursor = master_conn.cursor()
                     print("Conexão com o Master estabelecida.")
                     erro_conect = False
-                    time.sleep(10)
+                    # time.sleep(10)
                     break
                 except Exception as ex:
                     time.sleep(10)
@@ -1251,7 +1251,7 @@ app.listen(PORT, () => {{
                     slave_cursor = slave_conn.cursor()
                     print("Conexão com o Slave estabelecida.")
                     erro_conect = False
-                    time.sleep(10)
+                    # time.sleep(10)
                     break
                 except Exception as ex:
                     time.sleep(10)
