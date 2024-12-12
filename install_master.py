@@ -826,17 +826,8 @@ listener Default {{
         self.remove_container('nextcloud')
         resultados = self.executar_comandos(comandos)
         time.sleep(30)
-        
-        # comandos = [
-        #     f'apt-get update',
-        #     f'apt-get install -y cron',
-        #     f'systemctl start cron',
-        #     f'systemctl enable cron',
-        #     f'echo "*/5 * * * * /usr/bin/php /var/www/html/cron.php" | crontab -u www-data -',
-        #     ]
-        # self.comandos_in_container('nextcloud', comandos)
         comandos = [
-            f"echo '*/5 * * * * docker exec -i -u www-data nextcloud /usr/bin/php /var/www/html/cron.php' | sudo crontab -",
+            f"echo '*/5 * * * * docker exec -i -u www-data nextcloud /usr/local/bin/php /var/www/html/cron.php' | sudo crontab -",
             ]
         self.executar_comandos(comandos)
         
