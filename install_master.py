@@ -799,7 +799,7 @@ listener Default {{
         self.verifica_container_existe('mysql_8_0', self.instala_mysql_8_0)
         
         comando1 = f"docker exec -i mysql_8_0 mysql -uroot -prootpassword -e \"CREATE USER IF NOT EXISTS 'nextcloud'@'%' IDENTIFIED BY 'nextcloud';\""
-        comando2 = f"docker exec -i mysql_8_0 mysql -uroot -prootpassword -e \"CREATE DATABASE IF NOT EXISTS nextcloud_db; GRANT ALL PRIVILEGES ON nextcloud_db.* TO 'nextcloud'@'%'; FLUSH PRIVILEGES;\""
+        comando2 = f"docker exec -i mysql_8_0 mysql -uroot -prootpassword -e \"CREATE DATABASE IF NOT EXISTS nextcloud_bd; GRANT ALL PRIVILEGES ON nextcloud_bd.* TO 'nextcloud'@'%'; FLUSH PRIVILEGES;\""
         self.executar_comandos([comando1, comando2])
         
         comandos = [
@@ -809,7 +809,7 @@ listener Default {{
                     -p 8585:80 \
                     --memory=1g \
                     --cpus=1 \
-                    -e MYSQL_DATABASE=nextcloud_db \
+                    -e MYSQL_DATABASE=nextcloud_bd \
                     -e MYSQL_PASSWORD=nextcloud \
                     -e MYSQL_USER=nextcloud \
                     -e MYSQL_HOST=mysql_8_0:3306 \
