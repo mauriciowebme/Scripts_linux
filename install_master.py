@@ -827,18 +827,18 @@ listener Default {{
         resultados = self.executar_comandos(comandos)
         time.sleep(30)
         
-        comandos = [
-            f'apt-get update',
-            f'apt-get install -y cron',
-            f'systemctl start cron',
-            f'systemctl enable cron',
-            f'echo "*/5 * * * * /usr/bin/php /var/www/html/cron.php" | crontab -u www-data -',
-            ]
-        self.comandos_in_container('nextcloud', comandos)
         # comandos = [
-        #     f'docker exec -i -u root nextcloud bash -c \'echo "*/5 * * * * /usr/bin/php /var/www/html/cron.php" | crontab -u www-data -\'',
+        #     f'apt-get update',
+        #     f'apt-get install -y cron',
+        #     f'systemctl start cron',
+        #     f'systemctl enable cron',
+        #     f'echo "*/5 * * * * /usr/bin/php /var/www/html/cron.php" | crontab -u www-data -',
         #     ]
-        # self.executar_comandos(comandos)
+        # self.comandos_in_container('nextcloud', comandos)
+        comandos = [
+            f"echo '*/5 * * * * docker exec -i -u www-data nextcloud /usr/bin/php /var/www/html/cron.php' | sudo crontab -",
+            ]
+        self.executar_comandos(comandos)
         
         self.cria_rede_docker(associar_container_nome=f'nextcloud', numero_rede=1)
         print("Instalação concluída. Nextcloud está pronto para uso.")
