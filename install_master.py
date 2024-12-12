@@ -1194,7 +1194,7 @@ app.listen(PORT, () => {{
             replication_user = 'replication_user'
             replication_password = 'replication_password'
             
-            time.sleep(60)
+            time.sleep(100)
             self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta,
                                              slave_container, slave_host, slave_user, slave_password, slave_porta,
                                              replication_user, replication_password)
