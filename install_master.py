@@ -1194,7 +1194,7 @@ app.listen(PORT, () => {{
             replication_user = 'replication_user'
             replication_password = 'replication_password'
             
-            time.sleep(100)
+            time.sleep(10)
             self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta,
                                              slave_container, slave_host, slave_user, slave_password, slave_porta,
                                              replication_user, replication_password)
@@ -1214,14 +1214,27 @@ app.listen(PORT, () => {{
         try:
             # Conectar ao Master
             print("Conectando ao Master...")
-            master_conn = mysql.connector.connect(
-                host=master_host,
-                user=master_user,
-                password=master_password,
-                port=master_porta
-            )
-            master_cursor = master_conn.cursor()
-            print("Conexão com o Master estabelecida.")
+            erro_conect = False
+            for x in range(10):
+                try:
+                    master_conn = mysql.connector.connect(
+                        host=master_host,
+                        user=master_user,
+                        password=master_password,
+                        port=master_porta
+                    )
+                    master_cursor = master_conn.cursor()
+                    print("Conexão com o Master estabelecida.")
+                    erro_conect = False
+                    time.sleep(10)
+                    break
+                except Exception as ex:
+                    time.sleep(10)
+                    erro_conect = True
+                    
+            if erro_conect:
+                print('Erro ao conectar ao Master.')
+                return
             
             # Verificar a versão do Master
             master_cursor.execute("SELECT VERSION();")
@@ -1248,14 +1261,27 @@ app.listen(PORT, () => {{
 
             # Conectar ao Slave
             print("Conectando ao Slave...")
-            slave_conn = mysql.connector.connect(
-                host=slave_host,
-                user=slave_user,
-                password=slave_password,
-                port=slave_porta
-            )
-            slave_cursor = slave_conn.cursor()
-            print("Conexão com o Slave estabelecida.")
+            erro_conect = False
+            for x in range(10):
+                try:
+                    slave_conn = mysql.connector.connect(
+                        host=slave_host,
+                        user=slave_user,
+                        password=slave_password,
+                        port=slave_porta
+                    )
+                    slave_cursor = slave_conn.cursor()
+                    print("Conexão com o Slave estabelecida.")
+                    erro_conect = False
+                    time.sleep(10)
+                    break
+                except Exception as ex:
+                    time.sleep(10)
+                    erro_conect = True
+                    
+            if erro_conect:
+                print('Erro ao conectar ao Slave.')
+                return
             
             # Verificar a versão do Slave
             slave_cursor.execute("SELECT VERSION();")
