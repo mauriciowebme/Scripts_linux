@@ -1338,20 +1338,20 @@ app.listen(PORT, () => {{
 
             # Verificar o status do Master com base na versão
             if master_version.startswith("5.7"):
-                print("Verificando status da replicação para MySQL 5.7...")
+                print("Verificando status da replicação para MASTER MySQL 5.7...")
                 master_cursor.execute("SHOW SLAVE STATUS;")
             else:
-                print("Verificando status da replicação para MySQL 8.0...")
+                print("Verificando status da replicação para MASTER MySQL 8.0...")
                 master_cursor.execute("SHOW REPLICA STATUS;")
             for row in master_cursor:
                 print(row)
                 
             # Verificar o status do Slave com base na versão
             if slave_version.startswith("5.7"):
-                print("Verificando status da replicação para MySQL 5.7...")
+                print("Verificando status da replicação para SLAVE MySQL 5.7...")
                 slave_cursor.execute("SHOW SLAVE STATUS;")
             else:
-                print("Verificando status da replicação para MySQL 8.0...")
+                print("Verificando status da replicação para SLAVE MySQL 8.0...")
                 slave_cursor.execute("SHOW REPLICA STATUS;")
             for row in slave_cursor:
                 print(row)
