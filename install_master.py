@@ -1222,6 +1222,11 @@ app.listen(PORT, () => {{
             )
             master_cursor = master_conn.cursor()
             print("Conexão com o Master estabelecida.")
+            
+            # Verificar a versão do Master
+            master_cursor.execute("SELECT VERSION();")
+            master_version = master_cursor.fetchone()[0]
+            print(f"Versão do Master: {master_version}")
 
             # Criar usuário de replicação no Master
             master_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';")
@@ -1251,6 +1256,11 @@ app.listen(PORT, () => {{
             )
             slave_cursor = slave_conn.cursor()
             print("Conexão com o Slave estabelecida.")
+            
+            # Verificar a versão do Slave
+            slave_cursor.execute("SELECT VERSION();")
+            slave_version = slave_cursor.fetchone()[0]
+            print(f"Versão do Slave: {slave_version}")
 
             # Configurar o Slave com informações do Master
             slave_cursor.execute("STOP SLAVE;")
@@ -1268,7 +1278,13 @@ app.listen(PORT, () => {{
             print("Replicação configurada com sucesso no Slave.")
 
             # Verificar o status do Slave
-            slave_cursor.execute("SHOW REPLICA STATUS;")
+            # Verificar o status do Slave com base na versão
+            if slave_version.startswith("5.7"):
+                print("Verificando status da replicação para MySQL 5.7...")
+                slave_cursor.execute("SHOW SLAVE STATUS;")
+            else:
+                print("Verificando status da replicação para MySQL 8.0...")
+                slave_cursor.execute("SHOW REPLICA STATUS;")
             for row in slave_cursor:
                 print(row)
 
