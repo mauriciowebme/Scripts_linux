@@ -1212,7 +1212,7 @@ app.listen(PORT, () => {{
                                 slave_container, slave_host, slave_user, slave_password, slave_porta,
                                 replication_user, replication_password):
         try:
-            # Conectar ao Master
+            # ------------------------- Conectar ao Master -----------------------------
             print("Conectando ao Master...")
             erro_conect = False
             for x in range(10):
@@ -1235,31 +1235,9 @@ app.listen(PORT, () => {{
             if erro_conect:
                 print('Erro ao conectar ao Master.')
                 return
+            # -------------------------------------------------------------------------
             
-            # Verificar a versão do Master
-            master_cursor.execute("SELECT VERSION();")
-            master_version = master_cursor.fetchone()[0]
-            print(f"Versão do Master: {master_version}")
-
-            # Criar usuário de replicação no Master
-            master_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';")
-            master_cursor.execute(f"GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'%';")
-            master_cursor.execute("FLUSH PRIVILEGES;")
-            print("Usuário de replicação criado com sucesso no Master.")
-
-            # Obter informações do log binário do Master
-            master_cursor.execute("SHOW MASTER STATUS;")
-            result = master_cursor.fetchone()
-
-            if result:
-                master_log_file = result[0]
-                master_log_pos = result[1]
-                print(f"Master Log File: {master_log_file}, Position: {master_log_pos}")
-            else:
-                print("Erro: Não foi possível obter o status do log binário do Master.")
-                return
-
-            # Conectar ao Slave
+            # ------------------------- Conectar ao Slave -----------------------------
             print("Conectando ao Slave...")
             erro_conect = False
             for x in range(10):
@@ -1282,12 +1260,57 @@ app.listen(PORT, () => {{
             if erro_conect:
                 print('Erro ao conectar ao Slave.')
                 return
-            
-            # Verificar a versão do Slave
-            slave_cursor.execute("SELECT VERSION();")
-            slave_version = slave_cursor.fetchone()[0]
-            print(f"Versão do Slave: {slave_version}")
+            # -------------------------------------------------------------------------
 
+            # Criar usuário de replicação no Master
+            master_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';")
+            master_cursor.execute(f"GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'%';")
+            master_cursor.execute("FLUSH PRIVILEGES;")
+            print("Usuário de replicação criado com sucesso no Master.")
+            
+            # Criar usuário de replicação no Slave
+            slave_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';")
+            slave_cursor.execute(f"GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'%';")
+            slave_cursor.execute("FLUSH PRIVILEGES;")
+            print("Usuário de replicação criado com sucesso no Slave.")
+
+            # Obter informações do log binário do Master
+            master_cursor.execute("SHOW MASTER STATUS;")
+            result = master_cursor.fetchone()
+            if result:
+                master_log_file = result[0]
+                master_log_pos = result[1]
+                print(f"Master Log File: {master_log_file}, Position: {master_log_pos}")
+            else:
+                print("Erro: Não foi possível obter o status do log binário do Master.")
+                return
+            
+            # Obter informações do log binário do Slave
+            slave_cursor.execute("SHOW MASTER STATUS;")
+            result = slave_cursor.fetchone()
+            if result:
+                slave_log_file = result[0]
+                slave_log_pos = result[1]
+                print(f"Slave Log File: {slave_log_file}, Position: {slave_log_pos}")
+            else:
+                print("Erro: Não foi possível obter o status do log binário do Slave.")
+                return
+
+            # Configurar o Master com informações do Slave
+            master_cursor.execute("STOP SLAVE;")
+            porta_interna = '3306'
+            master_cursor.execute(f"""
+                CHANGE MASTER TO
+                MASTER_HOST='{slave_container}',
+                MASTER_PORT={porta_interna},
+                MASTER_USER='{replication_user}',
+                MASTER_PASSWORD='{replication_password}',
+                MASTER_LOG_FILE='{slave_log_file}',
+                MASTER_LOG_POS={slave_log_pos};
+            """)
+            master_cursor.execute("START SLAVE;")
+            print("Replicação configurada com sucesso no Slave.")
+            
             # Configurar o Slave com informações do Master
             slave_cursor.execute("STOP SLAVE;")
             porta_interna = '3306'
@@ -1302,8 +1325,27 @@ app.listen(PORT, () => {{
             """)
             slave_cursor.execute("START SLAVE;")
             print("Replicação configurada com sucesso no Slave.")
+            
+            # Verificar a versão do Master
+            master_cursor.execute("SELECT VERSION();")
+            master_version = master_cursor.fetchone()[0]
+            print(f"Versão do Master: {master_version}")
+            
+            # Verificar a versão do Slave
+            slave_cursor.execute("SELECT VERSION();")
+            slave_version = slave_cursor.fetchone()[0]
+            print(f"Versão do Slave: {slave_version}")
 
-            # Verificar o status do Slave
+            # Verificar o status do Master com base na versão
+            if master_version.startswith("5.7"):
+                print("Verificando status da replicação para MySQL 5.7...")
+                master_cursor.execute("SHOW SLAVE STATUS;")
+            else:
+                print("Verificando status da replicação para MySQL 8.0...")
+                master_cursor.execute("SHOW REPLICA STATUS;")
+            for row in master_cursor:
+                print(row)
+                
             # Verificar o status do Slave com base na versão
             if slave_version.startswith("5.7"):
                 print("Verificando status da replicação para MySQL 5.7...")
