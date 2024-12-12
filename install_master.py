@@ -49,7 +49,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.152
+Versão 1.153
 ===========================================================================
 ===========================================================================
 """)
@@ -193,7 +193,7 @@ class Docker(Executa_comados):
         comandos_conatiners = []
         for comando in comandos:
             comandos_conatiners += [f'docker exec -i -u root {nome_conatiner} {tipo} -c \'{comando}\'']
-        self.executar_comandos(comandos_conatiners, comando_direto=True)
+        self.executar_comandos(comandos_conatiners)
             
     def remove_container(self, nome_container):
         comandos = [
