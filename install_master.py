@@ -188,7 +188,13 @@ class Docker(Executa_comados):
         
         except Exception as ex:
             pass
-
+        
+    def comandos_in_container(self, nome_conatiner, comandos, tipo='bash'):
+        comandos_conatiners = []
+        for comando in comandos:
+            comandos_conatiners += [f'docker exec -i -u root {nome_conatiner} {tipo} -c \'{comando}\'']
+        self.executar_comandos(comandos_conatiners, comando_direto=True)
+            
     def remove_container(self, nome_container):
         comandos = [
             f'docker rm -f {nome_container}',
@@ -819,7 +825,21 @@ listener Default {{
             ]
         self.remove_container('nextcloud')
         resultados = self.executar_comandos(comandos)
-        time.sleep(10)
+        time.sleep(30)
+        
+        comandos = [
+            f'apt-get update',
+            f'apt-get install -y cron',
+            f'systemctl start cron',
+            f'systemctl enable cron',
+            f'echo "*/5 * * * * /usr/bin/php /var/www/html/cron.php" | crontab -u www-data -',
+            ]
+        self.comandos_in_container('nextcloud', comandos)
+        # comandos = [
+        #     f'docker exec -i -u root nextcloud bash -c \'echo "*/5 * * * * /usr/bin/php /var/www/html/cron.php" | crontab -u www-data -\'',
+        #     ]
+        # self.executar_comandos(comandos)
+        
         self.cria_rede_docker(associar_container_nome=f'nextcloud', numero_rede=1)
         print("Instalação concluída. Nextcloud está pronto para uso.")
         print('\nIPs possíveis para acesso:')
