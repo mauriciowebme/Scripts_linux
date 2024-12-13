@@ -826,10 +826,48 @@ listener Default {{
         self.remove_container('nextcloud')
         resultados = self.executar_comandos(comandos)
         time.sleep(30)
-        comandos = [
-            f"echo '*/15 * * * * docker exec -i -u www-data nextcloud /usr/local/bin/php /var/www/html/cron.php' | sudo crontab -",
-            ]
-        self.executar_comandos(comandos)
+        
+        service_name = "cron.php"
+        
+        # Conteúdo do arquivo de serviço
+        service_content = f"""[Unit]
+Description=Nextcloud Cron Job
+ConditionPathExists=!/tmp/{service_name}.lock
+
+[Service]
+User=www-data
+ExecStartPre=/bin/touch /tmp/{service_name}.lock
+ExecStart=/usr/bin/docker exec -i -u www-data nextcloud /usr/local/bin/php /var/www/html/cron.php
+ExecStartPost=/bin/rm -f /tmp/{service_name}.lock
+TimeoutStartSec=300  # 5 minutos de timeout
+    """
+
+        # Caminho do arquivo de serviço
+        service_path = f"/etc/systemd/system/{service_name}.service"
+
+        try:
+            # Escreve o arquivo de serviço
+            with open(service_path, "w") as f:
+                f.write(service_content)
+            print(f"Serviço {service_name}.service criado com sucesso em {service_path}")
+
+            # Recarrega o systemd para reconhecer o novo serviço
+            os.system("sudo systemctl daemon-reload")
+
+            # Ativa o serviço
+            os.system(f"sudo systemctl enable {service_name}.timer")
+            os.system(f"sudo systemctl start {service_name}.timer")
+            print(f"Timer {service_name}.timer ativado e iniciado com sucesso.")
+
+        except PermissionError:
+            print("Erro: Permissão negada. Execute o script como superusuário (sudo).")
+        except Exception as e:
+            print(f"Erro ao criar o serviço: {e}")
+        
+        # comandos = [
+        #     f"echo '*/15 * * * * docker exec -i -u www-data nextcloud /usr/local/bin/php /var/www/html/cron.php' | sudo crontab -",
+        #     ]
+        # self.executar_comandos(comandos)
         
         self.cria_rede_docker(associar_container_nome=f'nextcloud', numero_rede=1)
         print("Instalação concluída. Nextcloud está pronto para uso.")
