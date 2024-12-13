@@ -889,18 +889,19 @@ listener Default {{
             f"""docker run -d \
                     --name rustdesk-hbbs \
                     --restart=always \
+                    -p 21114:21114 \
                     -p 21115:21115 \
-                    -p 21117:21117 \
+                    -p 21116:21116 \
+                    -p 21116:21116/udp \
+                    -p 21118:21118 \
                     -v {self.install_principal}/rustdesk/rustdesk-hbbs:/root \
-                    rustdesk/rustdesk-server hbbs -r testes.techupsistemas.com:21117
+                    rustdesk/rustdesk-server hbbs
                 """,
             f"""docker run -d \
                     --name rustdesk-hbbr \
                     --restart=always \
-                    -p 21116:21116 \
-                    -p 21116:21116/udp \
-                    -p 21118:21118 \
-                    -p 21119:21119/udp \
+                    -p 21117:21117 \
+                    -p 21119:21119 \
                     -v {self.install_principal}/rustdesk/rustdesk-hbbr:/root \
                     rustdesk/rustdesk-server hbbr
                 """,
