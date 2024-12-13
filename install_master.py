@@ -905,7 +905,8 @@ listener Default {{
                     rustdesk/rustdesk-server hbbr
                 """,
             ]
-        self.remove_container('rustdesk')
+        self.remove_container('rustdesk-hbbs')
+        self.remove_container('rustdesk-hbbr')
         resultados = self.executar_comandos(comandos)
         
     def instala_portainer(self,):
