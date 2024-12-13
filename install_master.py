@@ -49,7 +49,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.153
+Versão 1.154
 ===========================================================================
 ===========================================================================
 """)
@@ -907,6 +907,12 @@ listener Default {{
             ]
         self.remove_container('rustdesk-hbbs')
         self.remove_container('rustdesk-hbbr')
+        resultados = self.executar_comandos(comandos)
+        time.sleep(10)
+        
+        comandos = [
+            f"docker logs rustdesk-hbbs",
+        ]
         resultados = self.executar_comandos(comandos)
         
     def instala_portainer(self,):
