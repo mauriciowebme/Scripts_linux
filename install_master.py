@@ -839,6 +839,7 @@ ExecStartPre=/bin/touch /tmp/{service_name}.lock
 ExecStart=/usr/bin/docker exec -i -u www-data nextcloud /usr/local/bin/php /var/www/html/cron.php
 ExecStartPost=/bin/rm -f /tmp/{service_name}.lock
 TimeoutStartSec=900
+User=root
     """
         timer_content = f"""[Unit]
 Description=Run {service_name}.service every 15 minutes
