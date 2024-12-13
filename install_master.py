@@ -892,7 +892,7 @@ listener Default {{
                     -p 21115:21115 \
                     -p 21117:21117 \
                     -v {self.install_principal}/rustdesk/rustdesk-hbbs:/root \
-                    rustdesk/rustdesk-server hbbs -r testes.techupsistemas.com:21117 -k 21115
+                    rustdesk/rustdesk-server hbbs -r testes.techupsistemas.com:21117
                 """,
             f"""docker run -d \
                     --name rustdesk-hbbr \
