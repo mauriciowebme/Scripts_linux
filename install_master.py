@@ -891,8 +891,12 @@ listener Default {{
                     --restart=always \
                     -p 21115:21115 \
                     -p 21116:21116 \
+                    -p 21116:21116/udp \
+                    -p 21117:21117 \
+                    -p 21118:21118 \
+                    -p 21119:21119/udp \
                     -v {self.install_principal}/rustdesk/config:/config \
-                    rustdesk/rustdesk-server hbbs -r 21116 -k 21115
+                    rustdesk/rustdesk-server /bin/sh -c "/usr/bin/hbbs -r testes.techupsistemas.com:21117 & /usr/bin/hbbr"
                 """,
             ]
         self.remove_container('rustdesk')
