@@ -827,7 +827,7 @@ listener Default {{
         resultados = self.executar_comandos(comandos)
         time.sleep(30)
         comandos = [
-            f"echo '*/5 * * * * docker exec -i -u www-data nextcloud /usr/local/bin/php /var/www/html/cron.php' | sudo crontab -",
+            f"echo '*/15 * * * * docker exec -i -u www-data nextcloud /usr/local/bin/php /var/www/html/cron.php' | sudo crontab -",
             ]
         self.executar_comandos(comandos)
         
