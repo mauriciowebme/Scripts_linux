@@ -839,7 +839,10 @@ User=www-data
 ExecStartPre=/bin/touch /tmp/{service_name}.lock
 ExecStart=/usr/bin/docker exec -i -u www-data nextcloud /usr/local/bin/php /var/www/html/cron.php
 ExecStartPost=/bin/rm -f /tmp/{service_name}.lock
-TimeoutStartSec=300  # 5 minutos de timeout
+TimeoutStartSec=600  # 10 minutos de timeout
+
+[Install]
+WantedBy=multi-user.target
     """
 
         # Caminho do arquivo de serviço
