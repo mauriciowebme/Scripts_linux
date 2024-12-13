@@ -49,7 +49,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.154
+Versão 1.155
 ===========================================================================
 ===========================================================================
 """)
@@ -839,28 +839,41 @@ User=www-data
 ExecStartPre=/bin/touch /tmp/{service_name}.lock
 ExecStart=/usr/bin/docker exec -i -u www-data nextcloud /usr/local/bin/php /var/www/html/cron.php
 ExecStartPost=/bin/rm -f /tmp/{service_name}.lock
-TimeoutStartSec=600  # 10 minutos de timeout
+TimeoutStartSec=900  # 15 minutos de timeout
+    """
+        timer_content = f"""[Unit]
+Description=Run {service_name}.service every 15 minutes
+
+[Timer]
+OnCalendar=*:0/15
+Persistent=true
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=timers.target
     """
 
         # Caminho do arquivo de serviço
         service_path = f"/etc/systemd/system/{service_name}.service"
+        timer_path = f"/etc/systemd/system/{service_name}.timer"
 
         try:
             # Escreve o arquivo de serviço
             with open(service_path, "w") as f:
                 f.write(service_content)
             print(f"Serviço {service_name}.service criado com sucesso em {service_path}")
+            
+            with open(timer_path, "w") as f:
+                f.write(timer_content)
+            print(f"Serviço {service_name}.service criado com sucesso em {timer_path}")
 
             # Recarrega o systemd para reconhecer o novo serviço
             os.system("sudo systemctl daemon-reload")
 
             # Ativa o serviço
-            os.system(f"sudo systemctl enable {service_name}.service")
-            os.system(f"sudo systemctl start {service_name}.service")
-            print(f"Timer {service_name}.service ativado e iniciado com sucesso.")
+            os.system(f"sudo systemctl enable {service_name}.timer")
+            os.system(f"sudo systemctl start {service_name}.timer")
+            os.system(f"sudo systemctl status {service_name}.timer")
+            print(f"Timer {service_name}.timer ativado e iniciado com sucesso.")
 
         except PermissionError:
             print("Erro: Permissão negada. Execute o script como superusuário (sudo).")
