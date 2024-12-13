@@ -855,9 +855,9 @@ TimeoutStartSec=300  # 5 minutos de timeout
             os.system("sudo systemctl daemon-reload")
 
             # Ativa o serviço
-            os.system(f"sudo systemctl enable {service_name}.timer")
-            os.system(f"sudo systemctl start {service_name}.timer")
-            print(f"Timer {service_name}.timer ativado e iniciado com sucesso.")
+            os.system(f"sudo systemctl enable {service_name}.service")
+            os.system(f"sudo systemctl start {service_name}.service")
+            print(f"Timer {service_name}.service ativado e iniciado com sucesso.")
 
         except PermissionError:
             print("Erro: Permissão negada. Execute o script como superusuário (sudo).")
