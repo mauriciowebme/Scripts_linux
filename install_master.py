@@ -873,6 +873,20 @@ listener Default {{
             ]
         resultados = self.executar_comandos(comandos, exibir_executando=False)
         
+    def instala_code_server(self,):
+        comandos = [
+            f"""docker run -d \
+                    --name=code-server \
+                    --restart=always \
+                    --name=code-server \
+                    -p 8443:8443 \
+                    -v {self.install_principal}/code-server:/config \
+                    lscr.io/linuxserver/code-server:latest
+                """,
+            ]
+        self.remove_container('code-server')
+        resultados = self.executar_comandos(comandos)
+        
     def instala_rustdesk(self,):
         comandos = [
             f"""docker run -d \
@@ -1986,6 +2000,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala rustdesk", self.instala_rustdesk),
             ("Instala pritunel", self.instala_pritunel),
             ("Instala nextcloud", self.instala_nextcloud),
+            ("Instala code-server", self.instala_code_server),
         ]
         self.mostrar_menu(opcoes_menu)
     
