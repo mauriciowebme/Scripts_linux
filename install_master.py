@@ -49,7 +49,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.152
+Versão 1.156
 ===========================================================================
 ===========================================================================
 """)
@@ -188,7 +188,13 @@ class Docker(Executa_comados):
         
         except Exception as ex:
             pass
-
+        
+    def comandos_in_container(self, nome_conatiner, comandos, tipo='bash'):
+        comandos_conatiners = []
+        for comando in comandos:
+            comandos_conatiners += [f'docker exec -i -u root {nome_conatiner} {tipo} -c \'{comando}\'']
+        self.executar_comandos(comandos_conatiners)
+            
     def remove_container(self, nome_container):
         comandos = [
             f'docker rm -f {nome_container}',
@@ -819,7 +825,66 @@ listener Default {{
             ]
         self.remove_container('nextcloud')
         resultados = self.executar_comandos(comandos)
-        time.sleep(10)
+        time.sleep(30)
+        
+        service_name = "cron.php"
+        
+        # Conteúdo do arquivo de serviço
+        service_content = f"""[Unit]
+Description=Nextcloud Cron Job
+ConditionPathExists=!/tmp/{service_name}.lock
+
+[Service]
+ExecStartPre=/bin/touch /tmp/{service_name}.lock
+ExecStart=/usr/bin/docker exec -i -u www-data nextcloud /usr/local/bin/php /var/www/html/cron.php
+ExecStartPost=/bin/rm -f /tmp/{service_name}.lock
+TimeoutStartSec=900
+User=root
+    """
+        timer_content = f"""[Unit]
+Description=Run {service_name}.service every 15 minutes
+
+[Timer]
+OnCalendar=*:0/15
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+    """
+
+        # Caminho do arquivo de serviço
+        service_path = f"/etc/systemd/system/{service_name}.service"
+        timer_path = f"/etc/systemd/system/{service_name}.timer"
+
+        try:
+            # Escreve o arquivo de serviço
+            with open(service_path, "w") as f:
+                f.write(service_content)
+            print(f"Serviço {service_name}.service criado com sucesso em {service_path}")
+            
+            with open(timer_path, "w") as f:
+                f.write(timer_content)
+            print(f"Serviço {service_name}.service criado com sucesso em {timer_path}")
+
+            # Recarrega o systemd para reconhecer o novo serviço
+            os.system("sudo systemctl daemon-reload")
+
+            # Ativa o serviço
+            os.system(f"sudo systemctl enable {service_name}.timer")
+            os.system(f"sudo systemctl start {service_name}.timer")
+            os.system(f"sudo systemctl status {service_name}.timer")
+            print(f"Timer {service_name}.timer ativado e iniciado com sucesso.")
+
+        except PermissionError:
+            print("Erro: Permissão negada. Execute o script como superusuário (sudo).")
+        except Exception as e:
+            print(f"Erro ao criar o serviço: {e}")
+        
+        # comandos = [
+        #     f"echo '*/15 * * * * docker exec -i -u www-data nextcloud /usr/local/bin/php /var/www/html/cron.php' | sudo crontab -",
+        #     ]
+        # self.executar_comandos(comandos)
+        
         self.cria_rede_docker(associar_container_nome=f'nextcloud', numero_rede=1)
         print("Instalação concluída. Nextcloud está pronto para uso.")
         print('\nIPs possíveis para acesso:')
@@ -890,15 +955,33 @@ listener Default {{
     def instala_rustdesk(self,):
         comandos = [
             f"""docker run -d \
-                    --name rustdesk \
+                    --name rustdesk-hbbs \
                     --restart=always \
+                    -p 21114:21114 \
                     -p 21115:21115 \
                     -p 21116:21116 \
-                    -v {self.install_principal}/rustdesk/config:/config \
-                    rustdesk/rustdesk-server hbbs -r 21116 -k 21115
+                    -p 21116:21116/udp \
+                    -p 21118:21118 \
+                    -v {self.install_principal}/rustdesk/rustdesk-hbbs:/root \
+                    rustdesk/rustdesk-server hbbs
+                """,
+            f"""docker run -d \
+                    --name rustdesk-hbbr \
+                    --restart=always \
+                    -p 21117:21117 \
+                    -p 21119:21119 \
+                    -v {self.install_principal}/rustdesk/rustdesk-hbbr:/root \
+                    rustdesk/rustdesk-server hbbr
                 """,
             ]
-        self.remove_container('rustdesk')
+        self.remove_container('rustdesk-hbbs')
+        self.remove_container('rustdesk-hbbr')
+        resultados = self.executar_comandos(comandos)
+        time.sleep(10)
+        
+        comandos = [
+            f"docker logs rustdesk-hbbs",
+        ]
         resultados = self.executar_comandos(comandos)
         
     def instala_portainer(self,):
@@ -1208,7 +1291,7 @@ app.listen(PORT, () => {{
             replication_user = 'replication_user'
             replication_password = 'replication_password'
             
-            time.sleep(60)
+            time.sleep(10)
             self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta,
                                              slave_container, slave_host, slave_user, slave_password, slave_porta,
                                              replication_user, replication_password)
@@ -1226,27 +1309,71 @@ app.listen(PORT, () => {{
                                 slave_container, slave_host, slave_user, slave_password, slave_porta,
                                 replication_user, replication_password):
         try:
-            # Conectar ao Master
+            # ------------------------- Conectar ao Master -----------------------------
             print("Conectando ao Master...")
-            master_conn = mysql.connector.connect(
-                host=master_host,
-                user=master_user,
-                password=master_password,
-                port=master_porta
-            )
-            master_cursor = master_conn.cursor()
-            print("Conexão com o Master estabelecida.")
+            erro_conect = False
+            for x in range(10):
+                try:
+                    master_conn = mysql.connector.connect(
+                        host=master_host,
+                        user=master_user,
+                        password=master_password,
+                        port=master_porta
+                    )
+                    master_cursor = master_conn.cursor()
+                    print("Conexão com o Master estabelecida.")
+                    erro_conect = False
+                    # time.sleep(10)
+                    break
+                except Exception as ex:
+                    time.sleep(10)
+                    erro_conect = True
+                    
+            if erro_conect:
+                print('Erro ao conectar ao Master.')
+                return
+            # -------------------------------------------------------------------------
+            
+            # ------------------------- Conectar ao Slave -----------------------------
+            print("Conectando ao Slave...")
+            erro_conect = False
+            for x in range(10):
+                try:
+                    slave_conn = mysql.connector.connect(
+                        host=slave_host,
+                        user=slave_user,
+                        password=slave_password,
+                        port=slave_porta
+                    )
+                    slave_cursor = slave_conn.cursor()
+                    print("Conexão com o Slave estabelecida.")
+                    erro_conect = False
+                    # time.sleep(10)
+                    break
+                except Exception as ex:
+                    time.sleep(10)
+                    erro_conect = True
+                    
+            if erro_conect:
+                print('Erro ao conectar ao Slave.')
+                return
+            # -------------------------------------------------------------------------
 
             # Criar usuário de replicação no Master
             master_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';")
             master_cursor.execute(f"GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'%';")
             master_cursor.execute("FLUSH PRIVILEGES;")
             print("Usuário de replicação criado com sucesso no Master.")
+            
+            # Criar usuário de replicação no Slave
+            slave_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';")
+            slave_cursor.execute(f"GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'%';")
+            slave_cursor.execute("FLUSH PRIVILEGES;")
+            print("Usuário de replicação criado com sucesso no Slave.")
 
             # Obter informações do log binário do Master
             master_cursor.execute("SHOW MASTER STATUS;")
             result = master_cursor.fetchone()
-
             if result:
                 master_log_file = result[0]
                 master_log_pos = result[1]
@@ -1254,18 +1381,33 @@ app.listen(PORT, () => {{
             else:
                 print("Erro: Não foi possível obter o status do log binário do Master.")
                 return
+            
+            # Obter informações do log binário do Slave
+            slave_cursor.execute("SHOW MASTER STATUS;")
+            result = slave_cursor.fetchone()
+            if result:
+                slave_log_file = result[0]
+                slave_log_pos = result[1]
+                print(f"Slave Log File: {slave_log_file}, Position: {slave_log_pos}")
+            else:
+                print("Erro: Não foi possível obter o status do log binário do Slave.")
+                return
 
-            # Conectar ao Slave
-            print("Conectando ao Slave...")
-            slave_conn = mysql.connector.connect(
-                host=slave_host,
-                user=slave_user,
-                password=slave_password,
-                port=slave_porta
-            )
-            slave_cursor = slave_conn.cursor()
-            print("Conexão com o Slave estabelecida.")
-
+            # Configurar o Master com informações do Slave
+            master_cursor.execute("STOP SLAVE;")
+            porta_interna = '3306'
+            master_cursor.execute(f"""
+                CHANGE MASTER TO
+                MASTER_HOST='{slave_container}',
+                MASTER_PORT={porta_interna},
+                MASTER_USER='{replication_user}',
+                MASTER_PASSWORD='{replication_password}',
+                MASTER_LOG_FILE='{slave_log_file}',
+                MASTER_LOG_POS={slave_log_pos};
+            """)
+            master_cursor.execute("START SLAVE;")
+            print("Replicação configurada com sucesso no Slave.")
+            
             # Configurar o Slave com informações do Master
             slave_cursor.execute("STOP SLAVE;")
             porta_interna = '3306'
@@ -1280,9 +1422,34 @@ app.listen(PORT, () => {{
             """)
             slave_cursor.execute("START SLAVE;")
             print("Replicação configurada com sucesso no Slave.")
+            
+            # Verificar a versão do Master
+            master_cursor.execute("SELECT VERSION();")
+            master_version = master_cursor.fetchone()[0]
+            print(f"Versão do Master: {master_version}")
+            
+            # Verificar a versão do Slave
+            slave_cursor.execute("SELECT VERSION();")
+            slave_version = slave_cursor.fetchone()[0]
+            print(f"Versão do Slave: {slave_version}")
 
-            # Verificar o status do Slave
-            slave_cursor.execute("SHOW REPLICA STATUS;")
+            # Verificar o status do Master com base na versão
+            if master_version.startswith("5.7"):
+                print("Verificando status da replicação para MASTER MySQL 5.7...")
+                master_cursor.execute("SHOW SLAVE STATUS;")
+            else:
+                print("Verificando status da replicação para MASTER MySQL 8.0...")
+                master_cursor.execute("SHOW REPLICA STATUS;")
+            for row in master_cursor:
+                print(row)
+                
+            # Verificar o status do Slave com base na versão
+            if slave_version.startswith("5.7"):
+                print("Verificando status da replicação para SLAVE MySQL 5.7...")
+                slave_cursor.execute("SHOW SLAVE STATUS;")
+            else:
+                print("Verificando status da replicação para SLAVE MySQL 8.0...")
+                slave_cursor.execute("SHOW REPLICA STATUS;")
             for row in slave_cursor:
                 print(row)
 
