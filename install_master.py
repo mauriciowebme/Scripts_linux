@@ -939,12 +939,15 @@ WantedBy=timers.target
         resultados = self.executar_comandos(comandos, exibir_executando=False)
         
     def instala_code_server(self,):
+        print('Instalando code-server.')
+        senha = input('Coloque a senha que deseja para acesso: ')
         comandos = [
             f"""docker run -d \
                     --name=code-server \
                     --restart=always \
-                    --name=code-server \
                     -p 8443:8443 \
+                    -e PASSWORD={senha} \
+                    -e SUDO_PASSWORD={senha} \
                     -v {self.install_principal}/code-server:/config \
                     lscr.io/linuxserver/code-server:latest
                 """,
