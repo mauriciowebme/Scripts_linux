@@ -16,6 +16,14 @@
             card.classList.toggle('text-white');
         }
     </script>
+    <style>
+        @media (max-width: 576px) {
+            .card {
+                width: 100%;
+                margin: 10px;
+            }
+        }
+    </style>
 </head>
 <body class="d-flex justify-content-center align-items-center vh-100 bg-dark">
     <button onclick="toggleColors()" class="btn btn-secondary position-absolute" style="top: 10px; left: 10px;">Toggle Colors</button>
