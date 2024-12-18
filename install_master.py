@@ -1656,6 +1656,29 @@ CMD ["sh", "-c", "\
         self.remove_container(f'rsync-inotify-{nome}')
         resultados = self.executar_comandos(comandos)
  
+    def instala_open_webui(self):
+        comandos = [
+            "docker stop open-webui",
+            "docker rm open-webui",
+            "docker stop ollama",
+            "docker rm ollama",
+            "docker network create ollama-network",
+            """docker run -d \
+                --name ollama \
+                --network ollama-network \
+                -p 11434:11434 \
+                ollama/ollama""",
+            """docker exec -it ollama bash -c "ollama pull llama2" """,
+            """docker exec -it ollama bash -c "ollama list" """,
+            """docker run -d \
+                --name open-webui \
+                --network ollama-network \
+                -p 3000:8080 \
+                -e OLLAMA_BASE_URL=http://ollama:11434 \
+                ghcr.io/open-webui/open-webui:main"""
+        ]
+        self.executar_comandos(comandos)
+
 class Sistema(Docker, Executa_comados):
     def __init__(self):
         Docker.__init__(self)
@@ -2171,6 +2194,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala pritunel", self.instala_pritunel),
             ("Instala nextcloud", self.instala_nextcloud),
             ("Instala code-server", self.instala_code_server),
+            ("Instala Open WebUI", self.instala_open_webui),
         ]
         self.mostrar_menu(opcoes_menu)
     
