@@ -1657,21 +1657,34 @@ CMD ["sh", "-c", "\
         resultados = self.executar_comandos(comandos)
  
     def instala_open_webui(self):
+        print("Escolha o modelo:")
+        print("1. llama3.3")
+        print("2. llama2")
+        escolha = input('Digite o número do modelo: ').strip()
+        
+        if escolha == '1':
+            modelo = 'llama3.3'
+        elif escolha == '2':
+            modelo = 'llama2'
+        else:
+            print("Opção inválida. Escolha entre '1' e '2'.")
+            return
+        
         comandos = [
             "docker network create ollama-network",
             """docker run -d \
-                --name ollama \
-                --network ollama-network \
-                -p 11434:11434 \
-                ollama/ollama""",
-            """docker exec -it ollama bash -c "ollama pull llama2" """,
+            --name ollama \
+            --network ollama-network \
+            -p 11434:11434 \
+            ollama/ollama""",
+            f"""docker exec -it ollama bash -c "ollama pull {modelo}" """,
             """docker exec -it ollama bash -c "ollama list" """,
             """docker run -d \
-                --name open-webui \
-                --network ollama-network \
-                -p 3000:8080 \
-                -e OLLAMA_BASE_URL=http://ollama:11434 \
-                ghcr.io/open-webui/open-webui:main"""
+            --name open-webui \
+            --network ollama-network \
+            -p 3000:8080 \
+            -e OLLAMA_BASE_URL=http://ollama:11434 \
+            ghcr.io/open-webui/open-webui:main"""
         ]
         self.remove_container(f'open-webui')
         self.remove_container(f'ollama')
