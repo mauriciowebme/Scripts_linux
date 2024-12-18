@@ -49,7 +49,7 @@ print("""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.156
+Versão 1.157
 ===========================================================================
 ===========================================================================
 """)
@@ -1658,10 +1658,6 @@ CMD ["sh", "-c", "\
  
     def instala_open_webui(self):
         comandos = [
-            "docker stop open-webui",
-            "docker rm open-webui",
-            "docker stop ollama",
-            "docker rm ollama",
             "docker network create ollama-network",
             """docker run -d \
                 --name ollama \
@@ -1677,7 +1673,9 @@ CMD ["sh", "-c", "\
                 -e OLLAMA_BASE_URL=http://ollama:11434 \
                 ghcr.io/open-webui/open-webui:main"""
         ]
-        self.executar_comandos(comandos)
+        self.remove_container(f'open-webui')
+        self.remove_container(f'ollama')
+        self.executar_comandos(comandos, ignorar_erros=True)
 
 class Sistema(Docker, Executa_comados):
     def __init__(self):
