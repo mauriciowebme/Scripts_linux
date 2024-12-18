@@ -1660,24 +1660,33 @@ CMD ["sh", "-c", "\
         print("Escolha o modelo:")
         print("1. llama3.3")
         print("2. llama2")
+        print("3. Instalar ambos")
         escolha = input('Digite o número do modelo: ').strip()
         
         if escolha == '1':
-            modelo = 'llama3.3'
+            modelos = ['llama3.3']
         elif escolha == '2':
-            modelo = 'llama2'
+            modelos = ['llama2']
+        elif escolha == '3':
+            modelos = ['llama3.3', 'llama2']
         else:
-            print("Opção inválida. Escolha entre '1' e '2'.")
+            print("Opção inválida. Escolha entre '1', '2' ou '3'.")
             return
         
         comandos = [
             "docker network create ollama-network",
-            """docker run -d \
+            f"""docker run -d \
             --name ollama \
             --network ollama-network \
             -p 11434:11434 \
+            -v {self.install_principal}/ollama:/root/.ollama \
             ollama/ollama""",
-            f"""docker exec -it ollama bash -c "ollama pull {modelo}" """,
+        ]
+        
+        for modelo in modelos:
+            comandos.append(f"""docker exec -it ollama bash -c "ollama pull {modelo}" """)
+        
+        comandos += [
             """docker exec -it ollama bash -c "ollama list" """,
             """docker run -d \
             --name open-webui \
