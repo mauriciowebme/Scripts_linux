@@ -1657,6 +1657,8 @@ CMD ["sh", "-c", "\
         resultados = self.executar_comandos(comandos)
  
     def instala_open_webui(self):
+        caminho_ollama = f"{self.install_principal}/ollama"
+        
         print("Escolha o modelo:")
         print("1. llama3.3")
         print("2. llama2")
@@ -1679,7 +1681,7 @@ CMD ["sh", "-c", "\
             --name ollama \
             --network ollama-network \
             -p 11434:11434 \
-            -v {self.install_principal}/ollama:/root/.ollama \
+            -v {caminho_ollama}:/root/.ollama \
             ollama/ollama""",
         ]
         
@@ -1697,7 +1699,7 @@ CMD ["sh", "-c", "\
         ]
         
         # Adiciona permissão 777 no caminho persistente do container ollama
-        self.gerenciar_permissoes_pasta(f"{self.install_principal}/ollama", '777')
+        self.gerenciar_permissoes_pasta(caminho_ollama, '777')
         
         self.remove_container(f'open-webui')
         self.remove_container(f'ollama')
