@@ -1681,6 +1681,7 @@ CMD ["sh", "-c", "\
             return
         
         comandos = [
+            "docker rm -f ollama_temp",
             "docker network create ollama-network",
             f"""docker run -d \
             --name ollama_temp \
