@@ -1683,17 +1683,24 @@ CMD ["sh", "-c", "\
         comandos = [
             "docker network create ollama-network",
             f"""docker run -d \
+            --name ollama_temp \
+            --network ollama-network \
+            -p 11434:11434 \
+            ollama/ollama""",
+            f"docker cp ollama_temp:/root/.ollama {caminho_ollama}",
+            "docker rm -f ollama_temp",
+        ]
+        
+        for modelo in modelos:
+            comandos.append(f"""docker exec -it ollama_temp bash -c "ollama pull {modelo}" """)
+        
+        comandos += [
+            f"""docker run -d \
             --name ollama \
             --network ollama-network \
             -p 11434:11434 \
             -v {caminho_ollama}:/root/.ollama \
             ollama/ollama""",
-        ]
-        
-        for modelo in modelos:
-            comandos.append(f"""docker exec -it ollama bash -c "ollama pull {modelo}" """)
-        
-        comandos += [
             """docker exec -it ollama bash -c "ollama list" """,
             """docker run -d \
             --name open-webui \
