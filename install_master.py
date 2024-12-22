@@ -1663,6 +1663,7 @@ CMD ["sh", "-c", "\
         print("1. llama3.3")
         print("2. llama2")
         print("3. Instalar ambos")
+        print("4. Instalar modelo manualmente posteriormente")
         escolha = input('Digite o número do modelo: ').strip()
         
         if escolha == '1':
@@ -1671,8 +1672,12 @@ CMD ["sh", "-c", "\
             modelos = ['llama2']
         elif escolha == '3':
             modelos = ['llama3.3', 'llama2']
+        elif escolha == '4':
+            modelos = []
+            print("Para instalar um modelo manualmente posteriormente, use o comando:")
+            print("docker exec -it ollama bash -c \"ollama pull llama3.3\"")
         else:
-            print("Opção inválida. Escolha entre '1', '2' ou '3'.")
+            print("Opção inválida. Escolha entre '1', '2', '3' ou '4'.")
             return
         
         comandos = [
