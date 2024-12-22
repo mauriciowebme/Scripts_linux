@@ -1695,6 +1695,10 @@ CMD ["sh", "-c", "\
             -e OLLAMA_BASE_URL=http://ollama:11434 \
             ghcr.io/open-webui/open-webui:main"""
         ]
+        
+        # Adiciona permissão 777 no caminho persistente do container ollama
+        self.gerenciar_permissoes_pasta(f"{self.install_principal}/ollama", '777')
+        
         self.remove_container(f'open-webui')
         self.remove_container(f'ollama')
         self.executar_comandos(comandos, ignorar_erros=True)
