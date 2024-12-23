@@ -1686,7 +1686,7 @@ CMD ["sh", "-c", "\
             --name ollama \
             --network ollama-network \
             -p 11434:11434 \
-            -v {caminho_ollama}:/root/.ollama \
+            -v {caminho_ollama}:/root \
             ollama/ollama""",
         ]
         
