@@ -2281,8 +2281,19 @@ class Sistema(Docker, Executa_comados):
         print("Saindo...")
         exit()
 
+def check_for_update():
+    update_file = "/install_principal/update_check.txt"
+    os.makedirs(os.path.dirname(update_file), exist_ok=True)
+    if not os.path.exists(update_file):
+        print("Primeira execução detectada. Atualizando o sistema...")
+        servicos = Sistema()
+        servicos.atualizar_sistema_completa()
+        with open(update_file, "w") as f:
+            f.write("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
+
 def main():
     """Função principal que controla o menu."""
+    check_for_update()
     servicos = Sistema()
     opcoes_menu = [
         ("Contagem regressiva", servicos.contagem_regressiva),
