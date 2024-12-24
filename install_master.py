@@ -2210,10 +2210,10 @@ class Sistema(Docker, Executa_comados):
         opcoes_menu = [
             ("Força instalação docker", self.instala_docker_force),
             ("Instala portainer", self.instala_portainer),
+            ("Instala filebrowser", self.instala_filebrowser),
             ("Instala traefik", self.instala_traefik),
             ("Adiciona roteamento e serviço ao traefik", self.adiciona_roteador_servico_traefik),
             ("Configura rede do container", self.configura_rede),
-            ("Instala filebrowser", self.instala_filebrowser),
             ("Instala webserver ssh", self.instala_webserver_ssh),
             ("Gerenciador SFTP sftpgo", self.gerenciar_usuarios_sftp),
             ("Instala SFTP sftpgo", self.instala_ftp_sftpgo),
