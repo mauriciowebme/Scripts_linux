@@ -10,7 +10,6 @@ import os.path
 import socket
 import subprocess
 import time
-from traceback import print_exc
 import yaml
 import json
 import requests
