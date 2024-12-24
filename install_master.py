@@ -1061,11 +1061,11 @@ app.listen(PORT, () => {{
 """
         # Caminho para o arquivo index.js
         caminho_index_js = os.path.join(diretorio_projeto, "index.js")
-        #if not os.path.exists(caminho_index_js):
-        # Escreve o conteúdo no arquivo index.js
-        with open(caminho_index_js, "w") as arquivo:
-            arquivo.write(index_js)
-        print(f"Arquivo index.js criado em {caminho_index_js}")
+        if not os.path.exists(caminho_index_js):
+            # Escreve o conteúdo no arquivo index.js
+            with open(caminho_index_js, "w") as arquivo:
+                arquivo.write(index_js)
+            print(f"Arquivo index.js criado em {caminho_index_js}")
         
         print(f'Porta interna para uso: {porta}')
         container = f"""docker run -d \
