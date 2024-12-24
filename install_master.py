@@ -1109,27 +1109,6 @@ app.listen(PORT, () => {{
             ]
         self.remove_container(f'ftp_sftpgo')
         resultados = self.executar_comandos(comandos)
-        # Configurar usuário admin padrão
-        admin_usuario = 'admin'
-        admin_senha = 'admin'
-        
-        url = "http://localhost:8085/api/v2/users"
-        headers = {
-            'Authorization': 'Bearer ' + self.obter_token_admin(),
-            'Content-Type': 'application/json'
-        }
-        payload = {
-            "username": admin_usuario,
-            "password": admin_senha,
-            "status": 1,
-            "permissions": ["*"]
-        }
-        response = requests.post(url, json=payload, headers=headers)
-        if response.status_code == 201:
-            print("Usuário admin criado com sucesso")
-        else:
-            print(f"Erro ao criar usuário admin: {response.status_code}")
-            print(response.json())
         # self.cria_rede_docker(associar_container_nome=f'mysql_5_7', numero_rede=1)
         
     def gerenciar_usuarios_sftp(self, manual=True, simples_usuario=None, simples_senha=None, simples_base_diretorio=None):
