@@ -39,10 +39,21 @@ def ensure_library_installed(library_name):
         ensure_pip_installed()
         subprocess.check_call([sys.executable, "-m", "pip", "install", library_name])
         print(f"Biblioteca '{library_name}' instalada com sucesso.")
+        
+def check_for_update():
+    update_file = "/install_principal/update_check.txt"
+    os.makedirs(os.path.dirname(update_file), exist_ok=True)
+    if not os.path.exists(update_file):
+        print("Primeira execução detectada. Atualizando o sistema...")
+        servicos = Sistema()
+        servicos.atualizar_sistema_completa()
+        with open(update_file, "w") as f:
+            f.write("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
+
+check_for_update()
 
 # Verificar e instalar 'mysql-connector-python' se necessário
 ensure_library_installed("mysql.connector")
-
 import mysql.connector
 
 print("""
@@ -2281,19 +2292,8 @@ class Sistema(Docker, Executa_comados):
         print("Saindo...")
         exit()
 
-def check_for_update():
-    update_file = "/install_principal/update_check.txt"
-    os.makedirs(os.path.dirname(update_file), exist_ok=True)
-    if not os.path.exists(update_file):
-        print("Primeira execução detectada. Atualizando o sistema...")
-        servicos = Sistema()
-        servicos.atualizar_sistema_completa()
-        with open(update_file, "w") as f:
-            f.write("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
-
 def main():
     """Função principal que controla o menu."""
-    check_for_update()
     servicos = Sistema()
     opcoes_menu = [
         ("Contagem regressiva", servicos.contagem_regressiva),
