@@ -1022,7 +1022,7 @@ WantedBy=timers.target
         nome_dominio_ = nome_dominio.replace('.', '_')
         porta = self.escolher_porta_disponivel()
         diretorio_projeto = f"{self.install_principal}/node/{nome_dominio_}"
-        os.makedirs(diretorio_projeto, exist_ok=True)
+        self.gerenciar_permissoes_pasta(diretorio_projeto)
         public_html = diretorio_projeto
         self.gerenciar_usuarios_sftp(manual=False, simples_usuario=nome_dominio_, simples_senha=senha_ftp, simples_base_diretorio=public_html)
         
