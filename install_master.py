@@ -1120,20 +1120,23 @@ app.listen(PORT, () => {{
         
         self.verifica_container_existe('ftp_sftpgo', self.instala_ftp_sftpgo)
         
-        print('\nUsuario e senha para permissão de administração FTP:')
-        admin_usuario = input('Usuario admin: ')
-        admin_senha = input('Senha: ')
-        
-        url = "http://localhost:8085/api/v2/token"
-        response = requests.get(url, auth=HTTPBasicAuth(admin_usuario, admin_senha))
-        if response.status_code == 200:
-            print("Logado com sucesso\n")
-            token = response.json()['access_token']
-        else:
-            print(f"Usuario sem pemissão ou não existe.")
-            exit()
-            # print(f"Erro: {response.status_code}")
-            # print(response.json())
+        max_attempts = 5
+        for attempt in range(max_attempts):
+            print('\nUsuario e senha para permissão de administração FTP:')
+            admin_usuario = input('Usuario admin: ')
+            admin_senha = input('Senha: ')
+            
+            url = "http://localhost:8085/api/v2/token"
+            response = requests.get(url, auth=HTTPBasicAuth(admin_usuario, admin_senha))
+            if response.status_code == 200:
+                print("Logado com sucesso\n")
+                token = response.json()['access_token']
+                break
+            else:
+                print(f"Usuario sem permissão ou não existe. Tentativas restantes: {max_attempts - attempt - 1}")
+            if attempt == max_attempts - 1:
+                print("Número máximo de tentativas atingido. Saindo...")
+                exit()
             
         if manual:
             print('Digite os dados para criação do novo usuario FTP:')
