@@ -45,10 +45,14 @@ def check_for_update():
     os.makedirs(os.path.dirname(update_file), exist_ok=True)
     if not os.path.exists(update_file):
         print("Primeira execução detectada. Atualizando o sistema...")
-        servicos = Sistema()
-        servicos.atualizar_sistema_completa()
-        with open(update_file, "w") as f:
-            f.write("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
+        try:
+            subprocess.check_call(["sudo", "apt", "update"])
+            subprocess.check_call(["sudo", "apt", "upgrade", "-y"])
+            with open(update_file, "w") as f:
+                f.write("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
+        except subprocess.CalledProcessError as e:
+            print(f"Erro ao atualizar o sistema: {e}")
+            sys.exit(1)
 
 check_for_update()
 
