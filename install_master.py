@@ -1032,11 +1032,15 @@ WantedBy=timers.target
             "version": "1.0",
             "main": "index.js",
             "scripts": {
-                "start": "node index.js"
+                "prestart": "npm install",
+                "start": "nodemon index.js"
             },
             "dependencies": {
                 "express": "^4.17.1"
-            }
+            },
+            "devDependencies": {
+                "nodemon": "^2.0.0"
+            },
         }
         # Caminho para o arquivo package.json
         caminho_package_json = os.path.join(diretorio_projeto, "package.json")
