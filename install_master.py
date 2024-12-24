@@ -1083,6 +1083,7 @@ app.listen(PORT, () => {{
             ]
         self.remove_container(nome_dominio_)
         resultados = self.executar_comandos(comandos)
+        self.gerenciar_permissoes_pasta(diretorio_projeto, '777')
         if resposta_traefik.lower() == 's':
             self.adiciona_roteador_servico_traefik(dominio=nome_dominio, endereco=nome_dominio_, porta=porta)
     
