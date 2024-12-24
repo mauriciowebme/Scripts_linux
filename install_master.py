@@ -1736,6 +1736,16 @@ CMD ["sh", "-c", "\
         self.remove_container('redis')
         resultados = self.executar_comandos(comandos)
         print("Instalação do Redis concluída.")
+        print("")
+        print("Porta de acesso: 6379")
+        print("")
+        print("Realize testes assim:")
+        print("docker exec -it redis redis-cli")
+        print("")
+        print("AUTH sua_senha_aqui")
+        print('set meu-teste "funcionando"')
+        print("get meu-teste")
+        print("")
 
 class Sistema(Docker, Executa_comados):
     def __init__(self):
