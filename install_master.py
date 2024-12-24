@@ -46,8 +46,8 @@ def check_for_update():
     if not os.path.exists(update_file):
         print("Primeira execução detectada. Atualizando o sistema...")
         try:
-            subprocess.check_call(["sudo", "apt", "update"])
-            subprocess.check_call(["sudo", "apt", "upgrade", "-y"])
+            subprocess.run(["sudo", "apt", "update"], check=True)
+            subprocess.run(["sudo", "apt", "upgrade", "-y"], check=True)
             with open(update_file, "w") as f:
                 f.write("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
         except subprocess.CalledProcessError as e:
