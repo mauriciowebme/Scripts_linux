@@ -47,7 +47,7 @@ def check_for_update():
         print("Primeira execução detectada. Atualizando o sistema...")
         try:
             subprocess.run(["sudo", "apt", "update"], check=True)
-            subprocess.run(["sudo", "apt", "upgrade", "-y"], check=True)
+            subprocess.run(["sudo", "DEBIAN_FRONTEND=noninteractive", "apt", "upgrade", "-y"], check=True)
             with open(update_file, "w") as f:
                 f.write("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
         except subprocess.CalledProcessError as e:
