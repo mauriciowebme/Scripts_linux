@@ -1019,6 +1019,7 @@ WantedBy=timers.target
         resposta_traefik = input('Deseja redirecionar com traefik?: S ou N: ')
         senha_ftp = input('Digite uma senha para o ftp: ')
         
+        self.verifica_container_existe('redis', self.instala_redis_docker)
         nome_dominio_ = nome_dominio.replace('.', '_')
         porta = self.escolher_porta_disponivel()
         diretorio_projeto = f"{self.install_principal}/node/{nome_dominio_}"
