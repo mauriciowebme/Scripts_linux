@@ -1722,6 +1722,20 @@ CMD ["sh", "-c", "\
         self.remove_container(f'open-webui')
         self.remove_container(f'ollama')
         self.executar_comandos(comandos, ignorar_erros=True)
+        
+    def instala_redis_docker(self):
+        print("Iniciando instalação redis:")
+        senha = input("Configure uma senha para acessar: ")
+        container = f"""docker run -d \
+                        --name redis \
+                        --restart=always \
+                        -p 6379:6379 \
+                        redis redis-server --requirepass "{senha}"
+                    """
+        comandos = [container]
+        self.remove_container('redis')
+        resultados = self.executar_comandos(comandos)
+        print("Instalação do Redis concluída.")
 
 class Sistema(Docker, Executa_comados):
     def __init__(self):
@@ -2239,6 +2253,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala nextcloud", self.instala_nextcloud),
             ("Instala code-server", self.instala_code_server),
             ("Instala Open WebUI", self.instala_open_webui),
+            ("Instala Redis Docker", self.instala_redis_docker),
         ]
         self.mostrar_menu(opcoes_menu)
     
