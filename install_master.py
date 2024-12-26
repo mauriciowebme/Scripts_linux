@@ -1034,11 +1034,13 @@ WantedBy=timers.target
             "main": "index.js",
             "scripts": {
                 "prestart": "npm install",
-                "start": "npm install && nodemon index.js"
+                "start": "nodemon index.js",
+                "watch-package": "npm install && chokidar package.json -c 'npm install'"
             },
             "dependencies": {
                 "express": "^4.17.1",
-                "nodemon": "^2.0.0"
+                "nodemon": "^2.0.0",
+                "chokidar-cli": "^3.0.0"
             },
         }
         # Caminho para o arquivo package.json
