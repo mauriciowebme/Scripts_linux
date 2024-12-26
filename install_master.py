@@ -1034,7 +1034,7 @@ WantedBy=timers.target
             "main": "index.js",
             "scripts": {
                 "prestart": "npm install",
-                "start": "npm install && nodemon index.js"
+                "start": "nodemon index.js"
             },
             "dependencies": {
                 "express": "^4.17.1"
