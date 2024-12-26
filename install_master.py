@@ -1080,7 +1080,7 @@ app.listen(PORT, () => {{
                         -v {diretorio_projeto}:/usr/src/app \
                         -w /usr/src/app \
                         node:latest \
-                        /bin/sh -c \"npm install && npm start\"
+                        /bin/sh -c \"npm start\"
                     """
         
         comandos = [
