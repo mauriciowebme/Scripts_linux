@@ -1037,9 +1037,7 @@ WantedBy=timers.target
                 "start": "npm install && nodemon index.js"
             },
             "dependencies": {
-                "express": "^4.17.1"
-            },
-            "devDependencies": {
+                "express": "^4.17.1",
                 "nodemon": "^2.0.0"
             },
         }
