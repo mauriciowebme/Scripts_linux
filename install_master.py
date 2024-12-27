@@ -1093,7 +1093,7 @@ app.listen(PORT, () => {{
                         --name {nome_dominio_} \
                         --restart=always \
                         -p {porta}:{porta} \
-                        -v {diretorio_projeto}:/usr/src/app \
+                        -v {diretorio_projeto}:/usr/src/app:rw \
                         -w /usr/src/app \
                         node:latest \
                         /bin/sh -c \"npm start\"
@@ -2346,7 +2346,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.157
+Versão 1.159
 ===========================================================================
 ===========================================================================
 """)
