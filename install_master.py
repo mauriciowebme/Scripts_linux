@@ -1049,7 +1049,7 @@ WantedBy=timers.target
                 json.dump(package_json, arquivo, indent=4)
             print(f"Arquivo package.json criado em {caminho_package_json}")
             
-        nodemon = {
+        nodemon_json = {
             "watch": [
                 "package.json"
             ],
@@ -1057,15 +1057,15 @@ WantedBy=timers.target
                 "node_modules",
                 "package-lock.json"
             ],
-            "exec": "npm install && node index.js"
+            "exec": "chown -R 1000:1000 . && npm install && node index.js"
         }
-        # Caminho para o arquivo package.json
-        nodemon = os.path.join(diretorio_projeto, "package.json")
-        if not os.path.exists(nodemon):
-            # Escreve o conteúdo no arquivo package.json
-            with open(nodemon, "w") as arquivo:
-                json.dump(package_json, arquivo, indent=4)
-            print(f"Arquivo nodemon.json criado em {nodemon}")
+        # Caminho para o arquivo nodemon.json
+        nodemon_json = os.path.join(diretorio_projeto, "nodemon.json")
+        if not os.path.exists(nodemon_json):
+            # Escreve o conteúdo no arquivo nodemon.json
+            with open(nodemon_json, "w") as arquivo:
+                json.dump(nodemon_json, arquivo, indent=4)
+            print(f"Arquivo nodemon.json criado em {nodemon_json}")
         
         index_js = f"""\
 const express = require('express');
