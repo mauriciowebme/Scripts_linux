@@ -1123,6 +1123,8 @@ app.listen(PORT, () => {{
                         -p 8085:8080 \
                         -e SFTPGO_COMMON__IDLE_TIMEOUT=1 \
                         -e SFTPGO_COMMON__MAX_TOTAL_CONNECTIONS=200 \
+                        -e SFTPGO_FILESYSTEM_UID=0 \
+                        -e SFTPGO_FILESYSTEM_GID=0 \
                         -v {self.install_principal}:/install_principal \
                         -v {dir_dados}:/var/lib/sftpgo \
                         drakkan/sftpgo
