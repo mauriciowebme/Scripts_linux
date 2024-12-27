@@ -1034,13 +1034,11 @@ WantedBy=timers.target
             "main": "index.js",
             "scripts": {
                 "prestart": "npm install",
-                "start": "nodemon index.js",
-                "watch-package": "npm install && chokidar package.json -c 'npm install'"
+                "start": "nodemon"
             },
             "dependencies": {
-                "express": "^4.17.1",
                 "nodemon": "^2.0.0",
-                "chokidar-cli": "^3.0.0"
+                "express": "^4.17.1"
             },
         }
         # Caminho para o arquivo package.json
@@ -1050,6 +1048,24 @@ WantedBy=timers.target
             with open(caminho_package_json, "w") as arquivo:
                 json.dump(package_json, arquivo, indent=4)
             print(f"Arquivo package.json criado em {caminho_package_json}")
+            
+        nodemon = {
+            "watch": [
+                "package.json"
+            ],
+            "ignore": [
+                "node_modules",
+                "package-lock.json"
+            ],
+            "exec": "npm install && node index.js"
+        }
+        # Caminho para o arquivo package.json
+        nodemon = os.path.join(diretorio_projeto, "package.json")
+        if not os.path.exists(nodemon):
+            # Escreve o conteúdo no arquivo package.json
+            with open(nodemon, "w") as arquivo:
+                json.dump(package_json, arquivo, indent=4)
+            print(f"Arquivo nodemon.json criado em {nodemon}")
         
         index_js = f"""\
 const express = require('express');
