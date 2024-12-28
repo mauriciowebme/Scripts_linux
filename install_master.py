@@ -1106,6 +1106,11 @@ app.listen(PORT, () => {{
         resultados = self.executar_comandos(comandos)
         time.sleep(10)
         self.gerenciar_permissoes_pasta(diretorio_projeto, '777')
+        comandos = [
+            f"docker exec -i {nome_dominio_} apt-get update",
+            f"docker exec -i {nome_dominio_} apt-get install -y python3 python3-pip",
+        ]
+        resultados = self.executar_comandos(comandos)
         if resposta_traefik.lower() == 's':
             self.adiciona_roteador_servico_traefik(dominio=nome_dominio, endereco=nome_dominio_, porta=porta)
     
