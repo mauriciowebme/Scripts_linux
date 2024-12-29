@@ -120,17 +120,22 @@ class Docker(Executa_comados):
         self.redes_docker = ['_traefik', 'interno']
         self.atmoz_sftp_arquivo_conf = os.path.join(f"{self.install_principal}/atmoz_sftp/", "users.conf")
         
-    def escolher_porta_disponivel(self, inicio=40000, fim=40500):
+    def escolher_porta_disponivel(self, inicio=40000, fim=40500, quantidade=1):
+        portas_disponiveis = []
+        print(f"Escolhendo {quantidade} portas disponíveis entre {inicio} e {fim}...")
         for porta in range(inicio, fim + 1):
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 # Tenta se conectar na porta; se falhar, a porta está disponível
                 if s.connect_ex(('localhost', porta)) != 0:
-                    print(f"Porta {porta} está disponível e será usada.")
-                    return porta
+                    portas_disponiveis.append(porta)
+                    if len(portas_disponiveis) == quantidade:
+                        print(f"Portas {portas_disponiveis} estão disponíveis e serão usadas.")
+                        return portas_disponiveis
         
-        # Se não houver portas disponíveis no intervalo
-        print(f"Nenhuma porta disponível entre {inicio} e {fim}.")
-        return None
+        # Se não houver portas suficientes disponíveis no intervalo
+        if len(portas_disponiveis) < quantidade:
+            print(f"Nenhuma porta disponível entre {inicio} e {fim}.")
+            return None
 
     def cria_rede_docker(self, associar_todos=False, associar_container_nome=False, numero_rede=None):
         # Verifica se a rede já existe
@@ -509,11 +514,11 @@ certificatesResolvers:
         self.cria_rede_docker(associar_container_nome=nome_container, numero_rede=int(rede_numero))
         
     def instala_filebrowser(self,):
-        porta = self.escolher_porta_disponivel()
+        portas = self.escolher_porta_disponivel()
         container = f"""docker run -d \
                     --name filebrowser \
                     --restart=always \
-                    -p {porta}:80 \
+                    -p {portas[0]}:80 \
                     -v /:/srv \
                     -v {self.install_principal}/database_filebrowser/database.db:/database.db \
                     filebrowser/filebrowser
@@ -538,7 +543,7 @@ certificatesResolvers:
             "ip addr show | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1",
         ]
         self.executar_comandos(comandos)
-        print(f'Porta para uso local: {porta}')
+        print(f'Porta para uso local: {portas[0]}')
         print(f'Usuario e senha padrão: admin, admin')
         
     def verifica_container_existe(self, container_name, install_function):
@@ -763,20 +768,20 @@ listener Default {{
         local_install = input('\nDigite o local onde deseja instalar sem o / no final: ')
         nome_container = input('Digite o nome para o container Windows: ')
         senha = input('Digite a senha para acessar o Windows(o usuario sempre sera admin_win): ')
-        memoria = input('Digite a quantidade de memoria (apenas numeros): ')
+        memoria = input('Digite a quantidade de memoria GB(apenas numeros): ')
         cpu = input('Digite a quantidade de CPUs (apenas numeros): ')
-        disco = input('Digite tamanho do disco (apenas numeros): ')
+        disco = input('Digite tamanho do disco GB(apenas numeros): ')
         print('\n')
-        porta = self.escolher_porta_disponivel()
+        portas = self.escolher_porta_disponivel(quantidade=2)
         self.remove_container(f'windows_{nome_container}')
 
-        # -p {porta}:8006 \
         comandos = [
             f"""sudo docker run -d \
                     --name windows_{nome_container} \
                     --restart=unless-stopped \
-                    -p {porta}:3389/tcp \
-                    -p {porta}:3389/udp \
+                    -p {portas[0]}:3389/tcp \
+                    -p {portas[0]}:3389/udp \
+                    -p {portas[1]}:8006 \
                     --device=/dev/kvm \
                     --cap-add=NET_ADMIN \
                     -e RAM_SIZE="{memoria}G" \
@@ -800,8 +805,8 @@ listener Default {{
         resultados = self.executar_comandos(comandos)
         print('Portas de acesso:')
         print(' - Usuario: admin_win')
-        print(f' - Porta Web: 8006, essa porta está desabilitada, ative no painel do portainer para usar!')
-        print(f' - Porta RDP: {porta}')
+        print(f' - Porta Web: {portas[1]}, desative no painel do portainer depois de usar apenas localmente!')
+        print(f' - Porta RDP: {portas[0]}')
         
     def instala_nextcloud(self,):
         print('Instalando nextcloud...')
@@ -1021,7 +1026,7 @@ WantedBy=timers.target
         
         self.verifica_container_existe('redis', self.instala_redis_docker)
         nome_dominio_ = nome_dominio.replace('.', '_')
-        porta = self.escolher_porta_disponivel()
+        portas = self.escolher_porta_disponivel()
         diretorio_projeto = f"{self.install_principal}/node/{nome_dominio_}"
         self.gerenciar_permissoes_pasta(diretorio_projeto, '777')
         public_html = diretorio_projeto
@@ -1070,14 +1075,14 @@ WantedBy=timers.target
         index_js = f"""\
 const express = require('express');
 const app = express();
-const PORT = {porta};
+const PORT = {portas[0]};
 
 app.get('/', (req, res) => {{
   res.send('Servidor Node.js com Express funcionando!');
 }});
 
 app.listen(PORT, () => {{
-  console.log(`Servidor rodando na porta {porta}`);
+  console.log(`Servidor rodando na porta {portas[0]}`);
 }});
 """
         # Caminho para o arquivo index.js
@@ -1088,11 +1093,11 @@ app.listen(PORT, () => {{
                 arquivo.write(index_js)
             print(f"Arquivo index.js criado em {caminho_index_js}")
         
-        print(f'Porta interna para uso: {porta}')
+        print(f'Porta interna para uso: {portas[0]}')
         container = f"""docker run -d \
                         --name {nome_dominio_} \
                         --restart=always \
-                        -p {porta}:{porta} \
+                        -p {portas[0]}:{portas[0]} \
                         -v {diretorio_projeto}:/usr/src/app:rw \
                         -w /usr/src/app \
                         node:latest \
@@ -1112,7 +1117,7 @@ app.listen(PORT, () => {{
         ]
         resultados = self.executar_comandos(comandos)
         if resposta_traefik.lower() == 's':
-            self.adiciona_roteador_servico_traefik(dominio=nome_dominio, endereco=nome_dominio_, porta=porta)
+            self.adiciona_roteador_servico_traefik(dominio=nome_dominio, endereco=nome_dominio_, porta=portas[0])
     
     def instala_ftp_sftpgo(self,):
         print('Instalando o ftp_sftpgo.\n')
