@@ -1,7 +1,10 @@
-Intruçõpes de uso
+# Instruções de Uso
 
-OBS: As vezes quando atualiza o arquivo, não atualiza de imediato ao usar o comando novamente.
+**Observação:** Às vezes, quando o arquivo é atualizado, a atualização não é refletida imediatamente ao usar o comando novamente.
 
-# Instalador principal
+## Instalador Principal
+
+```bash
 wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
+```
 
