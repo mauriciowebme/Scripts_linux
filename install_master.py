@@ -1175,6 +1175,8 @@ const {{ setupPythonEnv, runPythonScript }} = require('./setupPythonEnv');
 const express = require('express');
 const app = express();
 const PORT = {portas[0]};
+const path = require('path');
+
 pythonOutput = 'Aguardando ambiente Python...';
 
 // Inicia o servidor Express imediatamente
