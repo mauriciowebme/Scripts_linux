@@ -1105,6 +1105,69 @@ WantedBy=timers.target
             with open(caminho_nodemon_json, "w") as arquivo:
                 json.dump(nodemon_json, arquivo, indent=4)
             print(f"Arquivo nodemon.json criado em {caminho_nodemon_json}")
+            
+        index_html = """\
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bem-vindo</title>
+<style>
+    body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: white;
+    text-align: center;
+    }
+    h1 {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    }
+    p {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    }
+    .button-container {
+    margin-top: 2rem;
+    }
+    a {
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #ff7f50;
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    transition: background-color 0.3s ease;
+    }
+    a:hover {
+    background-color: #ff6347;
+    }
+</style>
+</head>
+<body>
+<div>
+    <h1>Bem-vindo ao Servidor Node.js</h1>
+    <p>Seu ambiente está configurado e funcionando corretamente.</p>
+    <div class="button-container">
+    <a href="/">Ir para o servidor</a>
+    </div>
+</div>
+</body>
+</html>
+        """
+        # Caminho para o arquivo index.html
+        caminho_index_html = os.path.join(diretorio_projeto, "public", "index.html")
+        if not os.path.exists(caminho_index_html):
+            # Cria e escreve o conteúdo no arquivo index.html
+            with open(caminho_index_html, "w") as arquivo:
+                arquivo.write(index_html)
+            print(f"Arquivo index.html criado em {caminho_index_html}")
 
         index_js = f"""\
 // Importa o setupPythonEnv
@@ -1127,11 +1190,25 @@ app.listen(PORT, () => {{
   console.log(`Servidor rodando na porta {portas[0]}`);
 }});
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Criação de rotas Nodejs adicionais aqui...
+
+// Rota de boas-vindas
+app.get('/inicio', (req, res) => {{
+  const htmlPath = path.join(__dirname, 'public','index.html');
+  res.sendFile(htmlPath);
+}});
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 // Configura o ambiente Python em paralelo
 setupPythonEnv(() => {{
   console.log('Terminada a configuração do ambiente Python.');
   
-  // Roda o script Python dinamicamente com o nome "start.py"
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  // Rotas dos scripts Python
+  
+  // Rota do start.py
   runPythonScript('start.py', (error, output) => {{
   if (error) {{
     console.error('Erro ao executar o script:', error);
@@ -1140,6 +1217,8 @@ setupPythonEnv(() => {{
     console.log('Saída recebida do script Python:', output);
     pythonOutput = output; // Armazena o resultado do script
   }});
+  
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 }});
 """
