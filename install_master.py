@@ -1110,18 +1110,18 @@ const express = require('express');
 const app = express();
 const PORT = {portas[0]};
 
-// Configura o ambiente Python e, após isso, inicia o servidor
+// Inicia o servidor Express imediatamente
+app.get('/', (req, res) => {{
+  res.send('Servidor Node.js com Express funcionando!');
+}});
+
+app.listen(PORT, () => {{
+  console.log(`Servidor rodando na porta {portas[0]}`);
+}});
+
+// Configura o ambiente Python em paralelo
 setupPythonEnv(() => {{
   console.log('Callback da configuração do ambiente Python.');
-
-  // Inicia o servidor Express após o ambiente Python estar configurado
-  app.get('/', (req, res) => {{
-    res.send('Servidor Node.js com Express funcionando!');
-  }});
-
-  app.listen(PORT, () => {{
-    console.log(`Servidor rodando na porta {portas[0]}`);
-  }});
 }});
 """
         # Caminho para o arquivo index.js
