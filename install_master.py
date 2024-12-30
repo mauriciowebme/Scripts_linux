@@ -1077,14 +1077,30 @@ WantedBy=timers.target
         index_js = f"""\
 const express = require('express');
 const app = express();
+const {exec} = require('child_process');
 const PORT = {portas[0]};
+
+// Função para configurar o ambiente Python
+function setupPythonEnv(callback) {{
+  exec('node setupPythonEnv.js', (error, stdout, stderr) => {{
+    if (error) {{
+      console.error(`Erro ao configurar o ambiente Python: ${'{stderr}'}`);
+      return;
+    }}
+    console.log('Ambiente Python configurado com sucesso.');
+    callback();
+  }});
+}}
+setupPythonEnv(() => {{
+  console.log('Callback da configuração do ambiente Python.');
+}});
 
 app.get('/', (req, res) => {{
   res.send('Servidor Node.js com Express funcionando!');
 }});
 
 app.listen(PORT, () => {{
-  console.log(`Servidor rodando na porta {portas[0]}`);
+  console.log(`Servidor rodando na porta ${'{portas[0]}'}`);
 }});
 """
         # Caminho para o arquivo index.js
@@ -1094,6 +1110,73 @@ app.listen(PORT, () => {{
             with open(caminho_index_js, "w") as arquivo:
                 arquivo.write(index_js)
             print(f"Arquivo index.js criado em {caminho_index_js}")
+        
+        # Conteúdo do arquivo setupPythonEnv.js
+        setup_python_env_js = """\
+const { exec } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+
+const pythonDir = path.join(__dirname, 'python');
+const venvPython = path.join(pythonDir, 'bin', 'python');
+const venvActivate = path.join(pythonDir, 'bin', 'activate');
+
+// Função para verificar se o ambiente virtual existe
+function checkVirtualEnv(callback) {
+  if (fs.existsSync(venvPython)) {
+    console.log('Ambiente virtual já existe.');
+    callback(true);
+  } else {
+    console.log('Ambiente virtual não encontrado. Será criado.');
+    callback(false);
+  }
+}
+
+// Cria o ambiente virtual e instala dependências
+function createAndSetupVirtualEnv() {
+  exec(`python3 -m venv ${pythonDir}`, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Erro ao criar o ambiente virtual: ${stderr}`);
+      return;
+    }
+    console.log('Ambiente virtual criado com sucesso.');
+    installDependencies();
+  });
+}
+
+// Instala as dependências no ambiente virtual
+function installDependencies() {
+  const activateAndInstallDeps = `
+    source ${venvActivate} &&
+    pip install -r requirements.txt &&
+    deactivate
+  `;
+  
+  exec(activateAndInstallDeps, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Erro ao instalar dependências: ${stderr}`);
+      return;
+    }
+    console.log('Dependências instaladas com sucesso.');
+  });
+}
+
+// Verifica se o ambiente virtual existe e age de acordo
+checkVirtualEnv((exists) => {
+  if (exists) {
+    installDependencies();
+  } else {
+    createAndSetupVirtualEnv();
+  }
+});
+"""
+        # Caminho para o arquivo setupPythonEnv.js
+        caminho_setup_python_env_js = os.path.join(diretorio_projeto, "setupPythonEnv.js")
+        if not os.path.exists(caminho_setup_python_env_js):
+            # Escreve o conteúdo no arquivo setupPythonEnv.js
+            with open(caminho_setup_python_env_js, "w") as arquivo:
+                arquivo.write(setup_python_env_js)
+            print(f"Arquivo setupPythonEnv.js criado em {caminho_setup_python_env_js}")
         
         print(f'Porta interna para uso: {portas[0]}')
         container = f"""docker run -d \
