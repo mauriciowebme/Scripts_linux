@@ -1104,33 +1104,10 @@ WantedBy=timers.target
             print(f"Arquivo nodemon.json criado em {caminho_nodemon_json}")
 
         index_js = f"""\
+const setupPythonEnv = require('./setupPythonEnv');
 const express = require('express');
 const app = express();
-const {{ exec }} = require('child_process');
 const PORT = {portas[0]};
-
-// Função para configurar o ambiente Python
-function setupPythonEnv(callback) {{
-  const process = exec('node setupPythonEnv.js');
-
-  // Redireciona os logs do stdout e stderr para o console
-  process.stdout.on('data', (data) => {{
-    console.log(`[setupPythonEnv.js stdout]: ${{data.toString()}}`);
-  }});
-
-  process.stderr.on('data', (data) => {{
-    console.error(`[setupPythonEnv.js stderr]: ${{data.toString()}}`);
-  }});
-
-  process.on('close', (code) => {{
-    if (code !== 0) {{
-      console.error(`setupPythonEnv.js finalizado com código ${{code}}`);
-      return;
-    }}
-    console.log('Ambiente Python configurado com sucesso.');
-    callback();
-  }});
-}}
 
 setupPythonEnv(() => {{
   console.log('Callback da configuração do ambiente Python.');
@@ -1159,9 +1136,7 @@ const path = require('path');
 const fs = require('fs');
 
 const pythonDir = path.join(__dirname, 'python');
-const venvPython = path.join(pythonDir, 'bin', 'python');
-const venvActivate = path.join(pythonDir, 'bin', 'activate');
-const pipPath = path.join(pythonDir, 'bin', 'pip'); // Caminho para o pip dentro do ambiente virtual
+const pipPath = path.join(pythonDir, 'bin', 'pip');
 const requirementsFile = path.join(__dirname, 'requirements.txt');
 
 // Instala Python3 e ferramentas necessárias
@@ -1181,38 +1156,31 @@ function installPython(callback) {
   });
 }
 
-// Verifica se o ambiente virtual existe
-function checkVirtualEnv(callback) {
-  if (fs.existsSync(venvPython)) {
+// Verifica e cria o ambiente virtual
+function setupVirtualEnv(callback) {
+  if (fs.existsSync(path.join(pythonDir, 'bin', 'python'))) {
     console.log('Ambiente virtual já existe.');
-    callback(true);
+    callback();
   } else {
-    console.log('Ambiente virtual não encontrado. Será criado.');
-    callback(false);
+    console.log('Criando ambiente virtual...');
+    exec(`python3 -m venv ${pythonDir}`, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Erro ao criar o ambiente virtual: ${stderr}`);
+        return;
+      }
+      console.log('Ambiente virtual criado com sucesso.');
+      callback();
+    });
   }
 }
 
-// Cria o ambiente virtual e instala dependências
-function createAndSetupVirtualEnv() {
-  exec(`python3 -m venv ${pythonDir}`, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Erro ao criar o ambiente virtual: ${stderr}`);
-      return;
-    }
-    console.log('Ambiente virtual criado com sucesso.');
-    installDependencies();
-  });
-}
-
-// Instala as dependências diretamente com o pip do ambiente virtual
+// Instala dependências do arquivo requirements.txt
 function installDependencies() {
   if (!fs.existsSync(requirementsFile)) {
-    console.error(`Erro: O arquivo requirements.txt não foi encontrado em ${requirementsFile}`);
+    console.error(`Erro: O arquivo requirements.txt não foi encontrado.`);
     return;
   }
-  const installDepsCmd = `${pipPath} install -r ${requirementsFile}`;
-
-  exec(installDepsCmd, { cwd: __dirname }, (error, stdout, stderr) => {
+  exec(`${pipPath} install -r ${requirementsFile}`, (error, stdout, stderr) => {
     if (error) {
       console.error(`Erro ao instalar dependências: ${stderr}`);
       return;
@@ -1222,15 +1190,16 @@ function installDependencies() {
 }
 
 // Processo principal
-installPython(() => {
-  checkVirtualEnv((exists) => {
-    if (exists) {
+function setupPythonEnv(callback) {
+  installPython(() => {
+    setupVirtualEnv(() => {
       installDependencies();
-    } else {
-      createAndSetupVirtualEnv();
-    }
+      if (callback) callback();
+    });
   });
-});
+}
+
+module.exports = setupPythonEnv;
 """
         # Caminho para o arquivo setupPythonEnv.js
         caminho_setup_python_env_js = os.path.join(diretorio_projeto, "setupPythonEnv.js")
@@ -1242,7 +1211,6 @@ installPython(() => {
         
         # Lista de dependências
         dependencias = [
-            "fdb",
             "psycopg2",
             "xmltodict",
             "selenium",
