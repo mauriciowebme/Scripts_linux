@@ -1133,6 +1133,7 @@ const pythonDir = path.join(__dirname, 'python');
 const venvPython = path.join(pythonDir, 'bin', 'python');
 const venvActivate = path.join(pythonDir, 'bin', 'activate');
 const pipPath = path.join(pythonDir, 'bin', 'pip'); // Caminho para o pip dentro do ambiente virtual
+const requirementsFile = path.join(pythonDir, 'requirements.txt');
 
 // Instala Python3 e ferramentas necessárias
 function installPython(callback) {
@@ -1176,7 +1177,11 @@ function createAndSetupVirtualEnv() {
 
 // Instala as dependências diretamente com o pip do ambiente virtual
 function installDependencies() {
-  const installDepsCmd = `${pipPath} install -r requirements.txt`;
+  if (!fs.existsSync(requirementsFile)) {
+    console.error(`Erro: O arquivo requirements.txt não foi encontrado em ${requirementsFile}`);
+    return;
+  }
+  const installDepsCmd = `${pipPath} install -r ${requirementsFile}`;
 
   exec(installDepsCmd, { cwd: __dirname }, (error, stdout, stderr) => {
     if (error) {
