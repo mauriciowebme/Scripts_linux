@@ -1086,6 +1086,9 @@ WantedBy=timers.target
             print(f"Arquivo nodemon.json criado em {caminho_sftp_json}")
             
         nodemon_json = {
+            "watch": [
+                "package.json"
+            ],
             "ignore": [
                 "package-lock.json",
                 "arquivos",
