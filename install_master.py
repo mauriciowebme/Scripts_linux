@@ -1029,8 +1029,11 @@ WantedBy=timers.target
         portas = self.escolher_porta_disponivel()
         diretorio_projeto = f"{self.install_principal}/node/{nome_dominio_}"
         self.gerenciar_permissoes_pasta(diretorio_projeto, '777')
-        public_html = diretorio_projeto
-        self.gerenciar_usuarios_sftp(manual=False, simples_usuario=nome_dominio_, simples_senha=senha_ftp, simples_base_diretorio=public_html)
+        dir_dados = f"{diretorio_projeto}/public"
+        os.makedirs(dir_dados, exist_ok=True)
+        dir_dados = f"{diretorio_projeto}/arquivos"
+        os.makedirs(dir_dados, exist_ok=True)
+        self.gerenciar_usuarios_sftp(manual=False, simples_usuario=nome_dominio_, simples_senha=senha_ftp, simples_base_diretorio=diretorio_projeto)
         
         # Define a estrutura do package.json
         package_json = {
@@ -1067,7 +1070,7 @@ WantedBy=timers.target
             "deleteRemote": True,
             "ignore": [
                 "package-lock.json",
-                "ARQUIVOS",
+                "arquivos",
                 ".git",
                 "python_env",
                 "node_modules"
@@ -1088,7 +1091,7 @@ WantedBy=timers.target
             ],
             "ignore": [
                 "package-lock.json",
-                "ARQUIVOS",
+                "arquivos",
                 ".git",
                 "python_env",
                 "node_modules"
