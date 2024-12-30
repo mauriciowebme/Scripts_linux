@@ -1121,21 +1121,7 @@ const pythonDir = path.join(__dirname, 'python');
 const venvPython = path.join(pythonDir, 'bin', 'python');
 const venvActivate = path.join(pythonDir, 'bin', 'activate');
 
-// Verifica se o Python está instalado
-function checkPythonInstalled(callback) {
-  exec('python3 --version', (error, stdout, stderr) => {
-    if (error) {
-      console.error('Python3 não está instalado. Tentando instalar...');
-      installPython(callback);
-    } else {
-      console.log(`Python3 encontrado: ${stdout.trim()}`);
-      installPython(callback);
-      // callback();
-    }
-  });
-}
-
-// Tenta instalar o Python
+// Instala Python3 e ferramentas necessárias
 function installPython(callback) {
   const installCmd = `
     sudo apt update &&
@@ -1147,7 +1133,7 @@ function installPython(callback) {
       console.error(`Erro ao instalar Python3: ${stderr}`);
       return;
     }
-    console.log('Python3 instalado com sucesso.');
+    console.log('Python3 e ferramentas instalados com sucesso.');
     callback();
   });
 }
@@ -1192,8 +1178,8 @@ function installDependencies() {
   });
 }
 
-// Verifica e inicia o processo
-checkPythonInstalled(() => {
+// Processo principal
+installPython(() => {
   checkVirtualEnv((exists) => {
     if (exists) {
       installDependencies();
