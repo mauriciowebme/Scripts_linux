@@ -1068,7 +1068,7 @@ WantedBy=timers.target
             "ignore": [
                 "package-lock.json",
                 ".git",
-                "python",
+                "python_env",
                 "node_modules",
                 "dist",
                 "build"
@@ -1089,7 +1089,7 @@ WantedBy=timers.target
             ],
             "ignore": [
                 "ARQUIVOS",
-                "python",
+                "python_env",
                 "node_modules",
                 "package-lock.json"
             ],
