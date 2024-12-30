@@ -1067,11 +1067,10 @@ WantedBy=timers.target
             "deleteRemote": True,
             "ignore": [
                 "package-lock.json",
+                "ARQUIVOS",
                 ".git",
                 "python_env",
-                "node_modules",
-                "dist",
-                "build"
+                "node_modules"
             ]
         }
         # Caminho para o arquivo sftp.json
@@ -1088,10 +1087,11 @@ WantedBy=timers.target
                 "package.json"
             ],
             "ignore": [
+                "package-lock.json",
                 "ARQUIVOS",
+                ".git",
                 "python_env",
-                "node_modules",
-                "package-lock.json"
+                "node_modules"
             ],
             "exec": "chown -R 1000:1000 . && npm install && node index.js"
         }
