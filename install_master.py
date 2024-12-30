@@ -1196,17 +1196,17 @@ checkVirtualEnv((exists) => {
         resultados = self.executar_comandos(comandos)
         time.sleep(10)
         self.gerenciar_permissoes_pasta(diretorio_projeto, '777')
-        comandos = [
-            f"docker exec -i {nome_dominio_} apt update",
-            f"docker exec -i {nome_dominio_} apt install -y python3 python3-pip",
-            f"docker exec -i {nome_dominio_} apt install -y python3-venv",
-            f"docker exec -i {nome_dominio_} mkdir python",
-            f"docker exec -i {nome_dominio_} python3 -m venv ./python",
-            f"docker exec -i {nome_dominio_} source ./python/bin/activate",
-            f"docker exec -i {nome_dominio_} pip install yfinance",
-            f"docker exec -i {nome_dominio_} deactivate",
-        ]
-        resultados = self.executar_comandos(comandos)
+        # comandos = [
+        #     f"docker exec -i {nome_dominio_} apt update",
+        #     f"docker exec -i {nome_dominio_} apt install -y python3 python3-pip",
+        #     f"docker exec -i {nome_dominio_} apt install -y python3-venv",
+        #     f"docker exec -i {nome_dominio_} mkdir python",
+        #     f"docker exec -i {nome_dominio_} python3 -m venv ./python",
+        #     f"docker exec -i {nome_dominio_} source ./python/bin/activate",
+        #     f"docker exec -i {nome_dominio_} pip install yfinance",
+        #     f"docker exec -i {nome_dominio_} deactivate",
+        # ]
+        # resultados = self.executar_comandos(comandos)
         if resposta_traefik.lower() == 's':
             self.adiciona_roteador_servico_traefik(dominio=nome_dominio, endereco=nome_dominio_, porta=portas[0])
     
