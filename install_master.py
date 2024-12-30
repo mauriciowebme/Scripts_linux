@@ -1086,16 +1086,16 @@ function setupPythonEnv(callback) {{
 
   // Redireciona os logs do stdout e stderr para o console
   process.stdout.on('data', (data) => {{
-    console.log(`[setupPythonEnv.js stdout]: ${{{{data}}}}`);
+    console.log(`[setupPythonEnv.js stdout]: ${{data.toString()}}`);
   }});
 
   process.stderr.on('data', (data) => {{
-    console.error(`[setupPythonEnv.js stderr]: ${{{{data}}}}`);
+    console.error(`[setupPythonEnv.js stderr]: ${{data.toString()}}`);
   }});
 
   process.on('close', (code) => {{
     if (code !== 0) {{
-      console.error(`setupPythonEnv.js finalizado com código ${{{{code}}}}`);
+      console.error(`setupPythonEnv.js finalizado com código ${{code}}`);
       return;
     }}
     console.log('Ambiente Python configurado com sucesso.');
@@ -2480,7 +2480,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.162
+Versão 1.163
 ===========================================================================
 ===========================================================================
 """)
