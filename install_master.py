@@ -1054,6 +1054,35 @@ WantedBy=timers.target
                 json.dump(package_json, arquivo, indent=4)
             print(f"Arquivo package.json criado em {caminho_package_json}")
             
+        sftp_json = {
+            "name": "Nome do Projeto",
+            "host": "testes.techupsistemas.com",
+            "username": "usuario",
+            "password": "senha",
+            "port": 2025,
+            "protocol": "sftp",
+            "remotePath": "/",
+            "uploadOnSave": False,
+            "syncMode": "full",
+            "deleteRemote": True,
+            "ignore": [
+                "package-lock.json",
+                ".git",
+                "python",
+                "node_modules",
+                "dist",
+                "build"
+            ]
+        }
+        # Caminho para o arquivo sftp.json
+        caminho_sftp_json = os.path.join(diretorio_projeto, ".vscode", "sftp.json")
+        os.makedirs(os.path.dirname(caminho_sftp_json), exist_ok=True)
+        if not os.path.exists(caminho_sftp_json):
+            # Escreve o conteúdo no arquivo nodemon.json
+            with open(caminho_sftp_json, "w") as arquivo:
+                json.dump(sftp_json, arquivo, indent=4)
+            print(f"Arquivo nodemon.json criado em {caminho_sftp_json}")
+            
         nodemon_json = {
             "watch": [
                 "package.json"
