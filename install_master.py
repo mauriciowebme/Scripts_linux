@@ -1149,7 +1149,7 @@ function installPython(callback) {
   console.log('Instalando Python3 e ferramentas...');
   exec(installCmd, (error, stdout, stderr) => {
     if (error) {
-      console.error(\`Erro ao instalar Python3: \${stderr}\`);
+      console.error('Erro ao instalar Python3: ' + stderr);
       return;
     }
     console.log('Python3 e ferramentas instalados com sucesso.');
@@ -1160,9 +1160,9 @@ function installPython(callback) {
 // Cria o ambiente virtual, se necessário
 function createVirtualEnv(callback) {
   console.log('Criando ambiente virtual...');
-  exec(\`python3 -m venv \${pythonDir}\`, (error, stdout, stderr) => {
+  exec('python3 -m venv ' + pythonDir, (error, stdout, stderr) => {
     if (error) {
-      console.error(\`Erro ao criar o ambiente virtual: \${stderr}\`);
+      console.error('Erro ao criar o ambiente virtual: ' + stderr);
       return;
     }
     console.log('Ambiente virtual criado com sucesso.');
@@ -1173,14 +1173,14 @@ function createVirtualEnv(callback) {
 // Instala dependências do arquivo requirements.txt
 function installDependencies(callback) {
   if (!fs.existsSync(requirementsFile)) {
-    console.error(\`Erro: O arquivo requirements.txt não foi encontrado.\`);
+    console.error('Erro: O arquivo requirements.txt não foi encontrado.');
     return;
   }
 
   console.log('Instalando dependências no ambiente virtual...');
-  exec(\`\${pipPath} install -r \${requirementsFile}\`, (error, stdout, stderr) => {
+  exec(pipPath + ' install -r ' + requirementsFile, (error, stdout, stderr) => {
     if (error) {
-      console.error(\`Erro ao instalar dependências: \${stderr}\`);
+      console.error('Erro ao instalar dependências: ' + stderr);
       return;
     }
     console.log('Dependências instaladas com sucesso.');
