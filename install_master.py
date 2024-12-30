@@ -1209,6 +1209,25 @@ installPython(() => {
                 arquivo.write(setup_python_env_js)
             print(f"Arquivo setupPythonEnv.js criado em {caminho_setup_python_env_js}")
         
+        # Lista de dependências
+        dependencias = [
+            "fdb",
+            "psycopg2",
+            "xmltodict",
+            "selenium",
+            "paramiko"
+        ]
+        # Caminho para a pasta python
+        pasta_python = os.path.join(diretorio_projeto, "python")
+        # Garante que a pasta python exista
+        os.makedirs(pasta_python, exist_ok=True)
+        # Caminho para o arquivo requirements.txt
+        caminho_requirements = os.path.join(pasta_python, "requirements.txt")
+        # Escreve as dependências no arquivo
+        if not os.path.exists(caminho_requirements):
+            with open(caminho_requirements, "w") as arquivo:
+                arquivo.write("\n".join(dependencias))
+        
         print(f'Porta interna para uso: {portas[0]}')
         container = f"""docker run -d \
                         --name {nome_dominio_} \
@@ -2480,7 +2499,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.163
+Versão 1.164
 ===========================================================================
 ===========================================================================
 """)
