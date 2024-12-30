@@ -1082,16 +1082,27 @@ const PORT = {portas[0]};
 
 // Função para configurar o ambiente Python
 function setupPythonEnv(callback) {{
-  exec('node setupPythonEnv.js', (error, stdout, stderr) => {{
-    if (error) {{
-      console.log('Erro na execução do setupPythonEnv.js.');
-      console.error(`Erro ao configurar o ambiente Python: ${'{stderr}'}`);
+  const process = exec('node setupPythonEnv.js');
+
+  // Redireciona os logs do stdout e stderr para o console
+  process.stdout.on('data', (data) => {{
+    console.log(`[setupPythonEnv.js stdout]: ${data}`);
+  }});
+
+  process.stderr.on('data', (data) => {{
+    console.error(`[setupPythonEnv.js stderr]: ${data}`);
+  }});
+
+  process.on('close', (code) => {{
+    if (code !== 0) {{
+      console.error(`setupPythonEnv.js finalizado com código ${code}`);
       return;
     }}
     console.log('Ambiente Python configurado com sucesso.');
     callback();
   }});
 }}
+
 setupPythonEnv(() => {{
   console.log('Callback da configuração do ambiente Python.');
 }});
@@ -2469,7 +2480,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.160
+Versão 1.161
 ===========================================================================
 ===========================================================================
 """)
