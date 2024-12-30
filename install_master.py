@@ -1114,7 +1114,7 @@ const PORT = {portas[0]};
 app.get('/', (req, res) => {{
   const responseText = `
     Servidor Node.js com Express funcionando!<br>
-    Saída do script Python: ${{pythonOutput || 'Ainda não há saída do script Python.'}}
+    ${{pythonOutput || 'Aguardando execução do script Python...'}}
   `;
   res.send(responseText);
 }});
