@@ -1121,7 +1121,7 @@ app.listen(PORT, () => {{
 
 // Configura o ambiente Python em paralelo
 setupPythonEnv(() => {{
-  console.log('Callback da configuração do ambiente Python.');
+  console.log('Terminada a configuração do ambiente Python.');
 }});
 """
         # Caminho para o arquivo index.js
