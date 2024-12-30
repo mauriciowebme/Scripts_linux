@@ -1179,15 +1179,6 @@ const path = require('path');
 
 pythonOutput = 'Aguardando ambiente Python...';
 
-// Inicia o servidor Express imediatamente
-app.get('/', (req, res) => {{
-  const responseText = `
-    Servidor Node.js com Express funcionando!<br>
-    ${{pythonOutput}}
-  `;
-  res.send(responseText);
-}});
-
 app.listen(PORT, () => {{
   console.log(`Servidor rodando na porta {portas[0]}`);
 }});
@@ -1195,8 +1186,17 @@ app.listen(PORT, () => {{
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Criação de rotas Nodejs adicionais aqui...
 
-// Rota de boas-vindas
-app.get('/inicio', (req, res) => {{
+// Rota de testes
+app.get('/teste', (req, res) => {{
+  const responseText = `
+  Servidor Node.js com Express funcionando!<br>
+  ${{pythonOutput}}
+  `;
+  res.send(responseText);
+}});
+
+// Rota index.html
+app.get('/', (req, res) => {{
   const htmlPath = path.join(__dirname, 'public','index.html');
   res.sendFile(htmlPath);
 }});
