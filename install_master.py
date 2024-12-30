@@ -1132,6 +1132,7 @@ const fs = require('fs');
 const pythonDir = path.join(__dirname, 'python');
 const venvPython = path.join(pythonDir, 'bin', 'python');
 const venvActivate = path.join(pythonDir, 'bin', 'activate');
+const pipPath = path.join(pythonDir, 'bin', 'pip'); // Caminho para o pip dentro do ambiente virtual
 
 // Instala Python3 e ferramentas necessárias
 function installPython(callback) {
@@ -1173,15 +1174,11 @@ function createAndSetupVirtualEnv() {
   });
 }
 
-// Instala as dependências no ambiente virtual
+// Instala as dependências diretamente com o pip do ambiente virtual
 function installDependencies() {
-  const activateAndInstallDeps = `
-    source ${venvActivate} &&
-    pip install -r requirements.txt &&
-    deactivate
-  `;
+  const installDepsCmd = `${pipPath} install -r requirements.txt`;
 
-  exec(activateAndInstallDeps, (error, stdout, stderr) => {
+  exec(installDepsCmd, { cwd: __dirname }, (error, stdout, stderr) => {
     if (error) {
       console.error(`Erro ao instalar dependências: ${stderr}`);
       return;
