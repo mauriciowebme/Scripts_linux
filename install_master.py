@@ -1105,7 +1105,7 @@ WantedBy=timers.target
 
         index_js = f"""\
 // Importa o setupPythonEnv
-const setupPythonEnv = require('./setupPythonEnv');
+const {{ setupPythonEnv, runPythonScript }} = require('./setupPythonEnv');
 const express = require('express');
 const app = express();
 const PORT = {portas[0]};
@@ -1122,6 +1122,9 @@ app.listen(PORT, () => {{
 // Configura o ambiente Python em paralelo
 setupPythonEnv(() => {{
   console.log('Terminada a configuração do ambiente Python.');
+  
+  // Roda o script Python dinamicamente com o nome "start.py"
+  runPythonScript('start.py');
 }});
 """
         # Caminho para o arquivo index.js
@@ -1139,6 +1142,7 @@ const path = require('path');
 const fs = require('fs');
 
 const pythonDir = path.join(__dirname, 'python');
+const pythonBin = path.join(pythonDir, 'bin', 'python'); // Python do ambiente virtual
 const pipPath = path.join(pythonDir, 'bin', 'pip');
 const requirementsFile = path.join(__dirname, 'requirements.txt');
 
@@ -1207,7 +1211,43 @@ function setupPythonEnv(callback) {
   }
 }
 
-module.exports = setupPythonEnv;
+// Função para garantir que start.py exista
+function createStartPy() {
+  if (!fs.existsSync(startPy)) {
+    console.log('Criando o script start.py...');
+    const content = `# start.py\nprint("O ambiente Python está funcionando corretamente!")\n`;
+    fs.writeFileSync(startPy, content);
+    console.log('Script start.py criado com sucesso.');
+  } else {
+    console.log('O script start.py já existe.');
+  }
+}
+
+// Função para rodar o script Python com nome dinâmico
+function runPythonScript(scriptName) {
+  const scriptPy = path.join(pythonDir, scriptName);
+
+  // Verifica se o script fornecido existe
+  if (!fs.existsSync(scriptPy)) {
+    console.warn(`O script "${scriptName}" não foi encontrado. Rodando o script padrão "start.py"...`);
+    createStartPy(); // Garante que start.py exista
+    runPythonScript('start.py'); // Rechama a função para rodar o start.py
+    return;
+  }
+
+  console.log(`Executando o script Python: ${scriptName}...`);
+
+  exec(`${pythonBin} ${scriptPy}`, (error, stdout, stderr) => {
+    if (error) {
+      console.error('Erro ao executar o script Python: ' + stderr);
+      return;
+    }
+    console.log('Saída do script Python:');
+    console.log(stdout);
+  });
+}
+
+module.exports = { setupPythonEnv, runPythonScript };
 """
         # Caminho para o arquivo setupPythonEnv.js
         caminho_setup_python_env_js = os.path.join(diretorio_projeto, "setupPythonEnv.js")
