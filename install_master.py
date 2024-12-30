@@ -1093,6 +1093,7 @@ WantedBy=timers.target
                 "package-lock.json",
                 "arquivos",
                 ".git",
+                ".vscode",
                 "python_env",
                 "node_modules"
             ],
