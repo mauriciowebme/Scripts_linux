@@ -1141,6 +1141,7 @@ const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
+const python_scripts = path.join(__dirname, 'python_scripts'); // Diretório do ambiente virtual Python
 const pythonDir = path.join(__dirname, 'python_env'); // Diretório do ambiente virtual Python
 const pythonBin = path.join(pythonDir, 'bin', 'python'); // Python do ambiente virtual
 const pipPath = path.join(pythonDir, 'bin', 'pip');
@@ -1213,7 +1214,14 @@ function setupPythonEnv(callback) {
 
 // Função para garantir que um script Python exista (como "start.py")
 function createStartPy() {
-  const scriptPath = path.join(pythonDir, 'start.py');
+  // Garante que o diretório de scripts Python exista
+  if (!fs.existsSync(python_scripts)) {
+    console.log(`Criando o diretório: ${python_scripts}`);
+    fs.mkdirSync(python_scripts, { recursive: true });
+    console.log(`Diretório ${python_scripts} criado com sucesso.`);
+  }
+  
+  const scriptPath = path.join(python_scripts, 'start.py');
   if (!fs.existsSync(scriptPath)) {
     console.log(`Criando o script ${path.basename(scriptPath)}...`);
     const content = `# ${path.basename(scriptPath)}\nprint("O ambiente Python está funcionando corretamente!")\n`;
@@ -1226,7 +1234,7 @@ function createStartPy() {
 
 // Função para rodar o script Python com nome dinâmico
 function runPythonScript(scriptName) {
-  const scriptPy = path.join(pythonDir, scriptName);
+  const scriptPy = path.join(python_scripts, scriptName);
 
   // Verifica se o script fornecido existe
   if (!fs.existsSync(scriptPy)) {
