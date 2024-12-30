@@ -1211,15 +1211,15 @@ function setupPythonEnv(callback) {
   }
 }
 
-// Função para garantir que start.py exista
-function createStartPy() {
-  if (!fs.existsSync(startPy)) {
-    console.log('Criando o script start.py...');
-    const content = `# start.py\nprint("O ambiente Python está funcionando corretamente!")\n`;
-    fs.writeFileSync(startPy, content);
-    console.log('Script start.py criado com sucesso.');
+// Função para garantir que um script Python exista (como "start.py")
+function createStartPy(scriptPath) {
+  if (!fs.existsSync(scriptPath)) {
+    console.log(`Criando o script ${path.basename(scriptPath)}...`);
+    const content = `# ${path.basename(scriptPath)}\nprint("O ambiente Python está funcionando corretamente!")\n`;
+    fs.writeFileSync(scriptPath, content);
+    console.log(`Script ${path.basename(scriptPath)} criado com sucesso.`);
   } else {
-    console.log('O script start.py já existe.');
+    console.log(`O script ${path.basename(scriptPath)} já existe.`);
   }
 }
 
@@ -1230,7 +1230,8 @@ function runPythonScript(scriptName) {
   // Verifica se o script fornecido existe
   if (!fs.existsSync(scriptPy)) {
     console.warn(`O script "${scriptName}" não foi encontrado. Rodando o script padrão "start.py"...`);
-    createStartPy(); // Garante que start.py exista
+    const startPy = path.join(pythonDir, 'start.py'); // Caminho do fallback para start.py
+    createStartPy(startPy); // Garante que start.py exista
     runPythonScript('start.py'); // Rechama a função para rodar o start.py
     return;
   }
