@@ -1155,7 +1155,7 @@ WantedBy=timers.target
     <h1>Bem-vindo ao Servidor Node.js</h1>
     <p>Seu ambiente está configurado e funcionando corretamente.</p>
     <div class="button-container">
-    <a href="/">Ir para o servidor</a>
+    <a href="/teste">Ir para a pagina de teste</a>
     </div>
 </div>
 </body>
