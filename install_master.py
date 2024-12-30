@@ -1046,7 +1046,7 @@ WantedBy=timers.target
             },
             "dependencies": {
                 "nodemon": "^2.0.0",
-                "express": "^4.19.2"
+                "express": "^4.17.2"
             },
         }
         # Caminho para o arquivo package.json 
