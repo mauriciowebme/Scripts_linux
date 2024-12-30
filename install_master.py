@@ -1299,10 +1299,13 @@ installPython(() => {
         self.verifica_container_existe('ftp_sftpgo', self.instala_ftp_sftpgo)
         
         max_attempts = 5
+        admin_usuario = 'admin'
+        admin_senha = 'admin'
         for attempt in range(max_attempts):
-            print('\nUsuario e senha para permissão de administração FTP:')
-            admin_usuario = input('Usuario admin: ')
-            admin_senha = input('Senha: ')
+            if attempt > 0:
+                print('\nUsuario e senha para permissão de administração FTP:')
+                admin_usuario = input('Usuario admin: ')
+                admin_senha = input('Senha: ')
             
             url = "http://localhost:8085/api/v2/token"
             response = requests.get(url, auth=HTTPBasicAuth(admin_usuario, admin_senha))
