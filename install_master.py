@@ -1046,7 +1046,7 @@ WantedBy=timers.target
             },
             "dependencies": {
                 "nodemon": "^2.0.0",
-                "express": "^4.17.1"
+                "express": "^4.19.2"
             },
         }
         # Caminho para o arquivo package.json 
@@ -1084,11 +1084,11 @@ WantedBy=timers.target
             with open(caminho_sftp_json, "w") as arquivo:
                 json.dump(sftp_json, arquivo, indent=4)
             print(f"Arquivo nodemon.json criado em {caminho_sftp_json}")
-            
+        
+        # "watch": [
+        #         "package.json"
+        #     ],
         nodemon_json = {
-            "watch": [
-                "package.json"
-            ],
             "ignore": [
                 "package-lock.json",
                 "arquivos",
@@ -1151,13 +1151,13 @@ WantedBy=timers.target
 </style>
 </head>
 <body>
-<div>
-    <h1>Bem-vindo ao Servidor Node.js com Python.</h1>
-    <p>Seu ambiente está configurado e funcionando corretamente.</p>
-    <div class="button-container">
-    <a href="/teste">Ir para a pagina de teste</a>
+    <div>
+        <h1>Bem-vindo ao Servidor Node.js com Python.</h1>
+        <p>Seu ambiente está configurado e funcionando corretamente.</p>
+        <div class="button-container">
+        <a href="/teste">Ir para a pagina de teste</a>
+        </div>
     </div>
-</div>
 </body>
 </html>
         """
