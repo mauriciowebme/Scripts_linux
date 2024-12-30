@@ -1112,7 +1112,11 @@ const PORT = {portas[0]};
 
 // Inicia o servidor Express imediatamente
 app.get('/', (req, res) => {{
-  res.send('Servidor Node.js com Express funcionando!');
+  const responseText = `
+    Servidor Node.js com Express funcionando!<br>
+    Saída do script Python: ${{pythonOutput || 'Ainda não há saída do script Python.'}}
+  `;
+  res.send(responseText);
 }});
 
 app.listen(PORT, () => {{
@@ -1130,6 +1134,7 @@ setupPythonEnv(() => {{
     return;
   }}
     console.log('Saída recebida do script Python:', output);
+    pythonOutput = output; // Armazena o resultado do script
   }});
 
 }});
