@@ -1046,7 +1046,7 @@ WantedBy=timers.target
                 "express": "^4.17.1"
             },
         }
-        # Caminho para o arquivo package.json
+        # Caminho para o arquivo package.json 
         caminho_package_json = os.path.join(diretorio_projeto, "package.json")
         if not os.path.exists(caminho_package_json):
             # Escreve o conteúdo no arquivo package.json
@@ -1067,13 +1067,13 @@ WantedBy=timers.target
             "exec": "chown -R 1000:1000 . && npm install && node index.js"
         }
         # Caminho para o arquivo nodemon.json
-        nodemon_json = os.path.join(diretorio_projeto, "nodemon.json")
-        if not os.path.exists(nodemon_json):
+        caminho_nodemon_json = os.path.join(diretorio_projeto, "nodemon.json")
+        if not os.path.exists(caminho_nodemon_json):
             # Escreve o conteúdo no arquivo nodemon.json
-            with open(nodemon_json, "w") as arquivo:
+            with open(caminho_nodemon_json, "w") as arquivo:
                 json.dump(nodemon_json, arquivo, indent=4)
-            print(f"Arquivo nodemon.json criado em {nodemon_json}")
-        
+            print(f"Arquivo nodemon.json criado em {caminho_nodemon_json}")
+
         index_js = f"""\
 const express = require('express');
 const app = express();
