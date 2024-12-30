@@ -1084,6 +1084,7 @@ const PORT = {portas[0]};
 function setupPythonEnv(callback) {{
   exec('node setupPythonEnv.js', (error, stdout, stderr) => {{
     if (error) {{
+      console.log('Erro na execução do setupPythonEnv.js.');
       console.error(`Erro ao configurar o ambiente Python: ${'{stderr}'}`);
       return;
     }}
