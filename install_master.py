@@ -1133,7 +1133,7 @@ const pythonDir = path.join(__dirname, 'python');
 const venvPython = path.join(pythonDir, 'bin', 'python');
 const venvActivate = path.join(pythonDir, 'bin', 'activate');
 const pipPath = path.join(pythonDir, 'bin', 'pip'); // Caminho para o pip dentro do ambiente virtual
-const requirementsFile = path.join(pythonDir, 'requirements.txt');
+const requirementsFile = path.join(__dirname, 'requirements.txt');
 
 // Instala Python3 e ferramentas necessárias
 function installPython(callback) {
@@ -1219,12 +1219,8 @@ installPython(() => {
             "selenium",
             "paramiko"
         ]
-        # Caminho para a pasta python
-        pasta_python = os.path.join(diretorio_projeto, "python")
-        # Garante que a pasta python exista
-        os.makedirs(pasta_python, exist_ok=True)
         # Caminho para o arquivo requirements.txt
-        caminho_requirements = os.path.join(pasta_python, "requirements.txt")
+        caminho_requirements = os.path.join(diretorio_projeto, "requirements.txt")
         # Escreve as dependências no arquivo
         if not os.path.exists(caminho_requirements):
             with open(caminho_requirements, "w") as arquivo:
