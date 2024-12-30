@@ -1077,7 +1077,7 @@ WantedBy=timers.target
         index_js = f"""\
 const express = require('express');
 const app = express();
-const { exec } = require('child_process');
+const {{ exec }} = require('child_process');
 const PORT = {portas[0]};
 
 // Função para configurar o ambiente Python
@@ -1100,7 +1100,7 @@ app.get('/', (req, res) => {{
 }});
 
 app.listen(PORT, () => {{
-  console.log(`Servidor rodando na porta ${'{portas[0]}'}`);
+  console.log(`Servidor rodando na porta ${portas[0]}`);
 }});
 """
         # Caminho para o arquivo index.js
