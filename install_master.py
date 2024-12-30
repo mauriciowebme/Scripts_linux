@@ -1124,8 +1124,8 @@ const venvActivate = path.join(pythonDir, 'bin', 'activate');
 // Instala Python3 e ferramentas necessárias
 function installPython(callback) {
   const installCmd = `
-    sudo apt update &&
-    sudo apt install -y python3 python3-pip python3-venv
+    apt update &&
+    apt install -y python3 python3-pip python3-venv
   `;
 
   exec(installCmd, (error, stdout, stderr) => {
