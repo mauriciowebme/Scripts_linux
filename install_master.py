@@ -1121,7 +1121,38 @@ const pythonDir = path.join(__dirname, 'python');
 const venvPython = path.join(pythonDir, 'bin', 'python');
 const venvActivate = path.join(pythonDir, 'bin', 'activate');
 
-// Função para verificar se o ambiente virtual existe
+// Verifica se o Python está instalado
+function checkPythonInstalled(callback) {
+  exec('python3 --version', (error, stdout, stderr) => {
+    if (error) {
+      console.error('Python3 não está instalado. Tentando instalar...');
+      installPython(callback);
+    } else {
+      console.log(`Python3 encontrado: ${stdout.trim()}`);
+      installPython(callback);
+      // callback();
+    }
+  });
+}
+
+// Tenta instalar o Python
+function installPython(callback) {
+  const installCmd = `
+    sudo apt update &&
+    sudo apt install -y python3 python3-pip python3-venv
+  `;
+
+  exec(installCmd, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Erro ao instalar Python3: ${stderr}`);
+      return;
+    }
+    console.log('Python3 instalado com sucesso.');
+    callback();
+  });
+}
+
+// Verifica se o ambiente virtual existe
 function checkVirtualEnv(callback) {
   if (fs.existsSync(venvPython)) {
     console.log('Ambiente virtual já existe.');
@@ -1151,7 +1182,7 @@ function installDependencies() {
     pip install -r requirements.txt &&
     deactivate
   `;
-  
+
   exec(activateAndInstallDeps, (error, stdout, stderr) => {
     if (error) {
       console.error(`Erro ao instalar dependências: ${stderr}`);
@@ -1161,13 +1192,15 @@ function installDependencies() {
   });
 }
 
-// Verifica se o ambiente virtual existe e age de acordo
-checkVirtualEnv((exists) => {
-  if (exists) {
-    installDependencies();
-  } else {
-    createAndSetupVirtualEnv();
-  }
+// Verifica e inicia o processo
+checkPythonInstalled(() => {
+  checkVirtualEnv((exists) => {
+    if (exists) {
+      installDependencies();
+    } else {
+      createAndSetupVirtualEnv();
+    }
+  });
 });
 """
         # Caminho para o arquivo setupPythonEnv.js
