@@ -1109,12 +1109,13 @@ const {{ setupPythonEnv, runPythonScript }} = require('./setupPythonEnv');
 const express = require('express');
 const app = express();
 const PORT = {portas[0]};
+pythonOutput = '';
 
 // Inicia o servidor Express imediatamente
 app.get('/', (req, res) => {{
   const responseText = `
     Servidor Node.js com Express funcionando!<br>
-    ${{pythonOutput || 'Aguardando execução do script Python...'}}
+    ${{pythonOutput}}
   `;
   res.send(responseText);
 }});
