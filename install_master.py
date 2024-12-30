@@ -1084,10 +1084,11 @@ WantedBy=timers.target
             with open(caminho_sftp_json, "w") as arquivo:
                 json.dump(sftp_json, arquivo, indent=4)
             print(f"Arquivo nodemon.json criado em {caminho_sftp_json}")
-        # "watch": [
-        #         "package.json"
-        #     ],
+            
         nodemon_json = {
+            "watch": [
+                "package.json"
+            ],
             "ignore": [
                 "package-lock.json",
                 "arquivos",
@@ -2653,7 +2654,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.166
+Versão 1.165
 ===========================================================================
 ===========================================================================
 """)
