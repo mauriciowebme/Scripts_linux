@@ -1259,8 +1259,8 @@ function runPythonScript(scriptName, callback) {
       callback(stderr, null);
       return;
     }
-    console.log('Saída do script Python:');
-    console.log(stdout);
+    #console.log('Saída do script Python:');
+    #console.log(stdout);
     callback(null, stdout); // Passa a saída do script para o callback
   });
 }
