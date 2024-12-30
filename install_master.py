@@ -1077,7 +1077,7 @@ WantedBy=timers.target
         index_js = f"""\
 const express = require('express');
 const app = express();
-const {exec} = require('child_process');
+const { exec } = require('child_process');
 const PORT = {portas[0]};
 
 // Função para configurar o ambiente Python
