@@ -1059,7 +1059,7 @@ WantedBy=timers.target
             
         sftp_json = {
             "name": "Nome do Projeto",
-            "host": "testes.techupsistemas.com",
+            "host": "seuservidorsftp.com",
             "username": "usuario",
             "password": "senha",
             "port": 2025,
