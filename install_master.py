@@ -1144,10 +1144,7 @@ const requirementsFile = path.join(__dirname, 'requirements.txt');
 
 // Instala Python3 e ferramentas necessárias
 function installPython(callback) {
-  const installCmd = \`
-    apt update &&
-    apt install -y python3 python3-pip python3-venv
-  \`;
+  const installCmd = 'apt update && apt install -y python3 python3-pip python3-venv';
 
   console.log('Instalando Python3 e ferramentas...');
   exec(installCmd, (error, stdout, stderr) => {
