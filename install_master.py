@@ -1141,7 +1141,7 @@ const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-const pythonDir = path.join(__dirname, 'python');
+const pythonDir = path.join(__dirname, 'python_env'); // Diretório do ambiente virtual Python
 const pythonBin = path.join(pythonDir, 'bin', 'python'); // Python do ambiente virtual
 const pipPath = path.join(pythonDir, 'bin', 'pip');
 const requirementsFile = path.join(__dirname, 'requirements.txt');
