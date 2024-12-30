@@ -1059,6 +1059,8 @@ WantedBy=timers.target
                 "package.json"
             ],
             "ignore": [
+                "ARQUIVOS",
+                "python",
                 "node_modules",
                 "package-lock.json"
             ],
@@ -1112,8 +1114,14 @@ app.listen(PORT, () => {{
         time.sleep(10)
         self.gerenciar_permissoes_pasta(diretorio_projeto, '777')
         comandos = [
-            f"docker exec -i {nome_dominio_} apt-get update",
-            f"docker exec -i {nome_dominio_} apt-get install -y python3 python3-pip",
+            f"docker exec -i {nome_dominio_} apt update",
+            f"docker exec -i {nome_dominio_} apt install -y python3 python3-pip",
+            f"docker exec -i {nome_dominio_} apt install -y python3-venv",
+            f"docker exec -i {nome_dominio_} mkdir python",
+            f"docker exec -i {nome_dominio_} python3 -m venv ./python",
+            f"docker exec -i {nome_dominio_} source ./python/bin/activate",
+            f"docker exec -i {nome_dominio_} pip install yfinance",
+            f"docker exec -i {nome_dominio_} deactivate",
         ]
         resultados = self.executar_comandos(comandos)
         if resposta_traefik.lower() == 's':
