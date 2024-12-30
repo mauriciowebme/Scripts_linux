@@ -1124,7 +1124,14 @@ setupPythonEnv(() => {{
   console.log('Terminada a configuração do ambiente Python.');
   
   // Roda o script Python dinamicamente com o nome "start.py"
-  runPythonScript('start.py');
+  runPythonScript('start.py', (error, output) => {{
+  if (error) {{
+    console.error('Erro ao executar o script:', error);
+    return;
+  }}
+    console.log('Saída recebida do script Python:', output);
+  }});
+
 }});
 """
         # Caminho para o arquivo index.js
@@ -1232,15 +1239,15 @@ function createStartPy() {
   }
 }
 
-// Função para rodar o script Python com nome dinâmico
-function runPythonScript(scriptName) {
+// Função para rodar o script Python com nome dinâmico e capturar a saída via callback
+function runPythonScript(scriptName, callback) {
   const scriptPy = path.join(python_scripts, scriptName);
 
   // Verifica se o script fornecido existe
   if (!fs.existsSync(scriptPy)) {
     console.warn(`O script "${scriptName}" não foi encontrado. Rodando o script padrão para testes "start.py"...`);
     createStartPy(); // Garante que start.py exista
-    runPythonScript('start.py'); // Rechama a função para rodar o start.py
+    runPythonScript('start.py', callback); // Rechama a função para rodar o start.py
     return;
   }
 
@@ -1249,10 +1256,12 @@ function runPythonScript(scriptName) {
   exec(`${pythonBin} ${scriptPy}`, (error, stdout, stderr) => {
     if (error) {
       console.error('Erro ao executar o script Python: ' + stderr);
+      callback(stderr, null);
       return;
     }
     console.log('Saída do script Python:');
     console.log(stdout);
+    callback(null, stdout); // Passa a saída do script para o callback
   });
 }
 
