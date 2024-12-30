@@ -1271,8 +1271,8 @@ installPython(() => {
             ]
         self.remove_container(nome_dominio_)
         resultados = self.executar_comandos(comandos)
-        time.sleep(10)
-        self.gerenciar_permissoes_pasta(diretorio_projeto, '777')
+        # time.sleep(10)
+        # self.gerenciar_permissoes_pasta(diretorio_projeto, '777')
         # comandos = [
         #     f"docker exec -i {nome_dominio_} apt update",
         #     f"docker exec -i {nome_dominio_} apt install -y python3 python3-pip",
