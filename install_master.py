@@ -1112,6 +1112,7 @@ WantedBy=timers.target
                 "python_env",
                 "node_modules"
             ],
+            "verbose": True,
             "exec": "chown -R 1000:1000 . && npm install && node index.js"
         }
         # Caminho para o arquivo nodemon.json
