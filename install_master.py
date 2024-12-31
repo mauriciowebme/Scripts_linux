@@ -1135,7 +1135,9 @@ jobs:
         mirror --reverse --only-newer --ignore-time --verbose \
         --exclude-glob .git/ \
         --exclude-glob node_modules/ \
+        --exclude-glob python_env/ \
         --exclude-glob package-lock.json \
+        --exclude-glob arquivos/ \
         ./ /
         bye
         EOF
