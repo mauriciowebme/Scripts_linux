@@ -1104,7 +1104,8 @@ WantedBy=timers.target
                 "arquivos",
                 ".git",
                 "python_env",
-                "node_modules"
+                "node_modules",
+                "*.log*"
             ],
             "exec": "chown -R 1000:1000 . && npm install && node index.js"
         }
