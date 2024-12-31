@@ -1027,12 +1027,25 @@ WantedBy=timers.target
         self.verifica_container_existe('redis', self.instala_redis_docker)
         nome_dominio_ = nome_dominio.replace('.', '_')
         portas = self.escolher_porta_disponivel()
+        
         diretorio_projeto = f"{self.install_principal}/node/{nome_dominio_}"
         self.gerenciar_permissoes_pasta(diretorio_projeto, '777')
-        dir_dados = f"{diretorio_projeto}/public"
-        os.makedirs(dir_dados, exist_ok=True)
-        dir_dados = f"{diretorio_projeto}/arquivos"
-        os.makedirs(dir_dados, exist_ok=True)
+        
+        dir_dados_arquivos = f"{diretorio_projeto}/arquivos"
+        os.makedirs(dir_dados_arquivos, exist_ok=True)
+        
+        dir_dados_assets = f"{diretorio_projeto}/assets"
+        os.makedirs(dir_dados_assets, exist_ok=True)
+        
+        dir_dados_assets_public = f"{dir_dados_assets}/public"
+        os.makedirs(dir_dados_assets_public, exist_ok=True)
+        
+        dir_dados_assets_scripts_python = f"{dir_dados_assets}/scripts_python"
+        os.makedirs(dir_dados_assets_scripts_python, exist_ok=True)
+        
+        dir_dados_assets_scripts_node = f"{dir_dados_assets}/scripts_node"
+        os.makedirs(dir_dados_assets_scripts_node, exist_ok=True)
+        
         self.gerenciar_usuarios_sftp(manual=False, simples_usuario=nome_dominio_, simples_senha=senha_ftp, simples_base_diretorio=diretorio_projeto)
         
         # Define a estrutura do package.json
@@ -1085,17 +1098,17 @@ WantedBy=timers.target
                 json.dump(sftp_json, arquivo, indent=4)
             print(f"Arquivo nodemon.json criado em {caminho_sftp_json}")
             
-            #     "public",
-            #     "python_scripts",
-            #     "index.js",
-            #     "nodemon.json",
-            #     "package.json",
-            #     "requirements.txt",
-            #     "setupPythonEnv.js"
+                # "public",
+                # "scripts_python",
+                # "setupPythonEnv.js"
             
         nodemon_json = {
             "watch": [
-                "."
+                "assets",
+                "index.js",
+                "requirements.txt",
+                "nodemon.json",
+                "package.json"
             ],
             "ignore": [
                 "/root/.npm/**/*",
@@ -1173,7 +1186,7 @@ WantedBy=timers.target
 </html>
         """
         # Caminho para o arquivo index.html
-        caminho_index_html = os.path.join(diretorio_projeto, "public", "index.html")
+        caminho_index_html = os.path.join(dir_dados_assets_public, "index.html")
         if not os.path.exists(caminho_index_html):
             # Cria e escreve o conteúdo no arquivo index.html
             with open(caminho_index_html, "w") as arquivo:
@@ -1181,6 +1194,17 @@ WantedBy=timers.target
             print(f"Arquivo index.html criado em {caminho_index_html}")
 
         index_js = f"""\
+require('./assets/scripts_node/start.js');
+"""
+        # Caminho para o arquivo index.js
+        caminho_index_js = os.path.join(diretorio_projeto, "index.js")
+        if not os.path.exists(caminho_index_js):
+            # Escreve o conteúdo no arquivo index.js
+            with open(caminho_index_js, "w") as arquivo:
+                arquivo.write(index_js)
+            print(f"Arquivo index.js criado em {caminho_index_js}")
+            
+        start_js = f"""\
 // Importa o setupPythonEnv
 const {{ setupPythonEnv, runPythonScript }} = require('./setupPythonEnv');
 const express = require('express');
@@ -1235,13 +1259,13 @@ setupPythonEnv(() => {{
 
 }});
 """
-        # Caminho para o arquivo index.js
-        caminho_index_js = os.path.join(diretorio_projeto, "index.js")
-        if not os.path.exists(caminho_index_js):
-            # Escreve o conteúdo no arquivo index.js
-            with open(caminho_index_js, "w") as arquivo:
-                arquivo.write(index_js)
-            print(f"Arquivo index.js criado em {caminho_index_js}")
+        # Caminho para o arquivo start.js
+        caminho_start_js = os.path.join(dir_dados_assets_scripts_node, "start.js")
+        if not os.path.exists(caminho_start_js):
+            # Escreve o conteúdo no arquivo start.js
+            with open(caminho_start_js, "w") as arquivo:
+                arquivo.write(start_js)
+            print(f"Arquivo start.js criado em {caminho_start_js}")
         
         # Conteúdo do arquivo setupPythonEnv.js
         setup_python_env_js = """\
@@ -1249,7 +1273,7 @@ const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-const python_scripts = path.join(__dirname, 'python_scripts'); // Diretório do ambiente virtual Python
+const scripts_python = path.join(__dirname, 'assets', 'scripts_python'); // Diretório do ambiente virtual Python
 const pythonDir = path.join(__dirname, 'python_env'); // Diretório do ambiente virtual Python
 const pythonBin = path.join(pythonDir, 'bin', 'python'); // Python do ambiente virtual
 const pipPath = path.join(pythonDir, 'bin', 'pip');
@@ -1323,13 +1347,13 @@ function setupPythonEnv(callback) {
 // Função para garantir que um script Python exista (como "start.py")
 function createStartPy() {
   // Garante que o diretório de scripts Python exista
-  if (!fs.existsSync(python_scripts)) {
-    console.log(`Criando o diretório: ${python_scripts}`);
-    fs.mkdirSync(python_scripts, { recursive: true });
-    console.log(`Diretório ${python_scripts} criado com sucesso.`);
+  if (!fs.existsSync(scripts_python)) {
+    console.log(`Criando o diretório: ${scripts_python}`);
+    fs.mkdirSync(scripts_python, { recursive: true });
+    console.log(`Diretório ${scripts_python} criado com sucesso.`);
   }
   
-  const scriptPath = path.join(python_scripts, 'start.py');
+  const scriptPath = path.join(scripts_python, 'start.py');
   if (!fs.existsSync(scriptPath)) {
     console.log(`Criando o script ${path.basename(scriptPath)}...`);
     const content = `# ${path.basename(scriptPath)}\nprint("O ambiente Python está funcionando corretamente!")\n`;
@@ -1342,7 +1366,7 @@ function createStartPy() {
 
 // Função para rodar o script Python com nome dinâmico e capturar a saída via callback
 function runPythonScript(scriptName, callback) {
-  const scriptPy = path.join(python_scripts, scriptName);
+  const scriptPy = path.join(scripts_python, scriptName);
 
   // Verifica se o script fornecido existe
   if (!fs.existsSync(scriptPy)) {
@@ -1369,7 +1393,7 @@ function runPythonScript(scriptName, callback) {
 module.exports = { setupPythonEnv, runPythonScript };
 """
         # Caminho para o arquivo setupPythonEnv.js
-        caminho_setup_python_env_js = os.path.join(diretorio_projeto, "setupPythonEnv.js")
+        caminho_setup_python_env_js = os.path.join(dir_dados_assets_scripts_node, "setupPythonEnv.js")
         if not os.path.exists(caminho_setup_python_env_js):
             # Escreve o conteúdo no arquivo setupPythonEnv.js
             with open(caminho_setup_python_env_js, "w") as arquivo:
@@ -1406,19 +1430,6 @@ module.exports = { setupPythonEnv, runPythonScript };
             ]
         self.remove_container(nome_dominio_)
         resultados = self.executar_comandos(comandos)
-        # time.sleep(10)
-        # self.gerenciar_permissoes_pasta(diretorio_projeto, '777')
-        # comandos = [
-        #     f"docker exec -i {nome_dominio_} apt update",
-        #     f"docker exec -i {nome_dominio_} apt install -y python3 python3-pip",
-        #     f"docker exec -i {nome_dominio_} apt install -y python3-venv",
-        #     f"docker exec -i {nome_dominio_} mkdir python",
-        #     f"docker exec -i {nome_dominio_} python3 -m venv ./python",
-        #     f"docker exec -i {nome_dominio_} source ./python/bin/activate",
-        #     f"docker exec -i {nome_dominio_} pip install yfinance",
-        #     f"docker exec -i {nome_dominio_} deactivate",
-        # ]
-        # resultados = self.executar_comandos(comandos)
         if resposta_traefik.lower() == 's':
             self.adiciona_roteador_servico_traefik(dominio=nome_dominio, endereco=nome_dominio_, porta=portas[0])
     
