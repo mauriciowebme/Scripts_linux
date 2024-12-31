@@ -1085,15 +1085,17 @@ WantedBy=timers.target
                 json.dump(sftp_json, arquivo, indent=4)
             print(f"Arquivo nodemon.json criado em {caminho_sftp_json}")
             
+            #     "public",
+            #     "python_scripts",
+            #     "index.js",
+            #     "nodemon.json",
+            #     "package.json",
+            #     "requirements.txt",
+            #     "setupPythonEnv.js"
+            
         nodemon_json = {
             "watch": [
-                "public",
-                "python_scripts",
-                "index.js",
-                "nodemon.json",
-                "package.json",
-                "requirements.txt",
-                "setupPythonEnv.js"
+                "."
             ],
             "ignore": [
                 ".vscode",
