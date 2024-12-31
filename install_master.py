@@ -1093,10 +1093,10 @@ WantedBy=timers.target
                 "nodemon.json",
                 "package.json",
                 "requirements.txt",
-                ".vscode",
                 "setupPythonEnv.js"
             ],
             "ignore": [
+                ".vscode",
                 "package-lock.json",
                 "arquivos",
                 ".git",
