@@ -1099,6 +1099,13 @@ WantedBy=timers.target
         nodemon_json = {
             "ignore": [
                 ".vscode",
+                "public",
+                "python_scripts",
+                "index.js",
+                "nodemon.json",
+                "package.json",
+                "requirements.txt",
+                "setupPythonEnv.js",
                 "package-lock.json",
                 "arquivos",
                 ".git",
