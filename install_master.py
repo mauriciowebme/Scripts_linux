@@ -460,6 +460,7 @@ certificatesResolvers:
             yaml.dump(config, file)
 
     def instala_traefik(self,):
+        email = input('Digite um e-mail para gerar o certificado: ')
         dynamic_conf = self.cria_dynamic_conf_traefik()
         comandos = [
             f"""docker run -d \
@@ -480,7 +481,7 @@ certificatesResolvers:
                 --providers.docker.exposedbydefault=false \
                 --api.dashboard=true \
                 --api.insecure=true \
-                --certificatesResolvers.le.acme.email=mauriciowebme@gmail.com \
+                --certificatesResolvers.le.acme.email={email} \
                 --certificatesResolvers.le.acme.storage=/letsencrypt/acme.json \
                 --certificatesResolvers.le.acme.httpChallenge.entryPoint=web \
                 --log.level=INFO
