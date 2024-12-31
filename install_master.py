@@ -1100,61 +1100,53 @@ WantedBy=timers.target
                 json.dump(sftp_json, arquivo, indent=4)
             print(f"Arquivo nodemon.json criado em {caminho_sftp_json}")
             
-        yml_content = {
-            "name": "SFTP Deploy",
-            "on": {
-            "push": {
-                "branches": ["main"]
-            }
-            },
-            "concurrency": {
-            "group": "sftp-deploy",
-            "cancel-in-progress": False
-            },
-            "jobs": {
-            "deploy": {
-                "name": "Deploy via SFTP",
-                "runs-on": "ubuntu-latest",
-                "steps": [
-                {
-                    "name": "Checkout repository",
-                    "uses": "actions/checkout@v3"
-                },
-                {
-                    "name": "Install LFTP",
-                    "run": "sudo apt-get install -y lftp"
-                },
-                {
-                    "name": "Deploy files to server",
-                    "env": {
-                        "SFTP_HOST": "${{ secrets.SFTP_HOST }}",
-                        "SFTP_USER": "${{ secrets.SFTP_USER }}",
-                        "SFTP_PASSWORD": "${{ secrets.SFTP_PASSWORD }}"
-                    },
-                    "run": """
-                        lftp -u "$SFTP_USER","$SFTP_PASSWORD" sftp://$SFTP_HOST:2025 <<EOF
-                        set sftp:connect-program "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-                        mirror --reverse --only-newer --ignore-time --verbose \
-                        --exclude-glob .git/ \
-                        --exclude-glob node_modules/ \
-                        --exclude-glob python_env/ \
-                        --exclude-glob package-lock.json \
-                        --exclude-glob arquivos/ \
-                        ./ /
-                        bye
-                        EOF
-                        """
-                }
-                ]
-            }
-            }
-        }
+        yml_content = """\
+name: SFTP Deploy
 
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: sftp-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy via SFTP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install LFTP
+        run: sudo apt-get install -y lftp
+
+      - name: Deploy files to server
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+        run: |
+          lftp -u "$SFTP_USER","$SFTP_PASSWORD" sftp://$SFTP_HOST:2025 <<EOF
+          set sftp:connect-program "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+          mirror --reverse --only-newer --ignore-time --verbose \
+          --exclude-glob .git/ \
+          --exclude-glob node_modules/ \
+          --exclude-glob python_env/ \
+          --exclude-glob package-lock.json \
+          --exclude-glob arquivos/ \
+          ./ /
+          bye
+          EOF
+    """
         caminho_yml = os.path.join(diretorio_projeto, ".github", "workflows", "sftp-deploy.yml")
         os.makedirs(os.path.dirname(caminho_yml), exist_ok=True)
         if not os.path.exists(caminho_yml):
             with open(caminho_yml, "w") as arquivo:
-                yaml.dump(yml_content, arquivo, default_flow_style=False)
+            arquivo.write(yml_content)
             print(f"Arquivo sftp-deploy.yml criado em {caminho_yml}")
             
         nodemon_json = {
