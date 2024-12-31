@@ -1085,34 +1085,24 @@ WantedBy=timers.target
                 json.dump(sftp_json, arquivo, indent=4)
             print(f"Arquivo nodemon.json criado em {caminho_sftp_json}")
             
-            # "watch": [
-            #     ".vscode",
-            #     "public",
-            #     "python_scripts",
-            #     "index.js",
-            #     "nodemon.json",
-            #     "package.json",
-            #     "requirements.txt",
-            #     "setupPythonEnv.js"
-            # ],
-            
         nodemon_json = {
-            "ignore": [
-                ".vscode",
+            "watch": [
                 "public",
                 "python_scripts",
                 "index.js",
                 "nodemon.json",
                 "package.json",
                 "requirements.txt",
-                "setupPythonEnv.js",
+                "setupPythonEnv.js"
+            ],
+            "ignore": [
+                ".vscode",
                 "package-lock.json",
                 "arquivos",
                 ".git",
                 "python_env",
                 "node_modules"
             ],
-            "verbose": True,
             "exec": "chown -R 1000:1000 . && npm install && node index.js"
         }
         # Caminho para o arquivo nodemon.json
