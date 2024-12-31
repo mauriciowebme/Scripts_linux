@@ -1235,7 +1235,7 @@ app.get('/teste', (req, res) => {{
 
 // Rota index.html
 app.get('/', (req, res) => {{
-  const htmlPath = path.join(projectRoot, 'public','index.html');
+  const htmlPath = path.join(projectRoot, 'assets', 'public', 'index.html');
   res.sendFile(htmlPath);
 }});
 
