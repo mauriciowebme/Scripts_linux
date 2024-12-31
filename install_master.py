@@ -1132,12 +1132,12 @@ jobs:
         run: |
           lftp -u "$SFTP_USER","$SFTP_PASSWORD" sftp://$SFTP_HOST:2025 <<EOF
           set sftp:connect-program "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-          mirror --reverse --only-newer --ignore-time --verbose \
-          --exclude-glob .git/ \
-          --exclude-glob node_modules/ \
-          --exclude-glob python_env/ \
-          --exclude-glob package-lock.json \
-          --exclude-glob arquivos/ \
+          mirror --reverse --only-newer --ignore-time --verbose \\
+          --exclude-glob .git/ \\
+          --exclude-glob node_modules/ \\
+          --exclude-glob python_env/ \\
+          --exclude-glob arquivos/ \\
+          --exclude-glob package-lock.json \\
           ./ /
           bye
           EOF
