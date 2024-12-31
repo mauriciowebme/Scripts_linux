@@ -1211,6 +1211,10 @@ const express = require('express');
 const app = express();
 const PORT = {portas[0]};
 const path = require('path');
+const path = require('path');
+
+// Diretório raiz do projeto
+const projectRoot = path.dirname(require.main.filename);
 
 pythonOutput = 'Aguardando ambiente Python...';
 
@@ -1232,7 +1236,7 @@ app.get('/teste', (req, res) => {{
 
 // Rota index.html
 app.get('/', (req, res) => {{
-  const htmlPath = path.join(__dirname, 'public','index.html');
+  const htmlPath = path.join(projectRoot, 'public','index.html');
   res.sendFile(htmlPath);
 }});
 
@@ -1273,11 +1277,14 @@ const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-const scripts_python = path.join(__dirname, 'assets', 'scripts_python'); // Diretório do ambiente virtual Python
-const pythonDir = path.join(__dirname, 'python_env'); // Diretório do ambiente virtual Python
+// Diretório raiz do projeto
+const projectRoot = path.dirname(require.main.filename);
+
+const scripts_python = path.join(projectRoot, 'assets', 'scripts_python'); // Diretório do ambiente virtual Python
+const pythonDir = path.join(projectRoot, 'python_env'); // Diretório do ambiente virtual Python
 const pythonBin = path.join(pythonDir, 'bin', 'python'); // Python do ambiente virtual
 const pipPath = path.join(pythonDir, 'bin', 'pip');
-const requirementsFile = path.join(__dirname, 'requirements.txt');
+const requirementsFile = path.join(projectRoot, 'requirements.txt');
 
 // Instala Python3 e ferramentas necessárias
 function installPython(callback) {
