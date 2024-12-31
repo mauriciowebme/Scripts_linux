@@ -1105,8 +1105,8 @@ name: SFTP Deploy
 
 on:
   push:
-  branches:
-    - main
+    branches:
+      - main
 
 concurrency:
   group: sftp-deploy
@@ -1114,33 +1114,33 @@ concurrency:
 
 jobs:
   deploy:
-  name: Deploy via SFTP
-  runs-on: ubuntu-latest
+    name: Deploy via SFTP
+    runs-on: ubuntu-latest
 
-  steps:
-    - name: Checkout repository
-  uses: actions/checkout@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Install LFTP
-      run: sudo apt-get install -y lftp
+      - name: Install LFTP
+        run: sudo apt-get install -y lftp
 
-    - name: Deploy files to server
-      env:
-        SFTP_HOST: ${{ secrets.SFTP_HOST }}
-        SFTP_USER: ${{ secrets.SFTP_USER }}
-        SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-      run: |
-        lftp -u "$SFTP_USER","$SFTP_PASSWORD" sftp://$SFTP_HOST:2025 <<EOF
-        set sftp:connect-program "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-        mirror --reverse --only-newer --ignore-time --verbose \
-        --exclude-glob .git/ \
-        --exclude-glob node_modules/ \
-        --exclude-glob python_env/ \
-        --exclude-glob package-lock.json \
-        --exclude-glob arquivos/ \
-        ./ /
-        bye
-        EOF
+      - name: Deploy files to server
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+        run: |
+          lftp -u "$SFTP_USER","$SFTP_PASSWORD" sftp://$SFTP_HOST:2025 <<EOF
+          set sftp:connect-program "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+          mirror --reverse --only-newer --ignore-time --verbose \
+          --exclude-glob .git/ \
+          --exclude-glob node_modules/ \
+          --exclude-glob python_env/ \
+          --exclude-glob package-lock.json \
+          --exclude-glob arquivos/ \
+          ./ /
+          bye
+          EOF
 """
         caminho_yml = os.path.join(diretorio_projeto, ".github", "workflows", "sftp-deploy.yml")
         os.makedirs(os.path.dirname(caminho_yml), exist_ok=True)
