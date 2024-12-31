@@ -405,6 +405,7 @@ certificatesResolvers:
         return dynamic_conf
         
     def adiciona_roteador_servico_traefik(self, dominio=None, endereco=None, porta=None):
+        self.verifica_container_existe('traefik', self.instala_traefik)
         if dominio == None:
             dominio = input('Digite o dominio: ')
         if endereco == None:
