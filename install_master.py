@@ -1098,7 +1098,7 @@ WantedBy=timers.target
                 "."
             ],
             "ignore": [
-                "/root/.npm/_logs",
+                "/root/.npm/**/*",
                 ".vscode",
                 "package-lock.json",
                 "arquivos",
