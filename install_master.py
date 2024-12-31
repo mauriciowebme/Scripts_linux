@@ -1087,7 +1087,6 @@ WantedBy=timers.target
             
         nodemon_json = {
             "watch": [
-                "arquivos",
                 "public",
                 "python_scripts",
                 "index.js",
