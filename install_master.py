@@ -1120,6 +1120,7 @@ WantedBy=timers.target
                 "node_modules",
                 "*.log*"
             ],
+            "ext": "js,py",
             "exec": "chown -R 1000:1000 . && npm install && node index.js"
         }
         # Caminho para o arquivo nodemon.json
