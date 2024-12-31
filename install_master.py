@@ -1211,7 +1211,6 @@ const express = require('express');
 const app = express();
 const PORT = {portas[0]};
 const path = require('path');
-const path = require('path');
 
 // Diretório raiz do projeto
 const projectRoot = path.dirname(require.main.filename);
