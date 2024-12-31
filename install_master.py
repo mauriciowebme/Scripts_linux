@@ -1146,7 +1146,7 @@ jobs:
         os.makedirs(os.path.dirname(caminho_yml), exist_ok=True)
         if not os.path.exists(caminho_yml):
             with open(caminho_yml, "w") as arquivo:
-            arquivo.write(yml_content)
+                arquivo.write(yml_content)
             print(f"Arquivo sftp-deploy.yml criado em {caminho_yml}")
             
         nodemon_json = {
