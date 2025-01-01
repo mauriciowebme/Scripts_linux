@@ -47,6 +47,12 @@ def check_for_update():
         try:
             subprocess.run(["sudo", "apt", "update"], check=True)
             subprocess.run(["sudo", "DEBIAN_FRONTEND=noninteractive", "apt", "upgrade", "-y"], check=True)
+            comandos = [
+                "sudo timedatectl set-timezone America/Sao_Paulo",
+                "sudo timedatectl set-ntp true",
+            ]
+            for comando in comandos:
+                subprocess.run(comando.split(), check=True)
             with open(update_file, "w") as f:
                 f.write("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
         except subprocess.CalledProcessError as e:
