@@ -1266,6 +1266,9 @@ const app = express();
 const PORT = {portas[0]};
 const path = require('path');
 
+// Diretório publico do projeto
+app.use('/public', express.static(path.join(__dirname, '../public')));
+
 // Diretório raiz do projeto
 const projectRoot = path.dirname(require.main.filename);
 
