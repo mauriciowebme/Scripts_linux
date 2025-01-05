@@ -1692,6 +1692,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
         
         # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
+        time.sleep(20)
         comandos = [
             f"docker exec -i mysql_{versao_} mysql -uroot -p{self.mysql_root_password} -e \"DELETE FROM mysql.user WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
         ]
@@ -1723,6 +1724,7 @@ module.exports = { setupPythonEnv, runPythonScript };
             self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}_slave', numero_rede=1)
             
             # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
+            time.sleep(20)
             comandos = [
                 f"docker exec -i mysql_{versao_}_slave mysql -uroot -p{self.mysql_root_password} -e \"DELETE FROM mysql.user WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
             ]
