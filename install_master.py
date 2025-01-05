@@ -1674,8 +1674,8 @@ module.exports = { setupPythonEnv, runPythonScript };
                         --restart=always \
                         -p {porta}:3306 \
                         -e MYSQL_DATABASE=db_testes \
-                        -e MYSQL_USER=mysql \
-                        -e MYSQL_PASSWORD=mysql \
+                        -e MYSQL_USER=testes \
+                        -e MYSQL_PASSWORD=testes \
                         -e MYSQL_ROOT_PASSWORD={self.mysql_root_password} \
                         -v {self.bds}/mysql/{versao_}:/var/lib/mysql \
                         mysql:{versao} \
@@ -1706,8 +1706,8 @@ module.exports = { setupPythonEnv, runPythonScript };
                             --restart=always \
                             -p {porta_slave}:3306 \
                             -e MYSQL_DATABASE=db_testes \
-                            -e MYSQL_USER=mysql \
-                            -e MYSQL_PASSWORD=mysql \
+                            -e MYSQL_USER=testes \
+                            -e MYSQL_PASSWORD=testes \
                             -e MYSQL_ROOT_PASSWORD={self.mysql_root_password} \
                             -v {local_slave}/mysql/{versao_}_slave:/var/lib/mysql \
                             mysql:{versao} \
@@ -1753,6 +1753,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         time.sleep(10)
         print(f'Instalação do Mysql completa.')
         print(f'Acesso:')
+        print(f' - ssh -L {porta}:localhost:{porta} usuario@servidor_remoto')
         print(f' - Local instalação: {self.bds}/mysql/{versao_}')
         print(f' - Usuario: root')
         print(f' - Senha: {self.mysql_root_password}')
