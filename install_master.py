@@ -1815,14 +1815,14 @@ module.exports = { setupPythonEnv, runPythonScript };
             # -------------------------------------------------------------------------
 
             # Criar usuário de replicação no Master
-            master_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';")
-            master_cursor.execute(f"GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'%';")
+            master_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'172.%' IDENTIFIED BY '{replication_password}';")
+            master_cursor.execute(f"GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'172.%';")
             master_cursor.execute("FLUSH PRIVILEGES;")
             print("Usuário de replicação criado com sucesso no Master.")
             
             # Criar usuário de replicação no Slave
-            slave_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'%' IDENTIFIED BY '{replication_password}';")
-            slave_cursor.execute(f"GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'%';")
+            slave_cursor.execute(f"CREATE USER IF NOT EXISTS '{replication_user}'@'172.%' IDENTIFIED BY '{replication_password}';")
+            slave_cursor.execute(f"GRANT REPLICATION SLAVE ON *.* TO '{replication_user}'@'172.%';")
             slave_cursor.execute("FLUSH PRIVILEGES;")
             print("Usuário de replicação criado com sucesso no Slave.")
 
