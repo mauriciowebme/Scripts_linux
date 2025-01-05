@@ -1694,7 +1694,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
         time.sleep(20)
         comandos = [
-            f"docker exec -i mysql_{versao_} mysql -uroot -p{self.mysql_root_password} -e \"DELETE FROM mysql.user WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
+            f"docker exec -i mysql_{versao_} mysql -uroot -p{self.mysql_root_password} -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root'; FLUSH PRIVILEGES;\""
         ]
         self.executar_comandos(comandos)
         
@@ -1726,7 +1726,7 @@ module.exports = { setupPythonEnv, runPythonScript };
             # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
             time.sleep(20)
             comandos = [
-                f"docker exec -i mysql_{versao_}_slave mysql -uroot -p{self.mysql_root_password} -e \"DELETE FROM mysql.user WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
+                f"docker exec -i mysql_{versao_} mysql -uroot -p{self.mysql_root_password} -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root'; FLUSH PRIVILEGES;\""
             ]
             self.executar_comandos(comandos)
             
