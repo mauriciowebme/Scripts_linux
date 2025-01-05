@@ -822,8 +822,13 @@ listener Default {{
         
         self.verifica_container_existe('mysql_8_0', self.instala_mysql_8_0)
         
-        comando1 = f"docker exec -i mysql_8_0 mysql -uroot -prootpassword -e \"CREATE USER IF NOT EXISTS 'nextcloud'@'%' IDENTIFIED BY 'nextcloud';\""
-        comando2 = f"docker exec -i mysql_8_0 mysql -uroot -prootpassword -e \"CREATE DATABASE IF NOT EXISTS nextcloud_bd; GRANT ALL PRIVILEGES ON nextcloud_bd.* TO 'nextcloud'@'%'; FLUSH PRIVILEGES;\""
+        # Verifica se o objeto 'self' possui o atributo 'root_password' e se ele está definido (não vazio).
+        if not hasattr(self, 'root_password') or not self.mysql_root_password:
+            self.mysql_root_password = input("Digite a senha root para o MySQL: ")
+        
+        self.mysql_root_password = input("Digite a senha root para o MySQL: ")
+        comando1 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE USER IF NOT EXISTS 'nextcloud'@'%' IDENTIFIED BY 'nextcloud';\""
+        comando2 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE DATABASE IF NOT EXISTS nextcloud_bd; GRANT ALL PRIVILEGES ON nextcloud_bd.* TO 'nextcloud'@'%'; FLUSH PRIVILEGES;\""
         self.executar_comandos([comando1, comando2])
         
         comandos = [
@@ -1641,15 +1646,20 @@ module.exports = { setupPythonEnv, runPythonScript };
             selecao = input('Selecione a versão: \n1 - 5.7 \n2 - 8.0\n')
         if selecao == "1" or selecao == "5.7":
             versao = '5.7'
-            porta = '3306'
-            porta_slave = '3308'
+            porta = '3316'
+            porta_slave = '3318'
         elif selecao == "2" or selecao == "8.0":
             versao = '8.0'
-            porta = '3307'
-            porta_slave = '3309'
+            porta = '3317'
+            porta_slave = '3319'
         else:
             print("Seleção incorreta.")
             return
+        
+        # Verifica se o objeto 'self' possui o atributo 'root_password' e se ele está definido (não vazio).
+        if not hasattr(self, 'root_password') or not self.mysql_root_password:
+            self.mysql_root_password = input("Digite a senha root para o MySQL: ")
+            
         versao_ = versao.replace('.', '_')
         
         replicacao = input('Habilitar a replicação de dados? \n1 - Sim \n2 - Não \n')
@@ -1666,7 +1676,7 @@ module.exports = { setupPythonEnv, runPythonScript };
                         -e MYSQL_DATABASE=db_testes \
                         -e MYSQL_USER=mysql \
                         -e MYSQL_PASSWORD=mysql \
-                        -e MYSQL_ROOT_PASSWORD=rootpassword \
+                        -e MYSQL_ROOT_PASSWORD={self.mysql_root_password} \
                         -v {self.bds}/mysql/{versao_}:/var/lib/mysql \
                         mysql:{versao} \
                         --server-id=1 \
@@ -1676,10 +1686,16 @@ module.exports = { setupPythonEnv, runPythonScript };
                     """
         comandos = [
             container_db,
-            ]
+        ]
         self.remove_container(f'mysql_{versao_}')
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
+        
+        # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
+        comandos = [
+            f"docker exec -i mysql_{versao_} mysql -uroot -p{self.mysql_root_password} -e \"DELETE FROM mysql.user WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
+        ]
+        self.executar_comandos(comandos)
         
         if replicacao == '1':
             # time.sleep(10)
@@ -1691,7 +1707,7 @@ module.exports = { setupPythonEnv, runPythonScript };
                             -e MYSQL_DATABASE=db_testes \
                             -e MYSQL_USER=mysql \
                             -e MYSQL_PASSWORD=mysql \
-                            -e MYSQL_ROOT_PASSWORD=rootpassword \
+                            -e MYSQL_ROOT_PASSWORD={self.mysql_root_password} \
                             -v {local_slave}/mysql/{versao_}_slave:/var/lib/mysql \
                             mysql:{versao} \
                             --server-id=2 \
@@ -1701,21 +1717,27 @@ module.exports = { setupPythonEnv, runPythonScript };
                         """
             comandos = [
                 container_db,
-                ]
+            ]
             self.remove_container(f'mysql_{versao_}_slave')
             resultados = self.executar_comandos(comandos)
             self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}_slave', numero_rede=1)
             
+            # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
+            comandos = [
+                f"docker exec -i mysql_{versao_}_slave mysql -uroot -p{self.mysql_root_password} -e \"DELETE FROM mysql.user WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
+            ]
+            self.executar_comandos(comandos)
+            
             master_container = f"mysql_{versao_}"
             master_host = f'localhost'
             master_user = 'root'
-            master_password = 'rootpassword'
+            master_password = self.mysql_root_password
             master_porta = f'{porta}'
             
             slave_container = f"mysql_{versao_}_slave"
             slave_host = f'localhost'
             slave_user = 'root'
-            slave_password = 'rootpassword'
+            slave_password = self.mysql_root_password
             slave_porta = f'{porta_slave}'
             
             replication_user = 'replication_user'
@@ -1731,7 +1753,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         print(f'Acesso:')
         print(f' - Local instalação: {self.bds}/mysql/{versao_}')
         print(f' - Usuario: root')
-        print(f' - Senha: rootpassword')
+        print(f' - Senha: {self.mysql_root_password}')
         print(f' - Porta interna: 3306')
         print(f' - Porta externa: {porta}')
         
@@ -1904,9 +1926,13 @@ module.exports = { setupPythonEnv, runPythonScript };
         
         self.verifica_container_existe('mysql_5_7', self.instala_mysql_5_7)
         
+        # Verifica se o objeto 'self' possui o atributo 'root_password' e se ele está definido (não vazio).
+        if not hasattr(self, 'root_password') or not self.mysql_root_password:
+            self.mysql_root_password = input("Digite a senha root para o MySQL: ")
+        
         dominio_ = dominio.replace('.', '_')
-        comando1 = f"docker exec -i mysql_5_7 mysql -uroot -prootpassword -e \"CREATE USER IF NOT EXISTS 'wordpress'@'%' IDENTIFIED BY 'wordpress';\""
-        comando2 = f"docker exec -i mysql_5_7 mysql -uroot -prootpassword -e \"CREATE DATABASE IF NOT EXISTS {dominio_}; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
+        comando1 = f"docker exec -i mysql_5_7 mysql -uroot -p{self.mysql_root_password} -e \"CREATE USER IF NOT EXISTS 'wordpress'@'%' IDENTIFIED BY 'wordpress';\""
+        comando2 = f"docker exec -i mysql_5_7 mysql -uroot -p{self.mysql_root_password} -e \"CREATE DATABASE IF NOT EXISTS {dominio_}; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
         self.executar_comandos([comando1, comando2])
         container = f"""docker run -d \
                         --name {dominio_} \
@@ -1936,6 +1962,10 @@ module.exports = { setupPythonEnv, runPythonScript };
         print('Instalando o wordpress.\n')
         dominio = input('Digite o dominio:')
         
+        # Verifica se o objeto 'self' possui o atributo 'root_password' e se ele está definido (não vazio).
+        if not hasattr(self, 'root_password') or not self.mysql_root_password:
+            self.mysql_root_password = input("Digite a senha root para o MySQL: ")
+        
         dominio_ = dominio.replace('.', '_')
         container_db = f"""docker run -d \
                         --name {dominio_}_bd \
@@ -1943,7 +1973,7 @@ module.exports = { setupPythonEnv, runPythonScript };
                         -e MYSQL_DATABASE=wordpress \
                         -e MYSQL_USER=wordpress \
                         -e MYSQL_PASSWORD=wordpress \
-                        -e MYSQL_RANDOM_ROOT_PASSWORD=wordpress \
+                        -e MYSQL_RANDOM_ROOT_PASSWORD={self.mysql_root_password} \
                         -v {self.install_principal}/wordpress/{dominio_}/mysql:/var/lib/mysql \
                         mysql:5.7
                     """
