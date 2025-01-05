@@ -1743,7 +1743,7 @@ module.exports = { setupPythonEnv, runPythonScript };
             slave_porta = f'{porta_slave}'
             
             replication_user = 'replication_user'
-            replication_password = 'replication_password'
+            replication_password = '@Mysql_replication_password_25'
             
             time.sleep(10)
             self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta,
