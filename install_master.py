@@ -15,6 +15,8 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 import sys
+import random
+import string
 
 def ensure_pip_installed():
     try:
@@ -1743,7 +1745,13 @@ module.exports = { setupPythonEnv, runPythonScript };
             slave_porta = f'{porta_slave}'
             
             replication_user = 'replication_user'
-            replication_password = '@Mysql_replication_password_25'
+            
+            def generate_password(length=16):
+                characters = string.ascii_letters + string.digits + string.punctuation
+                password = ''.join(random.choice(characters) for i in range(length))
+                return password
+
+            replication_password = generate_password()
             
             time.sleep(10)
             self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta,
