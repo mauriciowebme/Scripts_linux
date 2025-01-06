@@ -218,7 +218,7 @@ class Docker(Executa_comados):
             ]
         resultados = self.executar_comandos(comandos)
     
-    def generate_password(length=16):
+    def generate_password(self, length=16):
         ascii_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         ascii_lowercase = 'abcdefghijklmnopqrstuvwxyz'
         digits = '0123456789'
