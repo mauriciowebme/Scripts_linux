@@ -219,6 +219,11 @@ class Docker(Executa_comados):
             ]
         resultados = self.executar_comandos(comandos)
     
+    def generate_password(length=16):
+        characters = string.ascii_letters + string.digits
+        password = ''.join(random.choice(characters) for i in range(length))
+        return password
+    
     def gerenciar_permissoes_pasta(self, pasta:str=None, permissao:str=None):
         """
         Altera as permissões de uma pasta e de suas subpastas/arquivos recursivamente.
@@ -1636,6 +1641,118 @@ module.exports = { setupPythonEnv, runPythonScript };
             self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=0)
         self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=1)
         
+    def instala_postgres(self, selecao=None):
+        if not selecao:
+            selecao = input('Selecione a versão: \n1 - 12 \n2 - 13 \n3 - 14\n')
+        if selecao == "1" or selecao == "12":
+            versao = '12'
+            porta = '5433'
+            porta_slave = '5435'
+        elif selecao == "2" or selecao == "13":
+            versao = '13'
+            porta = '5434'
+            porta_slave = '5436'
+        elif selecao == "3" or selecao == "14":
+            versao = '14'
+            porta = '5435'
+            porta_slave = '5437'
+        else:
+            print("Seleção incorreta.")
+            return
+
+        if not hasattr(self, 'postgres_password') or not self.postgres_password:
+            self.postgres_password = input("Digite a senha do usuário postgres: ")
+
+        versao_ = versao.replace('.', '_')
+
+        replicacao = input('Habilitar a replicação de dados? \n1 - Sim \n2 - Não \n')
+        if replicacao == '1':
+            local_slave = input(f'Informe o local para armazenar o Postgres SLAVE (/mnt/dados resultado: /mnt/dados/postgres/{versao_}_slave): ')
+
+        print('Instalando o Postgres.\n')
+
+        container_db = f"""docker run -d \
+                        --name postgres_{versao_} \
+                        --restart=always \
+                        -p {porta}:5432 \
+                        -e POSTGRES_PASSWORD={self.postgres_password} \
+                        -v {self.bds}/postgres/{versao_}:/var/lib/postgresql/data \
+                        postgres:{versao}"""
+
+        comandos = [container_db]
+        self.remove_container(f'postgres_{versao_}')
+        self.executar_comandos(comandos)
+        self.cria_rede_docker(associar_container_nome=f'postgres_{versao_}', numero_rede=1)
+
+        time.sleep(30)
+
+        if replicacao == '1':
+            container_db_slave = f"""docker run -d \
+                                --name postgres_{versao_}_slave \
+                                --restart=always \
+                                -p {porta_slave}:5432 \
+                                -e POSTGRES_PASSWORD={self.postgres_password} \
+                                -v {local_slave}/postgres/{versao_}_slave:/var/lib/postgresql/data \
+                                postgres:{versao}"""
+
+            comandos = [container_db_slave]
+            self.remove_container(f'postgres_{versao_}_slave')
+            self.executar_comandos(comandos)
+            self.cria_rede_docker(associar_container_nome=f'postgres_{versao_}_slave', numero_rede=1)
+
+            time.sleep(30)
+
+            master_container = f"postgres_{versao_}"
+            slave_container = f"postgres_{versao_}_slave"
+
+            replication_user = 'replication_user'
+
+            replication_password = self.generate_password()
+
+            self.configure_postgres_replication(master_container, slave_container, replication_user, replication_password)
+
+        print(f'Instalação do Postgres completa.\n')
+        print(f'Acesso:')
+        print(f' - ssh -L {porta}:localhost:{porta} usuario@servidor_remoto')
+        print(f' - Local instalação: {self.bds}/postgres/{versao_}')
+        print(f' - Usuario: postgres')
+        print(f' - Senha: {self.postgres_password}')
+        print(f' - Porta interna: 5432')
+        print(f' - Porta externa: {porta}')
+
+    def configure_postgres_replication(self, master_container, slave_container, replication_user, replication_password):
+        try:
+            print("Configurando replicação...")
+
+            # 1. Configurar o Master
+            print("Configurando o Master...")
+            master_commands = [
+                f"docker exec {master_container} bash -c \"echo 'wal_level = replica' >> /var/lib/postgresql/data/postgresql.conf\"",
+                f"docker exec {master_container} bash -c \"echo 'max_wal_senders = 5' >> /var/lib/postgresql/data/postgresql.conf\"",
+                f"docker exec {master_container} bash -c \"echo 'host replication {replication_user} 0.0.0.0/0 md5' >> /var/lib/postgresql/data/pg_hba.conf\"",
+                f"docker exec {master_container} bash -c \"psql -U postgres -c \\\"CREATE ROLE {replication_user} REPLICATION LOGIN ENCRYPTED PASSWORD '{replication_password}';\\\"\"",
+            ]
+
+            for command in master_commands:
+                self.executar_comandos([command])
+
+            # Reiniciar o Master para aplicar as mudanças
+            self.executar_comandos([f"docker restart {master_container}"])
+            print("Master configurado com sucesso.")
+
+            # 2. Preparar o Slave
+            print("Preparando o Slave...")
+            self.executar_comandos([f"docker stop {slave_container}"])
+            self.executar_comandos([
+                f"docker exec {master_container} bash -c \"pg_basebackup -h localhost -D /var/lib/postgresql/data -U {replication_user} -Fp -Xs -P -R\""
+            ])
+            self.executar_comandos([f"docker start {slave_container}"])
+            print("Slave preparado com sucesso.")
+
+        except Exception as ex:
+            print(f"Erro na configuração da replicação: {ex}")
+
+        
     def instala_mysql_5_7(self,):
         self.instala_mysql('5.7')
     
@@ -1745,13 +1862,7 @@ module.exports = { setupPythonEnv, runPythonScript };
             slave_porta = f'{porta_slave}'
             
             replication_user = 'replication_user'
-            
-            def generate_password(length=16):
-                characters = string.ascii_letters + string.digits + string.punctuation
-                password = ''.join(random.choice(characters) for i in range(length))
-                return password
-
-            replication_password = generate_password()
+            replication_password = self.generate_password()
             
             time.sleep(10)
             self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta,
@@ -2705,6 +2816,7 @@ class Sistema(Docker, Executa_comados):
             ("Gerenciador SFTP sftpgo", self.gerenciar_usuarios_sftp),
             ("Instala SFTP sftpgo", self.instala_ftp_sftpgo),
             ("Instala mysql", self.instala_mysql),
+            ("Instala postgres", self.instala_postgres),
             ("Instala wordpress", self.instala_wordpress),
             ("Instala wordpress puro", self.instala_wordpress_puro),
             ("Instala openlitespeed", self.instala_openlitespeed),
