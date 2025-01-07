@@ -1771,7 +1771,6 @@ module.exports = { setupPythonEnv, runPythonScript };
             print("Preparando o Slave...")
             self.executar_comandos([f"docker stop {slave_container}"])
             self.executar_comandos([
-                f"docker exec {slave_container} bash -c \"rm -rf /var/lib/postgresql/data/*\"",
                 f"docker exec {master_container} bash -c \"pg_basebackup -h localhost -D /mnt/_slave -U {replication_user} -Fp -Xs -P -R\""
             ])
             self.executar_comandos([f"docker start {slave_container}"])
