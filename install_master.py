@@ -1689,13 +1689,23 @@ module.exports = { setupPythonEnv, runPythonScript };
 
         print('Instalando o Postgres.\n')
 
-        container_db = f"""docker run -d \
-                        --name postgres_{versao_} \
-                        --restart=always \
-                        -p {porta}:5432 \
-                        -e POSTGRES_PASSWORD={self.postgres_password} \
-                        -v {self.bds}/postgres/{versao_}:/var/lib/postgresql/data \
-                        postgres:{versao}"""
+        if replicacao == '1':
+            container_db = f"""docker run -d \
+            --name postgres_{versao_} \
+            --restart=always \
+            -p {porta}:5432 \
+            -e POSTGRES_PASSWORD={self.postgres_password} \
+            -v {self.bds}/postgres/{versao_}:/var/lib/postgresql/data \
+            -v {local_slave}/postgres/{versao_}_slave:/mnt/_slave \
+            postgres:{versao}"""
+        else:
+            container_db = f"""docker run -d \
+            --name postgres_{versao_} \
+            --restart=always \
+            -p {porta}:5432 \
+            -e POSTGRES_PASSWORD={self.postgres_password} \
+            -v {self.bds}/postgres/{versao_}:/var/lib/postgresql/data \
+            postgres:{versao}"""
 
         comandos = [container_db]
         self.remove_container(f'postgres_{versao_}')
@@ -1751,8 +1761,7 @@ module.exports = { setupPythonEnv, runPythonScript };
                 f"docker exec {master_container} bash -c \"psql -U postgres -c \\\"CREATE ROLE {replication_user} REPLICATION LOGIN ENCRYPTED PASSWORD '{replication_password}';\\\"\"",
             ]
 
-            for command in master_commands:
-                self.executar_comandos([command])
+            self.executar_comandos(master_commands)
 
             # Reiniciar o Master para aplicar as mudanças
             self.executar_comandos([f"docker restart {master_container}"])
@@ -1762,9 +1771,15 @@ module.exports = { setupPythonEnv, runPythonScript };
             print("Preparando o Slave...")
             self.executar_comandos([f"docker stop {slave_container}"])
             self.executar_comandos([
-                f"docker exec {master_container} bash -c \"pg_basebackup -h localhost -D /var/lib/postgresql/data -U {replication_user} -Fp -Xs -P -R\""
+                f"docker exec {slave_container} bash -c \"rm -rf /var/lib/postgresql/data/*\"",
+                f"docker exec {master_container} bash -c \"pg_basebackup -h localhost -D /mnt/_slave -U {replication_user} -Fp -Xs -P -R\""
             ])
             self.executar_comandos([f"docker start {slave_container}"])
+            time.sleep(10)
+            self.executar_comandos([
+                f"docker exec {slave_container} bash -c \"echo \\\"primary_conninfo = 'host={master_container} port=5432 user={replication_user} password={replication_password}'\\\" >> /var/lib/postgresql/data/postgresql.auto.conf\""
+            ])
+            self.executar_comandos([f"docker restart {slave_container}"])
             print("Slave preparado com sucesso.")
 
         except Exception as ex:
