@@ -1785,7 +1785,6 @@ module.exports = { setupPythonEnv, runPythonScript };
         except Exception as ex:
             print(f"Erro na configuração da replicação: {ex}")
 
-        
     def instala_mysql_5_7(self,):
         self.instala_mysql('5.7')
     
