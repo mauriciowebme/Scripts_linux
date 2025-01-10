@@ -2866,12 +2866,15 @@ class Sistema(Docker, Executa_comados):
         ]
         self.mostrar_menu(opcoes_menu)
     
-    def verificando_status_sistema(self,):
-        print("Verificando status do sistema...")
+    def exibe_ip(self,):
         comandos = [
             "ip addr show | grep -vE '(docker|br-)' | grep 'inet ' | awk '{split($2, a, \"/\"); print a[1], $NF}'",
         ]
         self.executar_comandos(comandos)
+    
+    def verificando_status_sistema(self,):
+        print("Verificando status do sistema...")
+        self.exibe_ip()
         print('\n')
         
         # input('Pressione enter para abrir o monitor de recusos')
@@ -2919,16 +2922,19 @@ class Sistema(Docker, Executa_comados):
         exit()
 
 def main():
-    print("""
+    servicos = Sistema()
+    print(f"""
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
 Versão 1.165
 ===========================================================================
 ===========================================================================
+ip server: {servicos.exibe_ip()}
+===========================================================================
+===========================================================================
 """)
     """Função principal que controla o menu."""
-    servicos = Sistema()
     opcoes_menu = [
         ("Contagem regressiva", servicos.contagem_regressiva),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
