@@ -2228,7 +2228,6 @@ module.exports = { setupPythonEnv, runPythonScript };
                     "newgrp docker"
                     ]
                 self.executar_comandos(comandos, comando_direto=True)
-                break
 
     def start_sync_pastas(self):
         # Solicita ao usuário os caminhos da pasta de origem e destino
