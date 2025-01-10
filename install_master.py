@@ -2189,11 +2189,11 @@ module.exports = { setupPythonEnv, runPythonScript };
             
     def instala_docker_force(self,):
         print("Instalando docker...")
-        # print("A instalação do Docker requer uma reinicialização do sistema. Deseja continuar? (s/n)")
-        # resposta = input().strip().lower()
-        # if resposta != 's':
-        #     print("Instalação cancelada pelo usuário.")
-        #     return
+        print("A instalação do Docker requer uma reinicialização do sistema. Deseja continuar? (s/n)")
+        resposta = input().strip().lower()
+        if resposta != 's':
+            print("Instalação cancelada pelo usuário.")
+            return
         user = input("Digite o nome do usuário com permissões de acesso extra: ")
         for i in range(2):
             comandos = [
@@ -2225,7 +2225,8 @@ module.exports = { setupPythonEnv, runPythonScript };
                     # adiona um tempo para aguardar de 10 segundos
                     "sleep 10",
                     f"sudo usermod -aG docker {user}",
-                    "newgrp docker"
+                    "newgrp docker",
+                    "reboot"
                     ]
                 self.executar_comandos(comandos, comando_direto=True)
 
@@ -2944,7 +2945,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.168
+Versão 1.169
 ===========================================================================
 ===========================================================================
 ip server:
