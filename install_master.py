@@ -2877,7 +2877,6 @@ class Sistema(Docker, Executa_comados):
     
     def verificando_status_sistema(self,):
         print("Verificando status do sistema...")
-        self.exibe_ip()
         print('\n')
         
         # input('Pressione enter para abrir o monitor de recusos')
