@@ -2202,6 +2202,8 @@ module.exports = { setupPythonEnv, runPythonScript };
                 
                 "sudo apt-get update",
                 "sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin",
+                # adiona um tempo para aguardar de 10 segundos
+                "sleep 10",
                 "sudo usermod -aG docker $USER",
                 "newgrp docker"
             ]
