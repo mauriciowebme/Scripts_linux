@@ -1062,6 +1062,7 @@ WantedBy=timers.target
         
     def instala_app_nodejs(self,):
         nome_dominio = input('Digite o dominio ou nome do projeto: ')
+        desenvolvimento = input('O container é para desenvolvimento?: S ou N: ')
         resposta_traefik = input('Deseja redirecionar com traefik?: S ou N: ')
         senha_ftp = input('Digite uma senha para o ftp: ')
         
@@ -1509,7 +1510,10 @@ module.exports = { setupPythonEnv, runPythonScript };
         if not os.path.exists(caminho_requirements):
             with open(caminho_requirements, "w") as arquivo:
                 arquivo.write("\n".join(dependencias))
-        
+        desenvolvimento_atuvacao = 'npm start'
+        if desenvolvimento.lower() == 's':
+            desenvolvimento_atuvacao = 'sleep infinity'
+            
         print(f'Porta interna para uso: {portas[0]}')
         container = f"""docker run -d \
                         --name {nome_dominio_} \
@@ -1518,7 +1522,7 @@ module.exports = { setupPythonEnv, runPythonScript };
                         -v {diretorio_projeto}:/usr/src/app:rw \
                         -w /usr/src/app \
                         node:latest \
-                        /bin/sh -c \"npm start\"
+                        /bin/sh -c \"{desenvolvimento_atuvacao}\"
                     """
         
         comandos = [
