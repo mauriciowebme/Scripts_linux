@@ -2871,7 +2871,9 @@ class Sistema(Docker, Executa_comados):
             "ip addr show | grep -vE '(docker|br-)' | grep 'inet ' | awk '{split($2, a, \"/\"); print a[1], $NF}'",
         ]
         resultados = self.executar_comandos(comandos, exibir_executando=False)
-        return resultados[comandos[0]]
+        ip_result = "".join(resultados[comandos[0]])
+        # print(ip_result)
+        return ip_result
     
     def verificando_status_sistema(self,):
         print("Verificando status do sistema...")
@@ -2928,7 +2930,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.166
+Versão 1.167
 ===========================================================================
 ===========================================================================
 ip server: {servicos.exibe_ip()}
