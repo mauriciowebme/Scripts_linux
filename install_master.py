@@ -79,7 +79,10 @@ class Executa_comados():
             resultados[comando] = []
             if exibir_resultados and exibir_executando:
                 print("\n" + "*" * 40)
-                print(" " * 5 + "---> Executando comando: <---")
+                if comando_direto:
+                    print(" " * 5 + "---> Executando comando direto: <---")
+                else:
+                    print(" " * 5 + "---> Executando comando: <---")
                 print(" " * 5 + f"{comando}")
                 print("*" * 40 + "\n")
                 
