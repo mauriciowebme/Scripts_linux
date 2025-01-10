@@ -2224,7 +2224,7 @@ module.exports = { setupPythonEnv, runPythonScript };
                     f"sudo usermod -aG docker {user}",
                     "newgrp docker"
                     ]
-                self.executar_comandos(comandos)
+                self.executar_comandos(comandos, comando_direto=True)
                 break
 
     def start_sync_pastas(self):
