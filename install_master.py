@@ -1071,6 +1071,14 @@ WantedBy=timers.target
         portas = self.escolher_porta_disponivel()
         
         diretorio_projeto = f"{self.install_principal}/node/{nome_dominio_}"
+        # Verifica se o diretório do projeto já existe
+        if os.path.exists(diretorio_projeto):
+            resposta = input(f"O diretório {diretorio_projeto} já existe. Deseja removê-lo? (s/n): ")
+            if resposta.lower() == 's':
+                comandos = [
+                    f"rm -rf {diretorio_projeto}",
+                ]
+                self.executar_comandos(comandos)
         self.gerenciar_permissoes_pasta(diretorio_projeto, '777')
         
         dir_dados_arquivos = f"{diretorio_projeto}/arquivos"
