@@ -2871,7 +2871,7 @@ class Sistema(Docker, Executa_comados):
             "ip addr show | grep -vE '(docker|br-)' | grep 'inet ' | awk '{split($2, a, \"/\"); print a[1], $NF}'",
         ]
         resultados = self.executar_comandos(comandos, exibir_executando=False)
-        ip_result = "".join(line.strip() for line in resultados[comandos[0]])
+        ip_result = "\n".join(line.strip() for line in resultados[comandos[0]])
         # print(ip_result)
         return ip_result
     
