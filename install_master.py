@@ -2186,6 +2186,7 @@ module.exports = { setupPythonEnv, runPythonScript };
             
     def instala_docker_force(self,):
         print("Instalando docker...")
+        user = input("Digite o nome do usuário com permissões de acesso extra: ")
         for i in range(2):
             comandos = [
                 "apt update && apt upgrade -y",
@@ -2202,10 +2203,6 @@ module.exports = { setupPythonEnv, runPythonScript };
                 
                 "sudo apt-get update",
                 "sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin",
-                # adiona um tempo para aguardar de 10 segundos
-                "sleep 10",
-                "sudo usermod -aG docker $USER",
-                "newgrp docker"
             ]
 
             # Executa todos os comandos de instalação do Docker
@@ -2215,6 +2212,10 @@ module.exports = { setupPythonEnv, runPythonScript };
             else:
                 comandos = [
                     f"""sudo rm /etc/apt/sources.list.d/docker.list""",
+                    # adiona um tempo para aguardar de 10 segundos
+                    "sleep 10",
+                    f"sudo usermod -aG docker {user}",
+                    "newgrp docker"
                     ]
                 self.executar_comandos(comandos)
 
