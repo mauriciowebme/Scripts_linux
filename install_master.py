@@ -2212,17 +2212,20 @@ module.exports = { setupPythonEnv, runPythonScript };
 
             # Executa todos os comandos de instalação do Docker
             resultados = self.executar_comandos(comandos, ignorar_erros=True)
-            if 'erro:true' not in resultados[comandos[-1]][-1]:
-                break
+            if 'erro:true' in resultados[comandos[-1]][-1]:
+                comandos = [
+                    f"""sudo rm /etc/apt/sources.list.d/docker.list"""
+                    ]
+                self.executar_comandos(comandos)
             else:
                 comandos = [
-                    f"""sudo rm /etc/apt/sources.list.d/docker.list""",
                     # adiona um tempo para aguardar de 10 segundos
                     "sleep 10",
                     f"sudo usermod -aG docker {user}",
                     "reboot"
                     ]
                 self.executar_comandos(comandos)
+                break
 
     def start_sync_pastas(self):
         # Solicita ao usuário os caminhos da pasta de origem e destino
