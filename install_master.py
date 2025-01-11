@@ -2237,7 +2237,7 @@ module.exports = { setupPythonEnv, runPythonScript };
                     # adiona um tempo para aguardar de 10 segundos
                     "sleep 10",
                     f"sudo usermod -aG docker {user}",
-                    "newgrp docker",
+                    # "newgrp docker",
                     "reboot"
                     ]
                 self.executar_comandos(comandos, comando_direto=True)
