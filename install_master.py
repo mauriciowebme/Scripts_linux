@@ -1064,7 +1064,9 @@ WantedBy=timers.target
         nome_dominio = input('Digite o dominio ou nome do projeto: ')
         desenvolvimento = input('O container é para desenvolvimento?: S ou N: ')
         resposta_traefik = input('Deseja redirecionar com traefik?: S ou N: ')
-        senha_ftp = input('Digite uma senha para o ftp: ')
+        
+        if desenvolvimento.lower() != 's':
+            senha_ftp = input('Digite uma senha para o ftp: ')
         
         self.verifica_container_existe('redis', self.instala_redis_docker)
         nome_dominio_ = nome_dominio.replace('.', '_')
@@ -1096,7 +1098,8 @@ WantedBy=timers.target
         dir_dados_assets_scripts_node = f"{dir_dados_assets}/scripts_node"
         os.makedirs(dir_dados_assets_scripts_node, exist_ok=True)
         
-        self.gerenciar_usuarios_sftp(manual=False, simples_usuario=nome_dominio_, simples_senha=senha_ftp, simples_base_diretorio=diretorio_projeto)
+        if desenvolvimento.lower() != 's':
+            self.gerenciar_usuarios_sftp(manual=False, simples_usuario=nome_dominio_, simples_senha=senha_ftp, simples_base_diretorio=diretorio_projeto)
         
         # Define a estrutura do package.json
         package_json = {
