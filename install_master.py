@@ -1679,17 +1679,17 @@ module.exports = { setupPythonEnv, runPythonScript };
         
     def instala_postgres(self, selecao=None):
         if not selecao:
-            selecao = input('Selecione a versão: \n1 - 12 \n2 - 13 \n3 - 14\n')
-        if selecao == "1" or selecao == "12":
-            versao = '12'
+            selecao = input('Selecione a versão: \n1 - 15 \n2 - 16 \n3 - 17\n')
+        if selecao == "1" or selecao == "15":
+            versao = '15'
             porta = '5433'
             porta_slave = '5435'
-        elif selecao == "2" or selecao == "13":
-            versao = '13'
+        elif selecao == "2" or selecao == "16":
+            versao = '16'
             porta = '5434'
             porta_slave = '5436'
-        elif selecao == "3" or selecao == "14":
-            versao = '14'
+        elif selecao == "3" or selecao == "17":
+            versao = '17'
             porta = '5435'
             porta_slave = '5437'
         else:
