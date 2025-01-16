@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# pip install PyYAML requests
-
 # Execute com:
 # wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
@@ -62,8 +60,9 @@ def check_for_update():
 
 check_for_update()
 
-# Verificar e instalar 'mysql-connector-python' se necessário
+# Verificar e instala dependencias
 ensure_library_installed("mysql.connector")
+
 import mysql.connector
 
 class Executa_comados():
