@@ -1676,7 +1676,7 @@ module.exports = { setupPythonEnv, runPythonScript };
             --name guacamole \
             --restart=always \
             -p 8080:8080 \
-            -e GUACD_HOSTNAME=guacd \
+            -e GUACD_HOSTNAME=guacamole_guacd \
             -e MYSQL_HOSTNAME=mysql_8_0 \
             -e MYSQL_DATABASE=guacamole_db \
             -e MYSQL_USER=guacamole_user \
