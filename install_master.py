@@ -2232,16 +2232,17 @@ module.exports = { setupPythonEnv, runPythonScript };
         self.cria_rede_docker(associar_container_nome=f'{dominio_}', numero_rede=1)
 
     def limpeza_containers(self,):
-        # "docker container prune -f",
-        # "docker system prune -a --volumes -f",
-        # "docker system prune --volumes -f",
+        
         comandos = [
-            "docker image prune -a -f",
-            "docker volume prune -f",
-            "docker network prune -f",
-            "docker builder prune -f",
+            # Comando para remover imagens Docker não utilizadas há mais de 24 horas
+            "docker image prune -a --filter \"until=24h\" -f",
+            # Comando para remover volumes Docker não utilizados há mais de 24 horas
+            "docker volume prune --filter \"until=24h\" -f",
+            # Comando para remover redes Docker não utilizadas há mais de 24 horas
+            "docker network prune --filter \"until=24h\" -f",
+            # Comando para remover dados de construção Docker não utilizados há mais de 24 horas
+            "docker builder prune --filter \"until=24h\" -f",
         ]
-        # "docker system df",
         resultados = self.executar_comandos(comandos, ignorar_erros=True, exibir_resultados=False)
         
     def instala_docker(self,):
