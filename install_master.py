@@ -1666,7 +1666,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         # Comando para copiar o script SQL gerado para o container MySQL
         comando2 = f"docker cp initdb.sql mysql_8_0:/var/lib/mysql/initdb.sql"
         # Comando para executar o script SQL gerado no banco de dados MySQL
-        comando3 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} guacamole_db < /var/lib/mysql/initdb.sql"
+        comando3 = f"""docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} guacamole_db -e "SOURCE /var/lib/mysql/initdb.sql;" """
         self.executar_comandos([comando1, comando2, comando3])
         
         caminho_guacamole = f"{self.install_principal}/guacamole"
@@ -3016,7 +3016,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.174
+Versão 1.175
 ===========================================================================
 ===========================================================================
 ip server:
