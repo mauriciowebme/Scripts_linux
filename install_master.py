@@ -1650,6 +1650,53 @@ module.exports = { setupPythonEnv, runPythonScript };
             print(response.json())
         pass
         
+    def instala_webserver_guacamole(self,):
+        self.verifica_container_existe('mysql_8_0', self.instala_mysql_8_0)
+        
+        # Verifica se o objeto 'self' possui o atributo 'root_password' e se ele está definido (não vazio).
+        if not hasattr(self, 'root_password') or not self.mysql_root_password:
+            self.mysql_root_password = input("Digite a senha root para o MySQL: ")
+            
+        comando1 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE USER IF NOT EXISTS 'guacamole_user'@'%' IDENTIFIED BY 'guacamole_password';\""
+        comando2 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE DATABASE IF NOT EXISTS guacamole_db; GRANT ALL PRIVILEGES ON guacamole_db.* TO 'guacamole_user'@'%'; FLUSH PRIVILEGES;\""
+        self.executar_comandos([comando1, comando2])
+        
+        caminho_guacamole = f"{self.install_principal}/guacamole"
+        self.gerenciar_permissoes_pasta(caminho_guacamole, '777')
+        print('Porta interna para uso: 8080')
+        container_guacamole = f"""docker run -d \
+            --name guacamole \
+            --restart=always \
+            -p 8080:8080 \
+            -e GUACD_HOSTNAME=guacd \
+            -e MYSQL_HOSTNAME=mysql \
+            -e MYSQL_DATABASE=guacamole_db \
+            -e MYSQL_USER=guacamole_user \
+            -e MYSQL_PASSWORD=guacamole_password \
+            -v {caminho_guacamole}/guacamole:/etc/guacamole \
+            guacamole/guacamole:latest
+        """
+        # Container do Guacd
+        container_guacd = """docker run -d \
+            --name guacamole_guacd \
+            --restart=always \
+            guacamole/guacd:latest
+        """
+        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
+        
+        comandos = [
+            container_guacamole,
+            container_guacd,
+            ]
+        self.remove_container('guacamole')
+        self.remove_container('guacamole_guacd')
+        resultados = self.executar_comandos(comandos)
+        if resposta.lower() == 's':
+            self.adiciona_roteador_servico_traefik(endereco='guacamole', porta='8080')
+            self.cria_rede_docker(associar_container_nome=f'guacamole', numero_rede=0)
+        self.cria_rede_docker(associar_container_nome=f'guacamole', numero_rede=1)
+        self.cria_rede_docker(associar_container_nome=f'guacamole_guacd', numero_rede=1)
+    
     def instala_webserver_ssh(self,):
         caminho_webssh = f"{self.install_principal}/webssh"
         self.gerenciar_permissoes_pasta(caminho_webssh, '777')
@@ -2874,6 +2921,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala traefik", self.instala_traefik),
             ("Adiciona roteamento e serviço ao traefik", self.adiciona_roteador_servico_traefik),
             ("Configura rede do container", self.configura_rede),
+            ("Instala webserver guacamole", self.instala_webserver_guacamole),
             ("Instala webserver ssh", self.instala_webserver_ssh),
             ("Gerenciador SFTP sftpgo", self.gerenciar_usuarios_sftp),
             ("Instala SFTP sftpgo", self.instala_ftp_sftpgo),
