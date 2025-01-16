@@ -1657,17 +1657,20 @@ module.exports = { setupPythonEnv, runPythonScript };
         if not hasattr(self, 'root_password') or not self.mysql_root_password:
             self.mysql_root_password = input("Digite a senha root para o MySQL: ")
             
-        comando1 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE USER IF NOT EXISTS 'guacamole_user'@'%' IDENTIFIED BY 'guacamole_password';\""
-        comando2 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE DATABASE IF NOT EXISTS guacamole_db; GRANT ALL PRIVILEGES ON guacamole_db.* TO 'guacamole_user'@'%'; FLUSH PRIVILEGES;\""
-        self.executar_comandos([comando1, comando2])
+        # Verifica se a base de dados guacamole_db já existe
+        comando_verifica_db = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"SHOW DATABASES LIKE 'guacamole_db';\""
+        resultado = self.executar_comandos([comando_verifica_db])
+        print(resultado[comando_verifica_db])
         
-        # Comando para inicializar o banco de dados Guacamole e gerar o script SQL
-        comando1 = f"docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --mysql > initdb.sql"
-        # Comando para copiar o script SQL gerado para o container MySQL
-        comando2 = f"docker cp initdb.sql mysql_8_0:/initdb.sql"
-        # Comando para executar o script SQL gerado no banco de dados MySQL
-        comando3 = f"""docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} guacamole_db -e "SOURCE /initdb.sql;" """
-        self.executar_comandos([comando1, comando2, comando3])
+        if 'guacamole_db' not in resultado[comando_verifica_db]:
+            comando1 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE USER IF NOT EXISTS 'guacamole_user'@'%' IDENTIFIED BY 'guacamole_password';\""
+            comando2 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE DATABASE IF NOT EXISTS guacamole_db; GRANT ALL PRIVILEGES ON guacamole_db.* TO 'guacamole_user'@'%'; FLUSH PRIVILEGES;\""
+            comando3 = f"docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --mysql > initdb.sql"
+            comando4 = f"docker cp initdb.sql mysql_8_0:/initdb.sql"
+            comando5 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} guacamole_db -e \"SOURCE /initdb.sql;\""
+            self.executar_comandos([comando1, comando2, comando3, comando4, comando5])
+        else:
+            print("A base de dados guacamole_db já existe.")
         
         caminho_guacamole = f"{self.install_principal}/guacamole"
         self.gerenciar_permissoes_pasta(caminho_guacamole, '777')
