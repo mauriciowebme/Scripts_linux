@@ -1671,14 +1671,14 @@ module.exports = { setupPythonEnv, runPythonScript };
         else:
             print("A base de dados guacamole_db já existe.")
         
-        caminho_guacamole = f"{self.install_principal}/guacamole"
-        self.gerenciar_permissoes_pasta(caminho_guacamole, '777')
-        print('Porta interna para uso: 8080')
+        # caminho_guacamole = f"{self.install_principal}/guacamole"
+        # self.gerenciar_permissoes_pasta(caminho_guacamole, '777')
+        print('Porta interna para uso: 8086')
         # -v {caminho_guacamole}/guacamole:/etc/guacamole \
         container_guacamole = f"""docker run -d \
             --name guacamole \
             --restart=always \
-            -p 8080:8080 \
+            -p 8086:8080 \
             -e GUACD_HOSTNAME=guacamole_guacd \
             -e MYSQL_HOSTNAME=mysql_8_0 \
             -e MYSQL_DATABASE=guacamole_db \
