@@ -1662,7 +1662,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         resultado = self.executar_comandos([comando_verifica_db])
         print(resultado[comando_verifica_db])
         
-        if 'guacamole_db' not in resultado[comando_verifica_db]:
+        if not any('guacamole_db' in line for line in resultado[comando_verifica_db]):
             comando1 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE USER IF NOT EXISTS 'guacamole_user'@'%' IDENTIFIED BY 'guacamole_password';\""
             comando2 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE DATABASE IF NOT EXISTS guacamole_db; GRANT ALL PRIVILEGES ON guacamole_db.* TO 'guacamole_user'@'%'; FLUSH PRIVILEGES;\""
             comando3 = f"docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --mysql > initdb.sql"
