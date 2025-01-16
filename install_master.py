@@ -1881,8 +1881,8 @@ module.exports = { setupPythonEnv, runPythonScript };
             print("Seleção incorreta.")
             return
         
-        # Verifica se o objeto 'self' possui o atributo 'root_password' e se ele está definido (não vazio).
-        if not hasattr(self, 'root_password') or not self.mysql_root_password:
+        # Verifica se o objeto 'self' possui o atributo 'root_password'.
+        if not hasattr(self, 'root_password'):
             self.mysql_root_password = input("Digite a senha root para o MySQL: ")
             
         versao_ = versao.replace('.', '_')
