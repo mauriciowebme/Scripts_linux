@@ -1675,6 +1675,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         caminho_guacamole = f"{self.install_principal}/guacamole"
         self.gerenciar_permissoes_pasta(caminho_guacamole, '777')
         print('Porta interna para uso: 8080')
+        # -v {caminho_guacamole}/guacamole:/etc/guacamole \
         container_guacamole = f"""docker run -d \
             --name guacamole \
             --restart=always \
@@ -1684,7 +1685,6 @@ module.exports = { setupPythonEnv, runPythonScript };
             -e MYSQL_DATABASE=guacamole_db \
             -e MYSQL_USER=guacamole_user \
             -e MYSQL_PASSWORD=guacamole_password \
-            -v {caminho_guacamole}/guacamole:/etc/guacamole \
             guacamole/guacamole:latest
         """
         # Container do Guacd
