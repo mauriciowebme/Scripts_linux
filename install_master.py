@@ -1664,9 +1664,9 @@ module.exports = { setupPythonEnv, runPythonScript };
         # Comando para inicializar o banco de dados Guacamole e gerar o script SQL
         comando1 = f"docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --mysql > initdb.sql"
         # Comando para copiar o script SQL gerado para o container MySQL
-        comando2 = f"docker cp initdb.sql mysql_8_0:/var/lib/mysql/initdb.sql"
+        comando2 = f"docker cp initdb.sql mysql_8_0:/initdb.sql"
         # Comando para executar o script SQL gerado no banco de dados MySQL
-        comando3 = f"""docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} guacamole_db -e "SOURCE /var/lib/mysql/initdb.sql;" """
+        comando3 = f"""docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} guacamole_db -e "SOURCE /initdb.sql;" """
         self.executar_comandos([comando1, comando2, comando3])
         
         caminho_guacamole = f"{self.install_principal}/guacamole"
@@ -1677,7 +1677,7 @@ module.exports = { setupPythonEnv, runPythonScript };
             --restart=always \
             -p 8080:8080 \
             -e GUACD_HOSTNAME=guacd \
-            -e MYSQL_HOSTNAME=mysql \
+            -e MYSQL_HOSTNAME=mysql_8_0 \
             -e MYSQL_DATABASE=guacamole_db \
             -e MYSQL_USER=guacamole_user \
             -e MYSQL_PASSWORD=guacamole_password \
