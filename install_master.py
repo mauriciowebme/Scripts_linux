@@ -2898,55 +2898,55 @@ class Sistema(Docker, Executa_comados):
             self.executar_comandos(comandos)
         # Executar o comando sensors
         self.executar_comandos(["speedtest "], comando_direto=True)
-        
+
     def configura_ssh(self):
-        """
-        Configura o SSH no servidor local:
-        - Altera a porta padrão do SSH.
-        - Altera a senha do usuário.
-
-        Args:
-            new_port (int): Nova porta para o SSH.
-            new_password (str): Nova senha para o usuário.
-            username (str): Nome do usuário a ser atualizado.
-
-        Returns:
-            None
-        """
-        new_port = int(input("Digite a nova porta para o SSH: "))
-        new_password = input("Digite a nova senha para o usuário: ")
-        
         try:
+            # Solicitar nova porta e senha
+            new_port = int(input("Digite a nova porta para o SSH: "))
+            new_password = input("Digite a nova senha para o usuário: ")
+            
             # Alterar a porta no arquivo de configuração SSH
             print("Alterando a porta do SSH...")
-            os.system(f"sudo sed -i 's/^#\?Port .*/Port {new_port}/' /etc/ssh/sshd_config")
-            # Reiniciar o serviço SSH para aplicar a nova configuração de porta
-            os.system("sudo systemctl restart ssh")
-        except Exception as e:
-            print(f"Erro durante a configuração de porta: {e}")
-        
-        try:
-            # Executa o comando para listar usuários com acesso ao shell
-            result = subprocess.check_output(
-                "awk -F: '($7 ~ /(\\/bin\\/bash|\\/bin\\/sh|\\/bin\\/dash)$/) {print $1}' /etc/passwd", 
-                shell=True, 
-                text=True
+            subprocess.run(
+                ["sudo", "sed", "-i", f"s/^#\\?Port .*/Port {new_port}/", "/etc/ssh/sshd_config"],
+                check=True
             )
-            ssh_users = result.strip().split("\n")
-        except Exception as e:
-            ssh_users = []
+            # Reiniciar o serviço SSH
+            subprocess.run(["sudo", "systemctl", "restart", "ssh"], check=True)
+            print(f"Porta SSH alterada para {new_port}.")
             
-        for username in ssh_users:
+            # Listar usuários com acesso ao shell
             try:
-                # Alterar a senha do usuário
-                print("Alterando a senha do usuário...")
-                os.system(f"echo -e '{new_password}\n{new_password}' | sudo passwd {username}")
-
-                # Exibir mensagem de conclusão da configuração
-                print(f"Configuração concluída: SSH na porta {new_port} e senha atualizada para o usuário {username}.")
-
-            except Exception as e:
-                print(f"Erro durante a configuração de usuario: {e}")
+                result = subprocess.check_output(
+                    "awk -F: '($7 ~ /(\\/bin\\/bash|\\/bin\\/sh|\\/bin\\/dash)$/) {print $1}' /etc/passwd", 
+                    shell=True, 
+                    text=True
+                )
+                ssh_users = result.strip().split("\n")
+            except subprocess.CalledProcessError:
+                ssh_users = []
+            
+            # Alterar senha para cada usuário encontrado
+            for username in ssh_users:
+                try:
+                    print(f"Alterando a senha do usuário: {username}...")
+                    subprocess.run(
+                        ["sudo", "passwd", username],
+                        input=f"{new_password}\n{new_password}",
+                        text=True,
+                        check=True
+                    )
+                    print(f"Senha alterada com sucesso para o usuário: {username}.")
+                except subprocess.CalledProcessError as e:
+                    print(f"Erro ao alterar a senha do usuário {username}: {e}")
+            
+            # Mensagem de conclusão
+            print(f"Configuração concluída: SSH na porta {new_port} e senhas atualizadas.")
+        
+        except ValueError:
+            print("Erro: Porta deve ser um número.")
+        except Exception as e:
+            print(f"Erro inesperado: {e}")
         
     def opcoes_sistema(self):
         print("\nMenu de sistema.\n")
