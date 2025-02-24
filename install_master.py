@@ -1018,7 +1018,7 @@ WantedBy=timers.target
                     -p 21116:21116/udp \
                     -p 21118:21118 \
                     -v {self.install_principal}/rustdesk/rustdesk-hbbs:/root \
-                    -e RELAY_PASSWORD="{senha}" \
+                    -e TOKEN="{senha}" \
                     rustdesk/rustdesk-server hbbs
                 """,
             f"""docker run -d \
@@ -3072,7 +3072,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.176
+Versão 1.177
 ===========================================================================
 ===========================================================================
 ip server:
