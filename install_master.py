@@ -1006,6 +1006,8 @@ WantedBy=timers.target
         resultados = self.executar_comandos(comandos)
         
     def instala_rustdesk(self,):
+        print('Instalando rustdesk.')
+        senha = input('Coloque a senha que deseja para acesso: ')
         comandos = [
             f"""docker run -d \
                     --name rustdesk-hbbs \
@@ -1016,6 +1018,7 @@ WantedBy=timers.target
                     -p 21116:21116/udp \
                     -p 21118:21118 \
                     -v {self.install_principal}/rustdesk/rustdesk-hbbs:/root \
+                    -e TOKEN={senha} \
                     rustdesk/rustdesk-server hbbs
                 """,
             f"""docker run -d \
