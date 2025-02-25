@@ -2800,16 +2800,25 @@ class Sistema(Docker, Executa_comados):
             return "UEFI"
         return "BIOS"
     
+    def estado_raid(self, tempo_real=True):
+        """Exibe o estado atual do RAID e suas configurações."""
+        print('Exibindo o estado atual do RAID:')
+        if tempo_real:
+            comandos = [
+                "watch cat /proc/mdstat"
+            ]
+        else:
+            comandos = [
+                "cat /proc/mdstat"
+            ]
+        resultado = self.executar_comandos(comandos, comando_direto=True)
+    
     def formatar_criar_particao_raid(self):
         """Formata um disco e adiciona ao RAID"""
         self.listar_particoes()
         
         # exibir o stado da raid atual
-        print('Exibindo o estado atual do RAID:')
-        comandos = [
-            "cat /proc/mdstat"
-        ]
-        resultado = self.executar_comandos(comandos, comando_direto=True)
+        self.estado_raid(tempo_real=False)
 
         # Solicita o nome do disco ao usuário
         print("Inicializando a formatação e adição de disco ao RAID...")
@@ -2892,6 +2901,15 @@ class Sistema(Docker, Executa_comados):
         # Monitorar a sincronização do RAID
         print("\n📊 Aguardando sincronização do RAID...\n")
         os.system("watch -n 1 cat /proc/mdstat")
+        
+    def menu_raid(self):
+        print("\nMenu de raids.\n")
+        """Menu de opções"""
+        opcoes_menu = [
+            ("Exibe o estado atual da raid", self.estado_raid),
+            ("Formata o disco para usar em raid existente", self.formatar_criar_particao_raid),
+        ]
+        self.mostrar_menu(opcoes_menu)
         
     def monta_particao(self,):
         self.listar_particoes()
