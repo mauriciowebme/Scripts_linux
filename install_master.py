@@ -2687,6 +2687,13 @@ class Sistema(Docker, Executa_comados):
         ]
         resultado = self.executar_comandos(comandos)
         
+    def listar_particoes_detalhadas(self,):
+        print("Listando discos disponiveis:")
+        comandos = [
+            "sudo parted -l",
+        ]
+        resultado = self.executar_comandos(comandos)
+        
     def configura_ip_fixo(self,):
         # Lista interfaces de rede disponíveis
         print("Interfaces de rede disponíveis:")
@@ -2942,9 +2949,10 @@ class Sistema(Docker, Executa_comados):
         """Menu de opções"""
         opcoes_menu = [
             ("Menu RAID", self.menu_raid),
-            ("listar_particoes", self.listar_particoes),
-            ("monta_particao", self.monta_particao),
-            ("desmontar_particao", self.desmontar_particao),
+            ("Listar particoes", self.listar_particoes),
+            ("Listar particoes detalhadas", self.listar_particoes_detalhadas),
+            ("Monta particao", self.monta_particao),
+            ("Desmontar particao", self.desmontar_particao),
             ("Formata o disco e cria partição e monta", self.formata_cria_particao),
         ]
         self.mostrar_menu(opcoes_menu)
