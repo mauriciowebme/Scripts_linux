@@ -2941,11 +2941,11 @@ class Sistema(Docker, Executa_comados):
         print("\nMenu de partições.\n")
         """Menu de opções"""
         opcoes_menu = [
+            ("Menu RAID", self.menu_raid),
             ("listar_particoes", self.listar_particoes),
             ("monta_particao", self.monta_particao),
             ("desmontar_particao", self.desmontar_particao),
             ("Formata o disco e cria partição e monta", self.formata_cria_particao),
-            ("Formata o disco e criar particao raid", self.formatar_criar_particao_raid),
         ]
         self.mostrar_menu(opcoes_menu)
     
