@@ -2906,8 +2906,7 @@ class Sistema(Docker, Executa_comados):
         self.executar_comandos(comandos)
 
         # Monitorar a sincronização do RAID
-        print("\n📊 Aguardando sincronização do RAID...\n")
-        os.system("watch -n 1 cat /proc/mdstat")
+        self.estado_raid(tempo_real=True)
         
     def menu_raid(self):
         print("\nMenu de raids.\n")
