@@ -70,10 +70,8 @@ check_for_update()
 
 # Verificar e instala dependencias
 ensure_library_installed("mysql.connector")
-ensure_library_installed("pyperclip")
 
 import mysql.connector
-import pyperclip
 
 class Executa_comados():
     def __init__(self):
@@ -2460,16 +2458,6 @@ class Sistema(Docker, Executa_comados):
             segundos -= 1
             if segundos <=1:
                 exit()
-                
-    def copia_comando(segundos):
-        comando = "wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py"
-        os.system(f'echo "{comando}" | xclip -selection clipboard')
-        print("Comando copiado para a área de transferência!")
-        
-    def copia_comando2(segundos):
-        comando = "wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py"
-        os.system(f'echo "{comando}" | xsel --clipboard')
-        print("Comando copiado para a área de transferência!")
     
     def mostrar_menu(self, opcoes_menu, principal=False):
         """Mostra o menu de opções para o usuário de forma dinâmica."""
@@ -2815,6 +2803,12 @@ class Sistema(Docker, Executa_comados):
     def formatar_criar_particao_raid(self):
         """Formata um disco e adiciona ao RAID"""
         self.listar_particoes()
+        
+        # exibir o stado da raid atual
+        comandos = [
+            "cat /proc/mdstat"
+        ]
+        resultado = self.executar_comandos(comandos, comando_direto=True)
 
         # Solicita o nome do disco ao usuário
         print("\n⚠️ O disco será formatado e adicionado ao RAID!")
@@ -3191,8 +3185,6 @@ ip server:
     """Função principal que controla o menu."""
     opcoes_menu = [
         ("Contagem regressiva", servicos.contagem_regressiva),
-        ("Copia install_master.py para a área de transferência", servicos.copia_comando),
-        ("Copia install_master.py para a área de transferência2", servicos.copia_comando2),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
         ("verificando status do sistema", servicos.verificando_status_sistema),
         ("Menu de outras opções", servicos.opcoes_sistema),
