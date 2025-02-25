@@ -2891,9 +2891,7 @@ class Sistema(Docker, Executa_comados):
 
         # Monitorar a sincronização do RAID
         print("\n📊 Aguardando sincronização do RAID...\n")
-        while True:
-            os.system("cat /proc/mdstat")
-            time.sleep(5)
+        os.system("watch -n 1 cat /proc/mdstat")
         
     def monta_particao(self,):
         self.listar_particoes()
