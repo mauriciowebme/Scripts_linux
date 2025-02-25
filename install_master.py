@@ -2463,8 +2463,13 @@ class Sistema(Docker, Executa_comados):
                 
     def copia_comando(segundos):
         comando = "wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py"
-        pyperclip.copy(comando)
-        print("Comando copiado para a área de transferência! Use CTRL+SHIFT+V para colar no terminal.")
+        os.system(f'echo "{comando}" | xclip -selection clipboard')
+        print("Comando copiado para a área de transferência!")
+        
+    def copia_comando2(segundos):
+        comando = "wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py"
+        os.system(f'echo "{comando}" | xsel --clipboard')
+        print("Comando copiado para a área de transferência!")
     
     def mostrar_menu(self, opcoes_menu, principal=False):
         """Mostra o menu de opções para o usuário de forma dinâmica."""
@@ -3175,7 +3180,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.179
+Versão 1.180
 ===========================================================================
 ===========================================================================
 ip server:
@@ -3187,11 +3192,11 @@ ip server:
     opcoes_menu = [
         ("Contagem regressiva", servicos.contagem_regressiva),
         ("Copia install_master.py para a área de transferência", servicos.copia_comando),
+        ("Copia install_master.py para a área de transferência2", servicos.copia_comando2),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
         ("verificando status do sistema", servicos.verificando_status_sistema),
         ("Menu de outras opções", servicos.opcoes_sistema),
         ("Menu Docker", servicos.menu_docker),
-        # ("gerenciar_usuarios_sftp", servicos.gerenciar_usuarios_sftp),
     ]
     servicos.mostrar_menu(opcoes_menu, principal=True)
 
