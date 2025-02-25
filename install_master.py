@@ -2683,7 +2683,7 @@ class Sistema(Docker, Executa_comados):
     def listar_particoes(self,):
         print("Listando discos disponiveis:")
         comandos = [
-            "lsblk -o NAME,SIZE,TYPE,MOUNTPOINT | grep -E 'disk|part|lvm'",
+            "lsblk -o NAME,SIZE,TYPE,MOUNTPOINT | grep -E 'disk|part|lvm|raid'",
         ]
         resultado = self.executar_comandos(comandos)
         
