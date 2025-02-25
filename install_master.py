@@ -3,6 +3,14 @@
 # Execute com:
 # wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
+# Caso va montar um pedriver com o script, execute os comandos abaixo:
+## lista os dispositivos de armazenamento
+# lsblk 
+## cria uma pasta para montar o dispositivo
+# sudo mkdir /mnt/usb
+## monta o dispositivo
+# sudo mount /dev/sdb1 /mnt/usb
+
 import os
 import os.path
 import socket
@@ -62,8 +70,10 @@ check_for_update()
 
 # Verificar e instala dependencias
 ensure_library_installed("mysql.connector")
+ensure_library_installed("pyperclip")
 
 import mysql.connector
+import pyperclip
 
 class Executa_comados():
     def __init__(self):
@@ -2450,6 +2460,11 @@ class Sistema(Docker, Executa_comados):
             segundos -= 1
             if segundos <=1:
                 exit()
+                
+    def copia_comando(segundos):
+        comando = "wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py"
+        pyperclip.copy(comando)
+        print("Comando copiado para a área de transferência! Use CTRL+SHIFT+V para colar no terminal.")
     
     def mostrar_menu(self, opcoes_menu, principal=False):
         """Mostra o menu de opções para o usuário de forma dinâmica."""
@@ -3160,7 +3175,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.178
+Versão 1.179
 ===========================================================================
 ===========================================================================
 ip server:
@@ -3171,6 +3186,7 @@ ip server:
     """Função principal que controla o menu."""
     opcoes_menu = [
         ("Contagem regressiva", servicos.contagem_regressiva),
+        ("Copia install_master.py para a área de transferência", servicos.copia_comando),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
         ("verificando status do sistema", servicos.verificando_status_sistema),
         ("Menu de outras opções", servicos.opcoes_sistema),
