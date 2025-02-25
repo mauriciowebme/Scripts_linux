@@ -2845,7 +2845,8 @@ class Sistema(Docker, Executa_comados):
         if boot_mode == "BIOS":
             print("\n📝 Criando partições para BIOS (Legacy)")
             comandos += [
-                f"sudo parted -s {disco} mkpart bios_grub 1MiB 2MiB",  # Partição necessária para GRUB (Legacy)
+                f"sudo parted -s {disco} mkpart bios_grub 1MiB 2MiB",   # Partição necessária para GRUB (Legacy)
+                f"sudo parted -s {disco} set 1 bios_grub on",           # Define a partição 1 como bios_grub
                 f"sudo parted -s {disco} mkpart primary 2MiB 100%",     # Partição para RAID
                 f"sudo parted -s {disco} set 2 raid on",                # Define a partição 2 como RAID
             ]
@@ -2876,11 +2877,16 @@ class Sistema(Docker, Executa_comados):
 
         # Instalar o GRUB no novo disco
         print(f"\n⚙️ Instalando o GRUB em {disco}...")
-        comandos = [
-            f"sudo grub-install --target=i386-pc --recheck {disco}" if boot_mode == "BIOS"
-            else f"sudo grub-install --target=x86_64-efi --efi-directory=/boot/efi --recheck {disco}",
-            "sudo update-grub"  # Atualizar a configuração do GRUB
-        ]
+        if boot_mode == "BIOS":
+            comandos = [
+                f"sudo grub-install --target=i386-pc --recheck {disco}",
+                "sudo update-grub"  # Atualizar a configuração do GRUB
+            ]
+        elif boot_mode == "UEFI":
+            comandos = [
+                f"sudo grub-install --target=x86_64-efi --efi-directory=/boot/efi --recheck {disco}",
+                "sudo update-grub"  # Atualizar a configuração do GRUB
+            ]
         self.executar_comandos(comandos)
 
         # Monitorar a sincronização do RAID
