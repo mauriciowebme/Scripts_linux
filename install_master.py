@@ -2805,12 +2805,14 @@ class Sistema(Docker, Executa_comados):
         self.listar_particoes()
         
         # exibir o stado da raid atual
+        print('Exibindo o estado atual do RAID:')
         comandos = [
             "cat /proc/mdstat"
         ]
         resultado = self.executar_comandos(comandos, comando_direto=True)
 
         # Solicita o nome do disco ao usuário
+        print("Inicializando a formatação e adição de disco ao RAID...")
         print("\n⚠️ O disco será formatado e adicionado ao RAID!")
         disco_input = input("Digite o nome do disco (ex: sdb): ").strip()
         disco = disco_input if disco_input.startswith("/dev/") else f"/dev/{disco_input}"
