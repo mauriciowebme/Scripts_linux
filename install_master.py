@@ -2786,6 +2786,93 @@ class Sistema(Docker, Executa_comados):
         if adicionar_fstab.lower() == "s":
             self.gerenciar_fstab(dispositivo=f"/dev/{disco}1", ponto_montagem=ponto_montagem)
         
+    def verificar_boot_mode(self):
+        """Verifica se o sistema está usando BIOS (Legacy) ou UEFI"""
+        if os.path.exists("/sys/firmware/efi"):
+            return "UEFI"
+        return "BIOS"
+    
+    def formatar_criar_particao_raid(self):
+        """Formata um disco e adiciona ao RAID"""
+        self.listar_particoes()
+
+        # Solicita o nome do disco ao usuário
+        print("\n⚠️ O disco será formatado e adicionado ao RAID!")
+        disco_input = input("Digite o nome do disco (ex: sdb): ").strip()
+        disco = disco_input if disco_input.startswith("/dev/") else f"/dev/{disco_input}"
+        raid_device_input = input("Digite o nome do dispositivo RAID (ex: md0): ").strip()
+        raid_device = raid_device_input if raid_device_input.startswith("/dev/") else f"/dev/{raid_device_input}"
+        
+        # Detecta se o sistema está rodando em UEFI ou BIOS
+        boot_mode = self.verificar_boot_mode()
+        print(f"\n🖥️ Sistema detectado como: {boot_mode}")
+
+        # Verifica se o disco existe
+        if not os.path.exists(disco):
+            print(f"❌ ERRO: O disco {disco} não foi encontrado!")
+            return
+
+        # Confirmação antes de formatar
+        confirm = input(f"⚠️ Tem certeza que deseja apagar TODAS as partições de {disco}? (sim/não): ").strip().lower()
+        if confirm != "sim":
+            print("❌ Operação cancelada!")
+            return
+
+        print(f"\n💾 Apagando todas as partições de {disco}...")
+        comandos = [
+            f"sudo umount {disco}*",                            # Desmonta qualquer partição ativa
+            f"echo -e 'o\nw' | sudo fdisk {disco}",             # Apaga todas as partições
+            f"sudo parted -s {disco} mklabel gpt",              # Define GPT como esquema de partições
+        ]
+
+        # Configuração para BIOS (Legacy)
+        if boot_mode == "BIOS":
+            print("\n📝 Criando partições para BIOS (Legacy)")
+            comandos += [
+                f"sudo parted -s {disco} mkpart bios_grub 1MiB 2MiB",  # Partição necessária para GRUB (Legacy)
+                f"sudo parted -s {disco} mkpart primary 2MiB 100%",     # Partição para RAID
+                f"sudo parted -s {disco} set 2 raid on",                # Define a partição 2 como RAID
+            ]
+
+        # Configuração para UEFI
+        elif boot_mode == "UEFI":
+            print("\n📝 Criando partições para UEFI")
+            comandos += [
+                f"sudo parted -s {disco} mkpart ESP fat32 1MiB 512MiB",  # Partição EFI
+                f"sudo parted -s {disco} set 1 boot on",                 # Define a partição EFI como bootável
+                f"sudo parted -s {disco} mkpart primary 512MiB 100%",    # Partição para RAID
+                f"sudo parted -s {disco} set 2 raid on",                 # Define a partição 2 como RAID
+            ]
+
+        # Atualiza a tabela de partições
+        comandos.append(f"sudo partprobe {disco}")
+
+        self.executar_comandos(comandos, ignorar_erros=True)
+
+        partition = f"{disco}2"  # Partição do RAID (Ajustado para BIOS e UEFI)
+
+        # Formatar e adicionar ao RAID
+        print(f"\n🔗 Adicionando {partition} ao RAID {raid_device}...")
+        comandos = [
+            f"sudo mdadm --add {raid_device} {partition}"
+        ]
+        self.executar_comandos(comandos)
+
+        # Instalar o GRUB no novo disco
+        print(f"\n⚙️ Instalando o GRUB em {disco}...")
+        comandos = [
+            f"sudo grub-install --target=i386-pc --recheck {disco}" if boot_mode == "BIOS"
+            else f"sudo grub-install --target=x86_64-efi --efi-directory=/boot/efi --recheck {disco}",
+            "sudo update-grub"  # Atualizar a configuração do GRUB
+        ]
+        self.executar_comandos(comandos)
+
+        # Monitorar a sincronização do RAID
+        print("\n📊 Aguardando sincronização do RAID...\n")
+        while True:
+            os.system("cat /proc/mdstat")
+            time.sleep(5)
+        
     def monta_particao(self,):
         self.listar_particoes()
         particao = input('\nDigite a partição que deseja monta (sda1): ')
@@ -2819,7 +2906,8 @@ class Sistema(Docker, Executa_comados):
             ("listar_particoes", self.listar_particoes),
             ("monta_particao", self.monta_particao),
             ("desmontar_particao", self.desmontar_particao),
-            ("Formata o disco, cria partição e monta", self.formata_cria_particao),
+            ("Formata o disco e cria partição e monta", self.formata_cria_particao),
+            ("Formata o disco e criar particao raid", self.formatar_criar_particao_raid),
         ]
         self.mostrar_menu(opcoes_menu)
     
@@ -3072,7 +3160,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.177
+Versão 1.178
 ===========================================================================
 ===========================================================================
 ip server:
