@@ -2885,6 +2885,7 @@ class Sistema(Docker, Executa_comados):
         partition = f"{disco}2"  # Partição do RAID (Ajustado para BIOS e UEFI)
 
         # Formatar e adicionar ao RAID
+        time.sleep(10)
         print(f"\n🔗 Adicionando {partition} ao RAID {raid_device}...")
         comandos = [
             f"sudo mdadm --add {raid_device} {partition}"
