@@ -2857,6 +2857,11 @@ class Sistema(Docker, Executa_comados):
         ]
         self.executar_comandos(comandos, ignorar_erros=True)
         
+        comandos = [
+            f"sudo mdadm --zero-superblock {disco}",
+        ]
+        self.executar_comandos(comandos, ignorar_erros=True)
+        
         comando = f"echo -e \"d\\n\\nw\" | sudo fdisk /dev/sdb",
         os.system(comando)
         
@@ -3356,7 +3361,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.184
+Versão 1.185
 ===========================================================================
 ===========================================================================
 ip server:
