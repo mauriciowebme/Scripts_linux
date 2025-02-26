@@ -3034,7 +3034,7 @@ class Sistema(Docker, Executa_comados):
 
         # 🔧 Ajustar a partição GPT
         print("\n📌 Ajustando a partição GPT...")
-        if not self.executar_comandos([f"sudo parted {raid_device} resizepart {particao} {novo_tamanho}"]):
+        if not self.executar_comandos([f"sudo parted {raid_device} resizepart {particao} {'100%' if novo_tamanho == 'max' else novo_tamanho}"]):
             print("❌ Falha ao redimensionar a partição. Abortando!")
             return
 
