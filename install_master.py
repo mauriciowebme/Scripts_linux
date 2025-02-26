@@ -2857,6 +2857,11 @@ class Sistema(Docker, Executa_comados):
         ]
         self.executar_comandos(comandos, ignorar_erros=True)
         
+        comandos = [
+            f"echo -e \"d\n\nw\" | sudo fdisk /dev/sdb",
+        ]
+        self.executar_comandos(comandos, ignorar_erros=True, comando_direto=True)
+        
         time.sleep(5)
         
         comandos = [
