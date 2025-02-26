@@ -2949,6 +2949,7 @@ class Sistema(Docker, Executa_comados):
 
         # Extrair apenas o tipo de sistema de arquivos
         tipo_fs = None
+        print(resultado)
         for linha in resultado.get(f"sudo blkid {raid_device}p{particao}", []):
             if "TYPE=" in linha:
                 tipo_fs = linha.split('TYPE="')[1].split('"')[0]
@@ -3294,7 +3295,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.180
+Versão 1.181
 ===========================================================================
 ===========================================================================
 ip server:
