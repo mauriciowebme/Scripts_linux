@@ -2851,12 +2851,23 @@ class Sistema(Docker, Executa_comados):
             return
 
         print(f"\n💾 Apagando todas as partições de {disco}...")
+        
         comandos = [
             f"sudo umount {disco}*",                            # Desmonta qualquer partição ativa
+        ]
+        self.executar_comandos(comandos)
+        
+        comandos = [
             f"echo -e 'o\nw' | sudo fdisk {disco}",             # Apaga todas as partições
+        ]
+        self.executar_comandos(comandos, comando_direto=True)
+        
+        comandos = [
             f"sudo parted -s {disco} mklabel gpt",              # Define GPT como esquema de partições
         ]
+        self.executar_comandos(comandos)
 
+        comandos = []
         # Configuração para BIOS (Legacy)
         if boot_mode == "BIOS":
             print("\n📝 Criando partições para BIOS (Legacy)")
@@ -2880,7 +2891,7 @@ class Sistema(Docker, Executa_comados):
         # Atualiza a tabela de partições
         comandos.append(f"sudo partprobe {disco}")
 
-        self.executar_comandos(comandos, ignorar_erros=True)
+        self.executar_comandos(comandos)
 
         partition = f"{disco}2"  # Partição do RAID (Ajustado para BIOS e UEFI)
 
