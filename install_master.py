@@ -2921,7 +2921,7 @@ class Sistema(Docker, Executa_comados):
         self.estado_raid(tempo_real=False)
         
         # 🔹 Passo 1: Solicitar os parâmetros do usuário
-        raid_device = input("\nDigite o dispositivo RAID (ex: /dev/md0): ").strip()
+        raid_device = "/dev/"+input("\nDigite o dispositivo RAID (ex: md0): ").strip()
         particao = input("Digite o número da partição a ser ajustada (ex: 2): ").strip()
 
         print("\n🔹 Escolha uma opção:")
