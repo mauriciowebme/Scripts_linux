@@ -2930,7 +2930,19 @@ class Sistema(Docker, Executa_comados):
 
         if escolha == "1":
             acao = "aumentar"
-            novo_tamanho = None
+            print("\n📌 Você deseja definir um novo tamanho ou usar o máximo disponível?")
+            print("[1] Definir um tamanho específico")
+            print("[2] Usar o tamanho máximo disponível (padrão)")
+            escolha_tamanho = input("\nDigite 1 para definir um tamanho ou 2 para usar o máximo: ").strip()
+
+            if escolha_tamanho == "1":
+                novo_tamanho = input("\nDigite o novo tamanho desejado (em GB): ").strip()
+                if not novo_tamanho.isdigit():
+                    print("❌ ERRO: O tamanho deve ser um número inteiro.")
+                    return
+                novo_tamanho = f"{int(novo_tamanho)}G"
+            else:
+                novo_tamanho = "max"
         elif escolha == "2":
             acao = "diminuir"
             novo_tamanho = input("\nDigite o novo tamanho desejado (em GB): ").strip()
@@ -2941,8 +2953,37 @@ class Sistema(Docker, Executa_comados):
         else:
             print("❌ Opção inválida.")
             return
+        
+        # 🔍 Verificar o tamanho atual do RAID
+        print("\n🔍 Obtendo o tamanho atual do RAID...")
+        resultado_tamanho = self.executar_comandos([f"sudo mdadm --detail {raid_device}"])
+        resultado_tamanho_str = "".join(resultado_tamanho.get(f"sudo mdadm --detail {raid_device}", []))
 
-        # 🔍 Passo 2: Verificar o sistema de arquivos
+        # Extrair tamanho atual do RAID
+        tamanho_atual = None
+        for linha in resultado_tamanho_str.split("\n"):
+            if "Array Size" in linha:
+                tamanho_atual = int(linha.split(":")[1].strip().split()[0]) // (1024 ** 2)  # Convertendo para GB
+                break
+
+        if not tamanho_atual:
+            print("❌ ERRO: Não foi possível determinar o tamanho atual do RAID.")
+            return
+
+        print(f"📌 Tamanho atual do RAID: {tamanho_atual} GB")
+
+        # 🔍 Verificar se o novo tamanho é válido
+        if acao == "aumentar" and novo_tamanho != "max":
+            if int(novo_tamanho.replace("G", "")) <= tamanho_atual:
+                print(f"❌ ERRO: O novo tamanho ({novo_tamanho}) deve ser maior que o tamanho atual ({tamanho_atual} GB).")
+                return
+
+        if acao == "diminuir":
+            if int(novo_tamanho.replace("G", "")) >= tamanho_atual:
+                print(f"❌ ERRO: O novo tamanho ({novo_tamanho}) deve ser **menor** que o tamanho atual ({tamanho_atual} GB).")
+                return
+
+        # 🔍 Verificar o sistema de arquivos
         print("\n🔍 Verificando o sistema de arquivos...")
         resultado = self.executar_comandos([f"sudo blkid {raid_device}p{particao}"])
 
