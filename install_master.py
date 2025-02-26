@@ -2855,7 +2855,7 @@ class Sistema(Docker, Executa_comados):
         comandos = [
             f"sudo umount {disco}*",                            # Desmonta qualquer partição ativa
         ]
-        self.executar_comandos(comandos)
+        self.executar_comandos(comandos, ignorar_erros=True)
         
         comandos = [
             f"echo -e 'o\nw' | sudo fdisk {disco}",             # Apaga todas as partições
