@@ -2971,12 +2971,20 @@ class Sistema(Docker, Executa_comados):
             print("❌ Sistema de arquivos desconhecido. Operação cancelada.")
             return
 
-         # 🔻 Se for para diminuir, reduz o sistema de arquivos antes
+        # 🔻 Se for para diminuir, verifica se está montado antes
         if acao == 'diminuir':
-            print("\n📌 Reduzindo o sistema de arquivos...")
-            if not self.executar_comandos([fs_comando]):
-                print("❌ Falha ao reduzir o sistema de arquivos. Abortando!")
+            particao_completa = f"{raid_device}p{particao}"
+            print("\n📌 Verificando se o sistema está montado...")
+            resultado_montagem = self.executar_comandos(["mount"])  # Agora retorna corretamente a saída
+            if any(particao_completa in linha for linha in resultado_montagem.get("mount", [])):
+                print("\n❌ O sistema de arquivos está montado. A redução **NÃO** pode ser feita online.")
+                print("🔹 Reinicie em um Live CD e execute os comandos manualmente.")
                 return
+            else:
+                print("\n📌 Reduzindo o sistema de arquivos...")
+                if not self.executar_comandos([f"sudo resize2fs {particao_completa} {novo_tamanho}G"]):
+                    print("❌ Falha ao reduzir o sistema de arquivos. Abortando!")
+                    return
 
         # 🔺 Ajuste do RAID
         print(f"\n📌 {'Reduzindo' if acao == 'diminuir' else 'Expandindo'} o RAID...")
