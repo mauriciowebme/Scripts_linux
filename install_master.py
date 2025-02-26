@@ -2857,24 +2857,21 @@ class Sistema(Docker, Executa_comados):
         ]
         self.executar_comandos(comandos, ignorar_erros=True)
         
-        comandos = [
-            f"sudo mdadm --zero-superblock {disco}",
-        ]
-        self.executar_comandos(comandos, ignorar_erros=True)
+        # comandos = [
+        #     f"echo -e \"d\\n\\nw\" | sudo fdisk {disco}",
+        # ]
+        # self.executar_comandos(comandos, ignorar_erros=True, comando_direto=True)
         
-        
-        comandos = [
-            f"echo -e \"d\\n\\nw\" | sudo fdisk {disco}",
-        ]
-        self.executar_comandos(comandos, ignorar_erros=True, comando_direto=True)
-        
-        # comando = f"echo -e \"d\\n\\nw\" | sudo fdisk /dev/sdb",
-        # os.system(comando)
+        comando = f"echo -e \"d\\n\\nw\" | sudo fdisk /dev/sdb",
+        os.system(comando)
         
         time.sleep(5)
         
         comandos = [
-            f"sudo parted -s {disco} mklabel gpt",              # Define GPT como esquema de partições
+            f"sudo parted -s {disco} mklabel gpt",  # Define GPT como esquema de partições
+            f"sudo mdadm --zero-superblock {disco}",  # Remove metadados de RAID
+            f"sudo wipefs -a {disco}",  # Apaga assinaturas de arquivos e RAID
+            f"sudo partprobe {disco}"  # Atualiza a tabela de partições no kernel
         ]
         self.executar_comandos(comandos)
 
@@ -3367,7 +3364,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.187
+Versão 1.188
 ===========================================================================
 ===========================================================================
 ip server:
