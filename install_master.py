@@ -2862,8 +2862,8 @@ class Sistema(Docker, Executa_comados):
         # ]
         # self.executar_comandos(comandos, ignorar_erros=True, comando_direto=True)
         
-        comando = f"echo -e \"d\\n\\nw\" | sudo fdisk /dev/sdb",
-        os.system(comando)
+        # comando = f"echo -e \"d\\n\\nw\" | sudo fdisk /dev/sdb",
+        # os.system(comando)
         
         time.sleep(5)
         
@@ -3364,7 +3364,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.188
+Versão 1.189
 ===========================================================================
 ===========================================================================
 ip server:
