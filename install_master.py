@@ -2909,12 +2909,87 @@ class Sistema(Docker, Executa_comados):
         # Monitorar a sincronização do RAID
         self.estado_raid(tempo_real=True)
         
+    def gerenciar_raid(self):
+        """
+        Automatiza a expansão ou redução do RAID com base na escolha do usuário via input.
+        """
+        print("Controle de tamanho do RAID.")
+        print("Listando discos disponiveis:")
+        
+        self.listar_particoes()
+        # exibir o stado da raid atual
+        self.estado_raid(tempo_real=False)
+        
+        # 🔹 Passo 1: Solicitar os parâmetros do usuário
+        raid_device = input("\nDigite o dispositivo RAID (ex: /dev/md0): ").strip()
+        particao = input("Digite o número da partição a ser ajustada (ex: 2): ").strip()
+
+        print("\n🔹 Escolha uma opção:")
+        print("[1] Aumentar o tamanho do RAID")
+        print("[2] Diminuir o tamanho do RAID")
+        escolha = input("\nDigite 1 para aumentar ou 2 para diminuir: ").strip()
+
+        if escolha == "1":
+            acao = "aumentar"
+            novo_tamanho = None
+        elif escolha == "2":
+            acao = "diminuir"
+            novo_tamanho = input("\nDigite o novo tamanho desejado (em GB): ").strip()
+            if not novo_tamanho.isdigit():
+                print("❌ ERRO: O tamanho deve ser um número inteiro.")
+                return
+            novo_tamanho = int(novo_tamanho)
+        else:
+            print("❌ Opção inválida.")
+            return
+
+        # 🔍 Passo 2: Verificar o sistema de arquivos
+        print("\n🔍 Verificando o sistema de arquivos...")
+        resultado = self.executar_comandos([f"sudo blkid {raid_device}p{particao}"], comando_direto=True)
+
+        if "ext4" in str(resultado):
+            fs_comando = f"sudo resize2fs {raid_device}p{particao} {novo_tamanho}G" if acao == 'diminuir' else f"sudo resize2fs {raid_device}p{particao}"
+        elif "xfs" in str(resultado):
+            if acao == 'diminuir':
+                print("❌ O sistema de arquivos XFS não suporta redução. Operação cancelada.")
+                return
+            fs_comando = f"sudo xfs_growfs {raid_device}p{particao}"
+        else:
+            print("❌ Sistema de arquivos desconhecido. Operação cancelada.")
+            return
+
+        comandos = []
+
+        # 🔻 Se for para diminuir, reduz o sistema de arquivos antes
+        if acao == 'diminuir':
+            print("\n📌 Reduzindo o sistema de arquivos...")
+            comandos.append(fs_comando)
+
+        # 🔺 Ajuste do RAID
+        print(f"\n📌 {'Reduzindo' if acao == 'diminuir' else 'Expandindo'} o RAID...")
+        comandos.append(f"sudo mdadm --grow --size={'max' if acao == 'aumentar' else f'{novo_tamanho}G'} {raid_device}")
+
+        # 🔧 Ajustar a partição GPT
+        print("\n📌 Ajustando a partição GPT...")
+        comandos.append(f"sudo parted {raid_device} resizepart {particao} {novo_tamanho}G")
+
+        # 🔺 Se for para aumentar, expande o sistema de arquivos depois
+        if acao == 'aumentar':
+            print("\n📌 Expandindo o sistema de arquivos...")
+            comandos.append(fs_comando)
+
+        # 🔥 Executa todos os comandos na sequência usando sua função `executar_comandos`
+        self.executar_comandos(comandos)
+
+        print(f"\n✅ Operação de {'expansão' if acao == 'aumentar' else 'redução'} do RAID concluída com sucesso!")
+
     def menu_raid(self):
         print("\nMenu de raids.\n")
         """Menu de opções"""
         opcoes_menu = [
             ("Exibe o estado atual da raid", self.estado_raid),
             ("Formata o disco para usar em raid existente", self.formatar_criar_particao_raid),
+            ("Controle de tamanho do raid", self.gerenciar_raid),
         ]
         self.mostrar_menu(opcoes_menu)
         
