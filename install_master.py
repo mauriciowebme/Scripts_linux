@@ -2913,6 +2913,12 @@ class Sistema(Docker, Executa_comados):
         """
         Automatiza a expansão ou redução do RAID com base na escolha do usuário via input.
         """
+        
+        print("\n📌 Controle de tamanho do RAID.")
+        
+        # 🔹 Exibir informações iniciais
+        self.listar_particoes()  # Lista partições antes de iniciar
+        self.estado_raid(tempo_real=False)  # Exibe estado atual do RAID
 
         # 🔹 Passo 1: Solicitar os parâmetros do usuário
         raid_device = "/dev/" + input("\nDigite o dispositivo RAID (ex: md0): ").strip()
