@@ -2947,9 +2947,22 @@ class Sistema(Docker, Executa_comados):
         print("\n🔍 Verificando o sistema de arquivos...")
         resultado = self.executar_comandos([f"sudo blkid {raid_device}p{particao}"], comando_direto=True)
 
-        if "ext4" in str(resultado):
+        # Extrair apenas o tipo de sistema de arquivos
+        tipo_fs = None
+        for linha in resultado.get(f"sudo blkid {raid_device}p{particao}", []):
+            if "TYPE=" in linha:
+                tipo_fs = linha.split('TYPE="')[1].split('"')[0]
+                break
+
+        if not tipo_fs:
+            print("❌ ERRO: Não foi possível determinar o tipo de sistema de arquivos.")
+            return
+
+        print(f"\n📌 Sistema de arquivos detectado: {tipo_fs}")
+
+        if tipo_fs == "ext4":
             fs_comando = f"sudo resize2fs {raid_device}p{particao} {novo_tamanho}G" if acao == 'diminuir' else f"sudo resize2fs {raid_device}p{particao}"
-        elif "xfs" in str(resultado):
+        elif tipo_fs == "xfs":
             if acao == 'diminuir':
                 print("❌ O sistema de arquivos XFS não suporta redução. Operação cancelada.")
                 return
