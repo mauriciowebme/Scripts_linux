@@ -2975,7 +2975,7 @@ class Sistema(Docker, Executa_comados):
         if acao == 'diminuir':
             particao_completa = f"{raid_device}p{particao}"
             print("\n📌 Verificando se o sistema está montado...")
-            resultado_montagem = self.executar_comandos(["mount"])  # Agora retorna corretamente a saída
+            resultado_montagem = self.executar_comandos(["mount"], exibir_resultados=False)  # Agora retorna corretamente a saída
             if any(particao_completa in linha for linha in resultado_montagem.get("mount", [])):
                 print("\n❌ O sistema de arquivos está montado. A redução **NÃO** pode ser feita online.")
                 print("🔹 Reinicie em um Live CD e execute os comandos manualmente.")
