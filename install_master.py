@@ -2949,7 +2949,6 @@ class Sistema(Docker, Executa_comados):
 
         # Extrair apenas o tipo de sistema de arquivos
         tipo_fs = None
-        print(resultado)
         for linha in resultado.get(f"sudo blkid {raid_device}p{particao}", []):
             if "TYPE=" in linha:
                 tipo_fs = linha.split('TYPE="')[1].split('"')[0]
@@ -2972,28 +2971,31 @@ class Sistema(Docker, Executa_comados):
             print("❌ Sistema de arquivos desconhecido. Operação cancelada.")
             return
 
-        comandos = []
-
-        # 🔻 Se for para diminuir, reduz o sistema de arquivos antes
+         # 🔻 Se for para diminuir, reduz o sistema de arquivos antes
         if acao == 'diminuir':
             print("\n📌 Reduzindo o sistema de arquivos...")
-            comandos.append(fs_comando)
+            if not self.executar_comandos([fs_comando]):
+                print("❌ Falha ao reduzir o sistema de arquivos. Abortando!")
+                return
 
         # 🔺 Ajuste do RAID
         print(f"\n📌 {'Reduzindo' if acao == 'diminuir' else 'Expandindo'} o RAID...")
-        comandos.append(f"sudo mdadm --grow --size={'max' if acao == 'aumentar' else f'{novo_tamanho}G'} {raid_device}")
-
-        # 🔧 Ajustar a partição GPT
+        if not self.executar_comandos([f"sudo mdadm --grow --size={'max' if acao == 'aumentar' else f'{novo_tamanho}G'} {raid_device}"]):
+            print("❌ Falha ao ajustar o tamanho do RAID. Abortando!")
+            return
+        
+         # 🔧 Ajustar a partição GPT
         print("\n📌 Ajustando a partição GPT...")
-        comandos.append(f"sudo parted {raid_device} resizepart {particao} {novo_tamanho}G")
+        if not self.executar_comandos([f"sudo parted {raid_device} resizepart {particao} {novo_tamanho}G"]):
+            print("❌ Falha ao redimensionar a partição. Abortando!")
+            return
 
         # 🔺 Se for para aumentar, expande o sistema de arquivos depois
         if acao == 'aumentar':
             print("\n📌 Expandindo o sistema de arquivos...")
-            comandos.append(fs_comando)
-
-        # 🔥 Executa todos os comandos na sequência usando sua função `executar_comandos`
-        self.executar_comandos(comandos)
+            if not self.executar_comandos([fs_comando]):
+                print("❌ Falha ao expandir o sistema de arquivos. Abortando!")
+                return
 
         print(f"\n✅ Operação de {'expansão' if acao == 'aumentar' else 'redução'} do RAID concluída com sucesso!")
 
@@ -3295,7 +3297,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.182
+Versão 1.183
 ===========================================================================
 ===========================================================================
 ip server:
