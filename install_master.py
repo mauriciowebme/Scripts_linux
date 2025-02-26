@@ -2945,7 +2945,7 @@ class Sistema(Docker, Executa_comados):
 
         # 🔍 Passo 2: Verificar o sistema de arquivos
         print("\n🔍 Verificando o sistema de arquivos...")
-        resultado = self.executar_comandos([f"sudo blkid {raid_device}p{particao}"], comando_direto=True)
+        resultado = self.executar_comandos([f"sudo blkid {raid_device}p{particao}"])
 
         # Extrair apenas o tipo de sistema de arquivos
         tipo_fs = None
