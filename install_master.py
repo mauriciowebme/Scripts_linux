@@ -2898,7 +2898,7 @@ class Sistema(Docker, Executa_comados):
         self.executar_comandos(comandos, intervalo=1)
 
         # para o RAID
-        self.executar_comandos([f"sudo mdadm --stop /dev/md127"], intervalo=1, ignorar_erros=True)
+        self.executar_comandos([f"sudo mdadm --stop /dev/md127"], intervalo=5, ignorar_erros=True)
 
         # Formatar e adicionar ao RAID
         print(f"\n🔗 Adicionando {disco}2 ao RAID {raid_device}...")
