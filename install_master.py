@@ -2908,7 +2908,7 @@ class Sistema(Docker, Executa_comados):
         comandos = [
             f"sudo mdadm --add {raid_device} {disco}2"
         ]
-        self.executar_comandos(comandos, intervalo=1)
+        self.executar_comandos(comandos, intervalo=5)
 
         # Instalar o GRUB no novo disco
         print(f"\n⚙️ Instalando o GRUB em {disco}...")
@@ -3363,7 +3363,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.201
+Versão 1.202
 ===========================================================================
 ===========================================================================
 ip server:
