@@ -2906,6 +2906,8 @@ class Sistema(Docker, Executa_comados):
             f"sudo partprobe {disco}",  # Atualiza a tabela de partições no kernel
             f"sudo partx -u {disco}",  # Atualiza a tabela de partições no kernel
             f"sudo udevadm settle",  # Forçar atualização
+            f"sudo umount {disco} 2>/dev/null", # Desmonta qualquer partição ativa
+            f"sudo lsof {disco}", # Verifica se há arquivos abertos
         ]
 
         self.executar_comandos(comandos, intervalo=5)
@@ -3372,7 +3374,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.193
+Versão 1.194
 ===========================================================================
 ===========================================================================
 ip server:
