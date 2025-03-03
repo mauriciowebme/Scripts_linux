@@ -2857,11 +2857,12 @@ class Sistema(Docker, Executa_comados):
         # Atualiza a tabela de partições
         comandos = [
             f"sudo umount {disco}*", # Desmonta qualquer partição ativa
+            f"sudo mdadm --stop /dev/md127",  # Forçar atualização
+            f"sudo mdadm --zero-superblock {disco}",  # Remove metadados de RAID
+            f"sudo wipefs -a {disco}",  # Apaga assinaturas de arquivos e RAID
             f"sudo partprobe {disco}", # Atualiza a tabela de partições no kernel
             f"sudo partx -u {disco}", # Atualiza a tabela de partições no kernel
             f"sudo udevadm settle", # Forçar atualização
-            f"sudo umount {disco} 2>/dev/null", # Desmonta qualquer partição ativa
-            f"sudo lsof {disco}", # Verifica se há arquivos abertos
         ]
         self.executar_comandos(comandos, intervalo=5, ignorar_erros=True)
         
@@ -2870,8 +2871,6 @@ class Sistema(Docker, Executa_comados):
             f"sudo parted -s {disco} mklabel gpt",  # Define GPT como esquema de partições
             f"sudo partprobe {disco}",  # Atualiza a tabela de partições no kernel
             f"sudo udevadm settle",  # Forçar atualização
-            f"sudo mdadm --zero-superblock {disco}",  # Remove metadados de RAID
-            f"sudo wipefs -a {disco}",  # Apaga assinaturas de arquivos e RAID
             f"sudo parted -s {disco} mklabel gpt",  # Define GPT como esquema de partições
             f"sudo partprobe {disco}",  # Atualiza a tabela de partições no kernel
         ]
