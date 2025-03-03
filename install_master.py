@@ -77,12 +77,14 @@ class Executa_comados():
     def __init__(self):
         pass
     
-    def executar_comandos(self, comandos:list=[], ignorar_erros=False, exibir_resultados=True, comando_direto=False, exibir_executando=True):
+    def executar_comandos(self, comandos:list=[], ignorar_erros=False, exibir_resultados=True, comando_direto=False, exibir_executando=True, intervalo:int=0):
         # for comando in comandos:
         #     processo = subprocess.Popen(comando, shell=True)
         #     processo.wait()
         resultados = {}
         for comando in comandos:
+            if intervalo > 0:
+                time.sleep(intervalo)
             resultados[comando] = []
             if exibir_resultados and exibir_executando:
                 print("\n" + "*" * 40)
@@ -2862,19 +2864,18 @@ class Sistema(Docker, Executa_comados):
         # ]
         # self.executar_comandos(comandos, ignorar_erros=True, comando_direto=True)
         
-        # comando = f"echo -e \"d\\n\\nw\" | sudo fdisk /dev/sdb",
+        # comando = f"echo -e "d\n\nw" | sudo fdisk /dev/sdb",
         # os.system(comando)
-        
-        time.sleep(5)
         
         comandos = [
             f"sudo parted -s {disco} mklabel gpt",  # Define GPT como esquema de partições
+            f"sudo partprobe {disco}"  # Atualiza a tabela de partições no kernel
             f"sudo mdadm --zero-superblock {disco}",  # Remove metadados de RAID
             f"sudo wipefs -a {disco}",  # Apaga assinaturas de arquivos e RAID
             f"sudo parted -s {disco} mklabel gpt",  # Define GPT como esquema de partições
             f"sudo partprobe {disco}"  # Atualiza a tabela de partições no kernel
         ]
-        self.executar_comandos(comandos)
+        self.executar_comandos(comandos, intervalo=5)
 
         comandos = []
         # Configuração para BIOS (Legacy)
@@ -2900,7 +2901,7 @@ class Sistema(Docker, Executa_comados):
         # Atualiza a tabela de partições
         comandos.append(f"sudo partprobe {disco}")
 
-        self.executar_comandos(comandos)
+        self.executar_comandos(comandos, intervalo=5)
 
         partition = f"{disco}2"  # Partição do RAID (Ajustado para BIOS e UEFI)
 
@@ -3365,7 +3366,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.190
+Versão 1.191
 ===========================================================================
 ===========================================================================
 ip server:
