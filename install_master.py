@@ -2908,7 +2908,7 @@ class Sistema(Docker, Executa_comados):
             f"sudo umount {disco} 2>/dev/null", # Desmonta qualquer partição ativa
             f"sudo lsof {disco}", # Verifica se há arquivos abertos
         ]
-        self.executar_comandos(comandos, intervalo=5)
+        self.executar_comandos(comandos, intervalo=5, ignorar_erros=True)
 
         partition = f"{disco}2"  # Partição do RAID (Ajustado para BIOS e UEFI)
 
@@ -3372,7 +3372,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.196
+Versão 1.197
 ===========================================================================
 ===========================================================================
 ip server:
