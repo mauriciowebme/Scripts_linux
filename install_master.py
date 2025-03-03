@@ -2869,11 +2869,11 @@ class Sistema(Docker, Executa_comados):
         
         comandos = [
             f"sudo parted -s {disco} mklabel gpt",  # Define GPT como esquema de partições
-            f"sudo partprobe {disco}"  # Atualiza a tabela de partições no kernel
+            f"sudo partprobe {disco}",  # Atualiza a tabela de partições no kernel
             f"sudo mdadm --zero-superblock {disco}",  # Remove metadados de RAID
             f"sudo wipefs -a {disco}",  # Apaga assinaturas de arquivos e RAID
             f"sudo parted -s {disco} mklabel gpt",  # Define GPT como esquema de partições
-            f"sudo partprobe {disco}"  # Atualiza a tabela de partições no kernel
+            f"sudo partprobe {disco}",  # Atualiza a tabela de partições no kernel
         ]
         self.executar_comandos(comandos, intervalo=5)
 
@@ -3366,7 +3366,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.191
+Versão 1.192
 ===========================================================================
 ===========================================================================
 ip server:
