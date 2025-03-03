@@ -2452,14 +2452,17 @@ class Sistema(Docker, Executa_comados):
         Docker.__init__(self)
         Executa_comados.__init__(self)
         
-    def contagem_regressiva(segundos):
-        segundos = 150
-        while True:
-            print(f'\r{segundos}', end='')  # Atualiza a linha no terminal
-            time.sleep(1)
-            segundos -= 1
-            if segundos <=1:
-                exit()
+    def Reiniciar(self):
+        comandos = [
+            f"reboot"
+        ]
+        self.executar_comandos(comandos, comando_direto=True)
+                
+    def Desligar(self):
+        comandos = [
+            f"poweroff"
+        ]
+        self.executar_comandos(comandos, comando_direto=True)
     
     def mostrar_menu(self, opcoes_menu, principal=False):
         """Mostra o menu de opções para o usuário de forma dinâmica."""
@@ -3360,7 +3363,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.200
+Versão 1.201
 ===========================================================================
 ===========================================================================
 ip server:
@@ -3370,7 +3373,8 @@ ip server:
 """)
     """Função principal que controla o menu."""
     opcoes_menu = [
-        ("Contagem regressiva", servicos.contagem_regressiva),
+        ("Reiniciar", servicos.Reiniciar),
+        ("Desligar", servicos.Desligar),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
         ("verificando status do sistema", servicos.verificando_status_sistema),
         ("Menu de outras opções", servicos.opcoes_sistema),
