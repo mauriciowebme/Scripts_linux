@@ -2855,17 +2855,19 @@ class Sistema(Docker, Executa_comados):
         print(f"\n💾 Apagando todas as partições de {disco}...")
         
         comandos = [
-            f"sudo umount {disco}*",                            # Desmonta qualquer partição ativa
+            f"sudo umount {disco}*", # Desmonta qualquer partição ativa
         ]
         self.executar_comandos(comandos, ignorar_erros=True)
         
-        # comandos = [
-        #     f"echo -e \"d\\n\\nw\" | sudo fdisk {disco}",
-        # ]
-        # self.executar_comandos(comandos, ignorar_erros=True, comando_direto=True)
-        
-        # comando = f"echo -e "d\n\nw" | sudo fdisk /dev/sdb",
-        # os.system(comando)
+        # Atualiza a tabela de partições
+        comandos += [
+            f"sudo partprobe {disco}", # Atualiza a tabela de partições no kernel
+            f"sudo partx -u {disco}", # Atualiza a tabela de partições no kernel
+            f"sudo udevadm settle", # Forçar atualização
+            f"sudo umount {disco} 2>/dev/null", # Desmonta qualquer partição ativa
+            f"sudo lsof {disco}", # Verifica se há arquivos abertos
+        ]
+        self.executar_comandos(comandos, intervalo=5)
         
         # Atualizar a tabela de partições
         comandos = [
@@ -2901,7 +2903,6 @@ class Sistema(Docker, Executa_comados):
             ]
 
         # Atualiza a tabela de partições
-        
         comandos += [
             f"sudo partprobe {disco}",  # Atualiza a tabela de partições no kernel
             f"sudo partx -u {disco}",  # Atualiza a tabela de partições no kernel
@@ -2909,7 +2910,6 @@ class Sistema(Docker, Executa_comados):
             f"sudo umount {disco} 2>/dev/null", # Desmonta qualquer partição ativa
             f"sudo lsof {disco}", # Verifica se há arquivos abertos
         ]
-
         self.executar_comandos(comandos, intervalo=5)
 
         partition = f"{disco}2"  # Partição do RAID (Ajustado para BIOS e UEFI)
@@ -3374,7 +3374,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.194
+Versão 1.195
 ===========================================================================
 ===========================================================================
 ip server:
