@@ -2852,22 +2852,18 @@ class Sistema(Docker, Executa_comados):
             print("❌ Operação cancelada!")
             return
 
-        print(f"\n💾 Apagando todas as partições de {disco}...")
-        
-        comandos = [
-            f"sudo umount {disco}*", # Desmonta qualquer partição ativa
-        ]
-        self.executar_comandos(comandos, ignorar_erros=True)
+        print(f"\n💾 Atualiza a tabela de partições {disco}...")
         
         # Atualiza a tabela de partições
         comandos = [
+            f"sudo umount {disco}*", # Desmonta qualquer partição ativa
             f"sudo partprobe {disco}", # Atualiza a tabela de partições no kernel
             f"sudo partx -u {disco}", # Atualiza a tabela de partições no kernel
             f"sudo udevadm settle", # Forçar atualização
             f"sudo umount {disco} 2>/dev/null", # Desmonta qualquer partição ativa
             f"sudo lsof {disco}", # Verifica se há arquivos abertos
         ]
-        self.executar_comandos(comandos, intervalo=5)
+        self.executar_comandos(comandos, intervalo=5, ignorar_erros=True)
         
         # Atualizar a tabela de partições
         comandos = [
@@ -3376,7 +3372,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.195
+Versão 1.196
 ===========================================================================
 ===========================================================================
 ip server:
