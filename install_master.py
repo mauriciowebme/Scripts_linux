@@ -2854,8 +2854,8 @@ class Sistema(Docker, Executa_comados):
 
         print(f"\n💾 Atualiza a tabela de partições {disco}...")
         
-        # Atualiza a tabela de partições
-        comandos = [
+        # Comandos para limpeza do disco
+        comandos_lipeza = [
             f"sudo umount {disco}*", # Desmonta qualquer partição ativa
             f"sudo mdadm --stop /dev/md127",  # Forçar atualização
             f"sudo mdadm --zero-superblock {disco}",  # Remove metadados de RAID
@@ -2864,17 +2864,15 @@ class Sistema(Docker, Executa_comados):
             f"sudo partx -u {disco}", # Atualiza a tabela de partições no kernel
             f"sudo udevadm settle", # Forçar atualização
         ]
-        self.executar_comandos(comandos, intervalo=5, ignorar_erros=True)
+        self.executar_comandos(comandos_lipeza, intervalo=1, ignorar_erros=True)
         
         # Atualizar a tabela de partições
         comandos = [
             f"sudo parted -s {disco} mklabel gpt",  # Define GPT como esquema de partições
             f"sudo partprobe {disco}",  # Atualiza a tabela de partições no kernel
             f"sudo udevadm settle",  # Forçar atualização
-            f"sudo parted -s {disco} mklabel gpt",  # Define GPT como esquema de partições
-            f"sudo partprobe {disco}",  # Atualiza a tabela de partições no kernel
         ]
-        self.executar_comandos(comandos, intervalo=5)
+        self.executar_comandos(comandos, intervalo=1)
 
         comandos = []
         # Configuração para BIOS (Legacy)
@@ -2896,27 +2894,17 @@ class Sistema(Docker, Executa_comados):
                 f"sudo parted -s {disco} mkpart primary 512MiB 100%",    # Partição para RAID
                 f"sudo parted -s {disco} set 2 raid on",                 # Define a partição 2 como RAID
             ]
-            
-        self.executar_comandos(comandos, intervalo=5)
+        self.executar_comandos(comandos, intervalo=1)
 
-        # Atualiza a tabela de partições
-        comandos = [
-            f"sudo partprobe {disco}",  # Atualiza a tabela de partições no kernel
-            f"sudo partx -u {disco}",  # Atualiza a tabela de partições no kernel
-            f"sudo udevadm settle",  # Forçar atualização
-            f"sudo umount {disco} 2>/dev/null", # Desmonta qualquer partição ativa
-            f"sudo lsof {disco}", # Verifica se há arquivos abertos
-        ]
-        self.executar_comandos(comandos, intervalo=5, ignorar_erros=True)
-
-        partition = f"{disco}2"  # Partição do RAID (Ajustado para BIOS e UEFI)
+        # Limpeza do disco
+        self.executar_comandos(comandos_lipeza, intervalo=1, ignorar_erros=True)
 
         # Formatar e adicionar ao RAID
-        print(f"\n🔗 Adicionando {partition} ao RAID {raid_device}...")
+        print(f"\n🔗 Adicionando {disco}2 ao RAID {raid_device}...")
         comandos = [
-            f"sudo mdadm --add {raid_device} {partition}"
+            f"sudo mdadm --add {raid_device} {disco}2"
         ]
-        self.executar_comandos(comandos, intervalo=5)
+        self.executar_comandos(comandos, intervalo=1)
 
         # Instalar o GRUB no novo disco
         print(f"\n⚙️ Instalando o GRUB em {disco}...")
@@ -3371,7 +3359,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.197
+Versão 1.198
 ===========================================================================
 ===========================================================================
 ip server:
