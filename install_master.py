@@ -2897,7 +2897,7 @@ class Sistema(Docker, Executa_comados):
         self.executar_comandos(comandos, intervalo=1)
 
         # Limpeza do disco
-        self.executar_comandos(comandos_lipeza, intervalo=1, ignorar_erros=True)
+        # self.executar_comandos(comandos_lipeza, intervalo=1, ignorar_erros=True)
 
         # Formatar e adicionar ao RAID
         print(f"\n🔗 Adicionando {disco}2 ao RAID {raid_device}...")
