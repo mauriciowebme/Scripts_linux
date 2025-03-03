@@ -2860,7 +2860,7 @@ class Sistema(Docker, Executa_comados):
         self.executar_comandos(comandos, ignorar_erros=True)
         
         # Atualiza a tabela de partições
-        comandos += [
+        comandos = [
             f"sudo partprobe {disco}", # Atualiza a tabela de partições no kernel
             f"sudo partx -u {disco}", # Atualiza a tabela de partições no kernel
             f"sudo udevadm settle", # Forçar atualização
@@ -2901,9 +2901,11 @@ class Sistema(Docker, Executa_comados):
                 f"sudo parted -s {disco} mkpart primary 512MiB 100%",    # Partição para RAID
                 f"sudo parted -s {disco} set 2 raid on",                 # Define a partição 2 como RAID
             ]
+            
+        self.executar_comandos(comandos, intervalo=5)
 
         # Atualiza a tabela de partições
-        comandos += [
+        comandos = [
             f"sudo partprobe {disco}",  # Atualiza a tabela de partições no kernel
             f"sudo partx -u {disco}",  # Atualiza a tabela de partições no kernel
             f"sudo udevadm settle",  # Forçar atualização
