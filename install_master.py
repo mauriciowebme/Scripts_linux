@@ -2867,9 +2867,11 @@ class Sistema(Docker, Executa_comados):
         # comando = f"echo -e "d\n\nw" | sudo fdisk /dev/sdb",
         # os.system(comando)
         
+        # Atualizar a tabela de partições
         comandos = [
             f"sudo parted -s {disco} mklabel gpt",  # Define GPT como esquema de partições
             f"sudo partprobe {disco}",  # Atualiza a tabela de partições no kernel
+            f"sudo udevadm settle",  # Forçar atualização
             f"sudo mdadm --zero-superblock {disco}",  # Remove metadados de RAID
             f"sudo wipefs -a {disco}",  # Apaga assinaturas de arquivos e RAID
             f"sudo parted -s {disco} mklabel gpt",  # Define GPT como esquema de partições
@@ -2899,19 +2901,23 @@ class Sistema(Docker, Executa_comados):
             ]
 
         # Atualiza a tabela de partições
-        comandos.append(f"sudo partprobe {disco}")
+        
+        comandos += [
+            f"sudo partprobe {disco}",  # Atualiza a tabela de partições no kernel
+            f"sudo partx -u {disco}",  # Atualiza a tabela de partições no kernel
+            f"sudo udevadm settle",  # Forçar atualização
+        ]
 
         self.executar_comandos(comandos, intervalo=5)
 
         partition = f"{disco}2"  # Partição do RAID (Ajustado para BIOS e UEFI)
 
         # Formatar e adicionar ao RAID
-        time.sleep(10)
         print(f"\n🔗 Adicionando {partition} ao RAID {raid_device}...")
         comandos = [
             f"sudo mdadm --add {raid_device} {partition}"
         ]
-        self.executar_comandos(comandos)
+        self.executar_comandos(comandos, intervalo=5)
 
         # Instalar o GRUB no novo disco
         print(f"\n⚙️ Instalando o GRUB em {disco}...")
@@ -3366,7 +3372,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.192
+Versão 1.193
 ===========================================================================
 ===========================================================================
 ip server:
