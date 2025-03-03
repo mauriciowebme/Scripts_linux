@@ -2869,6 +2869,7 @@ class Sistema(Docker, Executa_comados):
             f"sudo mdadm --stop /dev/md127",  # Forçar atualização
         ]
         self.executar_comandos(comandos_lipeza, intervalo=5, ignorar_erros=True)
+        self.executar_comandos(comandos_lipeza, intervalo=5, ignorar_erros=True)
         
         # Atualizar a tabela de partições
         comandos = [
