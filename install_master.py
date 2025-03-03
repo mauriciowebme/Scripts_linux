@@ -2863,6 +2863,7 @@ class Sistema(Docker, Executa_comados):
             f"sudo partprobe {disco}", # Atualiza a tabela de partições no kernel
             f"sudo partx -u {disco}", # Atualiza a tabela de partições no kernel
             f"sudo udevadm settle", # Forçar atualização
+            f"sudo mdadm --stop /dev/md127",  # Forçar atualização
         ]
         self.executar_comandos(comandos_lipeza, intervalo=1, ignorar_erros=True)
         
@@ -2896,8 +2897,8 @@ class Sistema(Docker, Executa_comados):
             ]
         self.executar_comandos(comandos, intervalo=1)
 
-        # Limpeza do disco
-        # self.executar_comandos(comandos_lipeza, intervalo=1, ignorar_erros=True)
+        # para o RAID
+        self.executar_comandos([f"sudo mdadm --stop /dev/md127"], intervalo=1, ignorar_erros=True)
 
         # Formatar e adicionar ao RAID
         print(f"\n🔗 Adicionando {disco}2 ao RAID {raid_device}...")
@@ -3359,7 +3360,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.198
+Versão 1.199
 ===========================================================================
 ===========================================================================
 ip server:
