@@ -2866,7 +2866,7 @@ class Sistema(Docker, Executa_comados):
             f"sudo partprobe {disco}", # Atualiza a tabela de partições no kernel
             f"sudo partx -u {disco}", # Atualiza a tabela de partições no kernel
             f"sudo udevadm settle", # Forçar atualização
-            f"sudo mdadm --stop /dev/md127",  # Para o RAID
+            # f"sudo mdadm --stop /dev/md127",  # Para o RAID
         ]
         # Reppete os comandos para ter certeza que tudo foi limpo
         self.executar_comandos(comandos_lipeza, intervalo=5, ignorar_erros=True)
@@ -2903,7 +2903,7 @@ class Sistema(Docker, Executa_comados):
         self.executar_comandos(comandos, intervalo=1)
 
         # para o RAID
-        self.executar_comandos([f"sudo mdadm --stop /dev/md127"], intervalo=5, ignorar_erros=True)
+        # self.executar_comandos([f"sudo mdadm --stop /dev/md127"], intervalo=5, ignorar_erros=True)
 
         # Formatar e adicionar ao RAID
         print(f"\n🔗 Adicionando {disco}2 ao RAID {raid_device}...")
