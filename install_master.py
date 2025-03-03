@@ -2860,14 +2860,15 @@ class Sistema(Docker, Executa_comados):
         # Comandos para limpeza do disco
         comandos_lipeza = [
             f"sudo umount {disco}*", # Desmonta qualquer partição ativa
-            f"sudo mdadm --stop /dev/md127",  # Forçar atualização
+            f"sudo mdadm --stop /dev/md127",  # Para o RAID
             f"sudo mdadm --zero-superblock {disco}",  # Remove metadados de RAID
             f"sudo wipefs -a {disco}",  # Apaga assinaturas de arquivos e RAID
             f"sudo partprobe {disco}", # Atualiza a tabela de partições no kernel
             f"sudo partx -u {disco}", # Atualiza a tabela de partições no kernel
             f"sudo udevadm settle", # Forçar atualização
-            f"sudo mdadm --stop /dev/md127",  # Forçar atualização
+            f"sudo mdadm --stop /dev/md127",  # Para o RAID
         ]
+        # Reppete os comandos para ter certeza que tudo foi limpo
         self.executar_comandos(comandos_lipeza, intervalo=5, ignorar_erros=True)
         self.executar_comandos(comandos_lipeza, intervalo=5, ignorar_erros=True)
         
