@@ -3054,6 +3054,9 @@ class Sistema(Docker, Executa_comados):
 
         # 🔧 Ajustar a partição GPT sem pedir confirmação manual
         print("\n📌 Ajustando a partição GPT...")
+        if not self.executar_comandos([f"echo 'Fix' | sudo parted {raid_device} print"], comando_direto=True):
+            print("❌ Falha ao ajustar a partição GPT. Abortando!")
+            return
         if not self.executar_comandos([f"echo 'Yes' | sudo parted {raid_device} resizepart {particao} {'100%' if novo_tamanho == 'max' else novo_tamanho}"], comando_direto=True):
             print("❌ Falha ao redimensionar a partição. Abortando!")
             return
@@ -3365,7 +3368,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.202
+Versão 1.203
 ===========================================================================
 ===========================================================================
 ip server:
