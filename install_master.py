@@ -22,6 +22,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import sys
 import random
+import re
 
 def ensure_pip_installed():
     try:
@@ -2928,7 +2929,7 @@ class Sistema(Docker, Executa_comados):
 
         # Monitorar a sincronização do RAID
         self.estado_raid(tempo_real=True)
-        
+
     def gerenciar_raid(self):
         """
         Automatiza a expansão ou redução do RAID com base na escolha do usuário via input.
@@ -2943,7 +2944,7 @@ class Sistema(Docker, Executa_comados):
         # 🔹 Passo 1: Solicitar os parâmetros do usuário
         raid_device = "/dev/" + input("\nDigite o dispositivo RAID (ex: md0): ").strip()
         particao = input("Digite o número da partição a ser ajustada (ex: 2): ").strip()
-        particao_completa = f"{raid_device}p{particao}"  # Exemplo: /dev/md0p2
+        particao_completa = f"{raid_device}p{particao}"
 
         print("\n🔹 Escolha uma opção:")
         print("[1] Aumentar o tamanho do RAID")
@@ -2958,21 +2959,23 @@ class Sistema(Docker, Executa_comados):
             escolha_tamanho = input("\nDigite 1 para definir um tamanho ou 2 para usar o máximo: ").strip()
 
             if escolha_tamanho == "1":
-                novo_tamanho = input("\nDigite o novo tamanho desejado (em GB): ").strip()
-                if not novo_tamanho.isdigit():
+                try:
+                    novo_tamanho = int(input("\nDigite o novo tamanho desejado (em GB): ").strip())
+                    novo_tamanho = f"{novo_tamanho}G"
+                except ValueError:
                     print("❌ ERRO: O tamanho deve ser um número inteiro.")
                     return
-                novo_tamanho = f"{int(novo_tamanho)}G"
             else:
                 novo_tamanho = "max"
 
         elif escolha == "2":
             acao = "diminuir"
-            novo_tamanho = input("\nDigite o novo tamanho desejado (em GB): ").strip()
-            if not novo_tamanho.isdigit():
+            try:
+                novo_tamanho = int(input("\nDigite o novo tamanho desejado (em GB): ").strip())
+                novo_tamanho = f"{novo_tamanho}G"
+            except ValueError:
                 print("❌ ERRO: O tamanho deve ser um número inteiro.")
                 return
-            novo_tamanho = f"{int(novo_tamanho)}G"
         else:
             print("❌ Opção inválida.")
             return
@@ -2982,12 +2985,9 @@ class Sistema(Docker, Executa_comados):
         resultado_tamanho = self.executar_comandos([f"sudo mdadm --detail {raid_device}"])
         resultado_tamanho_str = "".join(resultado_tamanho.get(f"sudo mdadm --detail {raid_device}", []))
 
-        # Extrair tamanho atual do RAID
-        tamanho_atual = None
-        for linha in resultado_tamanho_str.split("\n"):
-            if "Array Size" in linha:
-                tamanho_atual = int(linha.split(":")[1].strip().split()[0]) // (1024 ** 2)  # Convertendo para GB
-                break
+        # Extração segura do tamanho atual do RAID
+        match = re.search(r"Array Size\s*:\s*(\d+)", resultado_tamanho_str)
+        tamanho_atual = int(match.group(1)) // (1024 ** 2) if match else None
 
         if not tamanho_atual:
             print("❌ ERRO: Não foi possível determinar o tamanho atual do RAID.")
@@ -3006,14 +3006,17 @@ class Sistema(Docker, Executa_comados):
                 print(f"❌ ERRO: O novo tamanho ({novo_tamanho}) deve ser **menor** que o tamanho atual ({tamanho_atual} GB).")
                 return
 
-        # 🔍 Passo 3: Verificar o sistema de arquivos
+        # 🔍 Passo 3: Expandir a partição
+        print("\n📌 Expandindo a partição GPT...")
+        self.executar_comandos([f"sudo parted {raid_device} print fix"], comando_direto=True)
+        self.executar_comandos([f"sudo parted {raid_device} resizepart {particao} {'100%' if novo_tamanho == 'max' else novo_tamanho}"], comando_direto=True)
+        
+        # 🔍 Passo 4: Expandir o sistema de arquivos
         print("\n🔍 Verificando o sistema de arquivos...")
         resultado = self.executar_comandos([f"sudo blkid {particao_completa}"])
-
         resultado_str = "".join(resultado.get(f"sudo blkid {particao_completa}", []))
-        tipo_fs = None
-        if "TYPE=" in resultado_str:
-            tipo_fs = resultado_str.split('TYPE="')[1].split('"')[0]
+        tipo_fs = re.search(r'TYPE="(\w+)"', resultado_str)
+        tipo_fs = tipo_fs.group(1) if tipo_fs else None
 
         if not tipo_fs:
             print(f"❌ ERRO: Não foi possível determinar o tipo de sistema de arquivos. Saída:\n{resultado_str}")
@@ -3022,53 +3025,19 @@ class Sistema(Docker, Executa_comados):
         print(f"\n📌 Sistema de arquivos detectado: {tipo_fs}")
 
         if tipo_fs == "ext4":
-            fs_comando = f"sudo resize2fs {particao_completa}" if acao == 'aumentar' else None
+            fs_comando = f"sudo resize2fs {particao_completa}"
         elif tipo_fs == "xfs":
-            if acao == 'diminuir':
-                print("❌ O sistema de arquivos XFS não suporta redução. Operação cancelada.")
-                return
-            fs_comando = f"sudo xfs_growfs {particao_completa}"
+            fs_comando = f"sudo xfs_growfs /"
         else:
             print(f"❌ Sistema de arquivos desconhecido: {tipo_fs}. Operação cancelada.")
             return
 
-        # 🔻 Se for para diminuir, verifica se está montado antes
-        if acao == 'diminuir':
-            print("\n📌 Verificando se o sistema está montado...")
-            resultado_montagem = self.executar_comandos(["mount"])
-            if any(particao_completa in linha for linha in resultado_montagem.get("mount", [])):
-                print("\n❌ O sistema de arquivos está montado. A redução **NÃO** pode ser feita online.")
-                print("🔹 Reinicie em um Live CD e execute os comandos manualmente.")
-                return
-            else:
-                print("\n📌 Reduzindo o sistema de arquivos...")
-                if not self.executar_comandos([f"sudo resize2fs {particao_completa} {novo_tamanho}"]):
-                    print("❌ Falha ao reduzir o sistema de arquivos. Abortando!")
-                    return
-
-        # 🔺 Ajuste do RAID
-        print(f"\n📌 {'Reduzindo' if acao == 'diminuir' else 'Expandindo'} o RAID...")
-        if not self.executar_comandos([f"sudo mdadm --grow --size={novo_tamanho} {raid_device}"]):
-            print("❌ Falha ao ajustar o tamanho do RAID. Abortando!")
+        print("\n📌 Expandindo o sistema de arquivos...")
+        if not self.executar_comandos([fs_comando]):
+            print("❌ Falha ao expandir o sistema de arquivos. Abortando!")
             return
 
-        # 🔧 Ajustar a partição GPT sem pedir confirmação manual
-        print("\n📌 Ajustando a partição GPT...")
-        if not self.executar_comandos([f"echo 'Fix' | sudo parted {raid_device} print"], comando_direto=True):
-            print("❌ Falha ao ajustar a partição GPT. Abortando!")
-            return
-        if not self.executar_comandos([f"echo 'Yes' | sudo parted {raid_device} resizepart {particao} {'100%' if novo_tamanho == 'max' else novo_tamanho}"], comando_direto=True):
-            print("❌ Falha ao redimensionar a partição. Abortando!")
-            return
-
-        # 🔺 Se for para aumentar, expande o sistema de arquivos depois
-        if acao == 'aumentar':
-            print("\n📌 Expandindo o sistema de arquivos...")
-            if not self.executar_comandos([fs_comando]):
-                print("❌ Falha ao expandir o sistema de arquivos. Abortando!")
-                return
-
-        print(f"\n✅ Operação de {'expansão' if acao == 'aumentar' else 'redução'} do RAID concluída com sucesso!")
+    print(f"\n✅ Operação de {'expansão' if acao == 'aumentar' else 'redução'} do RAID concluída com sucesso!")
 
     def menu_raid(self):
         print("\nMenu de raids.\n")
@@ -3368,7 +3337,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.203
+Versão 1.204
 ===========================================================================
 ===========================================================================
 ip server:
