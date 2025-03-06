@@ -3037,7 +3037,7 @@ class Sistema(Docker, Executa_comados):
             print("❌ Falha ao expandir o sistema de arquivos. Abortando!")
             return
 
-    print(f"\n✅ Operação de {'expansão' if acao == 'aumentar' else 'redução'} do RAID concluída com sucesso!")
+        print(f"\n✅ Operação de {'expansão' if acao == 'aumentar' else 'redução'} do RAID concluída com sucesso!")
 
     def menu_raid(self):
         print("\nMenu de raids.\n")
