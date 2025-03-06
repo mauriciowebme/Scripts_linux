@@ -3008,8 +3008,8 @@ class Sistema(Docker, Executa_comados):
 
         # 🔍 Passo 3: Expandir a partição
         print("\n📌 Expandindo a partição GPT...")
-        self.executar_comandos([f"sudo parted {raid_device} print fix"], comando_direto=True)
-        self.executar_comandos([f"sudo parted {raid_device} resizepart {particao} {'100%' if novo_tamanho == 'max' else novo_tamanho}"], comando_direto=True)
+        self.executar_comandos([f"sudo parted --script {raid_device} print fix"], comando_direto=True)
+        self.executar_comandos([f"sudo parted --script {raid_device} resizepart {particao} {'100%' if novo_tamanho == 'max' else novo_tamanho}"], comando_direto=True)
         
         # 🔍 Passo 4: Expandir o sistema de arquivos
         print("\n🔍 Verificando o sistema de arquivos...")
