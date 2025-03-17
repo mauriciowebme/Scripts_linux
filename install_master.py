@@ -2600,24 +2600,25 @@ class Sistema(Docker, Executa_comados):
         Instala a interface XFCE4 se ainda não estiver instalada e a inicia.
         """
         try:
-            print("Verificando se o lxqt já está instalado...")
+            print("Verificando se o xfce4 já está instalado...")
             
-            if self.verificar_instalacao('lxqt'):
-                print("lxqt já está instalado.")
+            if self.verificar_instalacao('xfce4'):
+                print("xfce4 já está instalado.")
                 # Inicia o lxqt
-                print("Iniciando lxqt...")
+                print("Iniciando xfce4...")
                 self.executar_comandos(["startxfce4 "], comando_direto=True)
             else:
-                print("lxqt não encontrado. Instalando lxqt...")
+                print("xfce4 não encontrado. Instalando xfce4...")
                 self.atualizar_sistema_completa()
                 comandos = [
-                    "sudo apt install lxqt -y",
+                    "sudo apt install xfce4 -y",
+                    # "sudo apt install lxqt -y",
                     # "sudo apt install lightdm",
                     # "sudo systemctl enable lightdm",
                     # "sudo systemctl start lightdm",
                 ]
                 self.executar_comandos(comandos, comando_direto=True)
-                print("lxqt instalado com sucesso.")
+                print("xfce4 instalado com sucesso.")
             
             
         except subprocess.CalledProcessError as e:
