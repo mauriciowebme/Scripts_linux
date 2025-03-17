@@ -2604,6 +2604,9 @@ class Sistema(Docker, Executa_comados):
             
             if self.verificar_instalacao('lxqt'):
                 print("lxqt já está instalado.")
+                # Inicia o lxqt
+                print("Iniciando lxqt...")
+                self.executar_comandos(["startxfce4 "], comando_direto=True)
             else:
                 print("lxqt não encontrado. Instalando lxqt...")
                 self.atualizar_sistema_completa()
@@ -2616,9 +2619,7 @@ class Sistema(Docker, Executa_comados):
                 self.executar_comandos(comandos, comando_direto=True)
                 print("lxqt instalado com sucesso.")
             
-            # Inicia o lxqt
-            # print("Iniciando lxqt...")
-            # self.executar_comandos(["startxfce4 "], comando_direto=True)
+            
         except subprocess.CalledProcessError as e:
             print(f"Erro durante a execução do comando: {e}")
         except Exception as e:
@@ -3224,7 +3225,7 @@ class Sistema(Docker, Executa_comados):
             ("Menu swap", self.menu_swap),
             ("instalar deb", self.instalar_deb),
             ("fecha_tela_noot", self.fecha_tela_noot),
-            ("Instala interface xfce", self.instalar_interface_xfce),
+            ("Instala/Inicia interface xfce", self.instalar_interface_xfce),
             ("Instala interface gnome", self.instalar_interface_gnome),
             ("Ecaminhamentos portas tuneis", self.ecaminhamentos_portas_tuneis),
             ("Instala gerenciador de WIFI nmtui", self.setup_wifi),
