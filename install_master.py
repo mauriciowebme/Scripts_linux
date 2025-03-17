@@ -2602,7 +2602,7 @@ class Sistema(Docker, Executa_comados):
         try:
             print("Verificando se o lxqt já está instalado...")
             
-            if not self.verificar_instalacao('lxqt'):
+            if self.verificar_instalacao('lxqt'):
                 print("lxqt já está instalado.")
             else:
                 print("lxqt não encontrado. Instalando lxqt...")
