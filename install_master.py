@@ -2529,6 +2529,7 @@ class Sistema(Docker, Executa_comados):
         if escolha == "1":
             self.executar_comandos([
                 "sudo apt install ubuntu-gnome-desktop -y",
+                "sudo apt install gnome-software -y",
                 "reboot",
                 ], comando_direto=True)
         elif escolha == "2":
