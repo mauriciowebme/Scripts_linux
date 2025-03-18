@@ -2524,8 +2524,22 @@ class Sistema(Docker, Executa_comados):
         resultado = self.executar_comandos(comandos)
         
     def instalar_interface_gnome(self,):
+        escolha = input("Deseja uma instalação completa ou mais simples? (Digite '1' para completa ou '2' para simples): ").strip()
         self.atualizar_sistema_completa()
-        self.executar_comandos(["sudo apt install ubuntu-gnome-desktop -y"], comando_direto=True)
+        if escolha == "1":
+            self.executar_comandos([
+                "sudo apt install ubuntu-gnome-desktop -y",
+                "reboot",
+                ], comando_direto=True)
+        elif escolha == "2":
+            self.executar_comandos([
+            "sudo apt install gnome-shell gdm3 gnome-session -y",
+            "sudo systemctl enable gdm",
+            "sudo systemctl start gdm",
+            "reboot",
+            ], comando_direto=True)
+        else:
+            print("Opção inválida. Nenhuma ação foi realizada.")
         
     def menu_swap(self,):
         menu = input('Digite: \n1 para ver a memoria \n2 para configurar \n')
