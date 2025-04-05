@@ -1214,13 +1214,6 @@ jobs:
             print(f"Arquivo sftp-deploy.yml criado em {caminho_yml}")
             
         nodemon_json = {
-            "watch": [
-                "assets",
-                "index.js",
-                "requirements.txt",
-                "nodemon.json",
-                "package.json"
-            ],
             "ignore": [
                 "/root/.npm/**/*",
                 ".vscode",
@@ -1231,8 +1224,7 @@ jobs:
                 "node_modules",
                 "*.log*"
             ],
-            "ext": "js,py",
-            "exec": "chown -R 1000:1000 . && npm install && node index.js"
+            "exec": "npm install && node index.js"
         }
         # Caminho para o arquivo nodemon.json
         caminho_nodemon_json = os.path.join(diretorio_projeto, "nodemon.json")
