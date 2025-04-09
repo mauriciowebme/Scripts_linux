@@ -2446,7 +2446,7 @@ CMD ["sh", "-c", "\
                 --name selenium-firefox \
                 --restart=unless-stopped \
                 -e SE_SESSION_TIMEOUT=30 \
-                -e SE_OPTS="--maxSession 2 --maxInstances 2" \
+                -e SE_NODE_MAX_SESSIONS=2 \
                 -p 4444:4444 \
                 -p 7900:7900 \
                 --shm-size=2g \
@@ -2454,7 +2454,7 @@ CMD ["sh", "-c", "\
                 """
         comandos = [container]
         self.remove_container('selenium-firefox')
-        resultados = self.executar_comandos(comandos, comando_direto=True)
+        resultados = self.executar_comandos(comandos,)
         print("Instalação do selenium_firefox concluída.")
         print("")
         print("Porta de acesso: 7900 - VNC")
