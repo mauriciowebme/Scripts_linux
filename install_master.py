@@ -2439,6 +2439,27 @@ CMD ["sh", "-c", "\
         print('set meu-teste "funcionando"')
         print("get meu-teste")
         print("")
+        
+    def instala_selenium_firefox(self):
+        print("Iniciando instalação selenium_firefox:")
+        # senha = input("Configure uma senha para acessar: ")
+        container = f"""docker run -d \
+                --name selenium-firefox \
+                --restart=always \
+                -p 4444:4444 \
+                -p 7900:7900 \
+                --shm-size="2g" \
+                selenium/standalone-firefox:latest
+                """
+        comandos = [container]
+        self.remove_container('selenium-firefox')
+        resultados = self.executar_comandos(comandos)
+        print("Instalação do selenium_firefox concluída.")
+        print("")
+        print("Porta de acesso: 7900 - VNC")
+        print("Porta de acesso: 4444 - Selenium")
+        print("Aponte seus testes do WebDriver para http://servidor:4444")
+        print("")
 
 class Sistema(Docker, Executa_comados):
     def __init__(self):
@@ -3280,6 +3301,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala code-server", self.instala_code_server),
             ("Instala Open WebUI", self.instala_open_webui),
             ("Instala Redis Docker", self.instala_redis_docker),
+            ("Instala selenium-firefox", self.instala_selenium_firefox),
         ]
         self.mostrar_menu(opcoes_menu)
     
