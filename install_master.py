@@ -2453,7 +2453,7 @@ CMD ["sh", "-c", "\
                 """
         comandos = [container]
         self.remove_container('selenium-firefox')
-        resultados = self.executar_comandos(comandos)
+        resultados = self.executar_comandos(comandos, comando_direto=True)
         print("Instalação do selenium_firefox concluída.")
         print("")
         print("Porta de acesso: 7900 - VNC")
