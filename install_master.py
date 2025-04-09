@@ -964,7 +964,6 @@ WantedBy=timers.target
         comandos = [
             f"""docker run -d \
                     --name pritunl \
-                    --restart=always \
                     --privileged \
                     --publish 81:80 \
                     --publish 447:443 \
@@ -2445,7 +2444,7 @@ CMD ["sh", "-c", "\
         # senha = input("Configure uma senha para acessar: ")
         container = f"""docker run -d \
                 --name selenium-firefox \
-                --restart=always \
+                --restart=unless-stopped \
                 -p 4444:4444 \
                 -p 7900:7900 \
                 --shm-size=2g \
@@ -3368,7 +3367,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.205
+Versão 1.206
 ===========================================================================
 ===========================================================================
 ip server:
