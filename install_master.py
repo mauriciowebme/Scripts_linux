@@ -3,14 +3,6 @@
 # Execute com:
 # wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
-# Caso va montar um pedriver com o script, execute os comandos abaixo:
-## lista os dispositivos de armazenamento
-# lsblk 
-## cria uma pasta para montar o dispositivo
-# sudo mkdir /mnt/usb
-## monta o dispositivo
-# sudo mount /dev/sdb1 /mnt/usb
-
 import os
 import os.path
 import socket
@@ -322,7 +314,7 @@ class Docker(Executa_comados):
         
         container = f"docker run -d \
                         --name webssh \
-                        --restart=always \
+                        --restart=unless-stopped \
                         -p 8001:8000 \
                         liftoff/gateone
                     "
@@ -374,20 +366,20 @@ scrape_configs:
             f"echo '{conteudo}' > {caminho}",
             f"""docker run -d \
                 --name prometheus \
-                --restart=always \
+                --restart=unless-stopped \
                 -p 9090:9090 \
                 -v {self.install_principal}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
                 prom/prometheus
             """,
             f"""docker run -d \
                 --name node-exporter \
-                --restart=always \
+                --restart=unless-stopped \
                 -p 9100:9100 \
                 prom/node-exporter
             """,
             f"""docker run -d \
                 --name grafana \
-                --restart=always \
+                --restart=unless-stopped \
                 -p 3000:3000 \
                 grafana/grafana
             """,
@@ -509,7 +501,7 @@ certificatesResolvers:
         comandos = [
             f"""docker run -d \
                 --name traefik \
-                --restart=always \
+                --restart=unless-stopped \
                 -p 80:80 \
                 -p 443:443 \
                 -p 8080:8080 \
@@ -563,7 +555,7 @@ certificatesResolvers:
         portas = self.escolher_porta_disponivel()
         container = f"""docker run -d \
                     --name filebrowser \
-                    --restart=always \
+                    --restart=unless-stopped \
                     -p {portas[0]}:80 \
                     -v /:/srv \
                     -v {self.install_principal}/database_filebrowser/database.db:/database.db \
@@ -643,7 +635,7 @@ certificatesResolvers:
             os.chmod(conf_completa, 0o777)
             container = f"""docker run -d \
                             --name openlitespeed \
-                            --restart=always \
+                            --restart=unless-stopped \
                             litespeedtech/openlitespeed:latest
                     """
             
@@ -656,7 +648,7 @@ certificatesResolvers:
         
         container = f"""docker run -d \
                             --name openlitespeed \
-                            --restart=always \
+                            --restart=unless-stopped \
                             -p 8088:8088 \
                             -p 7080:7080 \
                             -v {self.install_principal}/openlitespeed/vhosts:/var/www/vhosts \
@@ -872,7 +864,7 @@ listener Default {{
         comandos = [
             f"""docker run -d \
                     --name nextcloud \
-                    --restart=always \
+                    --restart=unless-stopped \
                     -p 8585:80 \
                     --memory=1g \
                     --cpus=1 \
@@ -1004,7 +996,7 @@ WantedBy=timers.target
         comandos = [
             f"""docker run -d \
                     --name=code-server \
-                    --restart=always \
+                    --restart=unless-stopped \
                     -p 8443:8443 \
                     -e PASSWORD={senha} \
                     -e SUDO_PASSWORD={senha} \
@@ -1021,7 +1013,7 @@ WantedBy=timers.target
         comandos = [
             f"""docker run -d \
                     --name rustdesk-hbbs \
-                    --restart=always \
+                    --restart=unless-stopped \
                     -p 21114:21114 \
                     -p 21115:21115 \
                     -p 21116:21116 \
@@ -1033,7 +1025,7 @@ WantedBy=timers.target
                 """,
             f"""docker run -d \
                     --name rustdesk-hbbr \
-                    --restart=always \
+                    --restart=unless-stopped \
                     -p 21117:21117 \
                     -p 21119:21119 \
                     -v {self.install_principal}/rustdesk/rustdesk-hbbr:/root \
@@ -1055,7 +1047,7 @@ WantedBy=timers.target
         comandos = [
             f"""sudo docker run -d \
                     --name portainer \
-                    --restart=always \
+                    --restart=unless-stopped \
                     -p 8000:8000 \
                     -p 9443:9443 \
                     -v /var/run/docker.sock:/var/run/docker.sock \
@@ -1532,7 +1524,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         print(f'Porta interna para uso: {portas[0]}')
         container = f"""docker run -d \
                         --name {nome_dominio_} \
-                        --restart=always \
+                        --restart=unless-stopped \
                         -p {portas[0]}:{portas[0]} \
                         -v {diretorio_projeto}:/usr/src/app:rw \
                         -w /usr/src/app \
@@ -1557,7 +1549,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         
         container = f"""docker run -d \
                         --name ftp_sftpgo \
-                        --restart=always \
+                        --restart=unless-stopped \
                         -p 2025:2022 \
                         -p 8085:8080 \
                         -e SFTPGO_COMMON__IDLE_TIMEOUT=1 \
@@ -1682,7 +1674,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         # -v {caminho_guacamole}/guacamole:/etc/guacamole \
         container_guacamole = f"""docker run -d \
             --name guacamole \
-            --restart=always \
+            --restart=unless-stopped \
             -p 8086:8080 \
             -e GUACD_HOSTNAME=guacamole_guacd \
             -e MYSQL_HOSTNAME=mysql_8_0 \
@@ -1694,7 +1686,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         # Container do Guacd
         container_guacd = """docker run -d \
             --name guacamole_guacd \
-            --restart=always \
+            --restart=unless-stopped \
             guacamole/guacd:latest
         """
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
@@ -1720,7 +1712,7 @@ module.exports = { setupPythonEnv, runPythonScript };
     #     # -e HOST=0.0.0.0 \
     #     container = f"""docker run -d \
     #                     --name webssh \
-    #                     --restart=always \
+    #                     --restart=unless-stopped \
     #                     -p 8081:8080 \
     #                     -v {caminho_webssh}:/home/node/server/data \
     #                     shellngn/pro:latest
@@ -1772,7 +1764,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         if replicacao == '1':
             container_db = f"""docker run -d \
             --name postgres_{versao_} \
-            --restart=always \
+            --restart=unless-stopped \
             -p {porta}:5432 \
             -e POSTGRES_PASSWORD={self.postgres_password} \
             -v {self.bds}/postgres/{versao_}:/var/lib/postgresql/data \
@@ -1781,7 +1773,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         else:
             container_db = f"""docker run -d \
             --name postgres_{versao_} \
-            --restart=always \
+            --restart=unless-stopped \
             -p {porta}:5432 \
             -e POSTGRES_PASSWORD={self.postgres_password} \
             -v {self.bds}/postgres/{versao_}:/var/lib/postgresql/data \
@@ -1797,7 +1789,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         if replicacao == '1':
             container_db_slave = f"""docker run -d \
                                 --name postgres_{versao_}_slave \
-                                --restart=always \
+                                --restart=unless-stopped \
                                 -p {porta_slave}:5432 \
                                 -e POSTGRES_PASSWORD={self.postgres_password} \
                                 -v {local_slave}/postgres/{versao_}_slave:/var/lib/postgresql/data \
@@ -1902,7 +1894,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         
         container_db = f"""docker run -d \
                         --name mysql_{versao_} \
-                        --restart=always \
+                        --restart=unless-stopped \
                         -p {porta}:3306 \
                         -e MYSQL_DATABASE=db_testes \
                         -e MYSQL_USER=testes \
@@ -1934,7 +1926,7 @@ module.exports = { setupPythonEnv, runPythonScript };
             # self.gerenciar_permissoes_pasta(f"{local_slave}/mysql/{versao_}_slave", permissao="777")
             container_db = f"""docker run -d \
                             --name mysql_{versao_}_slave \
-                            --restart=always \
+                            --restart=unless-stopped \
                             -p {porta_slave}:3306 \
                             -e MYSQL_DATABASE=db_testes \
                             -e MYSQL_USER=testes \
@@ -2170,7 +2162,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         self.executar_comandos([comando1, comando2])
         container = f"""docker run -d \
                         --name {dominio_} \
-                        --restart=always \
+                        --restart=unless-stopped \
                         -e WORDPRESS_DB_HOST=mysql_5_7:3306 \
                         -e WORDPRESS_DB_USER=wordpress \
                         -e WORDPRESS_DB_PASSWORD=wordpress \
@@ -2203,7 +2195,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         dominio_ = dominio.replace('.', '_')
         container_db = f"""docker run -d \
                         --name {dominio_}_bd \
-                        --restart=always \
+                        --restart=unless-stopped \
                         -e MYSQL_DATABASE=wordpress \
                         -e MYSQL_USER=wordpress \
                         -e MYSQL_PASSWORD=wordpress \
@@ -2213,7 +2205,7 @@ module.exports = { setupPythonEnv, runPythonScript };
                     """
         container = f"""docker run -d \
                         --name {dominio_} \
-                        --restart=always \
+                        --restart=unless-stopped \
                         -e WORDPRESS_DB_HOST={dominio_}_bd:3306 \
                         -e WORDPRESS_DB_USER=wordpress \
                         -e WORDPRESS_DB_PASSWORD=wordpress \
@@ -2340,7 +2332,7 @@ CMD ["sh", "-c", "\
         # Comando para executar o container
         container = f"""docker run -d \
                             --name rsync-inotify-{nome} \
-                            --restart=always \
+                            --restart=unless-stopped \
                             --memory=100m \
                             --cpus=0.1 \
                             -v {source_path}:/data/source \
@@ -2420,7 +2412,7 @@ CMD ["sh", "-c", "\
         senha = input("Configure uma senha para acessar: ")
         container = f"""docker run -d \
                         --name redis \
-                        --restart=always \
+                        --restart=unless-stopped \
                         -p 6379:6379 \
                         redis redis-server --requirepass "{senha}"
                     """
