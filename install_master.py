@@ -3191,7 +3191,7 @@ class Sistema(Docker, Executa_comados):
         # Executar o comando sensors
         self.executar_comandos(["speedtest "], comando_direto=True)
 
-    def setup_inicializar_service():
+    def setup_inicializar_service(self):
         """
         1. Cria /install_principal/inicializar.py (vazio).
         2. Gera /etc/systemd/system/inicializar.service apontando para ele.
