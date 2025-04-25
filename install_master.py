@@ -10,8 +10,6 @@ import subprocess
 import time
 import yaml
 import json
-import requests
-from requests.auth import HTTPBasicAuth
 import sys
 import random
 import re
@@ -1579,6 +1577,8 @@ module.exports = { setupPythonEnv, runPythonScript };
         max_attempts = 5
         admin_usuario = 'admin'
         admin_senha = 'admin'
+        import requests
+        from requests.auth import HTTPBasicAuth
         for attempt in range(max_attempts):
             if attempt > 0:
                 print('\nUsuario e senha para permissão de administração FTP:')
