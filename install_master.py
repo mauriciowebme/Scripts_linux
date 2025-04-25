@@ -12,6 +12,7 @@ import yaml
 import json
 import sys
 import random
+from pathlib import Path
 import re
 
 def ensure_pip_installed():
@@ -3190,6 +3191,44 @@ class Sistema(Docker, Executa_comados):
         # Executar o comando sensors
         self.executar_comandos(["speedtest "], comando_direto=True)
 
+    def setup_inicializar_service():
+        """
+        1. Cria /install_principal/inicializar.py (vazio).
+        2. Gera /etc/systemd/system/inicializar.service apontando para ele.
+        3. Recarrega o systemd e ativa o serviço imediatamente.
+
+        → Execute este setup **com sudo** (ou como root), pois ele grava em /etc/systemd.
+        """
+        script_path = Path("/install_principal/inicializar.py")
+        service_path = Path("/etc/systemd/system/inicializar.service")
+
+        # 1) Cria diretório e arquivo-script
+        script_path.parent.mkdir(parents=True, exist_ok=True)
+        script_path.write_text("#!/usr/bin/env python3\n\n# inicializar.py – placeholder\npass\n")
+        script_path.chmod(0o755)                       # deixa executável
+
+        # 2) Conteúdo da unidade systemd
+        unit = f""" \
+[Unit]
+Description=Inicializar.py automático
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 {script_path}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+"""
+        service_path.write_text(unit)
+
+        # 3) Registra e inicia
+        subprocess.run(["systemctl", "daemon-reload"], check=True)
+        subprocess.run(["systemctl", "enable", "--now", service_path.name], check=True)
+
+        print("✔ Serviço criado e em execução. Reinicie o sistema para testar.")
+        
     def configura_ssh(self):
         try:
             # Solicitar nova porta e senha
@@ -3257,6 +3296,7 @@ class Sistema(Docker, Executa_comados):
             ("Verificar temperatura", self.verifica_temperatura),
             ("Verificar velocidade da internet", self.verifica_velocidade),
             ("configura ssh", self.configura_ssh),
+            ("Cria o .py para inicializar", self.setup_inicializar_service),
         ]
         self.mostrar_menu(opcoes_menu)
         
