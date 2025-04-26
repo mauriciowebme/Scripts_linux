@@ -2444,8 +2444,8 @@ CMD ["sh", "-c", "\
             -e PUID=1000 \
             -e PGID=1000 \
             -e TZ=America/Sao_Paulo \
-            -e WEBTOP_USER=master \
-            -e WEBTOP_PASS={senha} \
+            -e CUSTOM_USER=master \
+            -e PASSWORD='{senha}' \
             -p 3001:3000 \
             --shm-size="{memoria}gb" \
             linuxserver/webtop:ubuntu-xfce
@@ -2455,10 +2455,9 @@ CMD ["sh", "-c", "\
         resultados = self.executar_comandos(comandos,)
         print("Instalação do webtop concluída.")
         print("")
-        print("Porta de acesso: 3001 - VNC")
-        print("Usuario: master")
-        print("Senha: ", senha)
-        print("Acesse http://servidor:3001")
+        print("Acesse:  http://<seu_servidor>:3001")
+        print("Usuário: master")
+        print("Senha:  ", senha)
         print("")
     
     def instala_selenium_firefox(self):
