@@ -2434,6 +2434,33 @@ CMD ["sh", "-c", "\
         print("get meu-teste")
         print("")
         
+    def desktop_ubuntu_webtop(self):
+        print("Iniciando instalação webtop:")
+        senha = input("Configure uma senha para acessar o webtop: ")
+        memoria = input("Configure o tamanho da memoria em GB, digite apenas o numero: ")
+        container = f"""docker run -d \
+            --name=webtop \
+            --restart=unless-stopped \
+            -e PUID=1000 \
+            -e PGID=1000 \
+            -e TZ=America/Sao_Paulo \
+            -e WEBTOP_USER=master \
+            -e WEBTOP_PASS={senha} \
+            -p 3001:3000 \
+            --shm-size="memoriagb" \
+            linuxserver/webtop:ubuntu-xfce
+            """
+        comandos = [container]
+        self.remove_container('webtop')
+        resultados = self.executar_comandos(comandos,)
+        print("Instalação do webtop concluída.")
+        print("")
+        print("Porta de acesso: 3001 - VNC")
+        print("Usuario: master")
+        print("Senha: ", senha)
+        print("Acesse http://servidor:3001")
+        print("")
+    
     def instala_selenium_firefox(self):
         print("Iniciando instalação selenium_firefox:")
         # senha = input("Configure uma senha para acessar: ")
@@ -3347,6 +3374,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala Open WebUI", self.instala_open_webui),
             ("Instala Redis Docker", self.instala_redis_docker),
             ("Instala selenium-firefox", self.instala_selenium_firefox),
+            ("Instala deskto_ubuntu_webtop", self.desktop_ubuntu_webtop),
         ]
         self.mostrar_menu(opcoes_menu)
     
