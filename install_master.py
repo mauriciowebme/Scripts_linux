@@ -2447,7 +2447,7 @@ CMD ["sh", "-c", "\
             -e WEBTOP_USER=master \
             -e WEBTOP_PASS={senha} \
             -p 3001:3000 \
-            --shm-size="memoriagb" \
+            --shm-size="{memoria}gb" \
             linuxserver/webtop:ubuntu-xfce
             """
         comandos = [container]
