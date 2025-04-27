@@ -2499,12 +2499,11 @@ CMD ["sh", "-c", "\
             "-e", f"PASSWORD={senha}",
             "-p", f"{porta}:3000",
             "--shm-size", f"{memoria}g",
-            "-d"                       # destacado
+            "-d"
         ]
 
         self.remove_container("webtop")
 
-        # agora sem tag nem remove_img_after
         self.build_and_run_dockerfile(
             dockerfile_str=dockerfile,
             run_cmd=run_args
