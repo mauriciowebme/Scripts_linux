@@ -182,7 +182,7 @@ class Docker(Executa_comados):
 
         # 4) run
         run_cmd = run_cmd or []
-        subprocess.run(["docker", "run", "--rm", *run_cmd, tag], check=True)
+        subprocess.run(["docker", "run", *run_cmd, tag], check=True)
 
         # 5) fecha tmp, se usado
         if workdir is None:
