@@ -32,7 +32,6 @@ def check_for_update():
         print("Atualização concluída.\n")
     except Exception as ex:
         print(f"⚠️  Erro ao atualizar o sistema: {ex}\n")
-
 check_for_update()
 
 def ensure_pip_installed():
@@ -45,36 +44,61 @@ def ensure_pip_installed():
         subprocess.check_call(["apt-get", "install", "-y", "--no-install-recommends",
                                "python3-pip"])
         print("pip instalado com sucesso.\n")
+ensure_pip_installed()
 
-def module_exists(name: str) -> bool:
+def ensure(module: str,
+           apt_pkg: str | None = None,
+           pip_pkg: str | None = None) -> None:
+    """
+    Importa <module>. Se falhar:
+        1. instala <apt_pkg> via APT (padrão: python3-<module>).
+        2. se ainda faltar, instala <pip_pkg> via pip
+           (padrão: mesmo nome do módulo).
+    """
+    import importlib, subprocess, sys, shutil
+
+    # 0) já existe?
     try:
-        import importlib
-        importlib.import_module(name)
-        return True
+        importlib.import_module(module)
+        return
     except ImportError:
-        return False
+        pass
 
-def ensure_library_installed(module_name: str,
-                             pip_pkg: str | None = None,
-                             extra_pip_args: list[str] | None = None) -> None:
-    """Importa o módulo; se falhar, instala via pip/apt."""
-    if module_exists(module_name):
-        return  # já disponível
+    # 1) define nomes padrão caso não venham
+    apt_pkg = apt_pkg or f"python3-{module.replace('.', '-')}"
+    pip_pkg = pip_pkg or module
 
-    print(f"Biblioteca '{module_name}' não encontrada. Instalando...")
-    ensure_pip_installed()
+    # 2) tenta instalar via APT
+    try:
+        subprocess.run(["apt-get", "update", "-qq"], check=True,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["apt-get", "install", "-y", "--no-install-recommends",
+                        apt_pkg], check=True,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        importlib.import_module(module)  # checa de novo
+        print(f"✓ {module} disponível via APT ({apt_pkg})")
+        return
+    except Exception:
+        print(f"APT falhou para {apt_pkg}; tentando pip…")
 
-    pip_pkg = pip_pkg or module_name
-    extra = extra_pip_args or []
-    subprocess.check_call(
-        [sys.executable, "-m", "pip", "install", "--no-cache-dir",
-         pip_pkg, *extra]
-    )
-    print(f"Biblioteca '{module_name}' instalada com sucesso.\n")
+    # 3) fallback: pip
+    if shutil.which("pip") is None:
+        subprocess.run(["apt-get", "install", "-y", "--no-install-recommends",
+                        "python3-pip"], check=True,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    subprocess.run([sys.executable, "-m", "pip", "install",
+                    "--break-system-packages", "--no-cache-dir", pip_pkg],
+                   check=True)
+    print(f"✓ {module} instalado via pip ({pip_pkg})")
 
 # ---- dependências do seu script ----
-ensure_library_installed("mysql.connector",       pip_pkg="mysql-connector-python")
-ensure_library_installed("yaml",                  pip_pkg="PyYAML")
+ensure("mysql.connector",
+       apt_pkg="python3-mysql.connector",
+       pip_pkg="mysql-connector-python")
+ensure("yaml",
+        apt_pkg="python3-yaml",
+        pip_pkg="PyYAML")
 
 class Executa_comados():
     def __init__(self):
