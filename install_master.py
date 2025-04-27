@@ -2487,6 +2487,8 @@ CMD ["sh", "-c", "\
         # utilidades extras: wget  +  instalador .deb com interface (gdebi)
         RUN apt-get update && \
             apt-get install -y --no-install-recommends wget gdebi && \
+            apt-get install -y python3 python3-pip && \
+            python3 -m pip install --upgrade pip && \
             apt-get clean && rm -rf /var/lib/apt/lists/*
         """
 
