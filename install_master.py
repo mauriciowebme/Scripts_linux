@@ -2484,14 +2484,13 @@ CMD ["sh", "-c", "\
         dockerfile = """
             FROM linuxserver/webtop:ubuntu-xfce
 
-            # Instala utilitários: wget, gdebi, python3 e pip
+            # wget, instalador .deb gráfico (gdebi) e Python 3 + pip
             RUN apt-get update && \
                 apt-get install -y --no-install-recommends \
                     wget \
                     gdebi \
                     python3 \
                     python3-pip && \
-                python3 -m pip install --upgrade pip && \
                 apt-get clean && rm -rf /var/lib/apt/lists/*
             """
             
