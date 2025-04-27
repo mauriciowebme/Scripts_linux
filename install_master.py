@@ -23,13 +23,12 @@ def check_for_update():
     print("Primeira execução detectada. Atualizando o sistema...")
     try:
         subprocess.run(["apt-get", "update"], check=True)
-        subprocess.run( ["apt-get",  "upgrade"], check=True)
+        subprocess.run( ["apt-get",  "upgrade", "-y"], check=True)
         # fuso + ntp
         subprocess.run(["timedatectl", "set-timezone", "America/Sao_Paulo"], check=True)
         subprocess.run(["timedatectl", "set-ntp", "true"], check=True)
 
-        update_file.write_text("Atualização realizada em: "
-                               + time.strftime("%Y-%m-%d %H:%M:%S"))
+        update_file.write_text("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
         print("Atualização concluída.\n")
     except Exception as ex:
         print(f"⚠️  Erro ao atualizar o sistema: {ex}\n")
@@ -47,11 +46,19 @@ def ensure_pip_installed():
                                "python3-pip"])
         print("pip instalado com sucesso.\n")
 
+def module_exists(name: str) -> bool:
+    try:
+        import importlib
+        importlib.import_module(name)
+        return True
+    except ImportError:
+        return False
+
 def ensure_library_installed(module_name: str,
                              pip_pkg: str | None = None,
                              extra_pip_args: list[str] | None = None) -> None:
-    """Se o módulo não existir, instala o pacote pip correspondente."""
-    if importlib.util.find_spec(module_name) is not None:
+    """Importa o módulo; se falhar, instala via pip/apt."""
+    if module_exists(module_name):
         return  # já disponível
 
     print(f"Biblioteca '{module_name}' não encontrada. Instalando...")
@@ -60,7 +67,8 @@ def ensure_library_installed(module_name: str,
     pip_pkg = pip_pkg or module_name
     extra = extra_pip_args or []
     subprocess.check_call(
-        [sys.executable, "-m", "pip", "install", "--no-cache-dir", pip_pkg, *extra]
+        [sys.executable, "-m", "pip", "install", "--no-cache-dir",
+         pip_pkg, *extra]
     )
     print(f"Biblioteca '{module_name}' instalada com sucesso.\n")
 
