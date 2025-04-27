@@ -2478,7 +2478,7 @@ CMD ["sh", "-c", "\
 
         senha   = input("Configure uma senha para acessar o webtop: ")
         memoria = input("Configure o tamanho da memória em GB (apenas número): ")
-        porta   = self.escolher_porta_disponivel()
+        porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = """
         FROM linuxserver/webtop:ubuntu-xfce
