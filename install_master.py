@@ -3,70 +3,74 @@
 # Execute com:
 # wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
-import os
 import socket
-import subprocess
-import time
-import yaml
 import json
-import sys
 import random
 import re
-import subprocess, textwrap
 import tempfile
+import os, sys, time, subprocess, importlib.util, textwrap
 from pathlib import Path
 from typing import List, Optional
 from datetime import datetime
 
-def ensure_pip_installed():
-    try:
-        # Verifica se o pip está instalado
-        subprocess.check_call([sys.executable, "-m", "pip", "--version"])
-    except subprocess.CalledProcessError:
-        print("pip não encontrado. Instalando pip com apt...")
-        try:
-            subprocess.check_call(["sudo", "apt", "update"])
-            subprocess.check_call(["sudo", "apt", "install", "-y", "python3-pip"])
-            print("pip instalado com sucesso.")
-        except subprocess.CalledProcessError as e:
-            print(f"Erro ao instalar pip: {e}")
-            sys.exit(1)
-
-def ensure_library_installed(library_name):
-    try:
-        __import__(library_name)
-    except ImportError:
-        print(f"Biblioteca '{library_name}' não encontrada. Instalando...")
-        ensure_pip_installed()
-        subprocess.check_call([sys.executable, "-m", "pip", "install", library_name])
-        print(f"Biblioteca '{library_name}' instalada com sucesso.")
-        
 def check_for_update():
-    update_file = "/install_principal/update_check.txt"
-    os.makedirs(os.path.dirname(update_file), exist_ok=True)
-    if not os.path.exists(update_file):
-        print("Primeira execução detectada. Atualizando o sistema...")
-        try:
-            subprocess.run(["sudo", "apt", "update"], check=True)
-            subprocess.run(["sudo", "DEBIAN_FRONTEND=noninteractive", "apt", "upgrade", "-y"], check=True)
-            comandos = [
-                "sudo timedatectl set-timezone America/Sao_Paulo",
-                "sudo timedatectl set-ntp true",
-            ]
-            for comando in comandos:
-                subprocess.run(comando.split(), check=True)
-            with open(update_file, "w") as f:
-                f.write("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
-        except subprocess.CalledProcessError as e:
-            print(f"Erro ao atualizar o sistema: {e}")
-            sys.exit(1)
+    update_file = Path("/install_principal/update_check.txt")
+    update_file.parent.mkdir(parents=True, exist_ok=True)
+
+    if update_file.exists():
+        return  # já atualizou alguma vez
+
+    print("Primeira execução detectada. Atualizando o sistema...")
+    try:
+        subprocess.run(["apt-get", "update"], check=True)
+        subprocess.run(
+            ["DEBIAN_FRONTEND=noninteractive", "apt-get",
+             "-y", "--no-install-recommends", "upgrade"],
+            check=True
+        )
+        # fuso + ntp
+        subprocess.run(["timedatectl", "set-timezone", "America/Sao_Paulo"], check=True)
+        subprocess.run(["timedatectl", "set-ntp", "true"], check=True)
+
+        update_file.write_text("Atualização realizada em: "
+                               + time.strftime("%Y-%m-%d %H:%M:%S"))
+        print("Atualização concluída.\n")
+    except subprocess.CalledProcessError as e:
+        print(f"⚠️  Erro ao atualizar o sistema: {e}\n")
 
 check_for_update()
 
-# Verificar e instala dependencias
-ensure_library_installed("mysql.connector")
+def ensure_pip_installed():
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "--version"],
+                              stdout=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        print("pip não encontrado. Instalando com apt...")
+        subprocess.check_call(["apt-get", "update"])
+        subprocess.check_call(["apt-get", "install", "-y", "--no-install-recommends",
+                               "python3-pip"])
+        print("pip instalado com sucesso.\n")
 
-import mysql.connector
+def ensure_library_installed(module_name: str,
+                             pip_pkg: str | None = None,
+                             extra_pip_args: list[str] | None = None) -> None:
+    """Se o módulo não existir, instala o pacote pip correspondente."""
+    if importlib.util.find_spec(module_name) is not None:
+        return  # já disponível
+
+    print(f"Biblioteca '{module_name}' não encontrada. Instalando...")
+    ensure_pip_installed()
+
+    pip_pkg = pip_pkg or module_name
+    extra = extra_pip_args or []
+    subprocess.check_call(
+        [sys.executable, "-m", "pip", "install", "--no-cache-dir", pip_pkg, *extra]
+    )
+    print(f"Biblioteca '{module_name}' instalada com sucesso.\n")
+
+# ---- dependências do seu script ----
+ensure_library_installed("mysql.connector",       pip_pkg="mysql-connector-python")
+ensure_library_installed("yaml",                  pip_pkg="PyYAML")
 
 class Executa_comados():
     def __init__(self):
