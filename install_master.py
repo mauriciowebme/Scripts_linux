@@ -4,7 +4,6 @@
 # wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
 import os
-import os.path
 import socket
 import subprocess
 import time
@@ -12,10 +11,12 @@ import yaml
 import json
 import sys
 import random
-from pathlib import Path
 import re
-from pathlib import Path
 import subprocess, textwrap
+import tempfile
+from pathlib import Path
+from typing import List, Optional
+from datetime import datetime
 
 def ensure_pip_installed():
     try:
@@ -149,6 +150,43 @@ class Docker(Executa_comados):
         if len(portas_disponiveis) < quantidade:
             print(f"Nenhuma porta disponível entre {inicio} e {fim}.")
             return None
+    
+    def build_and_run_dockerfile(self,
+            dockerfile_str: str,
+            run_cmd: Optional[List[str]] = None,
+            workdir: Optional[Path] = None,
+            tag: Optional[str] = None,
+        ) -> None:
+        """
+        Gera Dockerfile → build → run.
+        Se `tag` for omitido, cria automaticamente um ID:
+            img_YYYYMMDD_HHMMSS
+        """
+        # Tag automática se não veio nada
+        if tag is None:
+            tag = f"img_{datetime.now():%Y%m%d_%H%M%S}"
+
+        # 1) contexto
+        if workdir is None:
+            tmp = tempfile.TemporaryDirectory()
+            ctx = Path(tmp.name)
+        else:
+            ctx = Path(workdir)
+            ctx.mkdir(parents=True, exist_ok=True)
+
+        # 2) salva Dockerfile
+        (ctx / "Dockerfile").write_text(textwrap.dedent(dockerfile_str).lstrip())
+
+        # 3) build
+        subprocess.run(["docker", "build", "-t", tag, "."], cwd=ctx, check=True)
+
+        # 4) run
+        run_cmd = run_cmd or []
+        subprocess.run(["docker", "run", "--rm", *run_cmd, tag], check=True)
+
+        # 5) fecha tmp, se usado
+        if workdir is None:
+            tmp.cleanup()
 
     def cria_rede_docker(self, associar_todos=False, associar_container_nome=False, numero_rede=None):
         # Verifica se a rede já existe
@@ -2435,30 +2473,47 @@ CMD ["sh", "-c", "\
         print("")
         
     def desktop_ubuntu_webtop(self):
+        """Instala e executa o Webtop."""
         print("Iniciando instalação webtop:")
-        senha = input("Configure uma senha para acessar o webtop: ")
-        memoria = input("Configure o tamanho da memoria em GB, digite apenas o numero: ")
-        container = f"""docker run -d \
-            --name=webtop \
-            --restart=unless-stopped \
-            -e PUID=1000 \
-            -e PGID=1000 \
-            -e TZ=America/Sao_Paulo \
-            -e CUSTOM_USER=master \
-            -e PASSWORD='{senha}' \
-            -p 3001:3000 \
-            --shm-size="{memoria}gb" \
-            linuxserver/webtop:ubuntu-xfce
-            """
-        comandos = [container]
-        self.remove_container('webtop')
-        resultados = self.executar_comandos(comandos,)
-        print("Instalação do webtop concluída.")
-        print("")
-        print("Acesse:  http://<seu_servidor>:3001")
+
+        senha   = input("Configure uma senha para acessar o webtop: ")
+        memoria = input("Configure o tamanho da memória em GB (apenas número): ")
+        porta   = self.escolher_porta_disponivel()
+
+        dockerfile = """
+        FROM linuxserver/webtop:ubuntu-xfce
+
+        # utilidades extras: wget  +  instalador .deb com interface (gdebi)
+        RUN apt-get update && \
+            apt-get install -y --no-install-recommends wget gdebi && \
+            apt-get clean && rm -rf /var/lib/apt/lists/*
+        """
+
+        run_args = [
+            "--name", "webtop",
+            "--restart=unless-stopped",
+            "-e", "PUID=1000",
+            "-e", "PGID=1000",
+            "-e", "TZ=America/Sao_Paulo",
+            "-e", "CUSTOM_USER=master",
+            "-e", f"PASSWORD={senha}",
+            "-p", f"{porta}:3000",
+            "--shm-size", f"{memoria}g",
+            "-d"                       # destacado
+        ]
+
+        self.remove_container("webtop")
+
+        # agora sem tag nem remove_img_after
+        self.build_and_run_dockerfile(
+            dockerfile_str=dockerfile,
+            run_cmd=run_args
+        )
+
+        print("\nInstalação do Webtop concluída.")
+        print(f"Acesse:  http://<seu_servidor>:{porta}")
         print("Usuário: master")
-        print("Senha:  ", senha)
-        print("")
+        print("Senha:   ", senha)
     
     def instala_selenium_firefox(self):
         print("Iniciando instalação selenium_firefox:")
