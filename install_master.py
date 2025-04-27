@@ -81,16 +81,22 @@ def ensure(module: str,
     except Exception:
         print(f"APT falhou para {apt_pkg}; tentando pip…")
 
-    # 3) fallback: pip
-    if shutil.which("pip") is None:
-        subprocess.run(["apt-get", "install", "-y", "--no-install-recommends",
-                        "python3-pip"], check=True,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        # 3) fallback: pip
+        if shutil.which("pip") is None:
+            subprocess.run(["apt-get", "install", "-y", "--no-install-recommends",
+                            "python3-pip"], check=True,
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    subprocess.run([sys.executable, "-m", "pip", "install",
-                    "--break-system-packages", "--no-cache-dir", pip_pkg],
-                   check=True)
-    print(f"✓ {module} instalado via pip ({pip_pkg})")
+        subprocess.run([sys.executable, "-m", "pip", "install",
+                        "--break-system-packages", "--no-cache-dir", pip_pkg],
+                    check=True)
+        print(f"✓ {module} instalado via pip ({pip_pkg})")
+    
+        importlib.import_module(module)
+        return
+    except ImportError:
+        pass
 
 # ---- dependências do seu script ----
 ensure("mysql.connector",
