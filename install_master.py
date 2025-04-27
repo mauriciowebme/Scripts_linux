@@ -164,7 +164,7 @@ class Docker(Executa_comados):
         """
         # Tag automática se não veio nada
         if tag is None:
-            tag = f"img_{datetime.now():%Y%m%d_%H%M%S}"
+            tag = f"img_{datetime.now():%Y%m%d%H%M%S}"
 
         # 1) contexto
         if workdir is None:
