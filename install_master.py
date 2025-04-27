@@ -2482,16 +2482,19 @@ CMD ["sh", "-c", "\
         porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = """
-        FROM linuxserver/webtop:ubuntu-xfce
+            FROM linuxserver/webtop:ubuntu-xfce
 
-        # utilidades extras: wget  +  instalador .deb com interface (gdebi)
-        RUN apt-get update && \
-            apt-get install -y --no-install-recommends wget gdebi && \
-            apt-get install -y python3 python3-pip && \
-            python3 -m pip install --upgrade pip && \
-            apt-get clean && rm -rf /var/lib/apt/lists/*
-        """
-
+            # Instala utilitários: wget, gdebi, python3 e pip
+            RUN apt-get update && \
+                apt-get install -y --no-install-recommends \
+                    wget \
+                    gdebi \
+                    python3 \
+                    python3-pip && \
+                python3 -m pip install --upgrade pip && \
+                apt-get clean && rm -rf /var/lib/apt/lists/*
+            """
+            
         run_args = [
             "--name", f"webtop_{nome}",
             "--restart=unless-stopped",
