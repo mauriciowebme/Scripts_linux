@@ -2476,6 +2476,7 @@ CMD ["sh", "-c", "\
         """Instala e executa o Webtop."""
         print("Iniciando instalação webtop:")
 
+        nome = input("Digite um nome para o container: ")
         senha   = input("Configure uma senha para acessar o webtop: ")
         memoria = input("Configure o tamanho da memória em GB (apenas número): ")
         porta = self.escolher_porta_disponivel()[0]
@@ -2490,7 +2491,7 @@ CMD ["sh", "-c", "\
         """
 
         run_args = [
-            "--name", "webtop",
+            "--name", f"webtop_{nome}",
             "--restart=unless-stopped",
             "-e", "PUID=1000",
             "-e", "PGID=1000",
@@ -2502,7 +2503,7 @@ CMD ["sh", "-c", "\
             "-d"
         ]
 
-        self.remove_container("webtop")
+        self.remove_container(f"webtop_{nome}")
 
         self.build_and_run_dockerfile(
             dockerfile_str=dockerfile,
