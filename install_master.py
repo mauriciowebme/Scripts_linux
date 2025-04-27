@@ -23,11 +23,7 @@ def check_for_update():
     print("Primeira execução detectada. Atualizando o sistema...")
     try:
         subprocess.run(["apt-get", "update"], check=True)
-        subprocess.run(
-            ["DEBIAN_FRONTEND=noninteractive", "apt-get",
-             "-y", "--no-install-recommends", "upgrade"],
-            check=True
-        )
+        subprocess.run( ["apt-get",  "upgrade"], check=True)
         # fuso + ntp
         subprocess.run(["timedatectl", "set-timezone", "America/Sao_Paulo"], check=True)
         subprocess.run(["timedatectl", "set-ntp", "true"], check=True)
@@ -35,8 +31,8 @@ def check_for_update():
         update_file.write_text("Atualização realizada em: "
                                + time.strftime("%Y-%m-%d %H:%M:%S"))
         print("Atualização concluída.\n")
-    except subprocess.CalledProcessError as e:
-        print(f"⚠️  Erro ao atualizar o sistema: {e}\n")
+    except Exception as ex:
+        print(f"⚠️  Erro ao atualizar o sistema: {ex}\n")
 
 check_for_update()
 
