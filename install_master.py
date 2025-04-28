@@ -2516,7 +2516,6 @@ CMD ["sh", "-c", "\
 
         nome = input("Digite um nome para o container: ")
         senha   = input("Configure uma senha para acessar o webtop: ")
-        memoria = input("Configure o tamanho da memória em GB (apenas número): ")
         porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = """
@@ -2541,7 +2540,7 @@ CMD ["sh", "-c", "\
             "-e", "CUSTOM_USER=master",
             "-e", f"PASSWORD={senha}",
             "-p", f"{porta}:3000",
-            "--shm-size", f"{memoria}g",
+            "--shm-size", f"1g",
             "-d"
         ]
 
