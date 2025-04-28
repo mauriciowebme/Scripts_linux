@@ -22,8 +22,8 @@ def check_for_update():
 
     print("Primeira execução detectada. Atualizando o sistema...")
     try:
-        subprocess.run(["apt-get", "update"], check=True)
-        subprocess.run( ["apt-get",  "upgrade", "-y"], check=True)
+        subprocess.run("sudo apt-get update".split(), check=True)
+        subprocess.run("sudo apt-get upgrade -y".split(), check=True)
         # fuso + ntp
         subprocess.run(["timedatectl", "set-timezone", "America/Sao_Paulo"], check=True)
         subprocess.run(["timedatectl", "set-ntp", "true"], check=True)
