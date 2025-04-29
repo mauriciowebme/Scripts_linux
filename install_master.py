@@ -2584,19 +2584,19 @@ CMD ["sh", "-c", "\
             
         # — 1) Habilita o Universe e atualiza —
         RUN apt-get update && apt-get install -y --no-install-recommends \
-                software-properties-common \
+            software-properties-common \
             && add-apt-repository universe \
             && apt-get update
 
         # — 2) Instala suporte a pt_BR e IBus para XFCE —
         RUN apt-get install -y --no-install-recommends \
-                locales \
-                language-pack-pt-base \
-                hunspell-pt-br \
-                ibus \
-                ibus-gtk \
-                ibus-gtk3 \
-                xfce4-ibus \
+            locales \
+            language-pack-pt-base \
+            hunspell-pt-br \
+            ibus \
+            ibus-gtk \
+            ibus-gtk3 \
+            xfce4-ibus \
             && rm -rf /var/lib/apt/lists/*
 
         # — 3) Gera e define o locale pt_BR.UTF-8 —
