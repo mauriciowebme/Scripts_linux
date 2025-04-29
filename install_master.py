@@ -2612,6 +2612,9 @@ CMD ["sh", "-c", "\
         
         RUN echo 'Realiza limpeza'
         RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+        
+        # volta ao usuário “abc” (ou UID/GID correto)
+        USER abc
         """)
 
         self.remove_container(f"webtop_{nome}")
@@ -3672,7 +3675,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.216
+Versão 1.217
 ===========================================================================
 ===========================================================================
 ip server:
