@@ -2526,8 +2526,9 @@ CMD ["sh", "-c", "\
         ENV DEBIAN_FRONTEND=noninteractive
 
         # 1) Instala só os pacotes básicos
+        #--no-install-recommends
         RUN apt-get update && \
-            apt-get install -y --no-install-recommends \
+            apt-get install -y \
             wget \
             gdebi \
             python3 \
