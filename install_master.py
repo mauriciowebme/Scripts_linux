@@ -2527,7 +2527,7 @@ CMD ["sh", "-c", "\
 
         # 2) Instala pacotes básicos
         RUN apt-get update && \
-            apt-get install -y --no-install-recommends \
+            apt-get install -y \
             wget \
             gdebi \
             python3 \
@@ -2540,7 +2540,7 @@ CMD ["sh", "-c", "\
 
         # instala interface completa do XFCE
         RUN apt-get update && \
-            apt-get install -y --no-install-recommends \
+            apt-get install -y \
             xorg \
             xfce4 \
             xfce4-terminal \
