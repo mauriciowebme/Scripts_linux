@@ -2559,6 +2559,19 @@ CMD ["sh", "-c", "\
             apt-get install -y --no-install-recommends google-chrome-stable && \
             apt-get clean && rm -rf /var/lib/apt/lists/*
             
+        RUN mkdir -p /usr/share/applications && \
+            cat << 'EOF' > /usr/share/applications/google-chrome.desktop
+        [Desktop Entry]
+        Name=Google Chrome
+        Comment=Navegador Web
+        Exec=/usr/bin/google-chrome-stable %U
+        Terminal=false
+        Type=Application
+        Icon=google-chrome
+        Categories=Network;WebBrowser;
+        StartupNotify=true
+        EOF
+            
         # realiza limpeza
         RUN apt-get clean && rm -rf /var/lib/apt/lists/*
         """)
