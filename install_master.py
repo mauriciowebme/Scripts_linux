@@ -2548,6 +2548,16 @@ CMD ["sh", "-c", "\
             xdg-utils \
             libgbm-dev \
             dbus-x11
+        
+        # instala o Google Chrome
+        RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
+            | gpg --dearmor > /etc/apt/keyrings/google-chrome.gpg && \
+            echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] \
+            http://dl.google.com/linux/chrome/deb/ stable main" \
+            > /etc/apt/sources.list.d/google-chrome.list && \
+            apt-get update && \
+            apt-get install -y --no-install-recommends google-chrome-stable && \
+            apt-get clean && rm -rf /var/lib/apt/lists/*
             
         # realiza limpeza
         RUN apt-get clean && rm -rf /var/lib/apt/lists/*
