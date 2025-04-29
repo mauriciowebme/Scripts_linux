@@ -2520,10 +2520,12 @@ CMD ["sh", "-c", "\
 
         dockerfile = """
             FROM linuxserver/webtop:ubuntu-xfce
+
+            # 1) Usuário root e variável para não-interativo
             USER root
             ENV DEBIAN_FRONTEND=noninteractive
 
-            # 1) Pacotes básicos + dependências do Chrome (ajuste conforme já conversamos)
+            # 2) Instala pacotes básicos + bibliotecas que o Chrome precisa
             RUN apt-get update && \
                 apt-get install -y --no-install-recommends \
                 wget \
@@ -2554,7 +2556,7 @@ CMD ["sh", "-c", "\
                 lsb-release && \
                 rm -rf /var/lib/apt/lists/*
 
-            # 2) Repositório e instalação do Chrome
+            # 3) Adiciona repositório do Chrome de forma segura e instala o google-chrome-stable
             RUN wget -q -O /tmp/chrome.key https://dl.google.com/linux/linux_signing_key.pub && \
                 mkdir -p /etc/apt/keyrings && \
                 gpg --dearmor < /tmp/chrome.key > /etc/apt/keyrings/google-chrome.gpg && \
@@ -2565,7 +2567,7 @@ CMD ["sh", "-c", "\
                 apt-get install -y --no-install-recommends google-chrome-stable && \
                 rm -rf /var/lib/apt/lists/* /tmp/chrome.key
 
-            # 3) Cria o wrapper para sempre rodar o Chrome sem sandbox
+            # 4) Cria o wrapper que sempre chama o Chrome com flags para desabilitar sandbox
             RUN mkdir -p /usr/local/bin && \
                 cat << 'EOF' > /usr/local/bin/chrome-wrapper.sh
             #!/bin/bash
@@ -2575,16 +2577,16 @@ CMD ["sh", "-c", "\
             --disable-dev-shm-usage \
             --disable-gpu \
             "$@"
-            EOF && \
-                chmod +x /usr/local/bin/chrome-wrapper.sh
+            EOF
 
-            # (Opcional) substitui o binário padrão pelo wrapper,
-            # assim você só chama "google-chrome-stable" mesmo:
-            RUN mv /usr/bin/google-chrome-stable /usr/bin/google-chrome-stable.bin && \
+            # 5) Dá permissão de execução e remapeia o binário original para o wrapper
+            RUN chmod +x /usr/local/bin/chrome-wrapper.sh && \
+                mv /usr/bin/google-chrome-stable /usr/bin/google-chrome-stable.orig && \
                 ln -s /usr/local/bin/chrome-wrapper.sh /usr/bin/google-chrome-stable
 
-            # volta a rodar como usuário não-root do webtop
+            # 6) Volta a usar o usuário padrão do webtop
             USER abc
+
             """
             
         run_args = [
