@@ -2568,7 +2568,7 @@ CMD ["sh", "-c", "\
             >> /usr/local/bin/chrome-wrapper.sh && \
             chmod +x /usr/local/bin/chrome-wrapper.sh
 
-        RUN echo 'Cria o atalho no menu apontando pro wrapper'
+        RUN echo 'Cria o atalho do Chrome no menu apontando pro wrapper'
         RUN mkdir -p /usr/share/applications && \
             echo '[Desktop Entry]'                                       > /usr/share/applications/google-chrome.desktop && \
             echo 'Name=Google Chrome'                                   >> /usr/share/applications/google-chrome.desktop && \
@@ -2580,7 +2580,13 @@ CMD ["sh", "-c", "\
             echo 'Categories=Network;WebBrowser'                        >> /usr/share/applications/google-chrome.desktop && \
             echo 'StartupNotify=true'                                   >> /usr/share/applications/google-chrome.desktop && \
             chmod +x /usr/share/applications/google-chrome.desktop
-            
+        
+        RUN echo 'Habilita universe (se ainda não fez)'
+        RUN apt-get update \
+            && apt-get install -y --no-install-recommends software-properties-common \
+            && add-apt-repository universe \
+            && rm -rf /var/lib/apt/lists/*
+        
         RUN echo 'Instala suporte a pt_BR e IBus para XFCE'
         RUN apt-get update \
             && apt-get install -y --no-install-recommends \
@@ -2596,6 +2602,11 @@ CMD ["sh", "-c", "\
             && locale-gen pt_BR.UTF-8 \
             && update-locale LANG=pt_BR.UTF-8 LANGUAGE=pt_BR:pt LC_ALL=pt_BR.UTF-8
 
+        RUN echo 'Define como default para todo o container'
+        ENV LANG=pt_BR.UTF-8 \
+            LANGUAGE=pt_BR:pt \
+            LC_ALL=pt_BR.UTF-8
+            
         RUN echo 'Adiciona ABNT2 ao iniciar o XFCE'
         RUN echo "setxkbmap -layout br -variant abnt2" >> /etc/xdg/xfce4/xinitrc
         
