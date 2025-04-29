@@ -2516,7 +2516,6 @@ CMD ["sh", "-c", "\
 
         nome = input("Digite um nome para o container: ")
         senha   = input("Configure uma senha para acessar o webtop: ")
-        porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = textwrap.dedent("""\
         FROM linuxserver/webtop:ubuntu-xfce
@@ -2604,10 +2603,9 @@ CMD ["sh", "-c", "\
         RUN apt-get clean && rm -rf /var/lib/apt/lists/*
         """)
 
-        # aí você passa `dockerfile` pra API ou salva num arquivo Dockerfile    
-        print(dockerfile)
-
-            
+        self.remove_container(f"webtop_{nome}")
+        
+        porta = self.escolher_porta_disponivel()[0]
         run_args = [
             "--name", f"webtop_{nome}",
             "--restart=unless-stopped",
@@ -2620,8 +2618,6 @@ CMD ["sh", "-c", "\
             "--shm-size", f"1g",
             "-d"
         ]
-
-        self.remove_container(f"webtop_{nome}")
 
         self.build_and_run_dockerfile(
             dockerfile_str=dockerfile,
