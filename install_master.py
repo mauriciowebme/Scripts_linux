@@ -2525,16 +2525,29 @@ CMD ["sh", "-c", "\
         USER root
         ENV DEBIAN_FRONTEND=noninteractive
 
-        # 1) Instala só os pacotes básicos
+        # Instala os pacotes básicos
         #--no-install-recommends
         RUN apt-get update && \
             apt-get install -y \
             wget \
             gdebi \
             python3 \
-            python3-pip \
-            && apt-get clean && rm -rf /var/lib/apt/lists/*
-
+            python3-pip 
+            
+        # instala dpendencias do chrome
+        RUN apt-get install -y \
+            libxss1 \
+            libappindicator3-1 \
+            libindicator7 \
+            fonts-liberation \
+            libasound2 \
+            libatk-bridge2.0-0 \
+            libgtk-3-0 \
+            xdg-utils \
+            libgbm-dev
+            
+        # realiza limpeza
+        RUN apt-get clean && rm -rf /var/lib/apt/lists/*
         """)
 
         # aí você passa `dockerfile` pra API ou salva num arquivo Dockerfile    
