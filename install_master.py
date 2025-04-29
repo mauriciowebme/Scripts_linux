@@ -2315,12 +2315,16 @@ module.exports = { setupPythonEnv, runPythonScript };
         comandos = [
             # Comando para remover imagens Docker não utilizadas há mais de 24 horas
             "docker image prune -a --filter \"until=24h\" -f",
-            # Comando para remover volumes Docker não utilizados há mais de 24 horas
-            "docker volume prune --filter \"until=24h\" -f",
             # Comando para remover redes Docker não utilizadas há mais de 24 horas
             "docker network prune --filter \"until=24h\" -f",
             # Comando para remover dados de construção Docker não utilizados há mais de 24 horas
             "docker builder prune --filter \"until=24h\" -f",
+            ## Comando para remover 
+            # Contêineres parados há mais de 24 horas
+            # Imagens “pendentes” (dangling) criadas há mais de 24 h
+            # Redes não usadas há mais de 24 h
+            # Volumes não usados por nenhum contêiner (ou seja, volumes “pendentes”, dangling)
+            "docker system prune --volumes --filter \"until=24h\" -f",
         ]
         resultados = self.executar_comandos(comandos, ignorar_erros=True, exibir_resultados=False)
         
