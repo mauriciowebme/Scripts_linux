@@ -2574,7 +2574,7 @@ CMD ["sh", "-c", "\
             --disable-setuid-sandbox \\
             --disable-dev-shm-usage \\
             --disable-gpu \\
-            "$@"
+            \"$@\"
             EOF
 
             # 4) Permissões e symlink
