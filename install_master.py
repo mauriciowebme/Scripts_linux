@@ -2518,29 +2518,78 @@ CMD ["sh", "-c", "\
         senha   = input("Configure uma senha para acessar o webtop: ")
         porta = self.escolher_porta_disponivel()[0]
 
-        dockerfile = """
-            FROM linuxserver/webtop:ubuntu-xfce
+        dockerfile = textwrap.dedent("""\
+        FROM linuxserver/webtop:ubuntu-xfce
 
-            # Instalação de pacotes básicos
-            RUN apt-get update && \
+        # 1) Executa como root e evita prompts interativos
+        USER root
+        ENV DEBIAN_FRONTEND=noninteractive
+
+        # 2) Instala pacotes básicos
+        RUN apt-get update && \
             apt-get install -y --no-install-recommends \
-                wget \
-                gdebi \
-                python3 \
-                python3-pip \
-                gnupg \
-                ca-certificates && \
+            wget \
+            gdebi \
+            python3 \
+            python3-pip \
+            gnupg \
+            ca-certificates \
+            lsb-release \
+            xdg-utils && \
             apt-get clean && rm -rf /var/lib/apt/lists/*
 
-            # Adiciona o repositório do Google Chrome de forma segura e instala
-            RUN wget -q -O /tmp/chrome.key https://dl.google.com/linux/linux_signing_key.pub && \
-                mkdir -p /etc/apt/keyrings && \
-                gpg --dearmor < /tmp/chrome.key > /etc/apt/keyrings/google-chrome.gpg && \
-                echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
-                apt-get update && \
-                apt-get install -y google-chrome-stable && \
-                apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/chrome.key
-            """
+        # 3) Instala dependências que o Chrome precisa
+        RUN apt-get update && \
+            apt-get install -y --no-install-recommends \
+            fonts-liberation \
+            libappindicator3-1 \
+            libasound2 \
+            libatk-bridge2.0-0 \
+            libcups2 \
+            libdbus-1-3 \
+            libdrm2 \
+            libgbm1 \
+            libgtk-3-0 \
+            libx11-xcb1 \
+            libxcomposite1 \
+            libxcursor1 \
+            libxdamage1 \
+            libxext6 \
+            libxfixes3 \
+            libxi6 \
+            libxrandr2 \
+            libxrender1 \
+            libxss1 \
+            libxtst6 && \
+            apt-get clean && rm -rf /var/lib/apt/lists/*
+
+        # 4) Adiciona repositório do Chrome e instala o google-chrome-stable
+        RUN wget -q -O /tmp/chrome.key https://dl.google.com/linux/linux_signing_key.pub && \
+            mkdir -p /etc/apt/keyrings && \
+            gpg --dearmor < /tmp/chrome.key > /etc/apt/keyrings/google-chrome.gpg && \
+            echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] \
+        https://dl.google.com/linux/chrome/deb/ stable main" \
+            > /etc/apt/sources.list.d/google-chrome.list && \
+            apt-get update && \
+            apt-get install -y --no-install-recommends google-chrome-stable && \
+            rm -rf /var/lib/apt/lists/* /tmp/chrome.key
+
+        # 5) Gera o wrapper sem here-doc, usando echo
+        RUN mkdir -p /usr/local/bin && \
+            echo '#!/bin/bash' > /usr/local/bin/chrome-wrapper.sh && \
+            echo 'exec /usr/bin/google-chrome-stable --no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu "$@"' \
+            >> /usr/local/bin/chrome-wrapper.sh && \
+            chmod +x /usr/local/bin/chrome-wrapper.sh && \
+            mv /usr/bin/google-chrome-stable /usr/bin/google-chrome-stable.orig && \
+            ln -s /usr/local/bin/chrome-wrapper.sh /usr/bin/google-chrome-stable
+
+        # 6) Volta a usar o usuário padrão do webtop
+        USER abc
+        """)
+
+        # aí você passa `dockerfile` pra API ou salva num arquivo Dockerfile    
+        print(dockerfile)
+
             
         run_args = [
             "--name", f"webtop_{nome}",
