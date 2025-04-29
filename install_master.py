@@ -2519,72 +2519,75 @@ CMD ["sh", "-c", "\
         porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = textwrap.dedent("""\
-            FROM linuxserver/webtop:ubuntu-xfce
-            USER root
-            ENV DEBIAN_FRONTEND=noninteractive
+        FROM linuxserver/webtop:ubuntu-xfce
+        USER root
+        ENV DEBIAN_FRONTEND=noninteractive
 
-            # 1) Instala libs que o Chrome precisa
-            RUN apt-get update && \\
-                apt-get install -y --no-install-recommends \\
-                wget \\
-                gdebi-core \\
-                python3 python3-pip \\
-                gnupg ca-certificates \\
-                fonts-liberation \\
-                libappindicator3-1 \\
-                libasound2 \\
-                libatk-bridge2.0-0 \\
-                libcups2 \\
-                libdbus-1-3 \\
-                libdrm2 \\
-                libgbm1 \\
-                libgtk-3-0 \\
-                libx11-xcb1 \\
-                libxcomposite1 \\
-                libxcursor1 \\
-                libxdamage1 \\
-                libxext6 \\
-                libxfixes3 \\
-                libxi6 \\
-                libxrandr2 \\
-                libxrender1 \\
-                libxss1 \\
-                libxtst6 \\
-                xdg-utils \\
-                lsb-release && \\
-                rm -rf /var/lib/apt/lists/*
+        # instalação das libs do Chrome
+        RUN apt-get update && \\
+            apt-get install -y --no-install-recommends \\
+            wget \\
+            gdebi-core \\
+            python3 python3-pip \\
+            gnupg ca-certificates \\
+            fonts-liberation \\
+            libappindicator3-1 \\
+            libasound2 \\
+            libatk-bridge2.0-0 \\
+            libcups2 \\
+            libdbus-1-3 \\
+            libdrm2 \\
+            libgbm1 \\
+            libgtk-3-0 \\
+            libx11-xcb1 \\
+            libxcomposite1 \\
+            libxcursor1 \\
+            libxdamage1 \\
+            libxext6 \\
+            libxfixes3 \\
+            libxi6 \\
+            libxrandr2 \\
+            libxrender1 \\
+            libxss1 \\
+            libxtst6 \\
+            xdg-utils \\
+            lsb-release && \\
+            rm -rf /var/lib/apt/lists/*
 
-            # 2) Repo + Chrome
-            RUN wget -q -O /tmp/chrome.key https://dl.google.com/linux/linux_signing_key.pub && \\
-                mkdir -p /etc/apt/keyrings && \\
-                gpg --dearmor < /tmp/chrome.key > /etc/apt/keyrings/google-chrome.gpg && \\
-                echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] \\
-                http://dl.google.com/linux/chrome/deb/ stable main" \\
-                > /etc/apt/sources.list.d/google-chrome.list && \\
-                apt-get update && \\
-                apt-get install -y --no-install-recommends google-chrome-stable && \\
-                rm -rf /var/lib/apt/lists/* /tmp/chrome.key
+        # adiciona repo e instala o Chrome
+        RUN wget -q -O /tmp/chrome.key https://dl.google.com/linux/linux_signing_key.pub && \\
+            mkdir -p /etc/apt/keyrings && \\
+            gpg --dearmor < /tmp/chrome.key > /etc/apt/keyrings/google-chrome.gpg && \\
+            echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] \\
+            http://dl.google.com/linux/chrome/deb/ stable main" \\
+            > /etc/apt/sources.list.d/google-chrome.list && \\
+            apt-get update && \\
+            apt-get install -y --no-install-recommends google-chrome-stable && \\
+            rm -rf /var/lib/apt/lists/* /tmp/chrome.key
 
-            # 3) Cria wrapper SEM INDENTAÇÃO no here-doc
-            RUN mkdir -p /usr/local/bin && \\
-                cat << 'EOF' > /usr/local/bin/chrome-wrapper.sh
-            #!/bin/bash
-            exec /usr/bin/google-chrome-stable \\
-            --no-sandbox \\
-            --disable-setuid-sandbox \\
-            --disable-dev-shm-usage \\
-            --disable-gpu \\
-            \"$@\"
-            EOF
+        # cria o wrapper SEM NENHUMA INDENTAÇÃO aqui
+        RUN mkdir -p /usr/local/bin && \\
+            cat << 'EOF' > /usr/local/bin/chrome-wrapper.sh
+        #!/bin/bash
+        exec /usr/bin/google-chrome-stable \\
+        --no-sandbox \\
+        --disable-setuid-sandbox \\
+        --disable-dev-shm-usage \\
+        --disable-gpu \\
+        "$@"
+        EOF
 
-            # 4) Permissões e symlink
-            RUN chmod +x /usr/local/bin/chrome-wrapper.sh && \\
-                mv /usr/bin/google-chrome-stable /usr/bin/google-chrome-stable.orig && \\
-                ln -s /usr/local/bin/chrome-wrapper.sh /usr/bin/google-chrome-stable
+        # dá permissão e faz symlink
+        RUN chmod +x /usr/local/bin/chrome-wrapper.sh && \\
+            mv /usr/bin/google-chrome-stable /usr/bin/google-chrome-stable.orig && \\
+            ln -s /usr/local/bin/chrome-wrapper.sh /usr/bin/google-chrome-stable
 
-            # 5) Volta a usar o usuário padrão
-            USER abc
-            """)
+        USER abc
+        """)
+
+        # aí você passa `dockerfile` pra API ou salva num arquivo Dockerfile    
+        print(dockerfile)
+
             
         run_args = [
             "--name", f"webtop_{nome}",
