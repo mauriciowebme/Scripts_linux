@@ -2521,15 +2521,15 @@ CMD ["sh", "-c", "\
         dockerfile = textwrap.dedent("""\
         FROM linuxserver/webtop:ubuntu-xfce
 
-        # Executa como root e evita prompts interativos
+        echo 'Executa como root e evita prompts interativos'
         USER root
         ENV DEBIAN_FRONTEND=noninteractive
 
-        # Atualiza o sistema
+        echo 'Atualiza o sistema'
         RUN apt-get update && \
             apt-get upgrade -y
         
-        # Instala os pacotes básicos
+        echo 'Instala os pacotes básicos'
         #--no-install-recommends
         RUN apt-get install -y \
             wget \
@@ -2537,7 +2537,7 @@ CMD ["sh", "-c", "\
             python3 \
             python3-pip 
             
-        # instala dpendencias do chrome
+        echo 'Instala dpendencias do chrome'
         RUN apt-get install -y \
             libxss1 \
             libappindicator3-1 \
@@ -2549,7 +2549,7 @@ CMD ["sh", "-c", "\
             libgbm-dev \
             dbus-x11
         
-        # instala o Google Chrome
+        echo 'Instala o Google Chrome'
         RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
             | gpg --dearmor > /etc/apt/keyrings/google-chrome.gpg && \
             echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] \
@@ -2559,7 +2559,7 @@ CMD ["sh", "-c", "\
             apt-get install -y --no-install-recommends google-chrome-stable && \
             apt-get clean && rm -rf /var/lib/apt/lists/*
             
-        # Cria o atalho de menu para o Chrome
+        echo 'Cria o atalho de menu para o Chrome'
         RUN mkdir -p /usr/share/applications && \
             echo '[Desktop Entry]'                                       > /usr/share/applications/google-chrome.desktop && \
             echo 'Name=Google Chrome'                                   >> /usr/share/applications/google-chrome.desktop && \
@@ -2571,7 +2571,7 @@ CMD ["sh", "-c", "\
             echo 'Categories=Network;WebBrowser;'                       >> /usr/share/applications/google-chrome.desktop && \
             echo 'StartupNotify=true'                                   >> /usr/share/applications/google-chrome.desktop
             
-        # realiza limpeza
+        echo 'Realiza limpeza'
         RUN apt-get clean && rm -rf /var/lib/apt/lists/*
         """)
 
