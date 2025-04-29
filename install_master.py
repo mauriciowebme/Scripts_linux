@@ -2521,14 +2521,25 @@ CMD ["sh", "-c", "\
         dockerfile = """
             FROM linuxserver/webtop:ubuntu-xfce
 
-            # wget, instalador .deb gráfico (gdebi) e Python 3 + pip
+            # Instalação de pacotes básicos
             RUN apt-get update && \
-                apt-get install -y --no-install-recommends \
-                    wget \
-                    gdebi \
-                    python3 \
-                    python3-pip && \
-                apt-get clean && rm -rf /var/lib/apt/lists/*
+            apt-get install -y --no-install-recommends \
+                wget \
+                gdebi \
+                python3 \
+                python3-pip \
+                gnupg \
+                ca-certificates && \
+            apt-get clean && rm -rf /var/lib/apt/lists/*
+
+            # Adiciona o repositório do Google Chrome de forma segura e instala
+            RUN wget -q -O /tmp/chrome.key https://dl.google.com/linux/linux_signing_key.pub && \
+            mkdir -p /etc/apt/keyrings && \
+            gpg --dearmor < /tmp/chrome.key > /etc/apt/keyrings/google-chrome.gpg && \
+            echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
+            apt-get update && \
+            apt-get install -y google-chrome-stable && \
+            apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/chrome.key
             """
             
         run_args = [
