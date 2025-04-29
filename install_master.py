@@ -2531,29 +2531,6 @@ CMD ["sh", "-c", "\
             wget \
             gdebi-core \
             python3 python3-pip \
-            gnupg ca-certificates \
-            fonts-liberation \
-            libappindicator3-1 \
-            libasound2 \
-            libatk-bridge2.0-0 \
-            libcups2 \
-            libdbus-1-3 \
-            libdrm2 \
-            libgbm1 \
-            libgtk-3-0 \
-            libx11-xcb1 \
-            libxcomposite1 \
-            libxcursor1 \
-            libxdamage1 \
-            libxext6 \
-            libxfixes3 \
-            libxi6 \
-            libxrandr2 \
-            libxrender1 \
-            libxss1 \
-            libxtst6 \
-            xdg-utils \
-            lsb-release && \
             rm -rf /var/lib/apt/lists/*
 
         # 3) Adiciona repositório do Chrome e instala o google-chrome-stable
