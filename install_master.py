@@ -2525,10 +2525,13 @@ CMD ["sh", "-c", "\
         USER root
         ENV DEBIAN_FRONTEND=noninteractive
 
+        # Atualiza o sistema
+        RUN apt-get update && \
+            apt-get upgrade -y \
+        
         # Instala os pacotes básicos
         #--no-install-recommends
-        RUN apt-get update && \
-            apt-get install -y \
+        RUN apt-get install -y \
             wget \
             gdebi \
             python3 \
@@ -2540,7 +2543,6 @@ CMD ["sh", "-c", "\
             libappindicator3-1 \
             libindicator7 \
             fonts-liberation \
-            libasound2 \
             libatk-bridge2.0-0 \
             libgtk-3-0 \
             xdg-utils \
