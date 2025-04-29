@@ -2533,7 +2533,7 @@ CMD ["sh", "-c", "\
             gdebi \
             python3 \
             python3-pip \
-            apt-get clean && rm -rf /var/lib/apt/lists/*
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
 
         # Volta a usar o usuário padrão do webtop
         USER abc
