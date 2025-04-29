@@ -2519,75 +2519,77 @@ CMD ["sh", "-c", "\
         porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = textwrap.dedent("""\
-FROM linuxserver/webtop:ubuntu-xfce
+        FROM linuxserver/webtop:ubuntu-xfce
 
-RUN echo 'Executa como root e evita prompts interativos'
-USER root
-ENV DEBIAN_FRONTEND=noninteractive
+        RUN echo 'Executa como root e evita prompts interativos'
+        USER root
+        ENV DEBIAN_FRONTEND=noninteractive
 
-RUN echo 'Atualiza o sistema'
-RUN apt-get update && \
-    apt-get upgrade -y
+        RUN echo 'Atualiza o sistema'
+        RUN apt-get update && \
+            apt-get upgrade -y
+        
+        RUN echo 'Instala os pacotes básicos'
+        #--no-install-recommends
+        RUN apt-get install -y \
+            wget \
+            gdebi \
+            python3 \
+            python3-pip 
+            
+        RUN echo 'Instala dpendencias do chrome'
+        RUN apt-get install -y \
+            libxss1 \
+            libappindicator3-1 \
+            libindicator7 \
+            fonts-liberation \
+            libatk-bridge2.0-0 \
+            libgtk-3-0 \
+            xdg-utils \
+            libgbm-dev \
+            dbus-x11
+        
+        RUN echo 'Instala o Google Chrome'
+        RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
+            | gpg --dearmor > /etc/apt/keyrings/google-chrome.gpg && \
+            echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] \
+            http://dl.google.com/linux/chrome/deb/ stable main" \
+            > /etc/apt/sources.list.d/google-chrome.list && \
+            apt-get update && \
+            apt-get install -y --no-install-recommends google-chrome-stable && \
+            apt-get clean && rm -rf /var/lib/apt/lists/*
+            
+        RUN echo 'Instala atalho Google Chrome'
+        RUN mkdir -p /usr/local/bin && \
+            cat << 'EOF' > /usr/local/bin/chrome-wrapper.sh
+        #!/bin/bash
+        exec /usr/bin/google-chrome-stable \
+        --no-sandbox \
+        --disable-setuid-sandbox \
+        --disable-dev-shm-usage \
+        --disable-gpu \
+        "$@"
+        EOF
+        
+        RUN chmod +x /usr/local/bin/chrome-wrapper.sh
 
-RUN echo 'Instala os pacotes básicos'
-#--no-install-recommends
-RUN apt-get install -y \
-    wget \
-    gdebi \
-    python3 \
-    python3-pip 
-    
-RUN echo 'Instala dpendencias do chrome'
-RUN apt-get install -y \
-    libxss1 \
-    libappindicator3-1 \
-    libindicator7 \
-    fonts-liberation \
-    libatk-bridge2.0-0 \
-    libgtk-3-0 \
-    xdg-utils \
-    libgbm-dev \
-    dbus-x11
-
-RUN echo 'Instala o Google Chrome'
-RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
-    | gpg --dearmor > /etc/apt/keyrings/google-chrome.gpg && \
-    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] \
-    http://dl.google.com/linux/chrome/deb/ stable main" \
-    > /etc/apt/sources.list.d/google-chrome.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends google-chrome-stable && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-    
-RUN echo 'Instala atalho Google Chrome'
-RUN mkdir -p /usr/local/bin && \
-    cat << 'EOF' > /usr/local/bin/chrome-wrapper.sh
-#!/bin/bash
-exec /usr/bin/google-chrome-stable \
-    --no-sandbox \
-    --disable-setuid-sandbox \
-    --disable-dev-shm-usage \
-    --disable-gpu \
-    "$@"
-EOF && chmod +x /usr/local/bin/chrome-wrapper.sh
-
-# Cria o atalho de menu para o Chrome via wrapper
-RUN mkdir -p /usr/share/applications && \
-    cat << 'EOF' > /usr/share/applications/google-chrome.desktop
-[Desktop Entry]
-Name=Google Chrome
-Comment=Navegador Web
-Exec=/usr/local/bin/chrome-wrapper.sh %U
-Icon=google-chrome
-Type=Application
-Categories=Network;WebBrowser
-Terminal=false
-StartupNotify=true
-EOF && chmod +x /usr/share/applications/google-chrome.desktop
-    
-RUN echo 'Realiza limpeza'
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-""")
+        # Cria o atalho de menu para o Chrome via wrapper
+        RUN mkdir -p /usr/share/applications && \
+            cat << 'EOF' > /usr/share/applications/google-chrome.desktop
+        [Desktop Entry]
+        Name=Google Chrome
+        Comment=Navegador Web
+        Exec=/usr/local/bin/chrome-wrapper.sh %U
+        Icon=google-chrome
+        Type=Application
+        Categories=Network;WebBrowser
+        Terminal=false
+        StartupNotify=true
+        EOF && chmod +x /usr/share/applications/google-chrome.desktop
+            
+        RUN echo 'Realiza limpeza'
+        RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+        """)
 
         # aí você passa `dockerfile` pra API ou salva num arquivo Dockerfile    
         print(dockerfile)
