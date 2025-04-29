@@ -2535,8 +2535,6 @@ CMD ["sh", "-c", "\
             python3-pip \
             && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-        # Volta a usar o usuário padrão do webtop
-        USER abc
         """)
 
         # aí você passa `dockerfile` pra API ou salva num arquivo Dockerfile    
