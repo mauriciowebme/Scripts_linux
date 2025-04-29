@@ -2565,16 +2565,15 @@ CMD ["sh", "-c", "\
             apt-get install -y --no-install-recommends google-chrome-stable && \\
             rm -rf /var/lib/apt/lists/* /tmp/chrome.key
 
-        # cria o wrapper SEM NENHUMA INDENTAÇÃO aqui
         RUN mkdir -p /usr/local/bin && \\
             cat << 'EOF' > /usr/local/bin/chrome-wrapper.sh
         #!/bin/bash
         exec /usr/bin/google-chrome-stable \\
-        --no-sandbox \\
-        --disable-setuid-sandbox \\
-        --disable-dev-shm-usage \\
-        --disable-gpu \\
-        "$@"
+            --no-sandbox \\
+            --disable-setuid-sandbox \\
+            --disable-dev-shm-usage \\
+            --disable-gpu \\
+            "$@"
         EOF
 
         # dá permissão e faz symlink
