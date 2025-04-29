@@ -2559,18 +2559,17 @@ CMD ["sh", "-c", "\
             apt-get install -y --no-install-recommends google-chrome-stable && \
             apt-get clean && rm -rf /var/lib/apt/lists/*
             
+        # Cria o atalho de menu para o Chrome
         RUN mkdir -p /usr/share/applications && \
-            cat << 'EOF' > /usr/share/applications/google-chrome.desktop
-        [Desktop Entry]
-        Name=Google Chrome
-        Comment=Navegador Web
-        Exec=/usr/bin/google-chrome-stable %U
-        Terminal=false
-        Type=Application
-        Icon=google-chrome
-        Categories=Network;WebBrowser;
-        StartupNotify=true
-        EOF
+            echo '[Desktop Entry]'                                       > /usr/share/applications/google-chrome.desktop && \
+            echo 'Name=Google Chrome'                                   >> /usr/share/applications/google-chrome.desktop && \
+            echo 'Comment=Navegador Web'                                >> /usr/share/applications/google-chrome.desktop && \
+            echo 'Exec=/usr/bin/google-chrome-stable %U'                >> /usr/share/applications/google-chrome.desktop && \
+            echo 'Terminal=false'                                       >> /usr/share/applications/google-chrome.desktop && \
+            echo 'Type=Application'                                     >> /usr/share/applications/google-chrome.desktop && \
+            echo 'Icon=google-chrome'                                   >> /usr/share/applications/google-chrome.desktop && \
+            echo 'Categories=Network;WebBrowser;'                       >> /usr/share/applications/google-chrome.desktop && \
+            echo 'StartupNotify=true'                                   >> /usr/share/applications/google-chrome.desktop
             
         # realiza limpeza
         RUN apt-get clean && rm -rf /var/lib/apt/lists/*
