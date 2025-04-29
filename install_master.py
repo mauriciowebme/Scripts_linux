@@ -2564,7 +2564,7 @@ CMD ["sh", "-c", "\
             echo '[Desktop Entry]'                                       > /usr/share/applications/google-chrome.desktop && \
             echo 'Name=Google Chrome'                                   >> /usr/share/applications/google-chrome.desktop && \
             echo 'Comment=Navegador Web'                                >> /usr/share/applications/google-chrome.desktop && \
-            echo 'Exec=/usr/bin/google-chrome-stable --no-sandbox --disable-setuid-sandbox %U                >> /usr/share/applications/google-chrome.desktop && \
+            echo 'Exec=/usr/bin/google-chrome-stable %U'                >> /usr/share/applications/google-chrome.desktop && \
             echo 'Terminal=false'                                       >> /usr/share/applications/google-chrome.desktop && \
             echo 'Type=Application'                                     >> /usr/share/applications/google-chrome.desktop && \
             echo 'Icon=google-chrome'                                   >> /usr/share/applications/google-chrome.desktop && \
