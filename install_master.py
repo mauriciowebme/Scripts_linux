@@ -2527,7 +2527,7 @@ CMD ["sh", "-c", "\
 
         # Atualiza o sistema
         RUN apt-get update && \
-            apt-get upgrade -y \
+            apt-get upgrade -y
         
         # Instala os pacotes básicos
         #--no-install-recommends
