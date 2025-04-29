@@ -3,6 +3,7 @@
 # Execute com:
 # wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
+import shutil
 import socket
 import json
 import random
@@ -2618,6 +2619,27 @@ CMD ["sh", "-c", "\
         """)
 
         self.remove_container(f"webtop_{nome}")
+        
+        caminho_principal = f"{self.install_principal}/webtop_{nome}"
+        # Verificar se o caminho já existe
+        if os.path.exists(caminho_principal):
+            resposta = input(f"O caminho {caminho_principal} já existe. Deseja apagá-lo? (s/n): ")
+            if resposta.lower() == 's':
+                print(f"Removendo diretório existente: {caminho_principal}")
+                try:
+                    shutil.rmtree(caminho_principal)
+                    print(f"Diretório {caminho_principal} removido com sucesso.")
+                except Exception as e:
+                    print(f"Erro ao remover diretório: {e}")
+                    return
+            else:
+                print("Mantendo diretório existente.")
+        else:
+            print(f"Criando novo diretório: {caminho_principal}")
+
+        # Criar o diretório para o container
+        os.makedirs(caminho_principal, exist_ok=True)
+        os.chmod(caminho_principal, 0o777)
         
         porta = self.escolher_porta_disponivel()[0]
         run_args = [
