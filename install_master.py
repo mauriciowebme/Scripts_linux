@@ -2582,28 +2582,27 @@ CMD ["sh", "-c", "\
             echo 'StartupNotify=true'                                   >> /usr/share/applications/google-chrome.desktop && \
             chmod +x /usr/share/applications/google-chrome.desktop
             
-        # 1) Instala o pacote de locales e os pacotes de idioma PT-BR para XFCE
-        RUN apt-get update && apt-get install -y \
-            locales \
-            language-pack-pt \
-            language-pack-pt-base \
-            hunspell-pt-br \
-            myspell-pt-br \
-            ibus \
-            ibus-gtk \
-            ibus-gtk3 \
-            xfce4-ibus \
+        # — 1) Habilita o Universe e atualiza —
+        RUN apt-get update && apt-get install -y --no-install-recommends \
+                software-properties-common \
+            && add-apt-repository universe \
+            && apt-get update
+
+        # — 2) Instala suporte a pt_BR e IBus para XFCE —
+        RUN apt-get install -y --no-install-recommends \
+                locales \
+                language-pack-pt-base \
+                hunspell-pt-br \
+                ibus \
+                ibus-gtk \
+                ibus-gtk3 \
+                xfce4-ibus \
             && rm -rf /var/lib/apt/lists/*
 
-        # 2) Habilita e gera o locale pt_BR.UTF-8
+        # — 3) Gera e define o locale pt_BR.UTF-8 —
         RUN sed -i 's/# pt_BR.UTF-8 UTF-8/pt_BR.UTF-8 UTF-8/' /etc/locale.gen \
             && locale-gen pt_BR.UTF-8 \
             && update-locale LANG=pt_BR.UTF-8 LANGUAGE=pt_BR:pt LC_ALL=pt_BR.UTF-8
-
-        # 3) Define variáveis de ambiente para todo o container
-        ENV LANG=pt_BR.UTF-8 \
-            LANGUAGE=pt_BR:pt \
-            LC_ALL=pt_BR.UTF-8
         
         RUN echo 'Realiza limpeza'
         RUN apt-get clean && rm -rf /var/lib/apt/lists/*
