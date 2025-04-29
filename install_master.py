@@ -2589,15 +2589,14 @@ CMD ["sh", "-c", "\
             && apt-get update
 
         # — 2) Instala suporte a pt_BR e IBus para XFCE —
-        RUN apt-get install -y --no-install-recommends \
+        RUN apt-get update \
+            && apt-get install -y --no-install-recommends \
             locales \
             language-pack-pt-base \
             hunspell-pt-br \
             ibus \
             ibus-gtk \
-            ibus-gtk3 \
-            xfce4-ibus \
-            && rm -rf /var/lib/apt/lists/*
+            ibus-gtk3 
 
         # — 3) Gera e define o locale pt_BR.UTF-8 —
         RUN sed -i 's/# pt_BR.UTF-8 UTF-8/pt_BR.UTF-8 UTF-8/' /etc/locale.gen \
