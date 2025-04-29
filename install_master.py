@@ -2602,7 +2602,7 @@ CMD ["sh", "-c", "\
         print("\nInstalação do Webtop concluída.")
         print(f"Acesse: http://<seu_servidor>:{porta}")
         print("Usuário: master")
-        print("Senha: ", senha)
+        print(f"Senha: {senha}")
         
     def desktop_ubuntu(self):
         """Instala e executa o desktop_ubuntu."""
