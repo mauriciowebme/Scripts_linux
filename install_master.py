@@ -2521,7 +2521,11 @@ CMD ["sh", "-c", "\
         dockerfile = textwrap.dedent("""\
         FROM linuxserver/webtop:ubuntu-xfce
 
-        # 1) Instala pacotes básicos
+        # Executa como root e evita prompts interativos
+        USER root
+        ENV DEBIAN_FRONTEND=noninteractive
+
+        # 1) Instala só os pacotes básicos
         RUN apt-get update && \
             apt-get install -y --no-install-recommends \
             wget \
@@ -2533,6 +2537,9 @@ CMD ["sh", "-c", "\
             lsb-release \
             xdg-utils && \
             apt-get clean && rm -rf /var/lib/apt/lists/*
+
+        # Volta a usar o usuário padrão do webtop
+        USER abc
         """)
 
         # aí você passa `dockerfile` pra API ou salva num arquivo Dockerfile    
