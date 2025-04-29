@@ -2560,32 +2560,25 @@ CMD ["sh", "-c", "\
             apt-get clean && rm -rf /var/lib/apt/lists/*
             
         RUN echo 'Instala atalho Google Chrome'
+        RUN echo 'Cria o wrapper sem here-doc'
         RUN mkdir -p /usr/local/bin && \
-            cat << 'EOF' > /usr/local/bin/chrome-wrapper.sh
-        #!/bin/bash
-        exec /usr/bin/google-chrome-stable \
-        --no-sandbox \
-        --disable-setuid-sandbox \
-        --disable-dev-shm-usage \
-        --disable-gpu \
-        "$@"
-        EOF
-        
-        RUN chmod +x /usr/local/bin/chrome-wrapper.sh
+            echo '#!/bin/bash' > /usr/local/bin/chrome-wrapper.sh && \
+            echo 'exec /usr/bin/google-chrome-stable --no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu "$@"' \
+            >> /usr/local/bin/chrome-wrapper.sh && \
+            chmod +x /usr/local/bin/chrome-wrapper.sh
 
-        # Cria o atalho de menu para o Chrome via wrapper
+        RUN echo 'Cria o atalho no menu apontando pro wrapper'
         RUN mkdir -p /usr/share/applications && \
-            cat << 'EOF' > /usr/share/applications/google-chrome.desktop
-        [Desktop Entry]
-        Name=Google Chrome
-        Comment=Navegador Web
-        Exec=/usr/local/bin/chrome-wrapper.sh %U
-        Icon=google-chrome
-        Type=Application
-        Categories=Network;WebBrowser
-        Terminal=false
-        StartupNotify=true
-        EOF && chmod +x /usr/share/applications/google-chrome.desktop
+            echo '[Desktop Entry]'                                       > /usr/share/applications/google-chrome.desktop && \
+            echo 'Name=Google Chrome'                                   >> /usr/share/applications/google-chrome.desktop && \
+            echo 'Comment=Navegador Web'                                >> /usr/share/applications/google-chrome.desktop && \
+            echo 'Exec=/usr/local/bin/chrome-wrapper.sh %U'             >> /usr/share/applications/google-chrome.desktop && \
+            echo 'Terminal=false'                                       >> /usr/share/applications/google-chrome.desktop && \
+            echo 'Type=Application'                                     >> /usr/share/applications/google-chrome.desktop && \
+            echo 'Icon=google-chrome'                                   >> /usr/share/applications/google-chrome.desktop && \
+            echo 'Categories=Network;WebBrowser'                        >> /usr/share/applications/google-chrome.desktop && \
+            echo 'StartupNotify=true'                                   >> /usr/share/applications/google-chrome.desktop && \
+            chmod +x /usr/share/applications/google-chrome.desktop
             
         RUN echo 'Realiza limpeza'
         RUN apt-get clean && rm -rf /var/lib/apt/lists/*
