@@ -2546,7 +2546,8 @@ CMD ["sh", "-c", "\
             libatk-bridge2.0-0 \
             libgtk-3-0 \
             xdg-utils \
-            libgbm-dev
+            libgbm-dev \
+            dbus-x11
             
         # realiza limpeza
         RUN apt-get clean && rm -rf /var/lib/apt/lists/*
