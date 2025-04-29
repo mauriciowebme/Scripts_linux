@@ -2613,8 +2613,8 @@ CMD ["sh", "-c", "\
         RUN echo 'Realiza limpeza'
         RUN apt-get clean && rm -rf /var/lib/apt/lists/*
         
-        # volta ao usuário “abc” (ou UID/GID correto)
-        USER abc
+        # # volta ao usuário “abc” (ou UID/GID correto)
+        # USER abc
         """)
 
         self.remove_container(f"webtop_{nome}")
