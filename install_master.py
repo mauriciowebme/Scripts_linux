@@ -2535,7 +2535,9 @@ CMD ["sh", "-c", "\
             wget \
             gdebi \
             python3 \
-            python3-pip 
+            python3-pip \
+            unzip p7zip-full unrar \
+            file-roller xarchiver thunar-archive-plugin
             
         RUN echo 'Instala dpendencias do chrome'
         RUN apt-get install -y \
