@@ -2631,6 +2631,7 @@ CMD ["sh", "-c", "\
             "-e", f"PASSWORD={senha}",
             "-p", f"{porta}:3000",
             "--shm-size", f"1g",
+            "-v", f"{self.install_principal}/webtop_{nome}/config:/config",
             "-d"
         ]
 
