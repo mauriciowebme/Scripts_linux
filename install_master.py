@@ -2533,10 +2533,6 @@ CMD ["sh", "-c", "\
             gdebi \
             python3 \
             python3-pip \
-            gnupg \
-            ca-certificates \
-            lsb-release \
-            xdg-utils && \
             apt-get clean && rm -rf /var/lib/apt/lists/*
 
         # Volta a usar o usuário padrão do webtop
