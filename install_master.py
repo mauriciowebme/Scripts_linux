@@ -2528,15 +2528,15 @@ CMD ["sh", "-c", "\
         RUN apt-get update && \
             apt-get upgrade -y
         
-        RUN echo 'Instala os pacotes básicos'
-        #--no-install-recommends
-        RUN apt-get install -y \
-            wget \
-            gdebi \
-            python3 \
-            python3-pip \
-            unzip p7zip-full unrar \
-            file-roller xarchiver thunar-archive-plugin
+        # RUN echo 'Instala os pacotes básicos'
+        # #--no-install-recommends
+        # RUN apt-get install -y \
+        #     wget \
+        #     gdebi \
+        #     python3 \
+        #     python3-pip \
+        #     unzip p7zip-full unrar \
+        #     file-roller xarchiver thunar-archive-plugin
             
         # RUN echo 'Instala dpendencias do chrome'
         # RUN apt-get install -y \
@@ -3672,7 +3672,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.213
+Versão 1.214
 ===========================================================================
 ===========================================================================
 ip server:
