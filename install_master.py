@@ -2582,6 +2582,33 @@ CMD ["sh", "-c", "\
             echo 'StartupNotify=true'                                   >> /usr/share/applications/google-chrome.desktop && \
             chmod +x /usr/share/applications/google-chrome.desktop
             
+        # 1) Instala o pacote de locales e os pacotes de idioma PT-BR
+        RUN apt-get update && apt-get install -y \
+            locales \
+            language-pack-gnome-pt \
+            language-pack-pt-base \
+            ibus \
+            ibus-gtk \
+            ibus-gtk3 \
+            hunspell-pt-br \
+            myspell-pt-br \
+        && rm -rf /var/lib/apt/lists/*
+
+        # 2) Habilita e gera o locale pt_BR.UTF-8
+        RUN sed -i 's/# pt_BR.UTF-8 UTF-8/pt_BR.UTF-8 UTF-8/' /etc/locale.gen \
+            && locale-gen pt_BR.UTF-8 \
+            && update-locale LANG=pt_BR.UTF-8 LANGUAGE=pt_BR:pt LC_ALL=pt_BR.UTF-8
+
+        # 3) Define variáveis de ambiente para todo o container
+        ENV LANG=pt_BR.UTF-8 \
+            LANGUAGE=pt_BR:pt \
+            LC_ALL=pt_BR.UTF-8
+
+        # 4) (Opcional) Configura o IBus para iniciar no XFCE e adiciona layout ABNT2
+        RUN apt-get update && apt-get install -y xfce4-ibus \
+            && ibus-setup --component=panel \
+            && echo "setxkbmap -layout br -variant abnt2" >> /etc/xdg/xfce4/xinitrc
+        
         RUN echo 'Realiza limpeza'
         RUN apt-get clean && rm -rf /var/lib/apt/lists/*
         """)
