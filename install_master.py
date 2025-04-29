@@ -2518,48 +2518,29 @@ CMD ["sh", "-c", "\
         senha   = input("Configure uma senha para acessar o webtop: ")
         porta = self.escolher_porta_disponivel()[0]
 
-        dockerfile = textwrap.dedent("""\
-        FROM linuxserver/webtop:ubuntu-xfce
+        dockerfile = """
+            FROM linuxserver/webtop:ubuntu-xfce
 
-        # 1) Executa como root e evita prompts interativos
-        USER root
-        ENV DEBIAN_FRONTEND=noninteractive
-
-        # 2) Instala pacotes básicos + dependências que o Chrome precisa
-        RUN apt-get update && \
+            # Instalação de pacotes básicos
+            RUN apt-get update && \
             apt-get install -y --no-install-recommends \
-            wget \
-            gdebi-core \
-            python3 python3-pip \
-            rm -rf /var/lib/apt/lists/*
+                wget \
+                gdebi \
+                python3 \
+                python3-pip \
+                gnupg \
+                ca-certificates && \
+            apt-get clean && rm -rf /var/lib/apt/lists/*
 
-        # 3) Adiciona repositório do Chrome e instala o google-chrome-stable
-        RUN wget -q -O /tmp/chrome.key https://dl.google.com/linux/linux_signing_key.pub && \
-            mkdir -p /etc/apt/keyrings && \
-            gpg --dearmor < /tmp/chrome.key > /etc/apt/keyrings/google-chrome.gpg && \
-            echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] \
-        https://dl.google.com/linux/chrome/deb/ stable main" \
-            > /etc/apt/sources.list.d/google-chrome.list && \
-            apt-get update && \
-            apt-get install -y --no-install-recommends google-chrome-stable && \
-            rm -rf /var/lib/apt/lists/* /tmp/chrome.key
-
-        # 4) Gera o wrapper sem here-doc, usando echo
-        RUN mkdir -p /usr/local/bin && \
-            echo '#!/bin/bash' > /usr/local/bin/chrome-wrapper.sh && \
-            echo 'exec /usr/bin/google-chrome-stable --no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu "$@"' \
-            >> /usr/local/bin/chrome-wrapper.sh && \
-            chmod +x /usr/local/bin/chrome-wrapper.sh && \
-            mv /usr/bin/google-chrome-stable /usr/bin/google-chrome-stable.orig && \
-            ln -s /usr/local/bin/chrome-wrapper.sh /usr/bin/google-chrome-stable
-
-        # 5) Volta a usar o usuário padrão do webtop
-        USER abc
-        """)
-
-        # aí você passa `dockerfile` pra API ou salva num arquivo Dockerfile    
-        print(dockerfile)
-
+            # Adiciona o repositório do Google Chrome de forma segura e instala
+            RUN wget -q -O /tmp/chrome.key https://dl.google.com/linux/linux_signing_key.pub && \
+                mkdir -p /etc/apt/keyrings && \
+                gpg --dearmor < /tmp/chrome.key > /etc/apt/keyrings/google-chrome.gpg && \
+                echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
+                apt-get update && \
+                apt-get install -y google-chrome-stable && \
+                apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/chrome.key
+            """
             
         run_args = [
             "--name", f"webtop_{nome}",
