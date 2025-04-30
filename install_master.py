@@ -2716,6 +2716,7 @@ CMD ["sh", "-c", "\
         entrypoint.append("wait")
         # Concatena tudo numa única string
         entrypoint = " \\\n  ".join(entrypoint)
+        print(entrypoint)
         
         run_args = [
             "--name", "rclone",
