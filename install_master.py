@@ -187,6 +187,9 @@ class Docker(Executa_comados):
         print("\n" + "*" * 40)
         print(" " * 5 + "---> Executando comando: <---")
         print(" " * 5 + f"{run_cmd}")
+        if dockerfile_str:
+            print(" " * 5 + "---> Executando Dockerfile: <---")
+            print(" " * 5 + f"{dockerfile_str.splitlines()[0]} ...")
         print("*" * 40 + "\n")
         
         if dockerfile_str:
