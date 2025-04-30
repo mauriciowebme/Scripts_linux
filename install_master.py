@@ -3508,7 +3508,6 @@ class Sistema(Docker, Executa_comados):
         destino: str = None,
         delete: bool = True,
         verbose: bool = True,
-        human_readable: bool = True,
         extra_opts: Union[List[str], None] = None
     ) -> None:
         """
@@ -3524,8 +3523,6 @@ class Sistema(Docker, Executa_comados):
             Se True, remove em destino arquivos que não existem mais em origem.
         verbose : bool, opcional (padrão True)
             Se True, inclui '-v' para saída detalhada.
-        human_readable : bool, opcional (padrão True)
-            Se True, inclui '-h' para tamanhos em formato legível (KB, MB, …).
         extra_opts : List[str], opcional
             Lista de opções adicionais a passar ao rsync (ex.: ['--exclude', '*.tmp']).
 
@@ -3561,8 +3558,8 @@ class Sistema(Docker, Executa_comados):
 
         if verbose:
             cmd.append("-v")
-        if human_readable:
-            cmd.append("-h")
+        # inclui '-h' para tamanhos em formato legível (KB, MB, …).
+        cmd.append("-h")
         if delete:
             cmd.append("--delete")
         if extra_opts:
