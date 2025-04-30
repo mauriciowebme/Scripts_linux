@@ -191,41 +191,40 @@ class Docker(Executa_comados):
             return None
     
     def build_and_run_dockerfile(self,
-            dockerfile_str: str,
-            run_cmd: Optional[List[str]] = None,
-            workdir: Optional[Path] = None,
-            tag: Optional[str] = None,
+            run_cmd: List[str],
+            dockerfile_str: Optional[str] = None,
         ) -> None:
         """
-        Gera Dockerfile → build → run.
-        Se `tag` for omitido, cria automaticamente um ID:
-            img_YYYYMMDD_HHMMSS
+        Build + run ou somente run de um container Docker:
+        - Se `dockerfile_str` fornecido: monta Dockerfile
+            em um diretório temporário, gera imagem com tag automática
+            e executa.
+        - Se `dockerfile_str` for None: pula o build e executa
+            `docker run` com o próprio `run_cmd`, que deve terminar
+            com o nome da imagem.
         """
-        # Tag automática se não veio nada
-        if tag is None:
+        if dockerfile_str:
+            # Tag automática se não veio nada
             tag = f"img_{datetime.now():%Y%m%d%H%M%S}"
 
-        # 1) contexto
-        if workdir is None:
+            # 1) cria diretório temporário
             tmp = tempfile.TemporaryDirectory()
             ctx = Path(tmp.name)
-        else:
-            ctx = Path(workdir)
-            ctx.mkdir(parents=True, exist_ok=True)
 
-        # 2) salva Dockerfile
-        (ctx / "Dockerfile").write_text(textwrap.dedent(dockerfile_str).lstrip())
+            # 2) salva Dockerfile
+            (ctx / "Dockerfile").write_text(textwrap.dedent(dockerfile_str).lstrip())
 
-        # 3) build
-        subprocess.run(["docker", "build", "-t", tag, "."], cwd=ctx, check=True)
+            # 3) build
+            subprocess.run(["docker", "build", "-t", tag, "."], cwd=ctx, check=True)
 
-        # 4) run
-        run_cmd = run_cmd or []
-        subprocess.run(["docker", "run", *run_cmd, tag], check=True)
+            # 4) run
+            subprocess.run(["docker", "run", *run_cmd, tag], check=True)
 
-        # 5) fecha tmp, se usado
-        if workdir is None:
+            # 5) remove o diretório temporário
             tmp.cleanup()
+        else:
+            # Se não houver Dockerfile, apenas executa o comando run
+            subprocess.run(["docker", "run", *run_cmd], check=True)
 
     def cria_rede_docker(self, associar_todos=False, associar_container_nome=False, numero_rede=None):
         # Verifica se a rede já existe
