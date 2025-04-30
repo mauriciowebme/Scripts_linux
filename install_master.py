@@ -12,7 +12,7 @@ import re
 import tempfile
 import os, sys, time, subprocess, importlib.util, textwrap
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 from datetime import datetime
 
 def check_for_update():
@@ -3503,6 +3503,85 @@ class Sistema(Docker, Executa_comados):
         # Executar o comando sensors
         self.executar_comandos(["speedtest "], comando_direto=True)
 
+    def rsync_sync(self,
+        origem: str = None,
+        destino: str = None,
+        delete: bool = True,
+        verbose: bool = True,
+        human_readable: bool = True,
+        extra_opts: Union[List[str], None] = None
+    ) -> None:
+        """
+        Sincroniza o conteúdo de 'origem' para 'destino' usando rsync.
+
+        Parâmetros:
+        -----------
+        origem : str
+            Caminho da pasta de origem. Pode terminar com '/' ou não.
+        destino : str
+            Caminho da pasta de destino. Pode terminar com '/' ou não.
+        delete : bool, opcional (padrão True)
+            Se True, remove em destino arquivos que não existem mais em origem.
+        verbose : bool, opcional (padrão True)
+            Se True, inclui '-v' para saída detalhada.
+        human_readable : bool, opcional (padrão True)
+            Se True, inclui '-h' para tamanhos em formato legível (KB, MB, …).
+        extra_opts : List[str], opcional
+            Lista de opções adicionais a passar ao rsync (ex.: ['--exclude', '*.tmp']).
+
+        Lança:
+        ------
+        subprocess.CalledProcessError
+            Se o comando rsync retornar código de erro.
+        """
+        # Verifica se o rsync está instalado
+        if not shutil.which("rsync"):
+            print("rsync não encontrado. Instalando...")
+            self.executar_comandos(["sudo apt update", "sudo apt install -y rsync"], comando_direto=True)
+            if not shutil.which("rsync"):
+                print("Falha ao instalar rsync. Abortando operação.")
+                return
+
+        # Solicita caminhos se não forem fornecidos
+        if origem is None:
+            origem = input("Digite o caminho da pasta de origem: ").strip()
+        if destino is None:
+            destino = input("Digite o caminho da pasta de destino: ").strip()
+
+        # Verifica se os caminhos existem
+        if not os.path.exists(origem):
+            print(f"Erro: O caminho de origem '{origem}' não existe.")
+            return
+        
+        # Cria o diretório de destino se não existir
+        os.makedirs(destino, exist_ok=True)
+
+        # Base do comando
+        cmd = ["rsync", "-a"]
+
+        if verbose:
+            cmd.append("-v")
+        if human_readable:
+            cmd.append("-h")
+        if delete:
+            cmd.append("--delete")
+        if extra_opts:
+            cmd.extend(extra_opts)
+
+        # Garante que copiamos o conteúdo interno, incluindo ocultos
+        origem_path = origem.rstrip("/") + "/"
+        destino_path = destino.rstrip("/") + "/"
+        cmd.extend([origem_path, destino_path])
+
+        print(f"Sincronizando: {origem_path} → {destino_path}")
+        
+        # Executa o rsync
+        try:
+            subprocess.run(cmd, check=True)
+            print("Sincronização concluída com sucesso.")
+        except subprocess.CalledProcessError as e:
+            print(f"Erro durante a sincronização: {e}")
+
     def setup_inicializar_service(self):
         """
         1. Cria /install_principal/inicializar.py (com log simples).
@@ -3619,6 +3698,7 @@ class Sistema(Docker, Executa_comados):
             ("Verificar velocidade da internet", self.verifica_velocidade),
             ("configura ssh", self.configura_ssh),
             ("Cria o .py para inicializar", self.setup_inicializar_service),
+            ("Faz copia inteligente com rsync", self.rsync_sync),
         ]
         self.mostrar_menu(opcoes_menu)
         
