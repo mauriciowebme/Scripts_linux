@@ -2704,14 +2704,18 @@ CMD ["sh", "-c", "\
 
         # 2) Para cada seção (remote), cria a pasta no host
         base_mount = "/mnt/rclone_remotes"
-        mount_cmds = []
+        entrypoint = []
         for remote in config.sections():
             # remote é algo como 'gdrive', 'nextcloud', 'dropbox', etc.
             dest = os.path.join(base_mount, remote)
             os.makedirs(dest, exist_ok=True)
             os.chmod(dest, 0o777)
-            mount_cmds += ["mount", f"{remote}:", f"/data/{remote}", "&"]
-            
+            entrypoint.append(f"rclone mount {remote}: /data/{remote} & ")
+        
+        entrypoint.append("wait")
+        # Concatena tudo numa única string
+        entrypoint = " \\\n  ".join(entrypoint)
+        
         run_args = [
             "--name", "rclone",
             "--restart=unless-stopped",
@@ -2726,8 +2730,8 @@ CMD ["sh", "-c", "\
             "--security-opt", "apparmor:unconfined",
             "-d",
             "rclone/rclone:latest",
+            "sh", "-c", entrypoint
         ]
-        run_args += mount_cmds
         
         self.executar_comandos_run_OrAnd_dockerfile( run_cmd=run_args )
 
