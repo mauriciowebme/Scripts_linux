@@ -2729,8 +2729,9 @@ CMD ["sh", "-c", "\
             "--cap-add", "SYS_ADMIN",
             "--security-opt", "apparmor:unconfined",
             "-d",
+            "--entrypoint", "sh",
             "rclone/rclone:latest",
-            "sh", "-c", entrypoint
+            "-c", entrypoint
         ]
         
         self.executar_comandos_run_OrAnd_dockerfile( run_cmd=run_args )
