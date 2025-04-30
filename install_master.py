@@ -2674,9 +2674,11 @@ CMD ["sh", "-c", "\
         
     def rclone(self):
         """Instala e executa o rclone."""
-        print("Iniciando instalação rclone:")
+        print("\nIniciando instalação rclone:")
+        print(40*"*")
         print(40*"*")
         print("Para mais informações acesse: https://rclone.org")
+        print(40*"*")
         print(40*"*")
 
         run_args1 = [
