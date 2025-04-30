@@ -2679,6 +2679,7 @@ CMD ["sh", "-c", "\
             
         run_args1 = [
             "--name", "rclone-setup",
+            "-it",
             "-v", f"{self.install_principal}/rclone/config:/config/rclone",
             "--rm",
             "rclone/rclone:latest",
