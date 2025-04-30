@@ -2709,6 +2709,7 @@ CMD ["sh", "-c", "\
             # remote é algo como 'gdrive', 'nextcloud', 'dropbox', etc.
             dest = os.path.join(base_mount, remote)
             os.makedirs(dest, exist_ok=True)
+            os.chmod(dest, 0o777)
             mount_cmds += ["mount", f"{remote}:", f"/data/{remote}", "&"]
             
         run_args = [
