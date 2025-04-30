@@ -2699,10 +2699,12 @@ CMD ["sh", "-c", "\
 
         # 2) Para cada seção (remote), cria a pasta no host
         base_mount = "/mnt/rclone_remotes"
+        mount_cmds = []
         for remote in config.sections():
             # remote é algo como 'gdrive', 'nextcloud', 'dropbox', etc.
             dest = os.path.join(base_mount, remote)
             os.makedirs(dest, exist_ok=True)
+            mount_cmds += ["mount", f"{remote}:" f"/data/{remote}", "&"]
 
         run_args = [
             "--name", "rclone",
@@ -2718,10 +2720,9 @@ CMD ["sh", "-c", "\
             "--security-opt", "apparmor:unconfined",
             "-d",
             "rclone/rclone:latest",
-            "mount", "gdrive:", "/data/gdrive"
         ]
         
-        os.makedirs("/mnt/rclone_remotes/gdrive", exist_ok=True)
+        run_args += mount_cmds
 
         self.remove_container("rclone-setup")
         self.remove_container("rclone")
