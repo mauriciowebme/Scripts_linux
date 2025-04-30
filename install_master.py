@@ -2708,10 +2708,7 @@ CMD ["sh", "-c", "\
         for remote in config.sections():
             # remote é algo como 'gdrive', 'nextcloud', 'dropbox', etc.
             dest = os.path.join(base_mount, remote)
-            try:
-                os.makedirs(dest, exist_ok=True)
-            except Exception as e:
-                print(f"Erro ao criar pasta {dest}: {e}")
+            os.makedirs(dest, exist_ok=True)
             mount_cmds += ["mount", f"{remote}:", f"/data/{remote}", "&"]
             
         run_args = [
