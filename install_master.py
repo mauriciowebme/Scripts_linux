@@ -2713,14 +2713,15 @@ CMD ["sh", "-c", "\
             "-e", "RCLONE_CONFIG=/config/rclone/rclone.conf",
             "-v", f"{self.install_principal}/rclone/config:/config/rclone:ro",
             "-v", "/mnt/rclone_remotes:/data:shared",
-            "--user", f"{os.getuid()}:{os.getgid()}",
             "-v", "/etc/passwd:/etc/passwd:ro",
             "-v", "/etc/group:/etc/group:ro",
+            "--user", f"{os.getuid()}:{os.getgid()}",
             "--device", "/dev/fuse",
             "--cap-add", "SYS_ADMIN",
             "--security-opt", "apparmor:unconfined",
+            "-d",
             "rclone/rclone:latest",
-            "mount", "gdrive:", "/mnt/remotes/gdrive"
+            "mount", "gdrive:", "/data/gdrive"
         ]
 
         self.remove_container("rclone-setup")
