@@ -2681,6 +2681,9 @@ CMD ["sh", "-c", "\
         print("Para mais informações acesse: https://rclone.org")
         print(40*"*")
         print(40*"*")
+        
+        self.remove_container("rclone-setup")
+        self.remove_container("rclone")
 
         conf_path = f"{self.install_principal}/rclone/config"
         run_args1 = [
@@ -2691,6 +2694,8 @@ CMD ["sh", "-c", "\
             "rclone/rclone:latest",
             "config",
         ]
+
+        self.executar_comandos_run_OrAnd_dockerfile( run_cmd=run_args1 )
         
         # 1) Carrega o arquivo
         read_conf_path = os.path.join(conf_path, "rclone.conf")
@@ -2705,7 +2710,7 @@ CMD ["sh", "-c", "\
             dest = os.path.join(base_mount, remote)
             os.makedirs(dest, exist_ok=True)
             mount_cmds += ["mount", f"{remote}:", f"/data/{remote}", "&"]
-
+            
         run_args = [
             "--name", "rclone",
             "--restart=unless-stopped",
@@ -2721,13 +2726,8 @@ CMD ["sh", "-c", "\
             "-d",
             "rclone/rclone:latest",
         ]
-        
         run_args += mount_cmds
-
-        self.remove_container("rclone-setup")
-        self.remove_container("rclone")
-
-        self.executar_comandos_run_OrAnd_dockerfile( run_cmd=run_args1 )
+        
         self.executar_comandos_run_OrAnd_dockerfile( run_cmd=run_args )
 
         print("\nInstalação do rclone concluída.")
