@@ -2711,7 +2711,8 @@ CMD ["sh", "-c", "\
             subprocess.run(["fusermount3", "-u", dest], check=False)
             os.makedirs(dest, exist_ok=True)
             os.chmod(dest, 0o777)
-            entrypoint.append(f"rclone mount {remote}: /data/{remote} --no-update-config & ")
+            #  --no-update-config
+            entrypoint.append(f"rclone mount {remote}: /data/{remote} & ")
         
         entrypoint.append("wait")
         # Concatena tudo numa única string
