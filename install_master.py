@@ -173,24 +173,7 @@ class Docker(Executa_comados):
         self.redes_docker = ['_traefik', 'interno']
         self.atmoz_sftp_arquivo_conf = os.path.join(f"{self.install_principal}/atmoz_sftp/", "users.conf")
         
-    def escolher_porta_disponivel(self, inicio=40000, fim=40500, quantidade=1):
-        portas_disponiveis = []
-        print(f"Escolhendo {quantidade} portas disponíveis entre {inicio} e {fim}...")
-        for porta in range(inicio, fim + 1):
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                # Tenta se conectar na porta; se falhar, a porta está disponível
-                if s.connect_ex(('localhost', porta)) != 0:
-                    portas_disponiveis.append(porta)
-                    if len(portas_disponiveis) == quantidade:
-                        print(f"Portas {portas_disponiveis} estão disponíveis e serão usadas.")
-                        return portas_disponiveis
-        
-        # Se não houver portas suficientes disponíveis no intervalo
-        if len(portas_disponiveis) < quantidade:
-            print(f"Nenhuma porta disponível entre {inicio} e {fim}.")
-            return None
-    
-    def build_and_run_dockerfile(self,
+    def executar_comandos_run_OrAnd_dockerfile(self,
             run_cmd: List[str],
             dockerfile_str: Optional[str] = None,
         ) -> None:
@@ -225,6 +208,23 @@ class Docker(Executa_comados):
         else:
             # Se não houver Dockerfile, apenas executa o comando run
             subprocess.run(["docker", "run", *run_cmd], check=True)
+        
+    def escolher_porta_disponivel(self, inicio=40000, fim=40500, quantidade=1):
+        portas_disponiveis = []
+        print(f"Escolhendo {quantidade} portas disponíveis entre {inicio} e {fim}...")
+        for porta in range(inicio, fim + 1):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                # Tenta se conectar na porta; se falhar, a porta está disponível
+                if s.connect_ex(('localhost', porta)) != 0:
+                    portas_disponiveis.append(porta)
+                    if len(portas_disponiveis) == quantidade:
+                        print(f"Portas {portas_disponiveis} estão disponíveis e serão usadas.")
+                        return portas_disponiveis
+        
+        # Se não houver portas suficientes disponíveis no intervalo
+        if len(portas_disponiveis) < quantidade:
+            print(f"Nenhuma porta disponível entre {inicio} e {fim}.")
+            return None
 
     def cria_rede_docker(self, associar_todos=False, associar_container_nome=False, numero_rede=None):
         # Verifica se a rede já existe
@@ -2656,7 +2656,7 @@ CMD ["sh", "-c", "\
             "-d"
         ]
 
-        self.build_and_run_dockerfile(
+        self.executar_comandos_run_OrAnd_dockerfile(
             dockerfile_str=dockerfile,
             run_cmd=run_args
         )
@@ -2707,7 +2707,7 @@ CMD ["sh", "-c", "\
 
         self.remove_container(f"ubuntu-desktop_{nome}")
 
-        self.build_and_run_dockerfile(
+        self.executar_comandos_run_OrAnd_dockerfile(
             dockerfile_str=dockerfile,
             run_cmd=run_args
         )
