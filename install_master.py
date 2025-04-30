@@ -2666,56 +2666,43 @@ CMD ["sh", "-c", "\
         print("Usuário: master")
         print(f"Senha: {senha}")
         
-    def desktop_ubuntu(self):
-        """Instala e executa o desktop_ubuntu."""
-        print("Iniciando instalação desktop_ubuntu:")
+    def rclone(self):
+        """Instala e executa o rclone."""
+        print("Iniciando instalação rclone:")
 
-        nome = input("Digite um nome para o container: ")
-        # senha   = input("Configure uma senha para acessar o desktop_ubuntu: ")
-        porta = self.escolher_porta_disponivel()[0]
-
-        dockerfile = """
-            FROM ubuntu:22.04
-            ENV DEBIAN_FRONTEND=noninteractive
-
-            RUN apt update && apt install -y \
-                ubuntu-desktop gnome-session tigervnc-standalone-server \
-                dbus-x11 x11-xserver-utils novnc websockify && \
-                # cria usuário e configuração VNC
-                useradd -m docker && echo "docker:docker" | chpasswd && \
-                mkdir -p /home/docker/.vnc && \
-                echo "docker" | vncpasswd -f > /home/docker/.vnc/passwd && \
-                chown -R docker:docker /home/docker && \
-                chmod 600 /home/docker/.vnc/passwd
-
-            USER docker
-            WORKDIR /home/docker
-
-            EXPOSE 5901 6901
-
-            CMD bash -lc "\
-                vncserver :1 -geometry 1920x1080 -depth 24 && \
-                /usr/share/novnc/utils/launch.sh --listen 6901 --vnc localhost:5901"
-            """
             
-        run_args = [
-            "--name", f"ubuntu-desktop_{nome}",
-            "--restart=unless-stopped",
-            "-p", f"{porta}:6901",
-            "-d"
+        run_args1 = [
+            "--name", "rclone-setup",
+            "-v", f"{self.install_principal}/rclone/config:/config/rclone",
+            "--rm",
+            "rclone/rclone:latest",
+            "config",
         ]
+        
+        run_args = [
+            "--name", "rclone",
+            "--restart=unless-stopped",
+            "--cap-add", "SYS_ADMIN",
+            "--device", "/dev/fuse",
+            "-e", "RCLONE_CONFIG=/config/rclone/rclone.conf",
+            "-v", f"{self.install_principal}/rclone/config:/config/rclone:ro",
+            "-v", "/mnt/rclone_remotes:/mnt/remotes",
+            "-d",
+            "rclone/rclone:latest",
+            "mount",
+            "gdrive:",
+            "/mnt/remotes/gdrive",
+            "--allow-other",
+            "--vfs-cache-mode", "writes"
+        ]
+        
+        self.remove_container("rclone-setup")
+        self.remove_container("rclone")
 
-        self.remove_container(f"ubuntu-desktop_{nome}")
+        self.executar_comandos_run_OrAnd_dockerfile( run_cmd=run_args1 )
+        self.executar_comandos_run_OrAnd_dockerfile( run_cmd=run_args )
 
-        self.executar_comandos_run_OrAnd_dockerfile(
-            dockerfile_str=dockerfile,
-            run_cmd=run_args
-        )
-
-        print("\nInstalação do desktop_ubuntu concluída.")
-        print(f"Acesse:  http://<IP-ou-localhost>:{porta}/vnc.html")
-        print("Usuário: master")
-        # print("Senha:   ", senha)
+        print("\nInstalação do rclone concluída.")
     
     def instala_selenium_firefox(self):
         print("Iniciando instalação selenium_firefox:")
@@ -3631,7 +3618,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala Redis Docker", self.instala_redis_docker),
             ("Instala selenium-firefox", self.instala_selenium_firefox),
             ("Instala deskto ubuntu webtop", self.desktop_ubuntu_webtop),
-            ("Instala desktoubuntu teste", self.desktop_ubuntu),
+            ("Instala rclone", self.rclone),
         ]
         self.mostrar_menu(opcoes_menu)
     
