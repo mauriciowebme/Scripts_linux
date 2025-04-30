@@ -2726,7 +2726,7 @@ CMD ["sh", "-c", "\
             "--name", "rclone",
             "--restart=unless-stopped",
             "-e", "RCLONE_CONFIG=/config/rclone/rclone.conf",
-            "-v", f"{conf_path}:/config/rclone:ro",
+            "-v", f"{conf_path}:/config/rclone",
             "-v", "/mnt/rclone_remotes:/data:shared",
             "-v", "/etc/passwd:/etc/passwd:ro",
             "-v", "/etc/group:/etc/group:ro",
