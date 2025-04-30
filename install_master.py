@@ -3508,7 +3508,8 @@ class Sistema(Docker, Executa_comados):
         destino: str = None,
         delete: bool = True,
         verbose: bool = True,
-        extra_opts: Union[List[str], None] = None
+        extra_opts: Union[List[str], None] = None,
+        max_retries: int = 3
     ) -> None:
         """
         Sincroniza o conteúdo de 'origem' para 'destino' usando rsync.
@@ -3525,11 +3526,13 @@ class Sistema(Docker, Executa_comados):
             Se True, inclui '-v' para saída detalhada.
         extra_opts : List[str], opcional
             Lista de opções adicionais a passar ao rsync (ex.: ['--exclude', '*.tmp']).
+        max_retries : int, opcional (padrão 3)
+            Número máximo de tentativas em caso de falha.
 
         Lança:
         ------
         subprocess.CalledProcessError
-            Se o comando rsync retornar código de erro.
+            Se o comando rsync retornar código de erro após todas as tentativas.
         """
         # Verifica se o rsync está instalado
         if not shutil.which("rsync"):
@@ -3560,6 +3563,10 @@ class Sistema(Docker, Executa_comados):
             cmd.append("-v")
         # inclui '-h' para tamanhos em formato legível (KB, MB, …).
         cmd.append("-h")
+        # Adiciona a opção de progresso
+        cmd.append("--progress")
+        # Adiciona informação parcial para grandes arquivos
+        cmd.append("--info=progress2")
         if delete:
             cmd.append("--delete")
         if extra_opts:
@@ -3572,12 +3579,20 @@ class Sistema(Docker, Executa_comados):
 
         print(f"Sincronizando: {origem_path} → {destino_path}")
         
-        # Executa o rsync
-        try:
-            subprocess.run(cmd, check=True)
-            print("Sincronização concluída com sucesso.")
-        except subprocess.CalledProcessError as e:
-            print(f"Erro durante a sincronização: {e}")
+        # Executa o rsync com tentativas de repetição
+        for tentativa in range(1, max_retries + 1):
+            try:
+                # Usando subprocess.run sem capturar output para exibir progresso no terminal
+                subprocess.run(cmd, check=True)
+                print("Sincronização concluída com sucesso.")
+                return  # Sai da função se bem-sucedido
+            except subprocess.CalledProcessError as e:
+                if tentativa < max_retries:
+                    print(f"Erro durante a tentativa {tentativa}: {e}")
+                    print(f"Aguardando 5 segundos antes de tentar novamente...")
+                    time.sleep(5)
+                else:
+                    print(f"Falha após {max_retries} tentativas. Último erro: {e}")
 
     def setup_inicializar_service(self):
         """
