@@ -2710,9 +2710,9 @@ CMD ["sh", "-c", "\
             dest = os.path.join(base_mount, remote)
             try:
                 os.makedirs(dest, exist_ok=True)
-                mount_cmds += ["mount", f"{remote}:", f"/data/{remote}", "&"]
             except Exception as e:
                 print(f"Erro ao criar pasta {dest}: {e}")
+            mount_cmds += ["mount", f"{remote}:", f"/data/{remote}", "&"]
             
         run_args = [
             "--name", "rclone",
