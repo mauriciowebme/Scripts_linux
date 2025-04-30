@@ -2708,6 +2708,7 @@ CMD ["sh", "-c", "\
         for remote in config.sections():
             # remote é algo como 'gdrive', 'nextcloud', 'dropbox', etc.
             dest = os.path.join(base_mount, remote)
+            subprocess.run(["fusermount3", "-u", dest], check=False)
             os.makedirs(dest, exist_ok=True)
             os.chmod(dest, 0o777)
             entrypoint.append(f"rclone mount {remote}: /data/{remote} --no-update-config & ")
