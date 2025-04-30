@@ -2535,6 +2535,7 @@ CMD ["sh", "-c", "\
             gdebi \
             python3 \
             python3-pip \
+            htop \
             unzip p7zip-full unrar \
             file-roller xarchiver thunar-archive-plugin
             
