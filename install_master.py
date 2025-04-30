@@ -2723,6 +2723,8 @@ CMD ["sh", "-c", "\
             "rclone/rclone:latest",
             "mount", "gdrive:", "/data/gdrive"
         ]
+        
+        os.makedirs("/mnt/rclone_remotes/gdrive", exist_ok=True)
 
         self.remove_container("rclone-setup")
         self.remove_container("rclone")
