@@ -2706,7 +2706,23 @@ CMD ["sh", "-c", "\
             "--allow-other",
             "--vfs-cache-mode", "writes"
         ]
-        
+
+        run_args = [
+            "--name", "rclone",
+            "--restart=unless-stopped",
+            "-e", "RCLONE_CONFIG=/config/rclone/rclone.conf",
+            "-v", f"{self.install_principal}/rclone/config:/config/rclone:ro",
+            "-v", "/mnt/rclone_remotes:/data:shared",
+            "--user", f"{os.getuid()}:{os.getgid()}",
+            "-v", "/etc/passwd:/etc/passwd:ro",
+            "-v", "/etc/group:/etc/group:ro",
+            "--device", "/dev/fuse",
+            "--cap-add", "SYS_ADMIN",
+            "--security-opt", "apparmor:unconfined",
+            "rclone/rclone:latest",
+            "mount", "gdrive:", "/mnt/remotes/gdrive"
+        ]
+
         self.remove_container("rclone-setup")
         self.remove_container("rclone")
 
