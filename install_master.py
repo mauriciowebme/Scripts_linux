@@ -173,10 +173,7 @@ class Docker(Executa_comados):
         self.redes_docker = ['_traefik', 'interno']
         self.atmoz_sftp_arquivo_conf = os.path.join(f"{self.install_principal}/atmoz_sftp/", "users.conf")
         
-    def executar_comandos_run_OrAnd_dockerfile(self,
-            run_cmd: List[str],
-            dockerfile_str: Optional[str] = None,
-        ) -> None:
+    def executar_comandos_run_OrAnd_dockerfile(self, run_cmd: List[str], dockerfile_str: Optional[str] = None, ) -> None:
         """
         Build + run ou somente run de um container Docker:
         - Se `dockerfile_str` fornecido: monta Dockerfile
@@ -186,6 +183,12 @@ class Docker(Executa_comados):
             `docker run` com o próprio `run_cmd`, que deve terminar
             com o nome da imagem.
         """
+        
+        print("\n" + "*" * 40)
+        print(" " * 5 + "---> Executando comando: <---")
+        print(" " * 5 + f"{run_cmd}")
+        print("*" * 40 + "\n")
+        
         if dockerfile_str:
             # Tag automática se não veio nada
             tag = f"img_{datetime.now():%Y%m%d%H%M%S}"
