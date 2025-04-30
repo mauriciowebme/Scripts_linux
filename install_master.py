@@ -2704,13 +2704,16 @@ CMD ["sh", "-c", "\
 
         # 2) Para cada seção (remote), cria a pasta no host
         base_mount = "/mnt/rclone_remotes"
+        base_container = "/data"
         entrypoint = []
         for remote in config.sections():
             # remote é algo como 'gdrive', 'nextcloud', 'dropbox', etc.
             dest = os.path.join(base_mount, remote)
+            dest_cont = os.path.join(base_container, remote)
             subprocess.run(["fusermount3", "-u", dest], check=False)
             os.makedirs(dest, exist_ok=True)
             os.chmod(dest, 0o777)
+            entrypoint.append(f"mkdir -p {dest_cont} && chmod 777 {dest_cont}; ")
             entrypoint.append(f"rclone --no-update-config mount {remote}: /data/{remote} & ")
         
         entrypoint.append("wait")
