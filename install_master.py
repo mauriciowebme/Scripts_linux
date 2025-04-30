@@ -2714,7 +2714,8 @@ CMD ["sh", "-c", "\
             os.makedirs(dest, exist_ok=True)
             os.chmod(dest, 0o777)
             entrypoint.append(f"mkdir -p {dest_cont} && chmod 777 {dest_cont}; ")
-            entrypoint.append(f"rclone --no-update-config mount {remote}: /data/{remote} & ")
+            # --no-update-config
+            entrypoint.append(f"rclone mount {remote}: /data/{remote} & ")
         
         entrypoint.append("wait")
         # Concatena tudo numa única string
