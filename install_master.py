@@ -3,6 +3,7 @@
 # Execute com:
 # wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
+import configparser
 import shutil
 import socket
 import json
@@ -2681,37 +2682,33 @@ CMD ["sh", "-c", "\
         print(40*"*")
         print(40*"*")
 
+        conf_path = f"{self.install_principal}/rclone/config"
         run_args1 = [
             "--name", "rclone-setup",
             "-it",
-            "-v", f"{self.install_principal}/rclone/config:/config/rclone",
+            "-v", f"{conf_path}:/config/rclone",
             "--rm",
             "rclone/rclone:latest",
             "config",
         ]
         
-        run_args = [
-            "--name", "rclone",
-            "--restart=unless-stopped",
-            "--cap-add", "SYS_ADMIN",
-            "--device", "/dev/fuse",
-            "-e", "RCLONE_CONFIG=/config/rclone/rclone.conf",
-            "-v", f"{self.install_principal}/rclone/config:/config/rclone:ro",
-            "-v", "/mnt/rclone_remotes:/mnt/remotes",
-            "-d",
-            "rclone/rclone:latest",
-            "mount",
-            "gdrive:",
-            "/mnt/remotes/gdrive",
-            "--allow-other",
-            "--vfs-cache-mode", "writes"
-        ]
+        # 1) Carrega o arquivo
+        read_conf_path = os.path.join(conf_path, "rclone.conf")
+        config = configparser.ConfigParser()
+        config.read(read_conf_path)
+
+        # 2) Para cada seção (remote), cria a pasta no host
+        base_mount = "/mnt/rclone_remotes"
+        for remote in config.sections():
+            # remote é algo como 'gdrive', 'nextcloud', 'dropbox', etc.
+            dest = os.path.join(base_mount, remote)
+            os.makedirs(dest, exist_ok=True)
 
         run_args = [
             "--name", "rclone",
             "--restart=unless-stopped",
             "-e", "RCLONE_CONFIG=/config/rclone/rclone.conf",
-            "-v", f"{self.install_principal}/rclone/config:/config/rclone:ro",
+            "-v", f"{conf_path}:/config/rclone:ro",
             "-v", "/mnt/rclone_remotes:/data:shared",
             "-v", "/etc/passwd:/etc/passwd:ro",
             "-v", "/etc/group:/etc/group:ro",
