@@ -2555,12 +2555,12 @@ CMD ["sh", "-c", "\
         os.chmod(f"{self.install_principal}/ubuntu_{nome}", 0o777)
         self.remove_container(f"ubuntu_{nome}")
         porta = self.escolher_porta_disponivel()[0]
+        
         run_args = [
             "--name", f"ubuntu_{nome}",
             "--restart=unless-stopped",
             "--privileged",
             "-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro",
-            "-v", f"{self.install_principal}/ubuntu_{nome}:/install_principal",
             "-p", f"2222:22",
             "-d"
         ]
