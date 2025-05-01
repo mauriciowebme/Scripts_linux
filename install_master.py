@@ -25,6 +25,9 @@ def check_for_update():
     print("Primeira execução detectada. Atualizando o sistema...")
     subprocess.run("sudo apt-get update".split(), check=False)
     subprocess.run("sudo apt-get upgrade -y".split(), check=False)
+    
+    # Tenta desabilitar o serviço NetworkManager-wait-online.service para evitar travamento de inicialização
+    subprocess.run("sudo systemctl disable NetworkManager-wait-online.service".split(), check=False)
     try:
         subprocess.run(["timedatectl", "set-timezone", "America/Sao_Paulo"], check=True)
         subprocess.run(["timedatectl", "set-ntp", "true"], check=True)
