@@ -2534,7 +2534,7 @@ CMD ["sh", "-c", "\
         FROM ubuntu:22.04
 
         RUN apt-get update && apt-get upgrade -y && \
-            && apt-get clean && rm -rf /var/lib/apt/lists/*
+            apt-get clean && rm -rf /var/lib/apt/lists/*
         """)
 
         os.makedirs(f"{self.install_principal}/ubuntu_{nome}", exist_ok=True)
