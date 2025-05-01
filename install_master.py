@@ -2510,7 +2510,7 @@ CMD ["sh", "-c", "\
         # nome = input("Digite um nome para o container: ")
         os.makedirs(f"{self.install_principal}/ubuntu_{nome}", exist_ok=True)
         os.chmod(f"{self.install_principal}/ubuntu_{nome}", 0o777)
-        self.remove_container(f"ubuntu_{nome}")
+        self.remove_container(f"servidor_http")
         porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = textwrap.dedent("""\
