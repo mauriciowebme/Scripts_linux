@@ -2510,16 +2510,15 @@ CMD ["sh", "-c", "\
         # nome = input("Digite um nome para o container: ")
         os.makedirs(f"{self.install_principal}/ubuntu_{nome}", exist_ok=True)
         os.chmod(f"{self.install_principal}/ubuntu_{nome}", 0o777)
-        self.remove_container(f"servidor_http")
+        self.remove_container(f"ubuntu_")
         porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = textwrap.dedent("""\
-        FROM python:3.12
-        CMD ["python", "-m", "http.server", "8001"]
+        FROM ubuntu:latest
         """)
 
         run_args = [
-            "--name", "servidor_http",
+            "--name", "ubuntu_",
             "-p", "8001:8001",
             "-d"
         ]
