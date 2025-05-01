@@ -2556,7 +2556,7 @@ CMD ["sh", "-c", "\
         self.remove_container(f"ubuntu_{nome}")
         porta = self.escolher_porta_disponivel()[0]
         run_args = [
-            "--name", f"webtop_{nome}",
+            "--name", f"ubuntu_{nome}",
             "--restart=unless-stopped",
             "--privileged",
             "-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro",
