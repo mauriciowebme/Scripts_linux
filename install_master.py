@@ -2520,8 +2520,10 @@ CMD ["sh", "-c", "\
 
         # 1. instala o servidor SSH
         RUN apt-get update \
-        && apt-get install -y openssh-server \
-        && apt-get clean && rm -rf /var/lib/apt/lists/*
+            && apt-get install -y \
+            openssh-server \
+            sudo \
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
 
         # 2. cria usuário não-root
         ARG USER=dev
