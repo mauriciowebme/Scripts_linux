@@ -2515,12 +2515,12 @@ CMD ["sh", "-c", "\
 
         dockerfile = textwrap.dedent("""\
         FROM python:3.12
-        CMD ["python", "-m", "http.server", "8001"]
+        CMD ["python", "-m", "http.server", "8000"]
         """)
 
         run_args = [
             "--name", "servidor_http",
-            "-p", "8001:8001",
+            "-p", "8000:8000",
             "-d"
         ]
 
