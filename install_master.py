@@ -2536,8 +2536,8 @@ CMD ["sh", "-c", "\
         ENV DEBIAN_FRONTEND=noninteractive
 
         RUN apt-get update && apt-get upgrade -y && \
-            apt-get install -y sudo curl nano iputils-ping net-tools && \
-            apt-get clean && rm -rf /var/lib/apt/lists/*
+            apt-get install -y sudo curl \
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
 
         CMD ["/bin/bash"]
         """)
