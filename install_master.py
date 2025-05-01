@@ -2538,8 +2538,6 @@ CMD ["sh", "-c", "\
         RUN apt-get update && apt-get upgrade -y && \
             apt-get install -y sudo curl \
             && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-        CMD ["/bin/bash"]
         """)
 
         os.makedirs(f"{self.install_principal}/ubuntu_{nome}", exist_ok=True)
