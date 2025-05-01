@@ -2535,17 +2535,19 @@ CMD ["sh", "-c", "\
         ENV DEBIAN_FRONTEND=noninteractive
         ENV container=docker
 
-        # pacotes básicos + XFCE + VNC
-        RUN apt-get update && apt-get upgrade -y && \
-            apt-get install -y systemd systemd-sysv dbus-x11 \
-                            xfce4 xfce4-goodies tightvncserver \
-                            xterm x11-utils && \
+        # Pacotes necessários
+        RUN apt-get update && \
+            apt-get upgrade -y && \
+            apt-get install -y \
+                systemd systemd-sysv dbus-x11 \
+                xfce4 xfce4-goodies tightvncserver \
+                xterm x11-utils xfonts-base xauth && \
             apt-get clean && rm -rf /var/lib/apt/lists/*
 
-        # usuário normal
+        # Cria usuário
         RUN useradd -m docker && echo 'docker:docker' | chpasswd
 
-        # prepara diretórios VNC
+        # Configura VNC
         RUN mkdir -p /home/docker/.vnc && \
             echo 'docker' | vncpasswd -f > /home/docker/.vnc/passwd && \
             chmod 600 /home/docker/.vnc/passwd && \
@@ -2555,13 +2557,18 @@ CMD ["sh", "-c", "\
         ENV USER=docker
         WORKDIR /home/docker
 
-        # cria o ~/.vnc/xstartup (1 único RUN)
-        RUN bash -c \"printf '#!/bin/bash\\nxrdb \\\\${HOME}/.Xresources\\nstartxfce4 &\\n' > /home/docker/.vnc/xstartup\" && \
+        # Script xstartup
+        RUN printf '#!/bin/bash\nxrdb $HOME/.Xresources\nstartxfce4 &\n' > /home/docker/.vnc/xstartup && \
             chmod +x /home/docker/.vnc/xstartup
 
         EXPOSE 5901
         STOPSIGNAL SIGRTMIN+3
-        CMD ["bash", "-c", "rm -rf /tmp/.X1-lock /tmp/.X11-unix/X1; vncserver :1 -geometry 1280x800 -depth 24"]
+
+        # Remove locks, mata VNC antigo se existir, inicia novamente
+        CMD bash -c 'vncserver -kill :1 2>/dev/null || true && \
+                    rm -rf /tmp/.X1-lock /tmp/.X11-unix/X1 && \
+                    vncserver :1 -geometry 1280x800 -depth 24 && \
+                    tail -F /home/docker/.vnc/*.log'
         """)
 
         os.makedirs(f"{self.install_principal}/ubuntu_{nome}", exist_ok=True)
