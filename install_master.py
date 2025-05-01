@@ -2554,9 +2554,10 @@ CMD ["sh", "-c", "\
         WORKDIR /home/docker
 
         # Cria script para iniciar o VNC
-        RUN echo '#!/bin/bash\n\
-        xrdb $HOME/.Xresources\n\
-        startxfce4 &' > ~/.vnc/xstartup && chmod +x ~/.vnc/xstartup
+        RUN echo -e '#!/bin/bash\nxrdb $HOME/.Xresources\nstartxfce4 &' > /home/docker/.vnc/xstartup && \
+            chmod +x /home/docker/.vnc/xstartup && \
+            chown docker:docker /home/docker/.vnc/xstartup
+
 
         EXPOSE 5901
         STOPSIGNAL SIGRTMIN+3
