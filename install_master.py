@@ -2527,41 +2527,28 @@ CMD ["sh", "-c", "\
         """Instala e executa o ubuntu."""
         print("Iniciando instalação ubuntu:")
 
-        nome = 'teste'
+        nome = "teste"
         # nome = input("Digite um nome para o container: ")
 
         dockerfile = textwrap.dedent("""\
         FROM ubuntu:22.04
+
         ENV DEBIAN_FRONTEND=noninteractive
         ENV container=docker
 
-        RUN apt-get update && apt-get upgrade -y && \
-            apt-get install -y systemd systemd-sysv dbus-x11 \
-                            xfce4 xfce4-goodies tightvncserver \
-                            xterm x11-utils xfonts-base xauth && \
-            apt-get clean && rm -rf /var/lib/apt/lists/*
+        # Usa root (default, então essa linha é opcional)
+        USER root
 
-        RUN useradd -m docker && echo 'docker:docker' | chpasswd
-        RUN mkdir -p /home/docker/.vnc && \
-            echo 'docker' | vncpasswd -f > /home/docker/.vnc/passwd && \
-            chmod 600 /home/docker/.vnc/passwd && \
-            chown -R docker:docker /home/docker
+        # Atualiza o sistema
+        RUN apt-get update && \
+            apt-get upgrade -y && \
+            apt-get install -y systemd systemd-sysv && \
+            apt-get clean && \
+            rm -rf /var/lib/apt/lists/*
 
-        USER docker
-        ENV USER=docker
-        WORKDIR /home/docker
-
-        # ---- AQUI o comando em 1 linha -----------------------------
-        RUN echo -e '#!/bin/bash\nxrdb \$HOME/.Xresources\nstartxfce4 &\n' \
-            > /home/docker/.vnc/xstartup && chmod +x /home/docker/.vnc/xstartup
-        # ------------------------------------------------------------
-
-        EXPOSE 5901
+        VOLUME ["/sys/fs/cgroup"]
         STOPSIGNAL SIGRTMIN+3
-        CMD bash -c 'vncserver -kill :1 2>/dev/null || true && \
-                    rm -rf /tmp/.X1-lock /tmp/.X11-unix/X1 && \
-                    vncserver :1 -geometry 1280x800 -depth 24 && \
-                    tail -F /home/docker/.vnc/*.log'
+        CMD ["/sbin/init"]
         """)
 
         os.makedirs(f"{self.install_principal}/ubuntu_{nome}", exist_ok=True)
@@ -2569,12 +2556,12 @@ CMD ["sh", "-c", "\
         self.remove_container(f"ubuntu_{nome}")
         porta = self.escolher_porta_disponivel()[0]
         run_args = [
-            "--name", f"ubuntu_{nome}",
+            "--name", f"webtop_{nome}",
             "--restart=unless-stopped",
             "--privileged",
             "-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro",
             "-v", f"{self.install_principal}/ubuntu_{nome}:/install_principal",
-            "-p" "5901:5901",
+            "-p", f"2222:22",
             "-d"
         ]
 
@@ -2584,8 +2571,7 @@ CMD ["sh", "-c", "\
         )
 
         print("\nInstalação do ubuntu concluída.")
-        print("Acesso:")
-        print(f"porta de acesso: 5901")
+        print("porta de acesso: 2222")
         
     def desktop_ubuntu_webtop(self):
         """Instala e executa o Webtop."""
@@ -3888,7 +3874,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.219
+Versão 1.218
 ===========================================================================
 ===========================================================================
 ip server:
