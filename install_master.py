@@ -2536,27 +2536,11 @@ CMD ["sh", "-c", "\
 
         dockerfile = textwrap.dedent("""\
         FROM python:3.12
-        WORKDIR /usr/local/app
-
-        # Install the application dependencies
-        COPY requirements.txt ./
-        RUN pip install --no-cache-dir -r requirements.txt
-
-        # Copy in the source code
-        COPY src ./src
-        EXPOSE 5000
-
-        # Setup an app user so the container doesn't run as the root user
-        RUN useradd app
-        USER app
-
-        CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
         """)
         
         run_args = [
             "--name", f"ubuntu_{nome}",
             # "--restart=unless-stopped",
-            "-p", f"2222:22",
             "-d"
         ]
 
