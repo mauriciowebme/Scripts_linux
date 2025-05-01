@@ -422,10 +422,10 @@ class Docker(Executa_comados):
         container = container[:-len(imagem)].rstrip()
         
         dominio_ = dominio.replace('.', '_')
-        labels = f""" --network {self.redes_docker[0]} \
+        labels = rf""" --network {self.redes_docker[0]} \
                 --label traefik.enable=true \
                 --label traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https \
-                --label traefik.http.routers.{dominio_}.rule=\"Host(\`{dominio}\`)\" \
+                --label traefik.http.routers.{dominio_}.rule="Host(`{dominio}`)" \
                 --label traefik.http.routers.{dominio_}.entrypoints=web,websecure \
                 --label traefik.http.routers.{dominio_}.tls.certresolver=le \
                 --label traefik.http.services.{dominio_}.loadbalancer.server.port={porta} \
