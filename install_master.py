@@ -2529,6 +2529,10 @@ CMD ["sh", "-c", "\
 
         nome = "teste"
         # nome = input("Digite um nome para o container: ")
+        os.makedirs(f"{self.install_principal}/ubuntu_{nome}", exist_ok=True)
+        os.chmod(f"{self.install_principal}/ubuntu_{nome}", 0o777)
+        self.remove_container(f"ubuntu_{nome}")
+        porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = textwrap.dedent("""\
         FROM ubuntu:22.04
@@ -2536,11 +2540,6 @@ CMD ["sh", "-c", "\
         RUN apt-get update && apt-get upgrade -y && \
             apt-get clean && rm -rf /var/lib/apt/lists/*
         """)
-
-        os.makedirs(f"{self.install_principal}/ubuntu_{nome}", exist_ok=True)
-        os.chmod(f"{self.install_principal}/ubuntu_{nome}", 0o777)
-        self.remove_container(f"ubuntu_{nome}")
-        porta = self.escolher_porta_disponivel()[0]
         
         run_args = [
             "--name", f"ubuntu_{nome}",
