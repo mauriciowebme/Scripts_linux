@@ -2532,23 +2532,16 @@ CMD ["sh", "-c", "\
 
         dockerfile = textwrap.dedent("""\
         FROM ubuntu:22.04
-
         ENV DEBIAN_FRONTEND=noninteractive
         ENV container=docker
 
-        # Pacotes necessários
-        RUN apt-get update && \
-            apt-get upgrade -y && \
-            apt-get install -y \
-                systemd systemd-sysv dbus-x11 \
-                xfce4 xfce4-goodies tightvncserver \
-                xterm x11-utils xfonts-base xauth && \
+        RUN apt-get update && apt-get upgrade -y && \
+            apt-get install -y systemd systemd-sysv dbus-x11 \
+                            xfce4 xfce4-goodies tightvncserver \
+                            xterm x11-utils xfonts-base xauth && \
             apt-get clean && rm -rf /var/lib/apt/lists/*
 
-        # Cria usuário
         RUN useradd -m docker && echo 'docker:docker' | chpasswd
-
-        # Configura VNC
         RUN mkdir -p /home/docker/.vnc && \
             echo 'docker' | vncpasswd -f > /home/docker/.vnc/passwd && \
             chmod 600 /home/docker/.vnc/passwd && \
@@ -2558,14 +2551,13 @@ CMD ["sh", "-c", "\
         ENV USER=docker
         WORKDIR /home/docker
 
-        # Script xstartup
-        RUN printf '#!/bin/bash\nxrdb $HOME/.Xresources\nstartxfce4 &\n' > /home/docker/.vnc/xstartup && \
-            chmod +x /home/docker/.vnc/xstartup
+        # ---- AQUI o comando em 1 linha -----------------------------
+        RUN echo -e '#!/bin/bash\nxrdb \$HOME/.Xresources\nstartxfce4 &\n' \
+            > /home/docker/.vnc/xstartup && chmod +x /home/docker/.vnc/xstartup
+        # ------------------------------------------------------------
 
         EXPOSE 5901
         STOPSIGNAL SIGRTMIN+3
-
-        # Remove locks, mata VNC antigo se existir, inicia novamente
         CMD bash -c 'vncserver -kill :1 2>/dev/null || true && \
                     rm -rf /tmp/.X1-lock /tmp/.X11-unix/X1 && \
                     vncserver :1 -geometry 1280x800 -depth 24 && \
