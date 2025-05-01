@@ -2535,8 +2535,22 @@ CMD ["sh", "-c", "\
         porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = textwrap.dedent("""\
-        FROM ubuntu:22.04
+        FROM python:3.12
+        WORKDIR /usr/local/app
 
+        # Install the application dependencies
+        COPY requirements.txt ./
+        RUN pip install --no-cache-dir -r requirements.txt
+
+        # Copy in the source code
+        COPY src ./src
+        EXPOSE 5000
+
+        # Setup an app user so the container doesn't run as the root user
+        RUN useradd app
+        USER app
+
+        CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
         """)
         
         run_args = [
@@ -3787,7 +3801,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala Redis Docker", self.instala_redis_docker),
             ("Instala selenium-firefox", self.instala_selenium_firefox),
             ("Instala deskto ubuntu webtop", self.desktop_ubuntu_webtop),
-            ("Instala ubuntu com systemd", self.ubuntu),
+            ("Instala ubuntu", self.ubuntu),
             ("Instala rclone", self.rclone),
         ]
         self.mostrar_menu(opcoes_menu)
