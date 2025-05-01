@@ -2561,7 +2561,7 @@ CMD ["sh", "-c", "\
 
         EXPOSE 5901
         STOPSIGNAL SIGRTMIN+3
-        CMD [\"/usr/bin/vncserver\", \":1\", \"-geometry\", \"1280x800\", \"-depth\", \"24\"]
+        CMD ["bash", "-c", "rm -rf /tmp/.X1-lock /tmp/.X11-unix/X1; vncserver :1 -geometry 1280x800 -depth 24"]
         """)
 
         os.makedirs(f"{self.install_principal}/ubuntu_{nome}", exist_ok=True)
