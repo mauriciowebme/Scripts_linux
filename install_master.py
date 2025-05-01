@@ -2552,6 +2552,7 @@ CMD ["sh", "-c", "\
             chown -R docker:docker /home/docker
 
         USER docker
+        ENV USER=docker
         WORKDIR /home/docker
 
         # cria o ~/.vnc/xstartup (1 único RUN)
