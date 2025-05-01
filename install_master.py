@@ -20,20 +20,23 @@ def check_for_update():
     update_file.parent.mkdir(parents=True, exist_ok=True)
 
     if update_file.exists():
-        return  # já atualizou alguma vez
+        return
 
     print("Primeira execução detectada. Atualizando o sistema...")
+    subprocess.run("sudo apt-get update".split(), check=False)
+    subprocess.run("sudo apt-get upgrade -y".split(), check=False)
     try:
-        subprocess.run("sudo apt-get update".split(), check=True)
-        subprocess.run("sudo apt-get upgrade -y".split(), check=True)
-        # fuso + ntp
         subprocess.run(["timedatectl", "set-timezone", "America/Sao_Paulo"], check=True)
         subprocess.run(["timedatectl", "set-ntp", "true"], check=True)
-
-        update_file.write_text("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
-        print("Atualização concluída.\n")
     except Exception as ex:
-        print(f"⚠️  Erro ao atualizar o sistema: {ex}\n")
+        try:
+            subprocess.run(["ln", "-sf", "/usr/share/zoneinfo/America/Sao_Paulo", "/etc/localtime"], check=True)
+        except Exception as ex:
+            print(f"⚠️  Erro ao atualizar o sistema: {ex}\n")
+        
+    update_file.write_text("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
+    print("Atualização concluída.\n")
+    
 check_for_update()
 
 def ensure_pip_installed():
@@ -100,7 +103,7 @@ def ensure(module: str,
     except ImportError:
         pass
 
-# ---- dependências do seu script ----
+# ---- dependências do script ----
 ensure("mysql.connector",
        apt_pkg="python3-mysql.connector",
        pip_pkg="mysql-connector-python")
