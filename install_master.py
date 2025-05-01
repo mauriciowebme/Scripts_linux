@@ -2515,12 +2515,29 @@ CMD ["sh", "-c", "\
 
         dockerfile = textwrap.dedent("""\
         FROM ubuntu:22.04
+
         ENV DEBIAN_FRONTEND=noninteractive
-        
-        RUN apt-get update && apt-get install -y nano \
-            && apt-get clean && rm -rf /var/lib/apt/lists/*
-            
-        CMD ["sleep", "infinity"]
+
+        # 1. instala o servidor SSH
+        RUN apt-get update \
+        && apt-get install -y openssh-server \
+        && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+        # 2. cria usuário não-root
+        ARG USER=dev
+        ARG UID=1000
+        RUN useradd -m -u $UID -s /bin/bash $USER \
+        && echo "$USER:senha123" | chpasswd
+
+        # 3. habilita login por chave se você quiser (montaremos depois)
+        RUN mkdir -p /home/$USER/.ssh && chown $USER:$USER /home/$USER/.ssh
+
+        # 4. prepara o diretório do daemon
+        RUN mkdir /var/run/sshd
+
+        # 5. mantém o contêiner de pé
+        EXPOSE 22
+        CMD ["/usr/sbin/sshd", "-D"]
         """)
 
         run_args = [
