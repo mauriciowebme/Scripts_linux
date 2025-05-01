@@ -2534,21 +2534,12 @@ CMD ["sh", "-c", "\
         FROM ubuntu:22.04
 
         ENV DEBIAN_FRONTEND=noninteractive
-        ENV container=docker
 
-        # Usa root (default, então essa linha é opcional)
-        USER root
+        RUN apt-get update && apt-get upgrade -y && \
+            apt-get install -y sudo curl nano iputils-ping net-tools && \
+            apt-get clean && rm -rf /var/lib/apt/lists/*
 
-        # Atualiza o sistema
-        RUN apt-get update && \
-            apt-get upgrade -y && \
-            apt-get install -y systemd systemd-sysv && \
-            apt-get clean && \
-            rm -rf /var/lib/apt/lists/*
-
-        VOLUME ["/sys/fs/cgroup"]
-        STOPSIGNAL SIGRTMIN+3
-        CMD ["/sbin/init"]
+        CMD ["/bin/bash"]
         """)
 
         os.makedirs(f"{self.install_principal}/ubuntu_{nome}", exist_ok=True)
@@ -2559,8 +2550,6 @@ CMD ["sh", "-c", "\
         run_args = [
             "--name", f"ubuntu_{nome}",
             "--restart=unless-stopped",
-            "--privileged",
-            "-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro",
             "-p", f"2222:22",
             "-d"
         ]
