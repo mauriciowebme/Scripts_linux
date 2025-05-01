@@ -2523,6 +2523,69 @@ CMD ["sh", "-c", "\
         print("get meu-teste")
         print("")
         
+    def ubuntu(self):
+        """Instala e executa o ubuntu."""
+        print("Iniciando instalação ubuntu:")
+
+        nome = input("Digite um nome para o container: ")
+
+        dockerfile = textwrap.dedent("""\
+        FROM ubuntu:22.04
+
+        ENV DEBIAN_FRONTEND=noninteractive
+        ENV container docker
+
+        # Instala systemd e interface XFCE com servidor VNC
+        RUN apt-get update && \
+            apt-get upgrade -y && \
+            apt-get install -y systemd systemd-sysv dbus-x11 xfce4 xfce4-goodies tightvncserver xterm wget && \
+            apt-get clean && rm -rf /var/lib/apt/lists/*
+
+        # Cria um usuário
+        RUN useradd -m docker && echo "docker:docker" | chpasswd
+
+        # Configura VNC
+        RUN mkdir -p /home/docker/.vnc && \
+            echo "docker" | vncpasswd -f > /home/docker/.vnc/passwd && \
+            chmod 600 /home/docker/.vnc/passwd && \
+            chown -R docker:docker /home/docker
+
+        USER docker
+        WORKDIR /home/docker
+
+        # Cria script para iniciar o VNC
+        RUN echo '#!/bin/bash\n\
+        xrdb $HOME/.Xresources\n\
+        startxfce4 &' > ~/.vnc/xstartup && chmod +x ~/.vnc/xstartup
+
+        EXPOSE 5901
+        STOPSIGNAL SIGRTMIN+3
+        CMD ["/usr/bin/vncserver", ":1", "-geometry", "1280x800", "-depth", "24"]
+        """)
+
+        os.makedirs(f"{self.install_principal}/ubuntu_{nome}", exist_ok=True)
+        os.chmod(f"{self.install_principal}/ubuntu_{nome}", 0o777)
+        self.remove_container(f"ubuntu_{nome}")
+        porta = self.escolher_porta_disponivel()[0]
+        run_args = [
+            "--name", f"webtop_{nome}",
+            "--restart=unless-stopped",
+            "--privileged",
+            "-v /sys/fs/cgroup:/sys/fs/cgroup:ro",
+            "-v", f"{self.install_principal}/ubuntu_{nome}:/install_principal",
+            "-p" "5901:5901",
+            "-d"
+        ]
+
+        self.executar_comandos_run_OrAnd_dockerfile(
+            dockerfile_str=dockerfile,
+            run_cmd=run_args
+        )
+
+        print("\nInstalação do ubuntu concluída.")
+        print("Acesso:")
+        print(f"porta de acesso: 5901")
+        
     def desktop_ubuntu_webtop(self):
         """Instala e executa o Webtop."""
         print("Iniciando instalação webtop:")
@@ -3756,6 +3819,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala Redis Docker", self.instala_redis_docker),
             ("Instala selenium-firefox", self.instala_selenium_firefox),
             ("Instala deskto ubuntu webtop", self.desktop_ubuntu_webtop),
+            ("Instala ubuntu com systemd", self.ubuntu),
             ("Instala rclone", self.rclone),
         ]
         self.mostrar_menu(opcoes_menu)
