@@ -2571,7 +2571,7 @@ CMD ["sh", "-c", "\
             "--name", f"webtop_{nome}",
             "--restart=unless-stopped",
             "--privileged",
-            "-v /sys/fs/cgroup:/sys/fs/cgroup:ro",
+            "-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro",
             "-v", f"{self.install_principal}/ubuntu_{nome}:/install_principal",
             "-p" "5901:5901",
             "-d"
