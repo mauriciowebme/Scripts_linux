@@ -2514,12 +2514,18 @@ CMD ["sh", "-c", "\
         porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = textwrap.dedent("""\
-        FROM ubuntu:latest
+        FROM ubuntu:22.04
+        ENV DEBIAN_FRONTEND=noninteractive
+        
+        RUN apt-get update && apt-get install -y nano \
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
+            
+        CMD ["sleep", "infinity"]
         """)
 
         run_args = [
             "--name", "ubuntu_",
-            "-p", "8001:8001",
+            "-p", "2222:22",
             "-d"
         ]
 
