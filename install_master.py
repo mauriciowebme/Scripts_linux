@@ -180,46 +180,25 @@ class Docker(Executa_comados):
         self.redes_docker = ['_traefik', 'interno']
         self.atmoz_sftp_arquivo_conf = os.path.join(f"{self.install_principal}/atmoz_sftp/", "users.conf")
         
-    def executar_comandos_run_OrAnd_dockerfile(self, run_cmd: List[str], dockerfile_str: Optional[str] = None, ) -> None:
-        """
-        Build + run ou somente run de um container Docker:
-        - Se `dockerfile_str` fornecido: monta Dockerfile
-            em um diretório temporário, gera imagem com tag automática
-            e executa.
-        - Se `dockerfile_str` for None: pula o build e executa
-            `docker run` com o próprio `run_cmd`, que deve terminar
-            com o nome da imagem.
-        """
-        
+    def executar_comandos_run_OrAnd_dockerfile(self,
+                                           run_cmd: list[str],
+                                           dockerfile_str: str | None = None) -> None:
         print("\n" + "*" * 40)
         print(" " * 5 + "---> Executando comando: <---")
         print(" " * 5 + f"{run_cmd}")
         if dockerfile_str:
             print(" " * 5 + "---> Executando Dockerfile: <---")
-            print(" " * 5 + f"{dockerfile_str.splitlines()[0]} ...")
+            print(" " * 5 + dockerfile_str.strip().splitlines()[0])
         print("*" * 40 + "\n")
-        
+
         if dockerfile_str:
-            # Tag automática se não veio nada
             tag = f"img_{datetime.now():%Y%m%d%H%M%S}"
-
-            # 1) cria diretório temporário
-            tmp = tempfile.TemporaryDirectory()
-            ctx = Path(tmp.name)
-
-            # 2) salva Dockerfile
-            (ctx / "Dockerfile").write_text(textwrap.dedent(dockerfile_str).lstrip())
-
-            # 3) build
-            subprocess.run(["docker", "build", "-t", tag, "."], cwd=ctx, check=True)
-
-            # 4) run
+            with tempfile.TemporaryDirectory() as ctx:
+                Path(ctx, "Dockerfile").write_text(dockerfile_str.strip() + "\n")
+                subprocess.run(["docker", "build", "-t", tag, "."], cwd=ctx, check=True)
+            # se quiser manter run_cmd como “somente opções”, adicione o comando aqui
             subprocess.run(["docker", "run", *run_cmd, tag], check=True)
-
-            # 5) remove o diretório temporário
-            tmp.cleanup()
         else:
-            # Se não houver Dockerfile, apenas executa o comando run
             subprocess.run(["docker", "run", *run_cmd], check=True)
         
     def escolher_porta_disponivel(self, inicio=40000, fim=40500, quantidade=1):
@@ -2534,13 +2513,11 @@ CMD ["sh", "-c", "\
         self.remove_container(f"ubuntu_{nome}")
         porta = self.escolher_porta_disponivel()[0]
 
-        dockerfile = textwrap.dedent("""\
-        FROM python:3.12
-        """)
-        
+        dockerfile = "FROM python:3.12\nCMD [\"python\", \"-m\", \"http.server\", \"8000\"]\n"
+
         run_args = [
-            "--name", f"ubuntu_{nome}",
-            # "--restart=unless-stopped",
+            "--name", "servidor_http",
+            "-p", "8000:8000",
             "-d"
         ]
 
@@ -2550,7 +2527,6 @@ CMD ["sh", "-c", "\
         )
 
         print("\nInstalação do ubuntu concluída.")
-        print("porta de acesso: 2222")
         
     def desktop_ubuntu_webtop(self):
         """Instala e executa o Webtop."""
