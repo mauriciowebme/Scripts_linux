@@ -2527,7 +2527,8 @@ CMD ["sh", "-c", "\
         """Instala e executa o ubuntu."""
         print("Iniciando instalação ubuntu:")
 
-        nome = input("Digite um nome para o container: ")
+        nome = 'teste'
+        # nome = input("Digite um nome para o container: ")
 
         dockerfile = textwrap.dedent("""\
         FROM ubuntu:22.04
