@@ -2513,7 +2513,10 @@ CMD ["sh", "-c", "\
         self.remove_container(f"ubuntu_{nome}")
         porta = self.escolher_porta_disponivel()[0]
 
-        dockerfile = "FROM python:3.12\nCMD [\"python\", \"-m\", \"http.server\", \"8001\"]\n"
+        dockerfile = textwrap.dedent("""\
+        FROM python:3.12
+        CMD ["python", "-m", "http.server", "8001"]
+        """)
 
         run_args = [
             "--name", "servidor_http",
