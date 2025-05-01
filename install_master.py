@@ -2527,7 +2527,9 @@ CMD ["sh", "-c", "\
         ARG USER=dev
         ARG UID=1000
         RUN useradd -m -u $UID -s /bin/bash $USER \
-        && echo "$USER:senha123" | chpasswd
+            && echo "$USER:senha123" | chpasswd \
+            && usermod -aG sudo $USER \
+            && echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
         # 3. habilita login por chave se você quiser (montaremos depois)
         RUN mkdir -p /home/$USER/.ssh && chown $USER:$USER /home/$USER/.ssh
