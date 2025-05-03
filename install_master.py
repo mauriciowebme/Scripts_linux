@@ -2546,6 +2546,13 @@ CMD ["sh", "-c", "\
         
         # habilita o serviço SSH para subir junto com o systemd
         RUN systemctl enable ssh
+        
+        # --- GUI ---
+        RUN apt-get update && \
+            apt-get install -y xfce4 xfce4-goodies xrdp && \
+            systemctl enable xrdp && \
+            apt-get clean && rm -rf /var/lib/apt/lists/*
+        EXPOSE 3389
 
         EXPOSE 22
         
@@ -2558,6 +2565,7 @@ CMD ["sh", "-c", "\
         run_args = [
             "--name", f"ubuntu_{nome}",
             "-p", "2222:22",
+            "-p", "3389:3389",
             "--cgroupns=host",
             "--privileged",
             "-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
