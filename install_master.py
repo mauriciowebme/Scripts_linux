@@ -926,8 +926,8 @@ listener Default {{
             self.mysql_root_password = input("Digite a senha root para o MySQL: ")
         
         self.mysql_root_password = input("Digite a senha root para o MySQL: ")
-        comando1 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE USER IF NOT EXISTS 'nextcloud'@'%' IDENTIFIED BY 'nextcloud';\""
-        comando2 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE DATABASE IF NOT EXISTS nextcloud_bd; GRANT ALL PRIVILEGES ON nextcloud_bd.* TO 'nextcloud'@'%'; FLUSH PRIVILEGES;\""
+        comando1 = f"docker exec -i mysql_8_0 mysql -uroot -p'{self.mysql_root_password}' -e \"CREATE USER IF NOT EXISTS 'nextcloud'@'%' IDENTIFIED BY 'nextcloud';\""
+        comando2 = f"docker exec -i mysql_8_0 mysql -uroot -p'{self.mysql_root_password}' -e \"CREATE DATABASE IF NOT EXISTS nextcloud_bd; GRANT ALL PRIVILEGES ON nextcloud_bd.* TO 'nextcloud'@'%'; FLUSH PRIVILEGES;\""
         self.executar_comandos([comando1, comando2])
         
         comandos = [
@@ -1723,18 +1723,18 @@ module.exports = { setupPythonEnv, runPythonScript };
         
         # Verifica se o objeto 'self' possui o atributo 'root_password' e se ele está definido (não vazio).
         if not hasattr(self, 'root_password') or not self.mysql_root_password:
-            self.mysql_root_password = input("Digite a senha root para o MySQL: ")
-            
+            self.mysql_root_password = input("Digite a senha root para acessar o MySQL e criar o banco: ")
+        
         # Verifica se a base de dados guacamole_db já existe
-        comando_verifica_db = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"SHOW DATABASES LIKE 'guacamole_db';\""
+        comando_verifica_db = f"docker exec -i mysql_8_0 mysql -uroot -p'{self.mysql_root_password}' -e \"SHOW DATABASES LIKE 'guacamole_db';\""
         resultado = self.executar_comandos([comando_verifica_db])
         
         if not any('guacamole_db' in line for line in resultado[comando_verifica_db]):
-            comando1 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE USER IF NOT EXISTS 'guacamole_user'@'%' IDENTIFIED BY 'guacamole_password';\""
-            comando2 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} -e \"CREATE DATABASE IF NOT EXISTS guacamole_db; GRANT ALL PRIVILEGES ON guacamole_db.* TO 'guacamole_user'@'%'; FLUSH PRIVILEGES;\""
+            comando1 = f"docker exec -i mysql_8_0 mysql -uroot -p'{self.mysql_root_password}' -e \"CREATE USER IF NOT EXISTS 'guacamole_user'@'%' IDENTIFIED BY 'guacamole_password';\""
+            comando2 = f"docker exec -i mysql_8_0 mysql -uroot -p'{self.mysql_root_password}' -e \"CREATE DATABASE IF NOT EXISTS guacamole_db; GRANT ALL PRIVILEGES ON guacamole_db.* TO 'guacamole_user'@'%'; FLUSH PRIVILEGES;\""
             comando3 = f"docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --mysql > initdb.sql"
             comando4 = f"docker cp initdb.sql mysql_8_0:/initdb.sql"
-            comando5 = f"docker exec -i mysql_8_0 mysql -uroot -p{self.mysql_root_password} guacamole_db -e \"SOURCE /initdb.sql;\""
+            comando5 = f"docker exec -i mysql_8_0 mysql -uroot -p'{self.mysql_root_password}' guacamole_db -e \"SOURCE /initdb.sql;\""
             self.executar_comandos([comando1, comando2, comando3, comando4, comando5])
         else:
             print("A base de dados guacamole_db já existe.")
@@ -1970,7 +1970,7 @@ module.exports = { setupPythonEnv, runPythonScript };
                         -e MYSQL_DATABASE=db_testes \
                         -e MYSQL_USER=testes \
                         -e MYSQL_PASSWORD=testes \
-                        -e MYSQL_ROOT_PASSWORD={self.mysql_root_password} \
+                        -e MYSQL_ROOT_PASSWORD="{self.mysql_root_password}" \
                         -v {self.bds}/mysql/{versao_}:/var/lib/mysql \
                         mysql:{versao} \
                         --server-id=1 \
@@ -1988,7 +1988,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
         time.sleep(30)
         comandos = [
-            f"docker exec -i mysql_{versao_} mysql -uroot -p{self.mysql_root_password} -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
+            f"docker exec -i mysql_{versao_} mysql -uroot -p'{self.mysql_root_password}' -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
         ]
         self.executar_comandos(comandos)
         
@@ -2020,7 +2020,7 @@ module.exports = { setupPythonEnv, runPythonScript };
             # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
             time.sleep(30)
             comandos = [
-                f"docker exec -i mysql_{versao_}_slave mysql -uroot -p{self.mysql_root_password} -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
+                f"docker exec -i mysql_{versao_}_slave mysql -uroot -p'{self.mysql_root_password}' -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
             ]
             self.executar_comandos(comandos)
             
@@ -2228,8 +2228,8 @@ module.exports = { setupPythonEnv, runPythonScript };
             self.mysql_root_password = input("Digite a senha root para o MySQL: ")
         
         dominio_ = dominio.replace('.', '_')
-        comando1 = f"docker exec -i mysql_5_7 mysql -uroot -p{self.mysql_root_password} -e \"CREATE USER IF NOT EXISTS 'wordpress'@'%' IDENTIFIED BY 'wordpress';\""
-        comando2 = f"docker exec -i mysql_5_7 mysql -uroot -p{self.mysql_root_password} -e \"CREATE DATABASE IF NOT EXISTS {dominio_}; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
+        comando1 = f"docker exec -i mysql_5_7 mysql -uroot -p'{self.mysql_root_password}' -e \"CREATE USER IF NOT EXISTS 'wordpress'@'%' IDENTIFIED BY 'wordpress';\""
+        comando2 = f"docker exec -i mysql_5_7 mysql -uroot -p'{self.mysql_root_password}' -e \"CREATE DATABASE IF NOT EXISTS {dominio_}; GRANT ALL PRIVILEGES ON {dominio_}.* TO 'wordpress'@'%'; FLUSH PRIVILEGES;\""
         self.executar_comandos([comando1, comando2])
         container = f"""docker run -d \
                         --name {dominio_} \
