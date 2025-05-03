@@ -2556,7 +2556,7 @@ CMD ["sh", "-c", "\
         """)
 
         run_args = [
-            "--name", "ubuntu_",
+            "--name", f"ubuntu_{nome}",
             "-p", "2222:22",
             "--privileged",
             "-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro",
