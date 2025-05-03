@@ -2573,7 +2573,6 @@ CMD ["sh", "-c", "\
             libxss1 \
             libappindicator3-1 \
             libindicator7 \
-            fonts-liberation \
             libatk-bridge2.0-0 \
             libgtk-3-0 \
             xdg-utils \
