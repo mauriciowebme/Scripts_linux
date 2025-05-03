@@ -2555,7 +2555,7 @@ CMD ["sh", "-c", "\
         EXPOSE 3389 
         
         # mantém o contêiner de pé
-        CMD ["/usr/sbin/sshd", "-D"]
+        CMD ["/usr/sbin/sshd", "-D", "/lib/systemd/systemd"]
         """)
 
         run_args = [
