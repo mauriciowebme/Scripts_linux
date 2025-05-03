@@ -2513,7 +2513,7 @@ CMD ["sh", "-c", "\
         
         os.makedirs(f"{self.install_principal}/ubuntu_{nome}", exist_ok=True)
         os.chmod(f"{self.install_principal}/ubuntu_{nome}", 0o777)
-        self.remove_container(f"ubuntu_")
+        self.remove_container(f"ubuntu_{nome}")
         porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = textwrap.dedent(f"""\
@@ -2559,7 +2559,7 @@ CMD ["sh", "-c", "\
         """)
 
         run_args = [
-            "--name", "ubuntu_",
+            "--name", f"ubuntu_{nome}",
             "-p", "2222:22",
             "-p", "3389:3389",
             "--privileged",
