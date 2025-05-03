@@ -2517,46 +2517,35 @@ CMD ["sh", "-c", "\
         porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = textwrap.dedent(f"""\
-        FROM ubuntu:22.04
+        FROM ghcr.io/xtesting/systemd-docker:ubuntu-22.04
 
         ENV DEBIAN_FRONTEND=noninteractive
 
-        # instala componentes básicos
-        RUN apt-get update && apt-get upgrade -y \
-            && apt-get install -y \
-            openssh-server \
+        # Instala componentes necessários
+        RUN apt update && apt upgrade -y && \
+            apt install -y \
             sudo \
-            xfce4 xfce4-goodies xrdp \
-            dbus-x11 x11-xserver-utils systemd systemd-sysv \
-            && apt-get clean && rm -rf /var/lib/apt/lists/*
+            xfce4 xfce4-goodies \
+            xrdp dbus-x11 x11-xserver-utils \
+            openssh-server && \
+            apt clean
 
-        # cria usuário não-root
+        # Cria usuário
         ARG USER=master
         ARG UID=1000
-        RUN useradd -m -u $UID -s /bin/bash $USER \
-            && echo "$USER:{senha}" | chpasswd \
-            && usermod -aG sudo $USER \
-            && echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+        RUN useradd -m -u $UID -s /bin/bash $USER && \
+            echo "$USER:senha123" | chpasswd && \
+            usermod -aG sudo $USER && \
+            echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+            mkdir -p /home/$USER/.ssh && chown $USER:$USER /home/$USER/.ssh
 
-        # habilita login por chave se você quiser (montaremos depois)
-        RUN mkdir -p /home/$USER/.ssh && chown $USER:$USER /home/$USER/.ssh
+        # Habilita serviços
+        RUN systemctl enable ssh && \
+            systemctl enable xrdp
 
-        # prepara o diretório do daemon
-        RUN mkdir /var/run/sshd
-        
-        # Ativa o xrdp e systemd
-        RUN systemctl enable xrdp
-        VOLUME ["/sys/fs/cgroup"]
         STOPSIGNAL SIGRTMIN+3
-        
-        RUN systemctl enable ssh
-
-        # porta SSH para acesso remoto
-        EXPOSE 22
-        # porta RDP para desktop remoto
-        EXPOSE 3389 
-        
-        # mantém o contêiner de pé
+        VOLUME ["/sys/fs/cgroup"]
+        EXPOSE 22 3389
         CMD ["/sbin/init"]
         """)
 
