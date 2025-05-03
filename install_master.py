@@ -2521,14 +2521,16 @@ CMD ["sh", "-c", "\
 
         ENV DEBIAN_FRONTEND=noninteractive
 
-        # 1. instala o servidor SSH
+        # instala componentes básicos
         RUN apt-get update \
             && apt-get install -y \
             openssh-server \
             sudo \
+            xfce4 xfce4-goodies xrdp \
+            dbus-x11 x11-xserver-utils systemd systemd-sysv \
             && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-        # 2. cria usuário não-root
+        # cria usuário não-root
         ARG USER=dev
         ARG UID=1000
         RUN useradd -m -u $UID -s /bin/bash $USER \
@@ -2536,14 +2538,23 @@ CMD ["sh", "-c", "\
             && usermod -aG sudo $USER \
             && echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-        # 3. habilita login por chave se você quiser (montaremos depois)
+        # habilita login por chave se você quiser (montaremos depois)
         RUN mkdir -p /home/$USER/.ssh && chown $USER:$USER /home/$USER/.ssh
 
-        # 4. prepara o diretório do daemon
+        # prepara o diretório do daemon
         RUN mkdir /var/run/sshd
+        
+        # Ativa o xrdp e systemd
+        RUN systemctl enable xrdp
+        VOLUME ["/sys/fs/cgroup"]
+        STOPSIGNAL SIGRTMIN+3
 
-        # 5. mantém o contêiner de pé
+        # porta SSH para acesso remoto
         EXPOSE 22
+        # porta RDP para desktop remoto
+        EXPOSE 3389 
+        
+        # mantém o contêiner de pé
         CMD ["/usr/sbin/sshd", "-D"]
         """)
 
