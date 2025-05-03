@@ -2507,13 +2507,16 @@ CMD ["sh", "-c", "\
         print("Iniciando instalação ubuntu:")
 
         nome = "teste"
+        senha = "teste"
         # nome = input("Digite um nome para o container: ")
+        # senha = input("Configure uma senha para acessar: ")
+        
         os.makedirs(f"{self.install_principal}/ubuntu_{nome}", exist_ok=True)
         os.chmod(f"{self.install_principal}/ubuntu_{nome}", 0o777)
         self.remove_container(f"ubuntu_")
         porta = self.escolher_porta_disponivel()[0]
 
-        dockerfile = textwrap.dedent("""\
+        dockerfile = textwrap.dedent(f"""\
         FROM ubuntu:22.04
 
         ENV DEBIAN_FRONTEND=noninteractive
@@ -2529,7 +2532,7 @@ CMD ["sh", "-c", "\
         ARG USER=dev
         ARG UID=1000
         RUN useradd -m -u $UID -s /bin/bash $USER \
-            && echo "$USER:senha123" | chpasswd \
+            && echo "$USER:{senha}" | chpasswd \
             && usermod -aG sudo $USER \
             && echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
