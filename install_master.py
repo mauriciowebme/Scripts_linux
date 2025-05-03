@@ -2538,7 +2538,7 @@ CMD ["sh", "-c", "\
             && usermod -aG sudo $USER \
             && echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-        # habilita login por chave se você quiser (montaremos depois)
+        # habilita login por chave SSH
         RUN mkdir -p /home/$USER/.ssh && chown $USER:$USER /home/$USER/.ssh
 
         # prepara o diretório do daemon
