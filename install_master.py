@@ -2558,6 +2558,7 @@ CMD ["sh", "-c", "\
         run_args = [
             "--name", f"ubuntu_{nome}",
             "-p", "2222:22",
+            "--cgroupns=host",
             "--privileged",
             "-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
             "-d"
