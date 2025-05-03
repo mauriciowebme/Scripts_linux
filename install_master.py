@@ -2517,36 +2517,45 @@ CMD ["sh", "-c", "\
         porta = self.escolher_porta_disponivel()[0]
 
         dockerfile = textwrap.dedent(f"""\
-        FROM ghcr.io/xtesting/systemd-docker:ubuntu-22.04
+        FROM ubuntu:22.04
 
         ENV DEBIAN_FRONTEND=noninteractive
 
-        # Instala componentes necessários
-        RUN apt update && apt upgrade -y && \
-            apt install -y \
+        # instala componentes básicos
+        RUN apt-get update && apt-get upgrade -y \
+            && apt-get install -y \
+            openssh-server \
             sudo \
-            xfce4 xfce4-goodies \
-            xrdp dbus-x11 x11-xserver-utils \
-            openssh-server && \
-            apt clean
+            xfce4 xfce4-goodies xrdp \
+            dbus-x11 x11-xserver-utils systemd systemd-sysv \
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-        # Cria usuário
+        # cria usuário não-root
         ARG USER=master
         ARG UID=1000
-        RUN useradd -m -u $UID -s /bin/bash $USER && \
-            echo "$USER:senha123" | chpasswd && \
-            usermod -aG sudo $USER && \
-            echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-            mkdir -p /home/$USER/.ssh && chown $USER:$USER /home/$USER/.ssh
+        RUN useradd -m -u $UID -s /bin/bash $USER \
+            && echo "$USER:{senha}" | chpasswd \
+            && usermod -aG sudo $USER \
+            && echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-        # Habilita serviços
-        RUN systemctl enable ssh && \
-            systemctl enable xrdp
+        # habilita login por chave se você quiser (montaremos depois)
+        RUN mkdir -p /home/$USER/.ssh && chown $USER:$USER /home/$USER/.ssh
 
-        STOPSIGNAL SIGRTMIN+3
+        # prepara o diretório do daemon
+        RUN mkdir /var/run/sshd
+        
+        # Ativa o xrdp e systemd
+        RUN systemctl enable xrdp
         VOLUME ["/sys/fs/cgroup"]
-        EXPOSE 22 3389
-        CMD ["/sbin/init"]
+        STOPSIGNAL SIGRTMIN+3
+
+        # porta SSH para acesso remoto
+        EXPOSE 22
+        # porta RDP para desktop remoto
+        EXPOSE 3389 
+        
+        # mantém o contêiner de pé
+        CMD ["/usr/sbin/sshd", "-D"]
         """)
 
         run_args = [
