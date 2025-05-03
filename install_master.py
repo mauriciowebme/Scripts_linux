@@ -2522,7 +2522,7 @@ CMD ["sh", "-c", "\
         ENV DEBIAN_FRONTEND=noninteractive
 
         # instala componentes básicos
-        RUN apt-get update \
+        RUN apt-get update && apt-get upgrade -y \
             && apt-get install -y \
             openssh-server \
             sudo \
