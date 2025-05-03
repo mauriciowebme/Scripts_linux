@@ -2532,7 +2532,8 @@ CMD ["sh", "-c", "\
         
         RUN echo 'Instala os pacotes básicos'
         #--no-install-recommends
-        RUN apt-get install -y \
+        RUN apt-get update && apt-get upgrade -y \
+            apt-get install -y \
             wget \
             gdebi \
             python3 \
