@@ -2521,49 +2521,35 @@ CMD ["sh", "-c", "\
 
         ENV DEBIAN_FRONTEND=noninteractive
 
-        # instala componentes básicos
-        RUN apt-get update && apt-get upgrade -y \
+        # 1. instala o servidor SSH
+        RUN apt-get update \
             && apt-get install -y \
             openssh-server \
             sudo \
-            xfce4 xfce4-goodies xrdp \
-            dbus-x11 x11-xserver-utils systemd systemd-sysv \
             && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-        # cria usuário não-root
-        ARG USER=dev
+        # 2. cria usuário não-root
+        ARG USER=master
         ARG UID=1000
         RUN useradd -m -u $UID -s /bin/bash $USER \
             && echo "$USER:{senha}" | chpasswd \
             && usermod -aG sudo $USER \
             && echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-        # habilita login por chave se você quiser (montaremos depois)
+        # 3. habilita login por chave se você quiser (montaremos depois)
         RUN mkdir -p /home/$USER/.ssh && chown $USER:$USER /home/$USER/.ssh
 
-        # prepara o diretório do daemon
+        # 4. prepara o diretório do daemon
         RUN mkdir /var/run/sshd
-        
-        # Ativa o xrdp e systemd
-        RUN systemctl enable xrdp
-        VOLUME ["/sys/fs/cgroup"]
-        STOPSIGNAL SIGRTMIN+3
 
-        # porta SSH para acesso remoto
+        # 5. mantém o contêiner de pé
         EXPOSE 22
-        # porta RDP para desktop remoto
-        EXPOSE 3389 
-        
-        # mantém o contêiner de pé
-        CMD ["/lib/systemd/systemd"]
+        CMD ["/usr/sbin/sshd", "-D"]
         """)
 
         run_args = [
-            "--name", f"ubuntu_{nome}",
+            "--name", "ubuntu_",
             "-p", "2222:22",
-            "-p", "3389:3389",
-            "--privileged",
-            "-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro",
             "-d"
         ]
 
