@@ -2529,6 +2529,18 @@ CMD ["sh", "-c", "\
             sudo \
             systemd systemd-sysv dbus \
             && apt-get clean && rm -rf /var/lib/apt/lists/*
+        
+        RUN echo 'Instala os pacotes básicos'
+        #--no-install-recommends
+        RUN apt-get install -y \
+            wget \
+            gdebi \
+            python3 \
+            python3-pip \
+            htop \
+            unzip p7zip-full unrar \
+            xarchiver thunar-archive-plugin \
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
 
         # cria usuário não-root
         ARG USER=master
@@ -2554,18 +2566,6 @@ CMD ["sh", "-c", "\
             systemctl enable xrdp \
             && apt-get clean && rm -rf /var/lib/apt/lists/*
         EXPOSE 3389
-        
-        RUN echo 'Instala os pacotes básicos'
-        #--no-install-recommends
-        RUN apt-get install -y \
-            wget \
-            gdebi \
-            python3 \
-            python3-pip \
-            htop \
-            unzip p7zip-full unrar \
-            xarchiver thunar-archive-plugin \
-            && apt-get clean && rm -rf /var/lib/apt/lists/*
             
         # ----- Instala o chrome -----
         RUN echo 'Instala dpendencias do chrome'
