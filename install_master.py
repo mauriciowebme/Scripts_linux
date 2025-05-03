@@ -2531,7 +2531,7 @@ CMD ["sh", "-c", "\
             && apt-get clean && rm -rf /var/lib/apt/lists/*
 
         # cria usuário não-root
-        ARG USER=dev
+        ARG USER=master
         ARG UID=1000
         RUN useradd -m -u $UID -s /bin/bash $USER \
             && echo "$USER:{senha}" | chpasswd \
