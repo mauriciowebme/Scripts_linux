@@ -2522,19 +2522,24 @@ CMD ["sh", "-c", "\
         ENV DEBIAN_FRONTEND=noninteractive
         ENV container=docker
 
-        # Instala os pacotes básicos
-        #--no-install-recommends
-        RUN apt-get update && apt-get upgrade -y \
-            && apt-get install -y \
-            wget \
-            && apt-get clean && rm -rf /var/lib/apt/lists/*
-        
         # instala o servidor
         RUN apt-get update && apt-get upgrade -y \
             && apt-get install -y \
             openssh-server \
             sudo \
             systemd systemd-sysv dbus \
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
+        
+        # Instala os pacotes básicos
+        RUN apt-get update && apt-get upgrade -y \
+            && apt-get install -y \
+            wget \
+            gdebi \
+            python3 \
+            python3-pip \
+            htop \
+            unzip p7zip-full unrar \
+            xarchiver thunar-archive-plugin \
             && apt-get clean && rm -rf /var/lib/apt/lists/*
 
         # cria usuário não-root
