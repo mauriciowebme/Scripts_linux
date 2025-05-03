@@ -2520,7 +2520,7 @@ CMD ["sh", "-c", "\
         FROM ubuntu:22.04
 
         ENV DEBIAN_FRONTEND=noninteractive
-        ENV container docker
+        ENV container=docker
 
         # instala o servidor
         RUN apt-get update && apt-get upgrade -y \
