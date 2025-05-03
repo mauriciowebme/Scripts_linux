@@ -2561,6 +2561,9 @@ CMD ["sh", "-c", "\
         run_args = [
             "--name", "ubuntu_",
             "-p", "2222:22",
+            "-p", "3389:3389",
+            "--privileged",
+            "-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro",
             "-d"
         ]
 
