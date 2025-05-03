@@ -2523,16 +2523,16 @@ CMD ["sh", "-c", "\
         ENV container=docker
 
         # instala o servidor
-        RUN apt-get update && apt-get upgrade -y \
-            && apt-get install -y \
+        RUN apt update && apt upgrade -y \
+            && apt install -y \
             openssh-server \
             sudo \
             systemd systemd-sysv dbus \
-            && apt-get clean && rm -rf /var/lib/apt/lists/*
+            && apt clean && rm -rf /var/lib/apt/lists/*
         
         # Instala os pacotes básicos
-        RUN apt-get update && apt-get upgrade -y \
-            apt-get install -y \
+        RUN apt update && apt upgrade -y \
+            apt install -y \
             wget \
             gdebi \
             python3 \
@@ -2540,7 +2540,7 @@ CMD ["sh", "-c", "\
             htop \
             unzip p7zip-full unrar \
             xarchiver thunar-archive-plugin \
-            && apt-get clean && rm -rf /var/lib/apt/lists/*
+            && apt clean && rm -rf /var/lib/apt/lists/*
 
         # cria usuário não-root
         ARG USER=master
@@ -2561,15 +2561,15 @@ CMD ["sh", "-c", "\
         EXPOSE 22
         
         # --- GUI ---
-        RUN apt-get update && \
-            apt-get install -y xfce4 xfce4-goodies xrdp && \
+        RUN apt update && \
+            apt install -y xfce4 xfce4-goodies xrdp && \
             systemctl enable xrdp \
-            && apt-get clean && rm -rf /var/lib/apt/lists/*
+            && apt clean && rm -rf /var/lib/apt/lists/*
         EXPOSE 3389
             
         # ----- Instala o chrome -----
         # Instala dpendencias do chrome
-        RUN apt-get install -y \
+        RUN apt install -y \
             libxss1 \
             libappindicator3-1 \
             libindicator7 \
@@ -2579,7 +2579,7 @@ CMD ["sh", "-c", "\
             xdg-utils \
             libgbm-dev \
             dbus-x11 \
-            && apt-get clean && rm -rf /var/lib/apt/lists/*
+            && apt clean && rm -rf /var/lib/apt/lists/*
         
         # Instala o Google Chrome
         RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
@@ -2587,9 +2587,9 @@ CMD ["sh", "-c", "\
             echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] \
             http://dl.google.com/linux/chrome/deb/ stable main" \
             > /etc/apt/sources.list.d/google-chrome.list && \
-            apt-get update && \
-            apt-get install -y --no-install-recommends google-chrome-stable \
-            && apt-get clean && rm -rf /var/lib/apt/lists/*
+            apt update && \
+            apt install -y --no-install-recommends google-chrome-stable \
+            && apt clean && rm -rf /var/lib/apt/lists/*
             
         # Instala atalho Google Chrome
         # Cria o wrapper sem here-doc
