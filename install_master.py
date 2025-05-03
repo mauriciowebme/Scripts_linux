@@ -2527,8 +2527,30 @@ CMD ["sh", "-c", "\
             openssh-server \
             sudo \
             xfce4 xfce4-goodies xrdp \
-            dbus-x11 x11-xserver-utils systemd systemd-sysv \
+            dbus-x11 x11-xserver-utils \
             && apt-get clean && rm -rf /var/lib/apt/lists/*
+        
+        ENV container docker
+
+        # Enable apt repositories.
+        RUN sed -i 's/# deb/deb/g' /etc/apt/sources.list
+
+        # Enable systemd.
+        RUN apt-get update ; \
+            apt-get install -y systemd systemd-sysv ; \
+            apt-get clean ; \
+            rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* ; \
+            cd /lib/systemd/system/sysinit.target.wants/ ; \
+            ls | grep -v systemd-tmpfiles-setup | xargs rm -f $1 ; \
+            rm -f /lib/systemd/system/multi-user.target.wants/* ; \
+            rm -f /etc/systemd/system/*.wants/* ; \
+            rm -f /lib/systemd/system/local-fs.target.wants/* ; \
+            rm -f /lib/systemd/system/sockets.target.wants/*udev* ; \
+            rm -f /lib/systemd/system/sockets.target.wants/*initctl* ; \
+            rm -f /lib/systemd/system/basic.target.wants/* ; \
+            rm -f /lib/systemd/system/anaconda.target.wants/* ; \
+            rm -f /lib/systemd/system/plymouth* ; \
+            rm -f /lib/systemd/system/systemd-update-utmp*
 
         # cria usuário não-root
         ARG USER=master
@@ -2552,10 +2574,9 @@ CMD ["sh", "-c", "\
         # porta SSH para acesso remoto
         EXPOSE 22
         # porta RDP para desktop remoto
-        EXPOSE 3389 
-        
-        # mantém o contêiner de pé
-        CMD ["/usr/sbin/sshd", "-D"]
+        EXPOSE 3389
+
+        CMD ["/lib/systemd/systemd"]
         """)
 
         run_args = [
