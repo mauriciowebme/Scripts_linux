@@ -2559,7 +2559,7 @@ CMD ["sh", "-c", "\
             "--name", f"ubuntu_{nome}",
             "-p", "2222:22",
             "--privileged",
-            "-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro",
+            "-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
             "-d"
         ]
 
