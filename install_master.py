@@ -2525,7 +2525,7 @@ CMD ["sh", "-c", "\
         # Instala os pacotes básicos
         #--no-install-recommends
         RUN apt-get update && apt-get upgrade -y \
-            apt-get install -y \
+            && apt-get install -y \
             wget \
             && apt-get clean && rm -rf /var/lib/apt/lists/*
         
