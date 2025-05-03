@@ -2548,6 +2548,8 @@ CMD ["sh", "-c", "\
         RUN systemctl enable xrdp
         VOLUME ["/sys/fs/cgroup"]
         STOPSIGNAL SIGRTMIN+3
+        
+        RUN systemctl enable ssh
 
         # porta SSH para acesso remoto
         EXPOSE 22
@@ -2555,7 +2557,7 @@ CMD ["sh", "-c", "\
         EXPOSE 3389 
         
         # mantém o contêiner de pé
-        CMD ["/usr/sbin/sshd", "-D", "/lib/systemd/systemd"]
+        CMD ["/lib/systemd/systemd"]
         """)
 
         run_args = [
