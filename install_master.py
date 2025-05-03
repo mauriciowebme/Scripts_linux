@@ -2551,8 +2551,8 @@ CMD ["sh", "-c", "\
         # --- GUI ---
         RUN apt-get update && \
             apt-get install -y xfce4 xfce4-goodies xrdp && \
-            systemctl enable xrdp && \
-            apt-get clean && rm -rf /var/lib/apt/lists/*
+            systemctl enable xrdp \
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
         EXPOSE 3389
         
         RUN echo 'Instala os pacotes básicos'
@@ -2564,7 +2564,8 @@ CMD ["sh", "-c", "\
             python3-pip \
             htop \
             unzip p7zip-full unrar \
-            file-roller xarchiver thunar-archive-plugin
+            xarchiver thunar-archive-plugin \
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
             
         # ----- Instala o chrome -----
         RUN echo 'Instala dpendencias do chrome'
@@ -2577,7 +2578,8 @@ CMD ["sh", "-c", "\
             libgtk-3-0 \
             xdg-utils \
             libgbm-dev \
-            dbus-x11
+            dbus-x11 \
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
         
         RUN echo 'Instala o Google Chrome'
         RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
@@ -2586,8 +2588,8 @@ CMD ["sh", "-c", "\
             http://dl.google.com/linux/chrome/deb/ stable main" \
             > /etc/apt/sources.list.d/google-chrome.list && \
             apt-get update && \
-            apt-get install -y --no-install-recommends google-chrome-stable && \
-            apt-get clean && rm -rf /var/lib/apt/lists/*
+            apt-get install -y --no-install-recommends google-chrome-stable \
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
             
         RUN echo 'Instala atalho Google Chrome'
         RUN echo 'Cria o wrapper sem here-doc'
