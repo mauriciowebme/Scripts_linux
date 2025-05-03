@@ -2520,15 +2520,17 @@ CMD ["sh", "-c", "\
         FROM ubuntu:22.04
 
         ENV DEBIAN_FRONTEND=noninteractive
+        ENV container docker
 
-        # 1. instala o servidor SSH
+        # instala o servidor
         RUN apt-get update && apt-get upgrade -y \
             && apt-get install -y \
             openssh-server \
             sudo \
+            systemd systemd-sysv dbus \
             && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-        # 2. cria usuário não-root
+        # cria usuário não-root
         ARG USER=master
         ARG UID=1000
         RUN useradd -m -u $UID -s /bin/bash $USER \
@@ -2536,20 +2538,28 @@ CMD ["sh", "-c", "\
             && usermod -aG sudo $USER \
             && echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-        # 3. habilita login por chave se você quiser (montaremos depois)
+        # habilita login por chave se você quiser (montaremos depois)
         RUN mkdir -p /home/$USER/.ssh && chown $USER:$USER /home/$USER/.ssh
 
-        # 4. prepara o diretório do daemon
+        # prepara o diretório do daemon
         RUN mkdir /var/run/sshd
+        
+        # habilita o serviço SSH para subir junto com o systemd
+        RUN systemctl enable ssh
 
-        # 5. mantém o contêiner de pé
         EXPOSE 22
-        CMD ["/usr/sbin/sshd", "-D"]
+        
+        VOLUME [ "/sys/fs/cgroup" ]
+        
+        STOPSIGNAL SIGRTMIN+3
+        CMD ["/sbin/init"]
         """)
 
         run_args = [
             "--name", "ubuntu_",
             "-p", "2222:22",
+            "--privileged",
+            "-v", "/sys/fs/cgroup:/sys/fs/cgroup:ro",
             "-d"
         ]
 
