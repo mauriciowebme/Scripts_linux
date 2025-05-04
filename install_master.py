@@ -424,7 +424,7 @@ class Docker(Executa_comados):
         return container
 
     def iniciar_monitoramento(self):
-        conteudo = textwrap("""\
+        conteudo = textwrap.dedent("""\
         global:
         scrape_interval: 15s
 
