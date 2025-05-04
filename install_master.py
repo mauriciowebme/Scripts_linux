@@ -424,6 +424,7 @@ class Docker(Executa_comados):
         return container
 
     def iniciar_monitoramento(self):
+        print("Iniciando instalação de monitoramento com Prometheus, Node Exporter e Grafana.")
         conteudo = textwrap.dedent("""\
         global:
             scrape_interval: 15s
