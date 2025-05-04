@@ -10,10 +10,18 @@ import json
 import random
 import re
 import tempfile
-import os, sys, time, subprocess, importlib.util, textwrap
+import os, sys, time, subprocess, textwrap
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Union
 from datetime import datetime
+try:
+    import mysql.connector
+except ImportError:
+    pass
+try:
+    import yaml
+except ImportError:
+    pass
 
 def check_for_update():
     update_file = Path("/install_principal/update_check.txt")
@@ -3182,7 +3190,7 @@ class Sistema(Docker, Executa_comados):
         gateway = input("Digite o endereço do gateway (ex: 192.168.0.1): ")
 
         # Solicita os servidores de DNS
-        dns = input("Digite os endereços de DNS separados por vírgula (ex: 8.8.8.8,8.8.4.4): ")
+        dns = input("Digite os endereços de DNS separados por vírgula (ex: 8.8.8.8, 8.8.4.4): ")
         dns_list = [dns.strip() for dns in dns.split(",")]
 
         # Nome do arquivo de configuração do Netplan
