@@ -424,18 +424,19 @@ class Docker(Executa_comados):
         return container
 
     def iniciar_monitoramento(self):
-        conteudo = """global:
-  scrape_interval: 15s
+        conteudo = textwrap("""\
+        global:
+        scrape_interval: 15s
 
-scrape_configs:
-  - job_name: 'prometheus'
-    static_configs:
-      - targets: ['localhost:9090']
+        scrape_configs:
+        - job_name: 'prometheus'
+            static_configs:
+            - targets: ['localhost:9090']
 
-  - job_name: 'node_exporter'
-    static_configs:
-      - targets: ['node-exporter:9100']
-"""
+        - job_name: 'node_exporter'
+            static_configs:
+            - targets: ['node-exporter:9100']
+        """)
         caminho = f'{self.install_principal}/prometheus/prometheus.yml'
         comandos = [
             f"mkdir -p {self.install_principal}/prometheus/",
@@ -1783,32 +1784,6 @@ module.exports = { setupPythonEnv, runPythonScript };
             self.cria_rede_docker(associar_container_nome=f'guacamole_guacd', numero_rede=0)
         self.cria_rede_docker(associar_container_nome=f'guacamole', numero_rede=1)
         self.cria_rede_docker(associar_container_nome=f'guacamole_guacd', numero_rede=1)
-    
-    # def instala_webserver_ssh(self,):
-    #     caminho_webssh = f"{self.install_principal}/webssh"
-    #     self.gerenciar_permissoes_pasta(caminho_webssh, '777')
-    #     print('Porta interna para uso: 8080')
-    #     # -e HOST=0.0.0.0 \
-    #     container = f"""docker run -d \
-    #                     --name webssh \
-    #                     --restart=unless-stopped \
-    #                     -p 8081:8080 \
-    #                     -v {caminho_webssh}:/home/node/server/data \
-    #                     shellngn/pro:latest
-    #                 """
-    #     resposta = input('Deseja redirecionar com traefik?: S ou N: ')
-    #     # if resposta.lower() == 's':
-    #     #     container = self.adiciona_redirecionamento_traefik(container)
-        
-    #     comandos = [
-    #         container,
-    #         ]
-    #     self.remove_container('webssh')
-    #     resultados = self.executar_comandos(comandos)
-    #     if resposta.lower() == 's':
-    #         self.adiciona_roteador_servico_traefik(endereco='webssh', porta='8080')
-    #         self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=0)
-    #     self.cria_rede_docker(associar_container_nome=f'webssh', numero_rede=1)
         
     def instala_postgres(self, selecao=None):
         if not selecao:
@@ -3857,7 +3832,6 @@ class Sistema(Docker, Executa_comados):
             ("Adiciona roteamento e serviço ao traefik", self.adiciona_roteador_servico_traefik),
             ("Configura rede do container", self.configura_rede),
             ("Instala webserver guacamole", self.instala_webserver_guacamole),
-            # ("Instala webserver ssh", self.instala_webserver_ssh),
             ("Gerenciador SFTP sftpgo", self.gerenciar_usuarios_sftp),
             ("Instala SFTP sftpgo", self.instala_ftp_sftpgo),
             ("Instala mysql", self.instala_mysql),
