@@ -462,6 +462,9 @@ class Docker(Executa_comados):
                 grafana/grafana
             """,
         ]
+        self.remove_container('prometheus')
+        self.remove_container('node-exporter')
+        self.remove_container('grafana')
         self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome='prometheus', numero_rede=1)
         self.cria_rede_docker(associar_container_nome='node-exporter', numero_rede=1)
