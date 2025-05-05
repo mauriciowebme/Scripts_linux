@@ -3616,7 +3616,7 @@ class Sistema(Docker, Executa_comados):
         delete: bool = True,
         verbose: bool = True,
         extra_opts: Union[List[str], None] = None,
-        max_retries: int = 3
+        max_retries: int = 100
     ) -> None:
         """
         Sincroniza o conteúdo de 'origem' para 'destino' usando rsync.
