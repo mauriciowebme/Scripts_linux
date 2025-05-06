@@ -3662,7 +3662,6 @@ class Sistema(Docker, Executa_comados):
         
         # Cria o diretório de destino se não existir
         os.makedirs(destino, exist_ok=True)
-        self.gerenciar_permissoes_pasta(destino, '777')
 
         # Base do comando
         cmd = ["rsync", "-rlptD", "--no-perms", "--no-owner", "--no-group",]
@@ -3697,6 +3696,7 @@ class Sistema(Docker, Executa_comados):
             except subprocess.CalledProcessError as e:
                 if tentativa < max_retries:
                     print(f"\nErro durante a tentativa {tentativa}: {e}")
+                    print(f"\nAlterando permissões da pasta de destino para 777, para tentar terminar a copia.")
                     self.gerenciar_permissoes_pasta(destino, '777')
                     print(f"\nAguardando 5 segundos antes de tentar novamente...\n")
                     time.sleep(5)
