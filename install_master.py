@@ -3696,9 +3696,9 @@ class Sistema(Docker, Executa_comados):
                 return  # Sai da função se bem-sucedido
             except subprocess.CalledProcessError as e:
                 if tentativa < max_retries:
-                    print(f"Erro durante a tentativa {tentativa}: {e}")
-                    print(f"Aguardando 5 segundos antes de tentar novamente...")
+                    print(f"\nErro durante a tentativa {tentativa}: {e}")
                     self.gerenciar_permissoes_pasta(destino, '777')
+                    print(f"\nAguardando 5 segundos antes de tentar novamente...\n")
                     time.sleep(5)
                 else:
                     print(f"Falha após {max_retries} tentativas. Último erro: {e}")
