@@ -3655,7 +3655,6 @@ class Sistema(Docker, Executa_comados):
             "--no-group",        # não mantém grupo
             "--partial",         # mantém partes de arquivos grandes
             "--inplace",         # continua baixando no mesmo arquivo
-            "--delay-updates",   # aplica mudanças todas juntas ao final
             "--progress",
             "--info=progress2",
             "-h",
