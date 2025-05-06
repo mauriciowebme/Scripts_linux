@@ -3610,98 +3610,96 @@ class Sistema(Docker, Executa_comados):
         # Executar o comando sensors
         self.executar_comandos(["speedtest "], comando_direto=True)
 
-    def rsync_sync(self,
-        origem: str = None,
-        destino: str = None,
+    def rsync_sync(
+        self,
+        origem: str | None = None,
+        destino: str | None = None,
         delete: bool = True,
         verbose: bool = True,
         extra_opts: Union[List[str], None] = None,
-        max_retries: int = 100
+        max_retries: int = 100,
     ) -> None:
         """
         Sincroniza o conteúdo de 'origem' para 'destino' usando rsync.
 
-        Parâmetros:
-        -----------
-        origem : str
-            Caminho da pasta de origem. Pode terminar com '/' ou não.
-        destino : str
-            Caminho da pasta de destino. Pode terminar com '/' ou não.
-        delete : bool, opcional (padrão True)
-            Se True, remove em destino arquivos que não existem mais em origem.
-        verbose : bool, opcional (padrão True)
-            Se True, inclui '-v' para saída detalhada.
-        extra_opts : List[str], opcional
-            Lista de opções adicionais a passar ao rsync (ex.: ['--exclude', '*.tmp']).
-        max_retries : int, opcional (padrão 3)
-            Número máximo de tentativas em caso de falha.
+        Se algum arquivo falhar, rsync continua com o restante; o laço repete
+        até não restarem pendências (exit-code 0) ou estourar `max_retries`.
 
-        Lança:
-        ------
-        subprocess.CalledProcessError
-            Se o comando rsync retornar código de erro após todas as tentativas.
+        Lança
+        -----
+        subprocess.CalledProcessError – se rsync retornar erro “fatal”.
         """
-        # Verifica se o rsync está instalado
+        # 1) garante que rsync existe
         if not shutil.which("rsync"):
-            print("rsync não encontrado. Instalando...")
-            self.executar_comandos(["sudo apt update", "sudo apt install -y rsync"], comando_direto=True)
+            print("rsync não encontrado. Instalando…")
+            self.executar_comandos(
+                ["sudo apt update", "sudo apt install -y rsync"], comando_direto=True
+            )
             if not shutil.which("rsync"):
-                print("Falha ao instalar rsync. Abortando operação.")
-                return
+                raise RuntimeError("Falha ao instalar rsync.")
 
-        # Solicita caminhos se não forem fornecidos
-        if origem is None:
-            origem = input("Digite o caminho da pasta de origem: ").strip()
-        if destino is None:
-            destino = input("Digite o caminho da pasta de destino: ").strip()
+        # 2) obtém caminhos caso não passem via parâmetro
+        origem = origem or input("Digite o caminho da pasta de origem: ").strip()
+        destino = destino or input("Digite o caminho da pasta de destino: ").strip()
 
-        # Verifica se os caminhos existem
         if not os.path.exists(origem):
-            print(f"Erro: O caminho de origem '{origem}' não existe.")
-            return
-        
-        # Cria o diretório de destino se não existir
+            raise FileNotFoundError(f"Caminho de origem não existe: {origem}")
+
         os.makedirs(destino, exist_ok=True)
 
-        # Base do comando
-        cmd = ["rsync", "-rlptD", "--no-perms", "--no-owner", "--no-group",]
-
+        # 3) monta comando base
+        cmd = [
+            "rsync",
+            "-rltD",             # recursivo, preserva links, tempos, devices (mas não perms)
+            "--no-owner",        # não mantém owner
+            "--no-group",        # não mantém grupo
+            "--partial",         # mantém partes de arquivos grandes
+            "--inplace",         # continua baixando no mesmo arquivo
+            "--delay-updates",   # aplica mudanças todas juntas ao final
+            "--progress",
+            "--info=progress2",
+            "-h",
+        ]
         if verbose:
             cmd.append("-v")
-        # inclui '-h' para tamanhos em formato legível (KB, MB, …).
-        cmd.append("-h")
-        # Adiciona a opção de progresso
-        cmd.append("--progress")
-        # Adiciona informação parcial para grandes arquivos
-        cmd.append("--info=progress2")
         if delete:
             cmd.append("--delete")
         if extra_opts:
             cmd.extend(extra_opts)
 
-        # Garante que copiamos o conteúdo interno, incluindo ocultos
         origem_path = origem.rstrip("/") + "/"
         destino_path = destino.rstrip("/") + "/"
         cmd.extend([origem_path, destino_path])
 
-        print(f"\n🔄 Sincronizando 🔄 : {origem_path} ➡️ {destino_path}\n")
-        
-        # Executa o rsync com tentativas de repetição
+        print(f"\n🔄  Sincronizando: {origem_path} ➡️  {destino_path}\n")
+
+        # 4) executa até concluir ou exceder tentativas
         for tentativa in range(1, max_retries + 1):
-            try:
-                # Usando subprocess.run sem capturar output para exibir progresso no terminal
-                subprocess.run(cmd, check=True)
-                print("Sincronização concluída com sucesso.")
-                return  # Sai da função se bem-sucedido
-            except subprocess.CalledProcessError as e:
-                if tentativa < max_retries:
-                    print(f"\nErro durante a tentativa {tentativa}: {e}")
-                    print(f"\nAlterando permissões da pasta de destino para 777, para tentar terminar a copia.")
-                    self.gerenciar_permissoes_pasta(destino, '777')
-                    print(f"\nAguardando 5 segundos antes de tentar novamente...\n")
-                    time.sleep(5)
-                else:
-                    print(f"Falha após {max_retries} tentativas. Último erro: {e}")
+            result = subprocess.run(cmd)
+            rc = result.returncode
+
+            if rc == 0:
+                print("✅  Sincronização concluída sem pendências.")
+                return
+
+            # 23/24: arquivos faltando ou removidos ─ tentar de novo
+            if rc in (23, 24):
+                print(f"[{tentativa}/{max_retries}] Ainda há arquivos pendentes "
+                    f"(exit-code {rc}). Nova tentativa em 5 s…")
+                time.sleep(5)
+                continue
+
+            # 11: erro de I/O – tenta ajustar permissões e repetir
+            if rc == 11 and tentativa < max_retries:
+                print(f"[{tentativa}/{max_retries}] Erro de I/O. Ajustando permissões…")
+                self.gerenciar_permissoes_pasta(destino, "777")
+                time.sleep(5)
+                continue
+
+            # demais códigos ou fim das tentativas → aborta
+            raise subprocess.CalledProcessError(rc, cmd)
+
+        raise RuntimeError(f"Falhou após {max_retries} tentativas.")
 
     def setup_inicializar_service(self):
         """
