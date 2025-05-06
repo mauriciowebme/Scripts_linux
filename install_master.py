@@ -350,7 +350,7 @@ class Docker(Executa_comados):
         
         # Solicitar novas permissões
         if permissao == None:
-            novas_permissoes = input("Digite as novas permissões em formato octal (ex: 755): ").strip()
+            novas_permissoes = input("Digite as novas permissões em formato octal (ex: 777): ").strip()
         else:
             novas_permissoes = permissao.strip()
         
@@ -359,7 +359,6 @@ class Docker(Executa_comados):
             
             # Alterar permissões da pasta principal
             os.chmod(pasta, novas_permissoes)
-            print(f"Permissões de '{pasta}' alteradas para: {oct(novas_permissoes)}")
             
             # Alterar permissões de subpastas e arquivos
             for root, dirs, files in os.walk(pasta):
@@ -367,7 +366,7 @@ class Docker(Executa_comados):
                     try:
                         caminho = os.path.join(root, nome)
                         os.chmod(caminho, novas_permissoes)
-                        print(f"Permissões alteradas para a pasta: {caminho}")
+                        # print(f"Permissões alteradas para a pasta: {caminho}")
                     except:
                         print(f"Erro ao alterar permissões para a pasta: {caminho}")
                 
@@ -375,9 +374,10 @@ class Docker(Executa_comados):
                     try:
                         caminho = os.path.join(root, nome)
                         os.chmod(caminho, novas_permissoes)
-                        print(f"Permissões alteradas para o arquivo: {caminho}")
+                        # print(f"Permissões alteradas para o arquivo: {caminho}")
                     except:
                         print(f"Erro ao alterar permissões para o arquivo: {caminho}")
+            print(f"Permissões de '{pasta}', subpastas e itens alteradas para: {oct(novas_permissoes)}")
         except ValueError:
             print("Erro: Permissões inválidas. Certifique-se de digitar um número octal válido.")
         except PermissionError:
@@ -3662,6 +3662,7 @@ class Sistema(Docker, Executa_comados):
         
         # Cria o diretório de destino se não existir
         os.makedirs(destino, exist_ok=True)
+        self.gerenciar_permissoes_pasta(destino, '777')
 
         # Base do comando
         cmd = ["rsync", "-a"]
@@ -3697,6 +3698,7 @@ class Sistema(Docker, Executa_comados):
                 if tentativa < max_retries:
                     print(f"Erro durante a tentativa {tentativa}: {e}")
                     print(f"Aguardando 5 segundos antes de tentar novamente...")
+                    self.gerenciar_permissoes_pasta(destino, '777')
                     time.sleep(5)
                 else:
                     print(f"Falha após {max_retries} tentativas. Último erro: {e}")
