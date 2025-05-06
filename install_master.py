@@ -3674,6 +3674,7 @@ class Sistema(Docker, Executa_comados):
 
         # 4) executa até concluir ou exceder tentativas
         for tentativa in range(1, max_retries + 1):
+            self.gerenciar_permissoes_pasta(destino, "777")
             result = subprocess.run(cmd)
             rc = result.returncode
 
@@ -3690,8 +3691,7 @@ class Sistema(Docker, Executa_comados):
 
             # 11: erro de I/O – tenta ajustar permissões e repetir
             if rc == 11 and tentativa < max_retries:
-                print(f"[{tentativa}/{max_retries}] Erro de I/O. Ajustando permissões…")
-                self.gerenciar_permissoes_pasta(destino, "777")
+                print(f"[{tentativa}/{max_retries}] Erro de I/O.")
                 time.sleep(5)
                 continue
 
