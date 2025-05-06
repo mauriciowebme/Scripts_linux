@@ -3685,7 +3685,7 @@ class Sistema(Docker, Executa_comados):
         destino_path = destino.rstrip("/") + "/"
         cmd.extend([origem_path, destino_path])
 
-        print(f"🔄 Sincronizando: {origem_path} ➡️ {destino_path}")
+        print(f"🔄 Sincronizando 🔄 : {origem_path} ➡️ {destino_path}")
         
         # Executa o rsync com tentativas de repetição
         for tentativa in range(1, max_retries + 1):
