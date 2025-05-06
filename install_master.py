@@ -3665,7 +3665,7 @@ class Sistema(Docker, Executa_comados):
         self.gerenciar_permissoes_pasta(destino, '777')
 
         # Base do comando
-        cmd = ["rsync", "-a"]
+        cmd = ["rsync", "-rlptD", "--no-perms", "--no-owner", "--no-group",]
 
         if verbose:
             cmd.append("-v")
