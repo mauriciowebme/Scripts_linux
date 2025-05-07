@@ -854,13 +854,16 @@ listener Default {{
 
         nome = "teste"
         
-        caminho = f"{self.install_principal}/windows_SKVM_{nome}"
+        caminho_dados = f"{self.install_principal}/windows_SKVM_{nome}/dados"
+        caminho_disco = f"{self.install_principal}/windows_SKVM_{nome}/disco"
         caminho_isos = f"{self.install_principal}/windows_SKVM_{nome}/isos"
-        os.makedirs(caminho, exist_ok=True)
+        os.makedirs(caminho_dados, exist_ok=True)
         os.makedirs(caminho_isos, exist_ok=True)
-        os.chmod(caminho, 0o777)
+        os.makedirs(caminho_disco, exist_ok=True)
+        os.chmod(caminho_dados, 0o777)
         os.chmod(caminho_isos, 0o777)
-        
+        os.chmod(caminho_disco, 0o777)
+
         dockerfile = textwrap.dedent(f"""\
         FROM ubuntu:22.04
 
@@ -874,18 +877,20 @@ listener Default {{
             && apt-get clean && rm -rf /var/lib/apt/lists/*
 
         # 2) Diretório dedicado à VM
-        RUN mkdir /vm
+        RUN mkdir /discos
+        RUN mkdir /dados
 
         # 3) Cria disco de 30 GB já durante o build
-        RUN qemu-img create -f qcow2 /vm/win.qcow2 30G
+        RUN qemu-img create -f qcow2 /discos/win.qcow2 30G
 
-        # 4) Marca /vm como ponto de volume para persistir fora da imagem
-        VOLUME /vm
+        # 4) Marca /discos como ponto de volume para persistir fora da imagem
+        VOLUME /discos
+        VOLUME /dados
 
         # 5) Comando padrão (TCG puro, VNC na porta 5900)
         CMD ["qemu-system-x86_64", \
             "-m", "2048", \
-            "-hda", "/vm/win.qcow2", \
+            "-hda", "/discos/win.qcow2", \
             "-cpu", "max", \
             "-cdrom", "/isos/windows.iso", \
             "-boot", "d", \
@@ -899,7 +904,8 @@ listener Default {{
             "-p", "5900:5900",
             "--cgroupns=host",
             "-v", f"{caminho_isos}:/isos:ro",
-            "-v", f"{caminho}:/vm",
+            # "-v", f"{caminho_disco}:/discos",
+            "-v", f"{caminho_dados}:/dados",
             "-d"
         ]
 
