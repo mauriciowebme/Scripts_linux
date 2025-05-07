@@ -888,14 +888,16 @@ listener Default {{
         VOLUME /dados
 
         # 5) Comando padrão (TCG puro, VNC na porta 5900)
-        CMD ["qemu-system-x86_64", \
-            "-m", "2048", \
-            "-hda", "/discos/win.qcow2", \
-            "-cpu", "max", \
-            "-cdrom", "/isos/windows.iso", \
-            "-boot", "d", \
-            "-vnc", ":0", \
-            "-net", "nic,model=virtio", \
+        CMD ["qemu-system-x86_64",
+            "-m", "4096",                   # 4 GB de RAM
+            "-cpu", "qemu64",               # CPU genérica segura
+            "-hda", "/discos/win.qcow2",
+            "-vga", "qxl",                  # Placa de vídeo QXL
+            "-device", "usb-tablet",        # Mouse absoluto p/ VNC
+            "-cdrom", "/isos/windows.iso",
+            "-boot", "d",
+            "-vnc", ":0",                   # Exposto na porta 5900
+            "-net", "nic,model=virtio",
             "-net", "user"]
         """)
 
