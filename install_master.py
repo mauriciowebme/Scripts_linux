@@ -893,6 +893,7 @@ listener Default {{
             "-cpu", "qemu64", \
             "-hda", "/discos/win.qcow2", \
             "-vga", "qxl", \
+            "-usb", "-device", "usb-tablet", \
             "-cdrom", "/isos/windows.iso", \
             "-boot", "d", \
             "-vnc", ":0", \
