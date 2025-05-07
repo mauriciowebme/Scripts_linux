@@ -875,26 +875,31 @@ listener Default {{
 
         ENV DEBIAN_FRONTEND=noninteractive
 
-        # instala basica
-        RUN apt-get update && apt-get upgrade -y \
-            && apt-get install -y \
-            openssh-server \
-            sudo \
-            wget \
-            curl \
-            qemu-system-x86 \
+        # 1) Pacotes necessários
+        RUN apt-get update && \
+            apt-get install -y \
+                qemu-system-x86 \
+                qemu-utils \
             && apt-get clean && rm -rf /var/lib/apt/lists/*
-        
-        RUN qemu-img create -f qcow2 /win.qcow2 30G
-        
-        CMD ["qemu-system-x86_64",
-            "-m", "2048",
-            "-hda", "/win.qcow2",
-            "-cpu", "max",
-            "-cdrom", "/isos/windows.iso",
-            "-boot", "d",
-            "-vnc", ":0",
-            "-net", "nic,model=virtio",
+
+        # 2) Diretório dedicado à VM
+        RUN mkdir /vm
+
+        # 3) Cria disco de 30 GB já durante o build
+        RUN qemu-img create -f qcow2 /vm/win.qcow2 30G
+
+        # 4) Marca /vm como ponto de volume para persistir fora da imagem
+        VOLUME /vm
+
+        # 5) Comando padrão (TCG puro, VNC na porta 5900)
+        CMD ["qemu-system-x86_64", \
+            "-m", "2048", \
+            "-hda", "/vm/win.qcow2", \
+            "-cpu", "max", \
+            "-cdrom", "/isos/windows.iso", \
+            "-boot", "d", \
+            "-vnc", ":0", \
+            "-net", "nic,model=virtio", \
             "-net", "user"]
         """)
 
@@ -903,7 +908,7 @@ listener Default {{
             "-p", "5900:5900",
             "--cgroupns=host",
             "-v", f"{caminho_isos}:/isos:ro",
-            "-v", f"{disk_path}:/win.qcow2",
+            "-v", f"{disk_path}:/vm",
             "-d"
         ]
 
