@@ -892,7 +892,6 @@ listener Default {{
             "-m", "2048", \
             "-smp", "1", \
             "-cpu", "core2duo", \
-            "-machine","pc-1.0", \
             "-no-hpet", \
             "-global", "pit.reinject=false", \
             "-hda", "/discos/win.qcow2", \
