@@ -855,21 +855,12 @@ listener Default {{
         nome = "teste"
         
         caminho = f"{self.install_principal}/windows_SKVM_{nome}"
-        caminho_disco = f"{self.install_principal}/windows_SKVM_{nome}/disco"
         caminho_isos = f"{self.install_principal}/windows_SKVM_{nome}/isos"
         os.makedirs(caminho, exist_ok=True)
         os.makedirs(caminho_isos, exist_ok=True)
-        os.makedirs(caminho_disco, exist_ok=True)
         os.chmod(caminho, 0o777)
         os.chmod(caminho_isos, 0o777)
-        os.chmod(caminho_disco, 0o777)
         
-        disk_path = Path(caminho_disco) / "win.qcow2"
-        if not disk_path.exists():
-            subprocess.run(["qemu-img", "create", "-f", "qcow2", str(disk_path), "30G"])
-        
-        self.remove_container(f"windows_SKVM_{nome}")
-
         dockerfile = textwrap.dedent(f"""\
         FROM ubuntu:22.04
 
@@ -908,10 +899,11 @@ listener Default {{
             "-p", "5900:5900",
             "--cgroupns=host",
             "-v", f"{caminho_isos}:/isos:ro",
-            "-v", f"{disk_path}:/vm",
+            "-v", f"{caminho}:/vm",
             "-d"
         ]
 
+        self.remove_container(f"windows_SKVM_{nome}")
         self.executar_comandos_run_OrAnd_dockerfile(
             dockerfile_str=dockerfile,
             run_cmd=run_args
