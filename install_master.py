@@ -902,7 +902,6 @@ listener Default {{
         run_args = [
             "--name", f"windows_SKVM_{nome}",
             "-p", "5900:5900",
-            "--cgroupns=host",
             "-v", f"{caminho_isos}:/isos:ro",
             # "-v", f"{caminho_disco}:/discos",
             "-v", f"{caminho_dados}:/dados",
