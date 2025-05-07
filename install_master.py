@@ -849,7 +849,72 @@ listener Default {{
         print(f"Configuração do site '{nome_dominio_}' criada com sucesso!")
         print(f"Arquivos criados em: {site_dir}")
         
-    def instala_windows_docker(self,):
+    def instala_windows_SKVM_docker(self,):
+        print("Iniciando instalação do container windows_SKVM.")
+
+        nome = "teste"
+        
+        caminho = f"{self.install_principal}/windows_SKVM_{nome}"
+        caminho_disco = f"{self.install_principal}/windows_SKVM_{nome}/disco"
+        caminho_isos = f"{self.install_principal}/windows_SKVM_{nome}/isos"
+        os.makedirs(caminho, exist_ok=True)
+        os.makedirs(caminho_isos, exist_ok=True)
+        os.makedirs(caminho_disco, exist_ok=True)
+        os.chmod(caminho, 0o777)
+        os.chmod(caminho_isos, 0o777)
+        os.chmod(caminho_disco, 0o777)
+        
+        disk_path = Path(caminho_disco) / "win.qcow2"
+        if not disk_path.exists():
+            subprocess.run(["qemu-img", "create", "-f", "qcow2", str(disk_path), "30G"])
+        
+        self.remove_container(f"windows_SKVM_{nome}")
+
+        dockerfile = textwrap.dedent(f"""\
+        FROM ubuntu:22.04
+
+        ENV DEBIAN_FRONTEND=noninteractive
+
+        # instala basica
+        RUN apt-get update && apt-get upgrade -y \
+            && apt-get install -y \
+            openssh-server \
+            sudo \
+            wget \
+            curl \
+            qemu-system-x86 \
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
+        
+        RUN qemu-img create -f qcow2 /win.qcow2 30G
+        
+        CMD ["qemu-system-x86_64",
+            "-m", "2048",
+            "-hda", "/win.qcow2",
+            "-cpu", "max",
+            "-cdrom", "/isos/windows.iso",
+            "-boot", "d",
+            "-vnc", ":0",
+            "-net", "nic,model=virtio",
+            "-net", "user"]
+        """)
+
+        run_args = [
+            "--name", f"windows_SKVM_{nome}",
+            "-p", "5900:5900",
+            "--cgroupns=host",
+            "-v", f"{caminho_isos}:/isos:ro",
+            "-v", f"{disk_path}:/win.qcow2",
+            "-d"
+        ]
+
+        self.executar_comandos_run_OrAnd_dockerfile(
+            dockerfile_str=dockerfile,
+            run_cmd=run_args
+        )
+
+        print("\nInstalação do windows_SKVM concluída.")
+        
+    def instala_windows_KVM_docker(self,):
         # link do projeto: https://github.com/dockur/windows
         
          # Verifica suporte à virtualização
@@ -3846,7 +3911,8 @@ class Sistema(Docker, Executa_comados):
             ("Instala app nodejs", self.instala_app_nodejs),
             ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
             ("Start sync pastas com RSYNC", self.start_sync_pastas),
-            ("Instala windows docker", self.instala_windows_docker),
+            ("Instala windows KVM docker", self.instala_windows_KVM_docker),
+            ("Instala windows SKVM docker", self.instala_windows_SKVM_docker),
             ("Instala rustdesk", self.instala_rustdesk),
             ("Instala pritunel", self.instala_pritunel),
             ("Instala nextcloud", self.instala_nextcloud),
