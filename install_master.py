@@ -870,8 +870,8 @@ listener Default {{
         ENV DEBIAN_FRONTEND=noninteractive
 
         # 1) Pacotes necessários
-        RUN apt-get update && \
-            apt-get install -y \
+        RUN apt-get update && apt-get upgrade -y \
+            && apt-get install -y \
                 qemu-system-x86 \
                 qemu-utils \
             && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -889,9 +889,12 @@ listener Default {{
 
         # 5) Comando padrão (TCG puro, VNC na porta 5900)
         CMD ["qemu-system-x86_64", \
-            "-m", "4096", \
-            "-smp","2,sockets=1,cores=2,threads=1", \
-            "-cpu", "Westmere", \
+            "-m", "2048", \
+            "-smp", "1", \
+            "-cpu", "core2duo", \
+            "-machine","pc-1.0", \
+            "-no-hpet", \
+            "-global", "pit.reinject=false", \
             "-hda", "/discos/win.qcow2", \
             "-vga", "std", \
             "-usb", \
@@ -900,8 +903,7 @@ listener Default {{
             "-boot", "d", \
             "-vnc", ":0", \
             "-net", "nic,model=e1000", \
-            "-net", "user", \
-            "-accel","tcg,thread=multi"] 
+            "-net", "user"] 
         """)
 
         run_args = [
@@ -910,6 +912,9 @@ listener Default {{
             "-v", f"{caminho_isos}:/isos:ro",
             # "-v", f"{caminho_disco}:/discos",
             "-v", f"{caminho_dados}:/dados",
+            "--cgroupns=host",
+            "--privileged",
+            "-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
             "-d"
         ]
 
