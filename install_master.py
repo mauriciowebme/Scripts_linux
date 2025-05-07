@@ -890,15 +890,18 @@ listener Default {{
         # 5) Comando padrão (TCG puro, VNC na porta 5900)
         CMD ["qemu-system-x86_64", \
             "-m", "4096", \
-            "-cpu", "qemu64", \
+            "-smp","2,sockets=1,cores=2,threads=1", \
+            "-cpu", "Westmere", \
             "-hda", "/discos/win.qcow2", \
             "-vga", "std", \
-            "-usb", "-device", "usb-tablet", \
+            "-usb", \
+            "-device", "usb-tablet", \
             "-cdrom", "/isos/windows.iso", \
             "-boot", "d", \
             "-vnc", ":0", \
             "-net", "nic,model=e1000", \
-            "-net", "user"]
+            "-net", "user", \
+            "-accel","tcg,thread=multi"] 
         """)
 
         run_args = [
