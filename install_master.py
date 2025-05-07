@@ -892,12 +892,12 @@ listener Default {{
             "-m", "4096", \
             "-cpu", "qemu64", \
             "-hda", "/discos/win.qcow2", \
-            "-vga", "qxl", \
+            "-vga", "std", \
             "-usb", "-device", "usb-tablet", \
             "-cdrom", "/isos/windows.iso", \
             "-boot", "d", \
             "-vnc", ":0", \
-            "-net", "nic,model=virtio", \
+            "-net", "nic,model=e1000", \
             "-net", "user"]
         """)
 
