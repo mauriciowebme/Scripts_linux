@@ -2021,8 +2021,8 @@ module.exports = { setupPythonEnv, runPythonScript };
             self.mysql_root_password = input("Digite a senha root para o MySQL: ")
         
         if novo_db:
-            replicacao = input('Habilitar a replicação de dados? \n1 - Sim \n2 - Não \n')
-            if replicacao == '1':
+            replicacao = input('Habilitar a replicação de dados? s|n: ')
+            if replicacao.lower() == 's':
                 local_slave = input(f'Informe o local para armazenzar o Mysql SLAVE (/mnt/dados resultado: /mnt/dados/mysql/{versao_}_slave): ')
         
         print('Instalando o mysql.\n')
