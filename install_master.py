@@ -1803,6 +1803,24 @@ module.exports = { setupPythonEnv, runPythonScript };
         # Verifica se o objeto 'self' possui o atributo 'root_password' e se ele está definido (não vazio).
         if not hasattr(self, 'root_password') or not self.mysql_root_password:
             self.mysql_root_password = input("Digite a senha root para acessar o MySQL e criar o banco: ")
+            
+        # Verifica se a senha está correta antes de prosseguir
+        max_attempts = 3
+        for attempt in range(max_attempts):
+            test_cmd = f"docker exec -i mysql_8_0 mysql -uroot -p'{self.mysql_root_password}' -e 'SELECT 1;'"
+            result = self.executar_comandos([test_cmd], exibir_resultados=False)
+            
+            # Verifica se o comando foi executado com sucesso (sem erro)
+            if test_cmd in result and 'Erro:True' not in str(result[test_cmd]):
+                print("Senha MySQL verificada com sucesso.")
+                break
+            else:
+                if attempt < max_attempts - 1:
+                    print(f"Senha incorreta. Tentativa {attempt + 1}/{max_attempts}")
+                    self.mysql_root_password = input("Digite a senha root para o MySQL novamente: ")
+                else:
+                    print("Número máximo de tentativas excedido. Saindo...")
+                    return
         
         # Verifica se a base de dados guacamole_db já existe
         comando_verifica_db = f"docker exec -i mysql_8_0 mysql -uroot -p'{self.mysql_root_password}' -e \"SHOW DATABASES LIKE 'guacamole_db';\""
