@@ -877,7 +877,7 @@ listener Default {{
             "--restart", "unless-stopped",
             "-e", "BOOT_MODE=legacy",
             "-e", "DISK_SIZE=100G",
-            "-e", "BOOT=/boot.iso",           # ISO será montado em /boot.iso
+            "-e", "BOOT=/boot.iso",
         ]
 
         # checa suporte KVM
