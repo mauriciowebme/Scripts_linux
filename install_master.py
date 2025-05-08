@@ -883,7 +883,7 @@ listener Default {{
                 "--device=/dev/kvm",
             ]
         else:
-            print("Suporte KVM não encontrado, usando emulação por software (mais lenta).")
+            print("Suporte KVM não encontrado, usando emulação por software TCG(mais lenta).")
             run_args += [
                 "-e", "KVM=N",
             ]
