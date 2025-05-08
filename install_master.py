@@ -2037,6 +2037,8 @@ module.exports = { setupPythonEnv, runPythonScript };
         # Verifica se o objeto 'self' possui o atributo 'root_password'.
         if not hasattr(self, 'root_password') and novo_db:
             self.mysql_root_password = input("Digite a senha root para o MySQL: ")
+        else:
+            self.mysql_root_password = ''
         
         if novo_db:
             replicacao = input('Habilitar a replicação de dados? s|n: ')
