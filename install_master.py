@@ -855,71 +855,36 @@ listener Default {{
         nome = "teste"
         
         caminho_dados = f"{self.install_principal}/windows_SKVM_{nome}/dados"
-        caminho_disco = f"{self.install_principal}/windows_SKVM_{nome}/disco"
         caminho_isos = f"{self.install_principal}/windows_SKVM_{nome}/isos"
         os.makedirs(caminho_dados, exist_ok=True)
         os.makedirs(caminho_isos, exist_ok=True)
-        os.makedirs(caminho_disco, exist_ok=True)
         os.chmod(caminho_dados, 0o777)
         os.chmod(caminho_isos, 0o777)
-        os.chmod(caminho_disco, 0o777)
 
-        dockerfile = textwrap.dedent(f"""\
-        FROM ubuntu:22.04
-
-        ENV DEBIAN_FRONTEND=noninteractive
-
-        # 1) Pacotes necessários
-        RUN apt-get update && apt-get upgrade -y \
-            && apt-get install -y \
-                qemu-system-x86 \
-                qemu-utils \
-            && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-        # 2) Diretório dedicado à VM
-        RUN mkdir /discos
-        RUN mkdir /dados
-
-        # 3) Cria disco de 30 GB já durante o build
-        RUN qemu-img create -f qcow2 /discos/win.qcow2 30G
-
-        # 4) Marca /discos como ponto de volume para persistir fora da imagem
-        VOLUME /discos
-        VOLUME /dados
-
-        # 5) Comando padrão (TCG puro, VNC na porta 5900)
-        CMD ["qemu-system-x86_64", \
-            "-m", "2048", \
-            "-smp", "1", \
-            "-cpu", "core2duo", \
-            "-no-hpet", \
-            "-global", "pit.reinject=false", \
-            "-hda", "/discos/win.qcow2", \
-            "-vga", "std", \
-            "-usb", \
-            "-device", "usb-tablet", \
-            "-cdrom", "/isos/windows.iso", \
-            "-boot", "d", \
-            "-vnc", ":0", \
-            "-net", "nic,model=e1000", \
-            "-net", "user"] 
-        """)
-
+        input(f'Coloque a win.iso na pasta {caminho_isos} e pressione ENTER para continuar.')
+        
         run_args = [
             "--name", f"windows_SKVM_{nome}",
-            "-p", "5900:5900",
-            "-v", f"{caminho_isos}:/isos:ro",
-            # "-v", f"{caminho_disco}:/discos",
-            "-v", f"{caminho_dados}:/dados",
-            "--cgroupns=host",
-            "--privileged",
-            "-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
-            "-d"
+            "--restart", "unless-stopped",
+            "-e", "BOOT_MODE=legacy",
+            "-e", "DISK_TYPE=ide",
+            "-e", "DISK_SIZE=100G",
+            "-e", "BOOT=/isos/boot.iso",
+            "-e", "KVM=N",
+            "-e", "ARGUMENTS=-accel tcg,thread=multi -cpu Westmere -m 4G -smp 2 -vga std",
+            "-p", "8006:8006",
+            "-p", "3389:3389",
+            "--cap-add=NET_ADMIN",
+            "--device=/dev/net/tun",
+            "-v", f"{caminho_isos}/win.iso:/boot.iso:ro",
+            "-v", f"{caminho_dados}:/storage",
+            "--stop-timeout", "120",
+            "-d",
+            "qemux/qemu"
         ]
 
         self.remove_container(f"windows_SKVM_{nome}")
         self.executar_comandos_run_OrAnd_dockerfile(
-            dockerfile_str=dockerfile,
             run_cmd=run_args
         )
 
