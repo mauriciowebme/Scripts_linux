@@ -879,10 +879,8 @@ listener Default {{
             "-e", "DISK_SIZE=100G",
             "-e", "BOOT=/boot.iso",
         ]
-
         # checa suporte KVM
         kvm = subprocess.run("lsmod | grep -q kvm", shell=True).returncode == 0
-
         if kvm:
             print("Suporte KVM detectado, usando aceleração KVM.")
             run_args += [
@@ -897,7 +895,6 @@ listener Default {{
                 "-e", 'KVM=N',
                 "-e", 'ARGUMENTS=-accel tcg,thread=multi -cpu Westmere -m 4G -smp 2 -vga std',
             ]
-
         run_args += [
             "-p", "8006:8006",
             "-p", "3389:3389",
@@ -916,7 +913,7 @@ listener Default {{
         )
 
         print("\nInstalação do sistema_CISO concluída.\n")
-        
+    
     def instala_windows_KVM_docker(self,):
         # link do projeto: https://github.com/dockur/windows
         
