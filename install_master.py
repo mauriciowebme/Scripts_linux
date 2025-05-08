@@ -2003,15 +2003,27 @@ module.exports = { setupPythonEnv, runPythonScript };
             print("Seleção incorreta.")
             return
         
-        # Verifica se o objeto 'self' possui o atributo 'root_password'.
-        if not hasattr(self, 'root_password'):
-            self.mysql_root_password = input("Digite a senha root para o MySQL: ")
-            
         versao_ = versao.replace('.', '_')
+        novo_db = True
+        pasta_bd = {self.bds}/mysql/{versao_}
+        if os.path.exists(pasta_bd):
+            print('Tem uma pasta de instalação de banco de dados existente.')
+            resposta = input('Deseja remover a pasta de banco de dados existente? s|n: ')
+            if resposta.lower() == 's':
+                shutil.rmtree(pasta_bd)
+                os.makedirs(pasta_bd, exist_ok=True)
+                os.chmod(pasta_bd, 0o777)
+            else:
+                novo_db = False
         
-        replicacao = input('Habilitar a replicação de dados? \n1 - Sim \n2 - Não \n')
-        if replicacao == '1':
-            local_slave = input(f'Informe o local para armazenzar o Mysql SLAVE (/mnt/dados resultado: /mnt/dados/mysql/{versao_}_slave): ')
+        # Verifica se o objeto 'self' possui o atributo 'root_password'.
+        if not hasattr(self, 'root_password') and novo_db:
+            self.mysql_root_password = input("Digite a senha root para o MySQL: ")
+        
+        if novo_db:
+            replicacao = input('Habilitar a replicação de dados? \n1 - Sim \n2 - Não \n')
+            if replicacao == '1':
+                local_slave = input(f'Informe o local para armazenzar o Mysql SLAVE (/mnt/dados resultado: /mnt/dados/mysql/{versao_}_slave): ')
         
         print('Instalando o mysql.\n')
         # self.gerenciar_permissoes_pasta(f"{self.install_principal}/mysql/{versao_}", permissao="777")
@@ -2038,64 +2050,65 @@ module.exports = { setupPythonEnv, runPythonScript };
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
         
-        # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
-        time.sleep(30)
-        comandos = [
-            f"docker exec -i mysql_{versao_} mysql -uroot -p'{self.mysql_root_password}' -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
-        ]
-        self.executar_comandos(comandos)
-        
-        if replicacao == '1':
-            # time.sleep(10)
-            # self.gerenciar_permissoes_pasta(f"{local_slave}/mysql/{versao_}_slave", permissao="777")
-            container_db = f"""docker run -d \
-                            --name mysql_{versao_}_slave \
-                            --restart=unless-stopped \
-                            -p {porta_slave}:3306 \
-                            -e MYSQL_DATABASE=db_testes \
-                            -e MYSQL_USER=testes \
-                            -e MYSQL_PASSWORD=testes \
-                            -e MYSQL_ROOT_PASSWORD={self.mysql_root_password} \
-                            -v {local_slave}/mysql/{versao_}_slave:/var/lib/mysql \
-                            mysql:{versao} \
-                            --server-id=2 \
-                            --log-bin=mysql-bin \
-                            --binlog-format=row \
-                            --default-authentication-plugin=mysql_native_password
-                        """
-            comandos = [
-                container_db,
-            ]
-            self.remove_container(f'mysql_{versao_}_slave')
-            resultados = self.executar_comandos(comandos)
-            self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}_slave', numero_rede=1)
-            
+        if novo_db:
             # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
             time.sleep(30)
             comandos = [
-                f"docker exec -i mysql_{versao_}_slave mysql -uroot -p'{self.mysql_root_password}' -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
+                f"docker exec -i mysql_{versao_} mysql -uroot -p'{self.mysql_root_password}' -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
             ]
             self.executar_comandos(comandos)
             
-            master_container = f"mysql_{versao_}"
-            master_host = f'localhost'
-            master_user = 'root'
-            master_password = self.mysql_root_password
-            master_porta = f'{porta}'
-            
-            slave_container = f"mysql_{versao_}_slave"
-            slave_host = f'localhost'
-            slave_user = 'root'
-            slave_password = self.mysql_root_password
-            slave_porta = f'{porta_slave}'
-            
-            replication_user = 'replication_user'
-            replication_password = self.generate_password()
-            
-            time.sleep(10)
-            self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta,
-                                             slave_container, slave_host, slave_user, slave_password, slave_porta,
-                                             replication_user, replication_password)
+            if replicacao == '1':
+                # time.sleep(10)
+                # self.gerenciar_permissoes_pasta(f"{local_slave}/mysql/{versao_}_slave", permissao="777")
+                container_db = f"""docker run -d \
+                                --name mysql_{versao_}_slave \
+                                --restart=unless-stopped \
+                                -p {porta_slave}:3306 \
+                                -e MYSQL_DATABASE=db_testes \
+                                -e MYSQL_USER=testes \
+                                -e MYSQL_PASSWORD=testes \
+                                -e MYSQL_ROOT_PASSWORD={self.mysql_root_password} \
+                                -v {local_slave}/mysql/{versao_}_slave:/var/lib/mysql \
+                                mysql:{versao} \
+                                --server-id=2 \
+                                --log-bin=mysql-bin \
+                                --binlog-format=row \
+                                --default-authentication-plugin=mysql_native_password
+                            """
+                comandos = [
+                    container_db,
+                ]
+                self.remove_container(f'mysql_{versao_}_slave')
+                resultados = self.executar_comandos(comandos)
+                self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}_slave', numero_rede=1)
+                
+                # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
+                time.sleep(30)
+                comandos = [
+                    f"docker exec -i mysql_{versao_}_slave mysql -uroot -p'{self.mysql_root_password}' -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
+                ]
+                self.executar_comandos(comandos)
+                
+                master_container = f"mysql_{versao_}"
+                master_host = f'localhost'
+                master_user = 'root'
+                master_password = self.mysql_root_password
+                master_porta = f'{porta}'
+                
+                slave_container = f"mysql_{versao_}_slave"
+                slave_host = f'localhost'
+                slave_user = 'root'
+                slave_password = self.mysql_root_password
+                slave_porta = f'{porta_slave}'
+                
+                replication_user = 'replication_user'
+                replication_password = self.generate_password()
+                
+                time.sleep(10)
+                self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta,
+                                                slave_container, slave_host, slave_user, slave_password, slave_porta,
+                                                replication_user, replication_password)
         
         time.sleep(10)
         print(f'Instalação do Mysql completa.')
