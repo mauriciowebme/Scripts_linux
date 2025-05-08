@@ -864,7 +864,13 @@ listener Default {{
         while True:
             if os.path.exists(f"{caminho_isos}/image.iso"):
                 break
-            print(f"Coloque a imagem ISO do Windows na pasta {caminho_isos} e pressione ENTER para continuar.")
+            else:
+                print(f"Coloque a imagem ISO do Windows na pasta {caminho_isos} e pressione ENTER para continuar.")
+                input()
+                if os.path.exists(f"{caminho_isos}/image.iso"):
+                    break
+                else:
+                    print("A imagem ISO não foi encontrada. Tente novamente.")
         
         run_args = [
             "--name", f"windows_SKVM_{nome}",
