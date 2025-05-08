@@ -894,7 +894,7 @@ listener Default {{
             run_args += [
                 "-e", "DISK_TYPE=ide",
                 "-e", 'KVM=N',
-                "-e", 'ARGUMENTS=-accel tcg,thread=multi -cpu Westmere -m 4G -smp 2 -vga std',
+                "-e", 'ARGUMENTS=-accel tcg,thread=multi -cpu Westmere -m 2G -smp 2 -vga std',
             ]
         run_args += [
             "-p", "8006:8006",
