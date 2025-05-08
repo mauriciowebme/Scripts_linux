@@ -2731,9 +2731,6 @@ CMD ["sh", "-c", "\
         """Instala e executa o Webtop."""
         print("Iniciando instalação webtop:")
 
-        nome = input("Digite um nome para o container: ")
-        senha   = input("Configure uma senha para acessar o webtop: ")
-
         dockerfile = textwrap.dedent("""\
         FROM linuxserver/webtop:ubuntu-xfce
 
@@ -2834,8 +2831,8 @@ CMD ["sh", "-c", "\
         # # volta ao usuário “abc” (ou UID/GID correto)
         # USER abc
         """)
-
-        self.remove_container(f"webtop_{nome}")
+        
+        nome = input("Digite um nome para o container: ")
         
         caminho_principal = f"{self.install_principal}/webtop_{nome}"
         # Verificar se o caminho já existe
@@ -2849,11 +2846,13 @@ CMD ["sh", "-c", "\
                 except Exception as e:
                     print(f"Erro ao remover diretório: {e}")
                     return
+                senha = input("Configure uma senha para acessar o webtop: ")
             else:
                 print("Mantendo diretório existente.")
         else:
+            senha = input("Configure uma senha para acessar o webtop: ")
             print(f"Criando novo diretório: {caminho_principal}")
-
+        
         # Criar o diretório para o container
         os.makedirs(caminho_principal, exist_ok=True)
         os.chmod(caminho_principal, 0o777)
@@ -2873,6 +2872,7 @@ CMD ["sh", "-c", "\
             "-d"
         ]
 
+        self.remove_container(f"webtop_{nome}")
         self.executar_comandos_run_OrAnd_dockerfile(
             dockerfile_str=dockerfile,
             run_cmd=run_args
@@ -3951,6 +3951,7 @@ class Sistema(Docker, Executa_comados):
             ("Start sync pastas com RSYNC", self.start_sync_pastas),
             ("Instala windows KVM docker", self.instala_windows_KVM_docker),
             ("Instala Sistema CISO docker", self.instala_sistema_CISO_docker),
+            ("Instala deskto ubuntu webtop", self.desktop_ubuntu_webtop),
             ("Instala rustdesk", self.instala_rustdesk),
             ("Instala pritunel", self.instala_pritunel),
             ("Instala nextcloud", self.instala_nextcloud),
@@ -3958,7 +3959,6 @@ class Sistema(Docker, Executa_comados):
             ("Instala Open WebUI", self.instala_open_webui),
             ("Instala Redis Docker", self.instala_redis_docker),
             ("Instala selenium-firefox", self.instala_selenium_firefox),
-            ("Instala deskto ubuntu webtop", self.desktop_ubuntu_webtop),
             ("Instala ubuntu", self.ubuntu),
             ("Instala rclone", self.rclone),
         ]
