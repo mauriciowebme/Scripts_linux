@@ -873,7 +873,22 @@ listener Default {{
             "-e", "DISK_TYPE=ide",
             "-e", "DISK_SIZE=100G",
             "-e", "BOOT=/isos/boot.iso",
-            "-e", "KVM=N",
+        ]
+        
+        # Verifica se o módulo KVM está disponível
+        kvm_check = subprocess.run("lsmod | grep kvm", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if kvm_check.returncode == 0:
+            print("Suporte KVM detectado, usando aceleração KVM.")
+            run_args += [
+                "--device=/dev/kvm",
+            ]
+        else:
+            print("Suporte KVM não encontrado, usando emulação por software (mais lenta).")
+            run_args += [
+                "-e", "KVM=N",
+            ]
+            
+        run_args += [
             "-e", "ARGUMENTS=-accel tcg,thread=multi -cpu Westmere -m 4G -smp 2 -vga std",
             "-p", "8006:8006",
             "-p", "3389:3389",
