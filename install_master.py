@@ -1873,7 +1873,9 @@ module.exports = { setupPythonEnv, runPythonScript };
         self.cria_rede_docker(associar_container_nome=f'guacamole_guacd', numero_rede=1)
         
         print('Instalação do guacamole completa.\n')
-        print('Porta para uso: 8086')
+        print('Acesse: http://194.163.161.229:8086/guacamole')
+        print('Usuario: guacadmin')
+        print('Senha: guacadmin')
         
     def instala_postgres(self, selecao=None):
         if not selecao:
