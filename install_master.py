@@ -1838,7 +1838,6 @@ module.exports = { setupPythonEnv, runPythonScript };
         
         # caminho_guacamole = f"{self.install_principal}/guacamole"
         # self.gerenciar_permissoes_pasta(caminho_guacamole, '777')
-        print('Porta interna para uso: 8086')
         # -v {caminho_guacamole}/guacamole:/etc/guacamole \
         container_guacamole = f"""docker run -d \
             --name guacamole \
@@ -1872,6 +1871,9 @@ module.exports = { setupPythonEnv, runPythonScript };
             self.cria_rede_docker(associar_container_nome=f'guacamole_guacd', numero_rede=0)
         self.cria_rede_docker(associar_container_nome=f'guacamole', numero_rede=1)
         self.cria_rede_docker(associar_container_nome=f'guacamole_guacd', numero_rede=1)
+        
+        print('Instalação do guacamole completa.\n')
+        print('Porta para uso: 8086')
         
     def instala_postgres(self, selecao=None):
         if not selecao:
