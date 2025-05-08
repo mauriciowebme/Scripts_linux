@@ -861,7 +861,7 @@ listener Default {{
         os.chmod(caminho_dados, 0o777)
         os.chmod(caminho_isos, 0o777)
 
-        input(f'Coloque a win.iso na pasta {caminho_isos} e pressione ENTER para continuar.')
+        input(f'Coloque a image.iso na pasta {caminho_isos} e pressione ENTER para continuar.')
         
         run_args = [
             "--name", f"windows_SKVM_{nome}",
@@ -871,12 +871,12 @@ listener Default {{
             "-e", "DISK_SIZE=100G",
             "-e", "BOOT=/isos/boot.iso",
             "-e", "KVM=N",
-            "-e", "ARGUMENTS=-accel tcg,thread=multi -cpu Westmere -m 2G -smp 2 -vga std",
+            "-e", "ARGUMENTS=-accel tcg,thread=multi -cpu Westmere -m 4G -smp 2 -vga std",
             "-p", "8006:8006",
             "-p", "3389:3389",
             "--cap-add=NET_ADMIN",
             "--device=/dev/net/tun",
-            "-v", f"{caminho_isos}/win.iso:/boot.iso:ro",
+            "-v", f"{caminho_isos}/image.iso:/boot.iso:ro",
             "-v", f"{caminho_dados}:/storage",
             "--stop-timeout", "120",
             "-d",
