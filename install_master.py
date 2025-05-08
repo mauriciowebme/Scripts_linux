@@ -870,35 +870,38 @@ listener Default {{
             "--name", f"windows_SKVM_{nome}",
             "--restart", "unless-stopped",
             "-e", "BOOT_MODE=legacy",
-            "-e", "DISK_TYPE=ide",
             "-e", "DISK_SIZE=100G",
-            "-e", "BOOT=/isos/boot.iso",
+            "-e", "BOOT=/boot.iso",           # ISO será montado em /boot.iso
         ]
-        
-        # Verifica se o módulo KVM está disponível
-        kvm_check = subprocess.run("lsmod | grep kvm", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if kvm_check.returncode == 0:
+
+        # checa suporte KVM
+        kvm = subprocess.run("lsmod | grep -q kvm", shell=True).returncode == 0
+
+        if kvm:
             print("Suporte KVM detectado, usando aceleração KVM.")
             run_args += [
-                "--device=/dev/kvm",
+                "-e", 'DISK_TYPE=virtio-blk',             # já instala virtuoso
+                "-e", 'ARGUMENTS=-cpu host -m 4G -smp 2 -vga std',  # kvm assume acel
+                "--device", "/dev/kvm",
             ]
         else:
-            print("Suporte KVM não encontrado, usando emulação por software TCG(mais lenta).")
+            print("Sem KVM, caindo para TCG (mais lento).")
             run_args += [
-                "-e", "KVM=N",
+                "-e", "DISK_TYPE=ide",
+                "-e", 'KVM=N',
+                "-e", 'ARGUMENTS=-accel tcg,thread=multi -cpu Westmere -m 4G -smp 2 -vga std',
             ]
-            
+
         run_args += [
-            "-e", "ARGUMENTS=-accel tcg,thread=multi -cpu Westmere -m 4G -smp 2 -vga std",
             "-p", "8006:8006",
             "-p", "3389:3389",
-            "--cap-add=NET_ADMIN",
-            "--device=/dev/net/tun",
+            "--cap-add", "NET_ADMIN",
+            "--device", "/dev/net/tun",
             "-v", f"{caminho_isos}/image.iso:/boot.iso:ro",
             "-v", f"{caminho_dados}:/storage",
             "--stop-timeout", "120",
             "-d",
-            "qemux/qemu"
+            "qemux/qemu",
         ]
 
         self.remove_container(f"windows_SKVM_{nome}")
