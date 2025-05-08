@@ -861,7 +861,10 @@ listener Default {{
         os.chmod(caminho_dados, 0o777)
         os.chmod(caminho_isos, 0o777)
 
-        input(f'Coloque a image.iso na pasta {caminho_isos} e pressione ENTER para continuar.')
+        while True:
+            if os.path.exists(f"{caminho_isos}/image.iso"):
+                break
+            print(f"Coloque a imagem ISO do Windows na pasta {caminho_isos} e pressione ENTER para continuar.")
         
         run_args = [
             "--name", f"windows_SKVM_{nome}",
