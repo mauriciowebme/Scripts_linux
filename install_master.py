@@ -852,7 +852,8 @@ listener Default {{
     def instala_sistema_CISO_docker(self,):
         print("Iniciando instalação do container sistema_CISO.")
 
-        nome = "teste"
+        nome = input("Digite o nome do container: ")
+        nome = nome.replace('.', '_')
         
         caminho_dados = f"{self.install_principal}/sistema_CISO_{nome}/dados"
         caminho_isos = f"{self.install_principal}/sistema_CISO_{nome}/isos"
