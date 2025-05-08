@@ -849,13 +849,13 @@ listener Default {{
         print(f"Configuração do site '{nome_dominio_}' criada com sucesso!")
         print(f"Arquivos criados em: {site_dir}")
         
-    def instala_windows_SKVM_docker(self,):
-        print("Iniciando instalação do container windows_SKVM.")
+    def instala_sistema_CISO_docker(self,):
+        print("Iniciando instalação do container sistema_CISO.")
 
         nome = "teste"
         
-        caminho_dados = f"{self.install_principal}/windows_SKVM_{nome}/dados"
-        caminho_isos = f"{self.install_principal}/windows_SKVM_{nome}/isos"
+        caminho_dados = f"{self.install_principal}/sistema_CISO_{nome}/dados"
+        caminho_isos = f"{self.install_principal}/sistema_CISO_{nome}/isos"
         os.makedirs(caminho_dados, exist_ok=True)
         os.makedirs(caminho_isos, exist_ok=True)
         os.chmod(caminho_dados, 0o777)
@@ -865,7 +865,7 @@ listener Default {{
             if os.path.exists(f"{caminho_isos}/image.iso"):
                 break
             else:
-                print(f"Coloque a imagem ISO do Windows na pasta {caminho_isos} e pressione ENTER para continuar.")
+                print(f"Coloque a imagem ISO do sistema na pasta {caminho_isos} e pressione ENTER para continuar.")
                 input()
                 if os.path.exists(f"{caminho_isos}/image.iso"):
                     break
@@ -873,7 +873,7 @@ listener Default {{
                     print("A imagem ISO não foi encontrada. Tente novamente.")
         
         run_args = [
-            "--name", f"windows_SKVM_{nome}",
+            "--name", f"sistema_CISO_{nome}",
             "--restart", "unless-stopped",
             "-e", "BOOT_MODE=legacy",
             "-e", "DISK_SIZE=100G",
@@ -886,8 +886,8 @@ listener Default {{
         if kvm:
             print("Suporte KVM detectado, usando aceleração KVM.")
             run_args += [
-                "-e", 'DISK_TYPE=virtio-blk',             # já instala virtuoso
-                "-e", 'ARGUMENTS=-cpu host -m 4G -smp 2 -vga std',  # kvm assume acel
+                "-e", 'DISK_TYPE=virtio-blk',
+                "-e", 'ARGUMENTS=-cpu host -m 4G -smp 2 -vga std',
                 "--device", "/dev/kvm",
             ]
         else:
@@ -910,12 +910,12 @@ listener Default {{
             "qemux/qemu",
         ]
 
-        self.remove_container(f"windows_SKVM_{nome}")
+        self.remove_container(f"sistema_CISO_{nome}")
         self.executar_comandos_run_OrAnd_dockerfile(
             run_cmd=run_args
         )
 
-        print("\nInstalação do windows_SKVM concluída.")
+        print("\nInstalação do sistema_CISO concluída.\n")
         
     def instala_windows_KVM_docker(self,):
         # link do projeto: https://github.com/dockur/windows
@@ -3915,7 +3915,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
             ("Start sync pastas com RSYNC", self.start_sync_pastas),
             ("Instala windows KVM docker", self.instala_windows_KVM_docker),
-            ("Instala windows SKVM docker", self.instala_windows_SKVM_docker),
+            ("Instala Sistema CISO docker", self.instala_sistema_CISO_docker),
             ("Instala rustdesk", self.instala_rustdesk),
             ("Instala pritunel", self.instala_pritunel),
             ("Instala nextcloud", self.instala_nextcloud),
