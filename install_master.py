@@ -2023,7 +2023,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         
         versao_ = versao.replace('.', '_')
         novo_db = True
-        pasta_bd = {self.bds}/mysql/{versao_}
+        pasta_bd = f'{self.bds}/mysql/{versao_}'
         if os.path.exists(pasta_bd):
             print('Tem uma pasta de instalação de banco de dados existente.')
             resposta = input('Deseja remover a pasta de banco de dados existente? s|n: ')
