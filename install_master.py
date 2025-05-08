@@ -2841,6 +2841,7 @@ CMD ["sh", "-c", "\
             if resposta.lower() == 's':
                 print(f"Removendo diretório existente: {caminho_principal}")
                 try:
+                    os.chmod(caminho_principal, 0o777)
                     shutil.rmtree(caminho_principal)
                     print(f"Diretório {caminho_principal} removido com sucesso.")
                 except Exception as e:
