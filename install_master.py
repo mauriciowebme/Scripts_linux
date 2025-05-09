@@ -2834,6 +2834,7 @@ CMD ["sh", "-c", "\
         
         nome = input("Digite um nome para o container: ")
         
+        senha = ''
         caminho_principal = f"{self.install_principal}/webtop_{nome}"
         # Verificar se o caminho já existe
         if os.path.exists(caminho_principal):
