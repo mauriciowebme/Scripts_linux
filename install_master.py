@@ -906,11 +906,11 @@ listener Default {{
             ]
         self.portas_disponiveis = self.escolher_porta_disponivel(quantidade=2)
         run_args += [
-            "-p", f"{self.portas_disponiveis[0]}:3389",
-            "-p", f"{self.portas_disponiveis[1]}:8006",
+            "-p", f"{self.portas_disponiveis[0]}:8006",
+            "-p", f"{self.portas_disponiveis[1]}:3389",
             "--cap-add", "NET_ADMIN",
             "--device", "/dev/net/tun",
-            "-v", f"{caminho_isos}/data.img:/data.img",
+            "-v", f"{caminho_isos}/image.iso:/boot.iso:ro",
             "-v", f"{caminho_dados}:/storage",
             "--stop-timeout", "120",
             "-d",
@@ -923,6 +923,14 @@ listener Default {{
         )
 
         print("\nInstalação do sistema_CISO concluída.\n")
+        print("IPs possíveis para acesso:")
+        comandos = [
+            f"hostname -I | tr ' ' '\n'",
+        ]
+        resultados = self.executar_comandos(comandos)
+        print("Portas de acesso:")
+        print(f" - Porta Web: {self.portas_disponiveis[0]}")
+        print(f" - Porta RDP: {self.portas_disponiveis[1]}")
     
     def instala_windows_KVM_docker(self,):
         # link do projeto: https://github.com/dockur/windows
