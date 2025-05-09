@@ -2876,6 +2876,8 @@ CMD ["sh", "-c", "\
         os.makedirs(caminho_principal, exist_ok=True)
         os.chmod(caminho_principal, 0o777)
         
+        self.remove_container(f"webtop_{nome}")
+        
         porta = self.escolher_porta_disponivel()[0]
         run_args = [
             "--name", f"webtop_{nome}",
@@ -2890,8 +2892,7 @@ CMD ["sh", "-c", "\
             "-v", f"{self.install_principal}/webtop_{nome}/config:/config",
             "-d"
         ]
-
-        self.remove_container(f"webtop_{nome}")
+        
         self.executar_comandos_run_OrAnd_dockerfile(
             dockerfile_str=dockerfile,
             run_cmd=run_args
