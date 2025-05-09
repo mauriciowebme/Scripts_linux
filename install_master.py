@@ -861,6 +861,14 @@ listener Default {{
         os.makedirs(caminho_isos, exist_ok=True)
         os.chmod(caminho_dados, 0o777)
         os.chmod(caminho_isos, 0o777)
+        
+        if os.path.exists(f"{caminho_isos}/data.img"):
+            resposta = input("A imagem data.img já existe. Deseja sobrescrever? (s/n): ")
+            if resposta.lower() == 's':
+                os.remove(f"{caminho_isos}/data.img")
+            else:
+                print("Instalação cancelada.")
+                return
 
         while True:
             if os.path.exists(f"{caminho_isos}/image.iso"):
@@ -886,7 +894,7 @@ listener Default {{
             print("Suporte KVM detectado, usando aceleração KVM.")
             run_args += [
                 "-e", 'DISK_TYPE=virtio-blk',
-                "-e", 'ARGUMENTS=-cpu host -m 4G -smp 2 -vga std',
+                "-e", 'ARGUMENTS=-cpu host -m 2G -smp 2 -vga std',
                 "--device", "/dev/kvm",
             ]
         else:
