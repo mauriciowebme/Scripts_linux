@@ -2886,7 +2886,7 @@ CMD ["sh", "-c", "\
             "-e", "CUSTOM_USER=master",
             "-e", f"PASSWORD={senha}",
             "-p", f"{porta}:3000",
-            "--shm-size", f"1g",
+            "--shm-size", f"2g",
             "-v", f"{self.install_principal}/webtop_{nome}/config:/config",
             "-d"
         ]
