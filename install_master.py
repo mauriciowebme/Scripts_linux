@@ -904,12 +904,13 @@ listener Default {{
                 "-e", 'KVM=N',
                 "-e", 'ARGUMENTS=-accel tcg,thread=multi -cpu Westmere -m 2G -smp 2 -vga std',
             ]
+        self.portas_disponiveis = self.escolher_porta_disponivel(quantidade=2)
         run_args += [
-            "-p", "8006:8006",
-            "-p", "3389:3389",
+            "-p", f"{self.portas_disponiveis[0]}:3389",
+            "-p", f"{self.portas_disponiveis[1]}:8006",
             "--cap-add", "NET_ADMIN",
             "--device", "/dev/net/tun",
-            "-v", f"{caminho_isos}/image.iso:/boot.iso:ro",
+            "-v", f"{caminho_isos}/data.img:/data.img",
             "-v", f"{caminho_dados}:/storage",
             "--stop-timeout", "120",
             "-d",
