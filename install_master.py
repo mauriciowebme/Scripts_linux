@@ -2850,6 +2850,7 @@ CMD ["sh", "-c", "\
         """)
         
         nome = input("Digite um nome para o container: ")
+        self.remove_container(f"webtop_{nome}")
         
         senha = ''
         caminho_principal = f"{self.install_principal}/webtop_{nome}"
@@ -2875,8 +2876,6 @@ CMD ["sh", "-c", "\
         # Criar o diretório para o container
         os.makedirs(caminho_principal, exist_ok=True)
         os.chmod(caminho_principal, 0o777)
-        
-        self.remove_container(f"webtop_{nome}")
         
         porta = self.escolher_porta_disponivel()[0]
         run_args = [
