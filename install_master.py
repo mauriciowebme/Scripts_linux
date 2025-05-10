@@ -2812,6 +2812,8 @@ CMD ["sh", "-c", "\
             echo 'Categories=Network;WebBrowser'                        >> /usr/share/applications/google-chrome.desktop && \
             echo 'StartupNotify=true'                                   >> /usr/share/applications/google-chrome.desktop && \
             chmod +x /usr/share/applications/google-chrome.desktop
+
+        RUN apt-mark hold google-chrome-stable
         
         RUN echo 'Habilita universe'
         RUN apt-get update \
