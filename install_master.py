@@ -885,7 +885,7 @@ listener Default {{
             "--name", f"sistema_CISO_{nome}",
             "--restart", "unless-stopped",
             "-e", "BOOT_MODE=legacy",
-            "-e", "DISK_SIZE=100G",
+            "-e", "DISK_SIZE=50G",
             "-e", "BOOT=/boot.iso",
         ]
         # checa suporte KVM
