@@ -907,7 +907,8 @@ listener Default {{
             run_args += [
                 "-e", "DISK_TYPE=ide",
                 "-e", 'KVM=N',
-                "-e", 'ARGUMENTS=-accel tcg,thread=multi -cpu Westmere -m 2G -smp 2 -vga std',
+                "-e", f"ARGUMENTS={net} -accel tcg,thread=multi -cpu Westmere -m 2G -smp 2 -vga std"
+                # "-e", 'ARGUMENTS=-accel tcg,thread=multi -cpu Westmere -m 2G -smp 2 -vga std',
             ]
         self.portas_disponiveis = self.escolher_porta_disponivel(quantidade=2)
         run_args += [
