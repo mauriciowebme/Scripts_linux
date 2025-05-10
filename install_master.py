@@ -884,13 +884,18 @@ listener Default {{
         kvm = subprocess.run("lsmod | grep -q kvm", shell=True).returncode == 0
         if kvm:
             print("Suporte KVM detectado, usando aceleração KVM.")
+            net  = "-netdev user,id=net0,hostfwd=tcp::3389-:3389 "
+            net += "-device virtio-net-pci,netdev=net0"
             run_args += [
                 "-e", 'DISK_TYPE=virtio-blk',
-                "-e", 'ARGUMENTS=-cpu host -m 4G -smp 2 -vga std',
+                "-e", f"ARGUMENTS={net} -cpu host -m 4G -smp 2 -vga std",
+                # "-e", 'ARGUMENTS=-cpu host -m 4G -smp 2 -vga std',
                 "--device", "/dev/kvm",
             ]
         else:
             print("Sem KVM, caindo para TCG (mais lento).")
+            net  = "-netdev user,id=net0,hostfwd=tcp::3389-:3389 "
+            net += "-device e1000,netdev=net0"
             run_args += [
                 "-e", "DISK_TYPE=ide",
                 "-e", 'KVM=N',
