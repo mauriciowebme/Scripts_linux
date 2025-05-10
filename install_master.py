@@ -861,6 +861,14 @@ listener Default {{
         os.makedirs(caminho_isos, exist_ok=True)
         os.chmod(caminho_dados, 0o777)
         os.chmod(caminho_isos, 0o777)
+        
+        if os.path.exists(f"{caminho_isos}/data.img"):
+            resposta = input("A imagem data.img já existe. Deseja sobrescrever? (s/n): ")
+            if resposta.lower() == 's':
+                os.remove(f"{caminho_isos}/data.img")
+            else:
+                print("Instalação cancelada.")
+                return
 
         while True:
             if os.path.exists(f"{caminho_isos}/image.iso"):
@@ -901,9 +909,10 @@ listener Default {{
                 "-e", 'KVM=N',
                 "-e", 'ARGUMENTS=-accel tcg,thread=multi -cpu Westmere -m 2G -smp 2 -vga std',
             ]
+        self.portas_disponiveis = self.escolher_porta_disponivel(quantidade=2)
         run_args += [
-            "-p", "8006:8006",
-            "-p", "3389:3389",
+            "-p", f"{self.portas_disponiveis[0]}:8006",
+            "-p", f"{self.portas_disponiveis[1]}:3389",
             "--cap-add", "NET_ADMIN",
             "--device", "/dev/net/tun",
             "-v", f"{caminho_isos}/image.iso:/boot.iso:ro",
@@ -919,6 +928,14 @@ listener Default {{
         )
 
         print("\nInstalação do sistema_CISO concluída.\n")
+        print("IPs possíveis para acesso:")
+        comandos = [
+            f"hostname -I | tr ' ' '\n'",
+        ]
+        resultados = self.executar_comandos(comandos)
+        print("Portas de acesso:")
+        print(f" - Porta Web: {self.portas_disponiveis[0]}")
+        print(f" - Porta RDP: {self.portas_disponiveis[1]}")
     
     def instala_windows_KVM_docker(self,):
         # link do projeto: https://github.com/dockur/windows
@@ -2800,6 +2817,8 @@ CMD ["sh", "-c", "\
             echo 'Categories=Network;WebBrowser'                        >> /usr/share/applications/google-chrome.desktop && \
             echo 'StartupNotify=true'                                   >> /usr/share/applications/google-chrome.desktop && \
             chmod +x /usr/share/applications/google-chrome.desktop
+
+        RUN apt-mark hold google-chrome-stable
         
         RUN echo 'Habilita universe'
         RUN apt-get update \
@@ -2838,6 +2857,7 @@ CMD ["sh", "-c", "\
         """)
         
         nome = input("Digite um nome para o container: ")
+        self.remove_container(f"webtop_{nome}")
         
         senha = ''
         caminho_principal = f"{self.install_principal}/webtop_{nome}"
@@ -2874,12 +2894,11 @@ CMD ["sh", "-c", "\
             "-e", "CUSTOM_USER=master",
             "-e", f"PASSWORD={senha}",
             "-p", f"{porta}:3000",
-            "--shm-size", f"1g",
+            "--shm-size", f"2g",
             "-v", f"{self.install_principal}/webtop_{nome}/config:/config",
             "-d"
         ]
-
-        self.remove_container(f"webtop_{nome}")
+        
         self.executar_comandos_run_OrAnd_dockerfile(
             dockerfile_str=dockerfile,
             run_cmd=run_args
