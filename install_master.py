@@ -1029,7 +1029,6 @@ listener Default {{
         if not hasattr(self, 'root_password') or not self.mysql_root_password:
             self.mysql_root_password = input("Digite a senha root para o MySQL: ")
         
-        self.mysql_root_password = input("Digite a senha root para o MySQL: ")
         comando1 = f"docker exec -i mysql_8_0 mysql -uroot -p'{self.mysql_root_password}' -e \"CREATE USER IF NOT EXISTS 'nextcloud'@'%' IDENTIFIED BY 'nextcloud';\""
         comando2 = f"docker exec -i mysql_8_0 mysql -uroot -p'{self.mysql_root_password}' -e \"CREATE DATABASE IF NOT EXISTS nextcloud_bd; GRANT ALL PRIVILEGES ON nextcloud_bd.* TO 'nextcloud'@'%'; FLUSH PRIVILEGES;\""
         self.executar_comandos([comando1, comando2])
