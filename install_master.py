@@ -472,13 +472,14 @@ class Docker(Executa_comados):
         self.cria_rede_docker(associar_container_nome='node-exporter', numero_rede=1)
         self.cria_rede_docker(associar_container_nome='grafana', numero_rede=1)
     
-    def cria_dynamic_conf_traefik(self,):
+    def cria_dynamic_conf_traefik(self, email=None):
         dynamic_conf = f'{self.install_principal}/traefik/dynamic_conf.yml'
         if not os.path.exists(f'{self.install_principal}/traefik/'):
             os.makedirs(f'{self.install_principal}/traefik/', exist_ok=True)
             os.chmod(f'{self.install_principal}/traefik/', 0o777)
         if not os.path.exists(dynamic_conf):
-            email = input('Digite um e-mail para gerar o certificado: ')
+            if email == None:
+                email = input('Digite um e-mail para gerar o certificado: ')
             with open(dynamic_conf, "w") as f:
                 f.write(f"""\
 http:
@@ -578,8 +579,9 @@ certificatesResolvers:
             yaml.dump(config, file)
 
     def instala_traefik(self,):
+        print("Iniciando instalação do Traefik.")
         email = input('Digite um e-mail para gerar o certificado: ')
-        dynamic_conf = self.cria_dynamic_conf_traefik()
+        dynamic_conf = self.cria_dynamic_conf_traefik(email=email)
         comandos = [
             f"""docker run -d \
                 --name traefik \
