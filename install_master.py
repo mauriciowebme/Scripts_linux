@@ -2053,21 +2053,26 @@ module.exports = { setupPythonEnv, runPythonScript };
         versao_ = versao.replace('.', '_')
         novo_db = True
         pasta_bd = f'{self.bds}/mysql/{versao_}'
+        
         if os.path.exists(pasta_bd):
             print('Tem uma pasta de instalação de banco de dados existente.')
             resposta = input('Deseja remover a pasta de banco de dados existente? s|n: ')
+            
             if resposta.lower() == 's':
                 shutil.rmtree(pasta_bd)
                 os.makedirs(pasta_bd, exist_ok=True)
                 os.chmod(pasta_bd, 0o777)
+                # Verifica se o objeto 'self' possui o atributo 'root_password'.
+                if not hasattr(self, 'root_password') and novo_db:
+                    self.mysql_root_password = input("Digite a senha root para o MySQL: ")
+            
             else:
                 novo_db = False
-        
-        # Verifica se o objeto 'self' possui o atributo 'root_password'.
-        if not hasattr(self, 'root_password') and novo_db:
-            self.mysql_root_password = input("Digite a senha root para o MySQL: ")
+                self.mysql_root_password = ''
         else:
-            self.mysql_root_password = ''
+            # Verifica se o objeto 'self' possui o atributo 'root_password'.
+            if not hasattr(self, 'root_password') and novo_db:
+                self.mysql_root_password = input("Digite a senha root para o MySQL: ")
         
         if novo_db:
             replicacao = input('Habilitar a replicação de dados? s|n: ')
@@ -2160,6 +2165,8 @@ module.exports = { setupPythonEnv, runPythonScript };
                 self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta,
                                                 slave_container, slave_host, slave_user, slave_password, slave_porta,
                                                 replication_user, replication_password)
+        else:
+            del self.mysql_root_password
         
         time.sleep(10)
         print(f'Instalação do Mysql completa.')
@@ -2167,7 +2174,10 @@ module.exports = { setupPythonEnv, runPythonScript };
         print(f' - ssh -L {porta}:localhost:{porta} usuario@servidor_remoto')
         print(f' - Local instalação: {self.bds}/mysql/{versao_}')
         print(f' - Usuario: root')
-        print(f' - Senha: {self.mysql_root_password}')
+        if hasattr(self, 'mysql_root_password'):
+            print(f' - Senha: {self.mysql_root_password}')
+        else:
+            print(f' - Senha: já definida anteriormente.')
         print(f' - Porta interna: 3306')
         print(f' - Porta externa: {porta}')
         
