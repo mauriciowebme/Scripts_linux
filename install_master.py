@@ -2106,7 +2106,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         
         if novo_db:
             # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
-            time.sleep(30)
+            # time.sleep(30)
             # comando para limitar as permissões do root
             # comandos = [
             #     # f"docker exec -i mysql_{versao_} mysql -uroot -p'{self.mysql_root_password}' -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
