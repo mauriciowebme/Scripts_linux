@@ -2084,6 +2084,8 @@ module.exports = { setupPythonEnv, runPythonScript };
         container_db = f"""docker run -d \
                         --name mysql_{versao_} \
                         --restart=unless-stopped \
+                        --memory=1g \
+                        --cpus=1 \
                         -p {porta}:3306 \
                         -e MYSQL_DATABASE=db_testes \
                         -e MYSQL_USER=testes \
