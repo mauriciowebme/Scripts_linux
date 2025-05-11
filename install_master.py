@@ -183,8 +183,8 @@ class Executa_comados():
 class Docker(Executa_comados):
     def __init__(self):
         Executa_comados.__init__(self)
-        self.bds = '/bds'
         self.install_principal = '/install_principal'
+        self.bds = self.install_principal+'/bds'
         self.redes_docker = ['_traefik', 'interno']
         self.atmoz_sftp_arquivo_conf = os.path.join(f"{self.install_principal}/atmoz_sftp/", "users.conf")
         
