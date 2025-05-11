@@ -1021,7 +1021,7 @@ listener Default {{
         
     def instala_nextcloud(self,):
         print('Instalando nextcloud...')
-        local = input('Digite o local para armazenamento dos dados: ')
+        local = input('Digite o local para armazenamento dos dados: Ex /install_principal/nextcloud: ')
         
         self.verifica_container_existe('mysql_8_0', self.instala_mysql_8_0)
         
