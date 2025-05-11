@@ -642,7 +642,7 @@ certificatesResolvers:
                     --restart=unless-stopped \
                     -p {portas[0]}:80 \
                     -v /:/srv \
-                    -v {self.install_principal}/database_filebrowser/database.db:/database.db \
+                    -v {self.install_principal}/filebrowser/database.db:/database.db \
                     filebrowser/filebrowser
                 """
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
@@ -650,9 +650,9 @@ certificatesResolvers:
         #     container = self.adiciona_redirecionamento_traefik(container, porta='80')
         
         comandos = [
-            # f"rm -r {self.install_principal}/database_filebrowser",
-            f"mkdir -p {self.install_principal}/database_filebrowser",
-            f"touch {self.install_principal}/database_filebrowser/database.db",
+            # f"rm -r {self.install_principal}/filebrowser",
+            f"mkdir -p {self.install_principal}/filebrowser",
+            f"touch {self.install_principal}/filebrowser/database.db",
             container,
             ]
         self.remove_container('filebrowser')
