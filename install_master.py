@@ -3135,7 +3135,7 @@ class Sistema(Docker, Executa_comados):
             
         try:
             # Definir o swappiness temporariamente
-            value = '20'
+            value = '10'
             self.executar_comandos([f'sudo sysctl vm.swappiness={value}'], comando_direto=False, exibir_resultados=False)
             # subprocess.run(['sudo', 'sysctl', f'vm.swappiness={value}'], check=True)
             
