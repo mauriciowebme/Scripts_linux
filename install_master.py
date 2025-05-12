@@ -586,6 +586,8 @@ certificatesResolvers:
             f"""docker run -d \
                 --name traefik \
                 --restart=unless-stopped \
+                --memory=1g \
+                --cpus=1 \
                 -p 80:80 \
                 -p 443:443 \
                 -p 8080:8080 \
@@ -640,6 +642,8 @@ certificatesResolvers:
         container = f"""docker run -d \
                     --name filebrowser \
                     --restart=unless-stopped \
+                    --memory=256m \
+                    --cpus=1 \
                     -p {portas[0]}:80 \
                     -v /:/srv \
                     -v {self.install_principal}/filebrowser/database.db:/database.db \
@@ -733,6 +737,8 @@ certificatesResolvers:
         container = f"""docker run -d \
                             --name openlitespeed \
                             --restart=unless-stopped \
+                            --memory=1g \
+                            --cpus=1 \
                             -p 8088:8088 \
                             -p 7080:7080 \
                             -v {self.install_principal}/openlitespeed/vhosts:/var/www/vhosts \
@@ -1037,9 +1043,9 @@ listener Default {{
             f"""docker run -d \
                     --name nextcloud \
                     --restart=unless-stopped \
-                    -p 8585:80 \
                     --memory=1g \
                     --cpus=1 \
+                    -p 8585:80 \
                     -e MYSQL_DATABASE=nextcloud_bd \
                     -e MYSQL_PASSWORD=nextcloud \
                     -e MYSQL_USER=nextcloud \
@@ -1220,6 +1226,8 @@ WantedBy=timers.target
             f"""sudo docker run -d \
                     --name portainer \
                     --restart=unless-stopped \
+                    --memory=1g \
+                    --cpus=1 \
                     -p 8000:8000 \
                     -p 9443:9443 \
                     -v /var/run/docker.sock:/var/run/docker.sock \
@@ -1697,6 +1705,8 @@ module.exports = { setupPythonEnv, runPythonScript };
         container = f"""docker run -d \
                         --name {nome_dominio_} \
                         --restart=unless-stopped \
+                        --memory=1g \
+                        --cpus=1 \
                         -p {portas[0]}:{portas[0]} \
                         -v {diretorio_projeto}:/usr/src/app:rw \
                         -w /usr/src/app \
@@ -1722,6 +1732,8 @@ module.exports = { setupPythonEnv, runPythonScript };
         container = f"""docker run -d \
                         --name ftp_sftpgo \
                         --restart=unless-stopped \
+                        --memory=1g \
+                        --cpus=1 \
                         -p 2025:2022 \
                         -p 8085:8080 \
                         -e SFTPGO_COMMON__IDLE_TIMEOUT=1 \
@@ -1866,6 +1878,8 @@ module.exports = { setupPythonEnv, runPythonScript };
         container_guacamole = f"""docker run -d \
             --name guacamole \
             --restart=unless-stopped \
+            --memory=256m \
+            --cpus=1 \
             -p 8086:8080 \
             -e GUACD_HOSTNAME=guacamole_guacd \
             -e MYSQL_HOSTNAME=mysql_8_0 \
@@ -1935,6 +1949,8 @@ module.exports = { setupPythonEnv, runPythonScript };
             container_db = f"""docker run -d \
             --name postgres_{versao_} \
             --restart=unless-stopped \
+            --memory=1g \
+            --cpus=1 \
             -p {porta}:5432 \
             -e POSTGRES_PASSWORD={self.postgres_password} \
             -v {self.bds}/postgres/{versao_}:/var/lib/postgresql/data \
@@ -1944,6 +1960,8 @@ module.exports = { setupPythonEnv, runPythonScript };
             container_db = f"""docker run -d \
             --name postgres_{versao_} \
             --restart=unless-stopped \
+            --memory=1g \
+            --cpus=1 \
             -p {porta}:5432 \
             -e POSTGRES_PASSWORD={self.postgres_password} \
             -v {self.bds}/postgres/{versao_}:/var/lib/postgresql/data \
@@ -1960,6 +1978,8 @@ module.exports = { setupPythonEnv, runPythonScript };
             container_db_slave = f"""docker run -d \
                                 --name postgres_{versao_}_slave \
                                 --restart=unless-stopped \
+                                --memory=1g \
+                                --cpus=1 \
                                 -p {porta_slave}:5432 \
                                 -e POSTGRES_PASSWORD={self.postgres_password} \
                                 -v {local_slave}/postgres/{versao_}_slave:/var/lib/postgresql/data \
@@ -2362,6 +2382,8 @@ module.exports = { setupPythonEnv, runPythonScript };
         container = f"""docker run -d \
                         --name {dominio_} \
                         --restart=unless-stopped \
+                        --memory=256m \
+                        --cpus=1 \
                         -e WORDPRESS_DB_HOST=mysql_5_7:3306 \
                         -e WORDPRESS_DB_USER=wordpress \
                         -e WORDPRESS_DB_PASSWORD=wordpress \
@@ -2395,6 +2417,8 @@ module.exports = { setupPythonEnv, runPythonScript };
         container_db = f"""docker run -d \
                         --name {dominio_}_bd \
                         --restart=unless-stopped \
+                        --memory=256m \
+                        --cpus=1 \
                         -e MYSQL_DATABASE=wordpress \
                         -e MYSQL_USER=wordpress \
                         -e MYSQL_PASSWORD=wordpress \
@@ -2405,6 +2429,8 @@ module.exports = { setupPythonEnv, runPythonScript };
         container = f"""docker run -d \
                         --name {dominio_} \
                         --restart=unless-stopped \
+                        --memory=256m \
+                        --cpus=1 \
                         -e WORDPRESS_DB_HOST={dominio_}_bd:3306 \
                         -e WORDPRESS_DB_USER=wordpress \
                         -e WORDPRESS_DB_PASSWORD=wordpress \
@@ -2612,6 +2638,8 @@ CMD ["sh", "-c", "\
         container = f"""docker run -d \
                         --name redis \
                         --restart=unless-stopped \
+                        --memory=256m \
+                        --cpus=1 \
                         -p 6379:6379 \
                         redis redis-server --requirepass "{senha}"
                     """
