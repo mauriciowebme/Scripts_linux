@@ -1875,11 +1875,11 @@ module.exports = { setupPythonEnv, runPythonScript };
         # caminho_guacamole = f"{self.install_principal}/guacamole"
         # self.gerenciar_permissoes_pasta(caminho_guacamole, '777')
         # -v {caminho_guacamole}/guacamole:/etc/guacamole \
+        # --memory=1g \
+        # --cpus=1 \
         container_guacamole = f"""docker run -d \
             --name guacamole \
             --restart=unless-stopped \
-            --memory=1g \
-            --cpus=1 \
             -p 8086:8080 \
             -e GUACD_HOSTNAME=guacamole_guacd \
             -e MYSQL_HOSTNAME=mysql_8_0 \
@@ -1892,8 +1892,6 @@ module.exports = { setupPythonEnv, runPythonScript };
         container_guacd = """docker run -d \
             --name guacamole_guacd \
             --restart=unless-stopped \
-            --memory=256m \
-            --cpus=1 \
             guacamole/guacd:latest
         """
         resposta = input('Deseja redirecionar com traefik?: S ou N: ')
