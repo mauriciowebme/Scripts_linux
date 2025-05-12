@@ -2641,7 +2641,7 @@ CMD ["sh", "-c", "\
         container = f"""docker run -d \
                         --name redis \
                         --restart=unless-stopped \
-                        --memory=256m \
+                        --memory=512m \
                         --cpus=1 \
                         -p 6379:6379 \
                         redis redis-server --requirepass "{senha}"
