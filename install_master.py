@@ -1124,6 +1124,11 @@ WantedBy=timers.target
             ]
         resultados = self.executar_comandos(comandos, exibir_executando=False)
         print("porta de acesso: 8585")
+        print("Processos para automatizar:")
+        print("A cada 5 mimutos:")
+        print("docker exec -i -u www-data nextcloud /usr/local/bin/php /var/www/html/cron.php")
+        print("Rodar fora de orario de pico uma vez ao dia:")
+        print("docker exec -u www-data nextcloud php occ maintenance:repair --include-expensive")
         
     def instala_pritunel(self,):
         # Projeto: https://github.com/jippi/docker-pritunl
