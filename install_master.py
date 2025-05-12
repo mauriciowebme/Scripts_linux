@@ -1896,7 +1896,6 @@ module.exports = { setupPythonEnv, runPythonScript };
             --cpus=1 \
             guacamole/guacd:latest
         """
-        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
         
         comandos = [
             container_guacamole,
@@ -1905,12 +1904,6 @@ module.exports = { setupPythonEnv, runPythonScript };
         self.remove_container('guacamole')
         self.remove_container('guacamole_guacd')
         resultados = self.executar_comandos(comandos)
-        if resposta.lower() == 's':
-            self.adiciona_roteador_servico_traefik(endereco='guacamole', porta='8080')
-            self.cria_rede_docker(associar_container_nome=f'guacamole', numero_rede=0)
-            self.cria_rede_docker(associar_container_nome=f'guacamole_guacd', numero_rede=0)
-        self.cria_rede_docker(associar_container_nome=f'guacamole', numero_rede=1)
-        self.cria_rede_docker(associar_container_nome=f'guacamole_guacd', numero_rede=1)
         
         print('Instalação do guacamole completa.\n')
         print('Acesse: http://194.163.161.229:8086/guacamole')
