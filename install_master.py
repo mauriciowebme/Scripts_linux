@@ -447,6 +447,8 @@ class Docker(Executa_comados):
             f"""docker run -d \
                 --name prometheus \
                 --restart=unless-stopped \
+                --memory=512g \
+                --cpus=1 \
                 -p 9090:9090 \
                 -v {self.install_principal}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
                 prom/prometheus
@@ -454,12 +456,16 @@ class Docker(Executa_comados):
             f"""docker run -d \
                 --name node-exporter \
                 --restart=unless-stopped \
+                --memory=512g \
+                --cpus=1 \
                 -p 9100:9100 \
                 prom/node-exporter
             """,
             f"""docker run -d \
                 --name grafana \
                 --restart=unless-stopped \
+                --memory=512g \
+                --cpus=1 \
                 -p 3000:3000 \
                 grafana/grafana
             """,
