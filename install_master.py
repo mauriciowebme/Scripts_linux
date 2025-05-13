@@ -486,6 +486,9 @@ class Docker(Executa_comados):
         self.cria_rede_docker(associar_container_nome='mon_prometheus', numero_rede=1)
         self.cria_rede_docker(associar_container_nome='mon_node-exporter', numero_rede=1)
         self.cria_rede_docker(associar_container_nome='mon_grafana', numero_rede=1)
+        
+        print('Acesse o Grafana em http://localhost:3000')
+        print('Usuario e Senha padrão: admin/admin')
     
     def cria_dynamic_conf_traefik(self, email=None):
         dynamic_conf = f'{self.install_principal}/traefik/dynamic_conf.yml'
