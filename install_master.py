@@ -483,9 +483,9 @@ class Docker(Executa_comados):
         self.remove_container('mon_node-exporter')
         self.remove_container('mon_grafana')
         self.executar_comandos(comandos)
-        self.cria_rede_docker(associar_container_nome='prometheus', numero_rede=1)
-        self.cria_rede_docker(associar_container_nome='node-exporter', numero_rede=1)
-        self.cria_rede_docker(associar_container_nome='grafana', numero_rede=1)
+        self.cria_rede_docker(associar_container_nome='mon_prometheus', numero_rede=1)
+        self.cria_rede_docker(associar_container_nome='mon_node-exporter', numero_rede=1)
+        self.cria_rede_docker(associar_container_nome='mon_grafana', numero_rede=1)
     
     def cria_dynamic_conf_traefik(self, email=None):
         dynamic_conf = f'{self.install_principal}/traefik/dynamic_conf.yml'
