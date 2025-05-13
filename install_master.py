@@ -427,7 +427,7 @@ class Docker(Executa_comados):
         print("Iniciando instalação de monitoramento com Prometheus, Node Exporter e Grafana.")
         conteudo = textwrap.dedent("""\
         global:
-          scrape_interval: 15s
+          scrape_interval: 5s
           evaluation_interval: 5s
 
         scrape_configs:
@@ -440,28 +440,29 @@ class Docker(Executa_comados):
               - targets: ['node-exporter:9100']
         """)
 
-        caminho = f'{self.install_principal}/prometheus/prometheus.yml'
-        os.makedirs(os.path.dirname(caminho), exist_ok=True)
-        
-        # Check if file exists before creating it
-        if not os.path.exists(caminho):
-            with open(caminho, 'w') as f:
+        caminho_prometheus = f'{self.install_principal}/prometheus/prometheus.yml'
+        os.makedirs(os.path.dirname(caminho_prometheus), exist_ok=True)
+        if not os.path.exists(caminho_prometheus):
+            with open(caminho_prometheus, 'w') as f:
                 f.write(conteudo)
+                
+        caminho_grafana = f'{self.install_principal}/grafana'
+        os.makedirs(caminho_grafana, exist_ok=True)
         
         comandos = [
             f"""docker run -d \
             --name prometheus \
             --restart=unless-stopped \
-            --memory=512m \
+            --memory=256m \
             --cpus=1 \
             -p 9090:9090 \
-            -v {self.install_principal}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
+            -v {caminho_prometheus}:/etc/prometheus/prometheus.yml \
             prom/prometheus
             """,
             f"""docker run -d \
             --name node-exporter \
             --restart=unless-stopped \
-            --memory=512m \
+            --memory=256m \
             --cpus=1 \
             -p 9100:9100 \
             prom/node-exporter
@@ -472,6 +473,7 @@ class Docker(Executa_comados):
             --memory=512m \
             --cpus=1 \
             -p 3000:3000 \
+            -v {caminho_grafana}:/var/lib/grafana \
             grafana/grafana
             """,
         ]
