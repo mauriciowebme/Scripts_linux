@@ -428,6 +428,7 @@ class Docker(Executa_comados):
         conteudo = textwrap.dedent("""\
         global:
           scrape_interval: 15s
+          evaluation_interval: 5s
 
         scrape_configs:
           - job_name: 'prometheus'
@@ -440,34 +441,38 @@ class Docker(Executa_comados):
         """)
 
         caminho = f'{self.install_principal}/prometheus/prometheus.yml'
+        os.makedirs(os.path.dirname(caminho), exist_ok=True)
+        
+        # Check if file exists before creating it
+        if not os.path.exists(caminho):
+            with open(caminho, 'w') as f:
+                f.write(conteudo)
+        
         comandos = [
-            f"mkdir -p {self.install_principal}/prometheus/",
-            f"touch {caminho}",
-            f"echo '{conteudo}' > {caminho}",
             f"""docker run -d \
-                --name prometheus \
-                --restart=unless-stopped \
-                --memory=512g \
-                --cpus=1 \
-                -p 9090:9090 \
-                -v {self.install_principal}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
-                prom/prometheus
+            --name prometheus \
+            --restart=unless-stopped \
+            --memory=512m \
+            --cpus=1 \
+            -p 9090:9090 \
+            -v {self.install_principal}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
+            prom/prometheus
             """,
             f"""docker run -d \
-                --name node-exporter \
-                --restart=unless-stopped \
-                --memory=512g \
-                --cpus=1 \
-                -p 9100:9100 \
-                prom/node-exporter
+            --name node-exporter \
+            --restart=unless-stopped \
+            --memory=512m \
+            --cpus=1 \
+            -p 9100:9100 \
+            prom/node-exporter
             """,
             f"""docker run -d \
-                --name grafana \
-                --restart=unless-stopped \
-                --memory=512g \
-                --cpus=1 \
-                -p 3000:3000 \
-                grafana/grafana
+            --name grafana \
+            --restart=unless-stopped \
+            --memory=512m \
+            --cpus=1 \
+            -p 3000:3000 \
+            grafana/grafana
             """,
         ]
         self.remove_container('prometheus')
