@@ -487,7 +487,7 @@ class Docker(Executa_comados):
         self.cria_rede_docker(associar_container_nome='mon_node-exporter', numero_rede=1)
         self.cria_rede_docker(associar_container_nome='mon_grafana', numero_rede=1)
         
-        print('Acesse o Grafana em http://localhost:3000')
+        print('Acesse o Grafana em http://<seu_ip>:3000')
         print('Usuario e Senha padrão: admin/admin')
         resposta = input('Deseja ver um exemplo de json para o Grafana?: S ou N: ')
         if resposta.lower() == 's':
