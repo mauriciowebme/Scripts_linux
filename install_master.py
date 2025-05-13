@@ -451,26 +451,26 @@ class Docker(Executa_comados):
         os.makedirs(caminho_grafana, exist_ok=True)
         os.chmod(caminho_grafana, 0o777)
         
+        # -p 9090:9090 \
+        # -p 9100:9100 \
         comandos = [
             f"""docker run -d \
-            --name prometheus \
+            --name mon_prometheus \
             --restart=unless-stopped \
             --memory=256m \
             --cpus=1 \
-            -p 9090:9090 \
             -v {caminho_prometheus}:/etc/prometheus/prometheus.yml \
             prom/prometheus
             """,
             f"""docker run -d \
-            --name node-exporter \
+            --name mon_node-exporter \
             --restart=unless-stopped \
             --memory=256m \
             --cpus=1 \
-            -p 9100:9100 \
             prom/node-exporter
             """,
             f"""docker run -d \
-            --name grafana \
+            --name mon_grafana \
             --restart=unless-stopped \
             --memory=512m \
             --cpus=1 \
@@ -479,9 +479,9 @@ class Docker(Executa_comados):
             grafana/grafana
             """,
         ]
-        self.remove_container('prometheus')
-        self.remove_container('node-exporter')
-        self.remove_container('grafana')
+        self.remove_container('mon_prometheus')
+        self.remove_container('mon_node-exporter')
+        self.remove_container('mon_grafana')
         self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome='prometheus', numero_rede=1)
         self.cria_rede_docker(associar_container_nome='node-exporter', numero_rede=1)
