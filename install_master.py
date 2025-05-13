@@ -433,11 +433,11 @@ class Docker(Executa_comados):
         scrape_configs:
           - job_name: 'prometheus'
             static_configs:
-              - targets: ['localhost:9090']
+              - targets: ['mon_prometheus:9090']
 
           - job_name: 'node_exporter'
             static_configs:
-              - targets: ['node-exporter:9100']
+              - targets: ['mon_node-exporter:9100']
         """)
 
         caminho_prometheus = f'{self.install_principal}/prometheus/prometheus.yml'
