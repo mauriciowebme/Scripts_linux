@@ -440,14 +440,14 @@ class Docker(Executa_comados):
               - targets: ['mon_node-exporter:9100']
         """)
 
-        caminho_prometheus = f'{self.install_principal}/mon/prometheus/prometheus.yml'
+        caminho_prometheus = f'{self.install_principal}/monitoramento/prometheus/prometheus.yml'
         os.makedirs(os.path.dirname(caminho_prometheus), exist_ok=True)
         os.chmod(caminho_prometheus, 0o777)
         if not os.path.exists(caminho_prometheus):
             with open(caminho_prometheus, 'w') as f:
                 f.write(conteudo)
                 
-        caminho_grafana = f'{self.install_principal}/mon/grafana'
+        caminho_grafana = f'{self.install_principal}/monitoramento/grafana'
         os.makedirs(caminho_grafana, exist_ok=True)
         os.chmod(caminho_grafana, 0o777)
         
