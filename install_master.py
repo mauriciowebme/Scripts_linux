@@ -491,9 +491,6 @@ class Docker(Executa_comados):
         print('Usuario e Senha padrão: admin/admin')
         resposta = input('Deseja ver um exemplo de json para o Grafana?: S ou N: ')
         if resposta.lower() == 's':
-            print('Acesse o Grafana em http://localhost:3000')
-            print('Usuario e Senha padrão: admin/admin')
-            print('Cole o seguinte json:')
             print(textwrap.dedent("""\
             {
                 "annotations": {
