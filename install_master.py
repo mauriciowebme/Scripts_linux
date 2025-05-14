@@ -4385,7 +4385,7 @@ class Sistema(Docker, Executa_comados):
         print('Pressione H para ver as opções de ajuda')
         print('Pressione Q para sair')
         
-        resposta = input("Para ver o modo web difite w ou enter para o modo normal? (w / Outra tecla): ")
+        resposta = input("Para ver o modo web digite 'w' ou 'Outra tecla' para o modo normal. (w / Outra tecla): ")
         if resposta.lower() == "w":
             print("Iniciando o modo web do glances...")
             comandos = [
