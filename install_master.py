@@ -23,6 +23,24 @@ try:
 except ImportError:
     pass
 
+def get_ubuntu_version() -> float:
+    """
+    Retorna a versão do Ubuntu como float (ex: 22.04).
+    Retorna 0.0 se não for possível identificar.
+    """
+    try:
+        with open("/etc/os-release") as f:
+            for line in f:
+                if line.startswith("VERSION_ID"):
+                    version_str = line.split("=")[1].strip().replace('"', '')
+                    return float(version_str)
+    except Exception:
+        pass
+    return 0.0  # padrão em caso de falha
+
+VERSAO_UBUNTU = get_ubuntu_version()
+
+
 def check_for_update():
     update_file = Path("/install_principal/update_check.txt")
     update_file.parent.mkdir(parents=True, exist_ok=True)
@@ -103,9 +121,12 @@ def ensure(module: str,
                             "python3-pip"], check=True,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        subprocess.run([sys.executable, "-m", "pip", "install",
-                        "--break-system-packages", "--no-cache-dir", pip_pkg],
-                       check=True)
+        pip_cmd = [sys.executable, "-m", "pip", "install", "--no-cache-dir", pip_pkg]
+        if VERSAO_UBUNTU >= 24.04:
+            pip_cmd.insert(4, "--break-system-packages")
+            
+        subprocess.run(pip_cmd, check=True)
+        
         print(f"✓ {module} instalado via pip ({pip_pkg})")
 
         importlib.import_module(module)
