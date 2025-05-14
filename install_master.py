@@ -4352,15 +4352,19 @@ class Sistema(Docker, Executa_comados):
         print("Verificando status do sistema...")
         print('\n')
         
-        # input('Pressione enter para abrir o monitor de recusos')
-        if not self.verificar_instalacao("glances"):
-            comandos = [
-                "sudo apt update",
-                "sudo apt install glances -y",
-            ]
-            self.executar_comandos(comandos, comando_direto=True)
+        # # input('Pressione enter para abrir o monitor de recusos')
+        # if not self.verificar_instalacao("glances"):
+        #     comandos = [
+        #         "sudo apt update",
+        #         "sudo apt install glances -y",
+        #     ]
+        #     self.executar_comandos(comandos, comando_direto=True)
+        # comandos = [
+        #         "glances",
+        #     ]
+        # self.executar_comandos(comandos, comando_direto=True)
         comandos = [
-                "glances",
+                "/usr/local/bin/glances -w",
             ]
         self.executar_comandos(comandos, comando_direto=True)
     
