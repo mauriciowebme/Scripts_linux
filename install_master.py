@@ -57,8 +57,7 @@ def ensure_pip_installed():
     except subprocess.CalledProcessError:
         print("pip não encontrado. Instalando com apt...")
         subprocess.check_call(["apt-get", "update"])
-        subprocess.check_call(["apt-get", "install", "-y", "--no-install-recommends",
-                               "python3-pip"])
+        subprocess.check_call(["apt-get", "install", "-y", "python3-pip"])
         print("pip instalado com sucesso.\n")
 ensure_pip_installed()
 
