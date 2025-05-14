@@ -4086,7 +4086,7 @@ class Sistema(Docker, Executa_comados):
                 stderr=subprocess.PIPE,
                 text=True
             )
-            return True
+            return resultado.returncode == 0
         except subprocess.CalledProcessError:
             return False
         
@@ -4374,6 +4374,8 @@ class Sistema(Docker, Executa_comados):
     def verificando_status_sistema(self,):
         print("Verificando status do sistema...")
         print('\n')
+        
+        print(self.verificar_instalacao("glances"))
         
         if self.verificar_instalacao("glances"):
             comandos = [
