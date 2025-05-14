@@ -101,16 +101,17 @@ def ensure(module: str,
         if shutil.which("pip") is None:
             subprocess.run(["apt-get", "install", "-y", "--no-install-recommends",
                             "python3-pip"], check=True,
-                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         subprocess.run([sys.executable, "-m", "pip", "install",
                         "--break-system-packages", "--no-cache-dir", pip_pkg],
-                    check=True)
+                       check=True)
         print(f"✓ {module} instalado via pip ({pip_pkg})")
-    
+
         importlib.import_module(module)
         return
     except ImportError:
+        print(f"✗ Falha ao instalar {module} via pip ({pip_pkg})")
         pass
 
 # ---- dependências do script ----
@@ -118,8 +119,12 @@ ensure("mysql.connector",
        apt_pkg="python3-mysql.connector",
        pip_pkg="mysql-connector-python")
 ensure("yaml",
-        apt_pkg="python3-yaml",
-        pip_pkg="PyYAML")
+       apt_pkg="python3-yaml",
+       pip_pkg="PyYAML")
+ensure("glances",
+       apt_pkg="python3-glances",
+       pip_pkg="glances[web]")
+
 
 class Executa_comados():
     def __init__(self):
