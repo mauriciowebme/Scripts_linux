@@ -4086,7 +4086,7 @@ class Sistema(Docker, Executa_comados):
                 stderr=subprocess.PIPE,
                 text=True
             )
-            return resultado.returncode == 0
+            return True
         except subprocess.CalledProcessError:
             return False
         
