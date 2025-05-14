@@ -4385,8 +4385,8 @@ class Sistema(Docker, Executa_comados):
         print('Pressione H para ver as opções de ajuda')
         print('Pressione Q para sair')
         
-        resposta = input("Deseja ver o modo web? (s/n): ")
-        if resposta.lower() == "s":
+        resposta = input("Para ver o modo web difite w ou enter para o modo normal? (w / Outra tecla): ")
+        if resposta.lower() == "w":
             print("Iniciando o modo web do glances...")
             comandos = [
                 "/usr/local/bin/glances -w",
