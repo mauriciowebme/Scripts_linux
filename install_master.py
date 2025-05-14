@@ -4375,29 +4375,25 @@ class Sistema(Docker, Executa_comados):
         print("Verificando status do sistema...")
         print('\n')
         
-        print(self.verificar_instalacao("glances"))
-        
-        if self.verificar_instalacao("glances"):
+        if not self.verificar_instalacao("glances"):
             comandos = [
                 "sudo apt update",
-                "sudo apt remove glances -y",
+                "sudo apt install glances -y",
             ]
             self.executar_comandos(comandos, comando_direto=True)
-        comandos = [
+
+        resposta = input("Deseja ver o modo web? (s/n): ")
+        if resposta.lower() == "s":
+            print("Iniciando o modo web do glances...")
+            comandos = [
                 "/usr/local/bin/glances -w",
             ]
+        else:
+            print("Iniciando o modo terminal do glances...")
+            comandos = [
+                "glances",
+            ]
         self.executar_comandos(comandos, comando_direto=True)
-        
-        # if not self.verificar_instalacao("glances"):
-        #     comandos = [
-        #         "sudo apt update",
-        #         "sudo apt install glances -y",
-        #     ]
-        #     self.executar_comandos(comandos, comando_direto=True)
-        # comandos = [
-        #         "glances",
-        #     ]
-        # self.executar_comandos(comandos, comando_direto=True)
     
     def menu_atualizacoes(self,):
         """Menu de opções"""
