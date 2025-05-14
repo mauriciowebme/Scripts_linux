@@ -40,7 +40,6 @@ def get_ubuntu_version() -> float:
 
 VERSAO_UBUNTU = get_ubuntu_version()
 
-
 def check_for_update():
     update_file = Path("/install_principal/update_check.txt")
     update_file.parent.mkdir(parents=True, exist_ok=True)
