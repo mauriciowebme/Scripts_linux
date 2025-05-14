@@ -121,6 +121,8 @@ ensure("mysql.connector",
 ensure("yaml",
        apt_pkg="python3-yaml",
        pip_pkg="PyYAML")
+
+subprocess.run("sudo apt remove glances -y".split(), check=False)
 ensure("glances",
        apt_pkg="python3-glances",
        pip_pkg="glances[web]")
