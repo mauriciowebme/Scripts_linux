@@ -1462,6 +1462,8 @@ WantedBy=timers.target
         comandos = [
             f"""docker run -d \
                     --name pritunl \
+                    --memory=512m \
+                    --cpus=1 \
                     --privileged \
                     --publish 81:80 \
                     --publish 447:443 \
