@@ -142,7 +142,13 @@ ensure("yaml",
        apt_pkg="python3-yaml",
        pip_pkg="PyYAML")
 
-subprocess.run("sudo apt remove glances -y".split(), check=False)
+try:
+    check_installed = subprocess.run(["dpkg", "-s", "glances"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if check_installed.returncode == 0:
+        print("Removing existing glances installation...")
+        subprocess.run("sudo apt remove glances -y".split(), check=False)
+except Exception:
+    pass
 ensure("glances",
        apt_pkg="python3-glances",
        pip_pkg="glances[web]")
