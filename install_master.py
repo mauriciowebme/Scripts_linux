@@ -142,13 +142,6 @@ ensure("yaml",
        apt_pkg="python3-yaml",
        pip_pkg="PyYAML")
 
-try:
-    check_installed = subprocess.run(["dpkg", "-s", "glances"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    if check_installed.returncode == 0:
-        print("Removing existing glances installation...")
-        subprocess.run("sudo apt remove glances -y".split(), check=False)
-except Exception:
-    pass
 ensure("glances",
        apt_pkg="python3-glances",
        pip_pkg="glances[web]")
@@ -4380,7 +4373,17 @@ class Sistema(Docker, Executa_comados):
         print("Verificando status do sistema...")
         print('\n')
         
-        # # input('Pressione enter para abrir o monitor de recusos')
+        if self.verificar_instalacao("glances"):
+            comandos = [
+                "sudo apt update",
+                "sudo apt remove glances -y",
+            ]
+            self.executar_comandos(comandos, comando_direto=True)
+        comandos = [
+                "/usr/local/bin/glances -w",
+            ]
+        self.executar_comandos(comandos, comando_direto=True)
+        
         # if not self.verificar_instalacao("glances"):
         #     comandos = [
         #         "sudo apt update",
@@ -4391,10 +4394,6 @@ class Sistema(Docker, Executa_comados):
         #         "glances",
         #     ]
         # self.executar_comandos(comandos, comando_direto=True)
-        comandos = [
-                "/usr/local/bin/glances -w",
-            ]
-        self.executar_comandos(comandos, comando_direto=True)
     
     def menu_atualizacoes(self,):
         """Menu de opções"""
