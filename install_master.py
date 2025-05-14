@@ -4382,6 +4382,9 @@ class Sistema(Docker, Executa_comados):
             ]
             self.executar_comandos(comandos, comando_direto=True)
 
+        print('Pressione H para ver as opções de ajuda')
+        print('Pressione Q para sair')
+        
         resposta = input("Deseja ver o modo web? (s/n): ")
         if resposta.lower() == "s":
             print("Iniciando o modo web do glances...")
