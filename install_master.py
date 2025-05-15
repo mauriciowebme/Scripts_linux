@@ -1577,8 +1577,11 @@ WantedBy=timers.target
         comandos = [
             f"docker logs rustdesk-hbbs",
         ]
-        resultados = self.executar_comandos(comandos)
-        
+        resultados = self.executar_comandos(comandos)[f"docker logs rustdesk-hbbs"]
+        for x in resultados:
+            if 'Key' in x:
+                print(f"Chave de acesso: {x.split('Key: ')[1]}")
+            
     def instala_portainer(self,):
         self.remove_container('portainer')
         comandos = [
