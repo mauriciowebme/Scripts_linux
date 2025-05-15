@@ -3158,6 +3158,7 @@ CMD ["sh", "-c", "\
         #--no-install-recommends
         RUN apt-get install -y \
             wget \
+            fuse \
             curl \
             gdebi \
             python3 \
