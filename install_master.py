@@ -3341,7 +3341,9 @@ CMD ["sh", "-c", "\
             os.chmod(dest, 0o777)
             entrypoint.append(f"mkdir -p {dest_cont} && chmod 777 {dest_cont}; ")
             # --no-update-config
-            entrypoint.append(f"rclone mount {remote}: /data/{remote} & ")
+            # entrypoint.append(f"rclone mount {remote}: /data/{remote} & ")
+            entrypoint.append(f"rclone mount {remote}: /data/{remote} --vfs-cache-mode=writes & ")
+
         
         entrypoint.append("wait")
         # Concatena tudo numa única string
