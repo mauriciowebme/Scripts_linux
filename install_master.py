@@ -4347,6 +4347,7 @@ class Sistema(Docker, Executa_comados):
         opcoes_menu = [
             ("Menu partições", self.menu_particoes),
             ("Menu swap", self.menu_swap),
+            ("Cria o .py para inicializar", self.setup_inicializar_service),
             ("instalar deb", self.instalar_deb),
             ("fecha_tela_noot", self.fecha_tela_noot),
             ("Instala/Inicia interface xfce", self.instalar_interface_xfce),
@@ -4359,7 +4360,6 @@ class Sistema(Docker, Executa_comados):
             ("Verificar temperatura", self.verifica_temperatura),
             ("Verificar velocidade da internet", self.verifica_velocidade),
             ("configura ssh", self.configura_ssh),
-            ("Cria o .py para inicializar", self.setup_inicializar_service),
             ("Faz copia inteligente com rsync", self.rsync_sync),
         ]
         self.mostrar_menu(opcoes_menu)
