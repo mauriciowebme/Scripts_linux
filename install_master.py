@@ -3340,6 +3340,9 @@ CMD ["sh", "-c", "\
             os.makedirs(dest, exist_ok=True)
             os.chmod(dest, 0o777)
             entrypoint.append(f"mkdir -p {dest_cont} && chmod 777 {dest_cont}; ")
+            # --no-update-config
+            # entrypoint.append(f"rclone mount {remote}: /data/{remote} & ")
+            # entrypoint.append(f"rclone mount {remote}: /data/{remote} --vfs-cache-mode=full & ")
             entrypoint.append(f"rclone mount {remote}: /data/{remote} "
                   f"--vfs-cache-mode=full "
                   f"--dir-cache-time=30s "
@@ -3358,7 +3361,7 @@ CMD ["sh", "-c", "\
             "--cpus=1",
             "-e", "RCLONE_CONFIG=/config/rclone/rclone.conf",
             "-v", f"{conf_path}:/config/rclone",
-            "-v", "/mnt/rclone_remotes:/data:shared",
+            "-v", f"{base_mount}:/data:shared",
             "-v", "/etc/passwd:/etc/passwd:ro",
             "-v", "/etc/group:/etc/group:ro",
             "--user", f"{os.getuid()}:{os.getgid()}",
