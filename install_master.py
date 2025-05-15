@@ -3360,7 +3360,7 @@ CMD ["sh", "-c", "\
         run_args = [
             "--name", "rclone",
             "--restart=unless-stopped",
-            "--memory=512m",
+            "--memory=256m",
             "--cpus=1",
             "-e", "RCLONE_CONFIG=/config/rclone/rclone.conf",
             "-v", f"{conf_path}:/config/rclone",
