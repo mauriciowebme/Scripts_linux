@@ -3158,6 +3158,7 @@ CMD ["sh", "-c", "\
         #--no-install-recommends
         RUN apt-get install -y \
             wget \
+            curl \
             gdebi \
             python3 \
             python3-pip \
@@ -3238,6 +3239,8 @@ CMD ["sh", "-c", "\
             
         RUN echo 'Adiciona ABNT2 ao iniciar o XFCE'
         RUN echo "setxkbmap -layout br -variant abnt2" >> /etc/xdg/xfce4/xinitrc
+        
+        RUN curl https://rclone.org/install.sh | sudo bash
         
         RUN echo 'Realiza limpeza'
         RUN apt-get clean && rm -rf /var/lib/apt/lists/*
