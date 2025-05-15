@@ -3351,6 +3351,8 @@ CMD ["sh", "-c", "\
         run_args = [
             "--name", "rclone",
             "--restart=unless-stopped",
+            "--memory=512m",
+            "--cpus=1",
             "-e", "RCLONE_CONFIG=/config/rclone/rclone.conf",
             "-v", f"{conf_path}:/config/rclone",
             "-v", "/mnt/rclone_remotes:/data:shared",
@@ -3367,6 +3369,7 @@ CMD ["sh", "-c", "\
         ]
         
         self.executar_comandos_run_OrAnd_dockerfile( run_cmd=run_args )
+        self.cria_rede_docker(associar_container_nome='rclone', numero_rede=1)
 
         print("\nInstalação do rclone concluída.")
     
