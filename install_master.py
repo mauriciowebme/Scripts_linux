@@ -1524,10 +1524,9 @@ WantedBy=timers.target
         print('Instalando rustdesk.')
         
         comandos = []
-        local_hbbs = f"{self.install_principal}/rustdesk/rustdesk-hbbs"
-        if not os.path.exists(local_hbbs):
-            senha = input('Coloque a senha que deseja para acesso: ')
-            comandos += [
+        token = self.generate_password()
+            
+        comandos = [
             f"""docker run -d \
                     --name rustdesk-hbbs \
                     --restart=unless-stopped \
@@ -1537,33 +1536,16 @@ WantedBy=timers.target
                     -p 21116:21116/udp \
                     -p 21118:21118 \
                     -v {self.install_principal}/rustdesk/rustdesk-hbbs:/root \
-                    -e TOKEN="{senha}" \
+                    -e TOKEN="{token}" \
                     rustdesk/rustdesk-server hbbs
                 """,
-            ]
-        else:
-            print(f"Diretório {local_hbbs} já existe. Não será criado novamente.")
-            comandos += [
-            f"""docker run -d \
-                    --name rustdesk-hbbs \
-                    --restart=unless-stopped \
-                    -p 21114:21114 \
-                    -p 21115:21115 \
-                    -p 21116:21116 \
-                    -p 21116:21116/udp \
-                    -p 21118:21118 \
-                    -v {self.install_principal}/rustdesk/rustdesk-hbbs:/root \
-                    rustdesk/rustdesk-server hbbs
-                """,
-            ]
-                
-        comandos += [
             f"""docker run -d \
                     --name rustdesk-hbbr \
                     --restart=unless-stopped \
                     -p 21117:21117 \
                     -p 21119:21119 \
                     -v {self.install_principal}/rustdesk/rustdesk-hbbr:/root \
+                    -e TOKEN="{token}" \
                     rustdesk/rustdesk-server hbbr
                 """,
             ]
