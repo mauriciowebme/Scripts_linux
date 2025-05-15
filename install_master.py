@@ -4246,50 +4246,58 @@ class Sistema(Docker, Executa_comados):
 
     def setup_inicializar_service(self):
         """
-        1. Cria /install_principal/inicializar.py (com log simples).
-        2. Cria /etc/systemd/system/inicializar.service apontando para ele.
+        1. Cria /install_principal/inicializar.py (com log simples) se não existir.
+        2. Cria /etc/systemd/system/inicializar.service apontando para ele se não existir.
         3. Recarrega o systemd e habilita o serviço.
 
         → Execute como root ou via sudo.
         """
-        script_path  = Path("/install_principal/inicializar.py")
+        script_path = Path("/install_principal/inicializar.py")
         service_path = Path("/etc/systemd/system/inicializar.service")
 
-        # 1) script de exemplo
-        script_code = textwrap.dedent("""\
-            #!/usr/bin/env python3
-            import os
-            from datetime import datetime
+        # 1) script de exemplo (somente se não existir)
+        if not script_path.exists():
+            script_code = textwrap.dedent("""\
+                #!/usr/bin/env python3
+                import os
+                from datetime import datetime
 
-            log_path = os.path.join(os.path.dirname(__file__), "inicializar.log")
-            with open(log_path, "a") as f:
-                f.write(f"{datetime.now():%Y-%m-%d %H:%M:%S} – Script inicializar.py executado.\\n")
-        """)
-        script_path.parent.mkdir(parents=True, exist_ok=True)
-        script_path.write_text(script_code)
-        script_path.chmod(0o755)         # torna executável
+                log_path = os.path.join(os.path.dirname(__file__), "inicializar.log")
+                with open(log_path, "a") as f:
+                    f.write(f"{datetime.now():%Y-%m-%d %H:%M:%S} – Script inicializar.py executado.\\n")
+            """)
+            script_path.parent.mkdir(parents=True, exist_ok=True)
+            script_path.write_text(script_code)
+            script_path.chmod(0o755)         # torna executável
+            print(f"✔ Script criado em {script_path}")
+        else:
+            print(f"✓ Script {script_path} já existe, mantendo o arquivo existente")
 
-        # 2) unidade systemd
-        unit = textwrap.dedent(f"""\
-            [Unit]
-            Description=Inicializar.py automático
-            After=network.target
+        # 2) unidade systemd (somente se não existir)
+        if not service_path.exists():
+            unit = textwrap.dedent(f"""\
+                [Unit]
+                Description=Inicializar.py automático
+                After=network.target
 
-            [Service]
-            Type=simple
-            ExecStart=/usr/bin/python3 {script_path}
-            Restart=on-failure
+                [Service]
+                Type=simple
+                ExecStart=/usr/bin/python3 {script_path}
+                Restart=on-failure
 
-            [Install]
-            WantedBy=multi-user.target
-        """)
-        service_path.write_text(unit)
+                [Install]
+                WantedBy=multi-user.target
+            """)
+            service_path.write_text(unit)
+            print(f"✔ Serviço criado em {service_path}")
+        else:
+            print(f"✓ Serviço {service_path} já existe, mantendo o arquivo existente")
 
         # 3) recarrega e ativa
         subprocess.run(["systemctl", "daemon-reload"], check=True)
         subprocess.run(["systemctl", "enable", "--now", service_path.name], check=True)
 
-        print("✔ Serviço criado e em execução – verifique com:")
+        print("✔ Serviço ativado e em execução – verifique com:")
         print(f"   sudo systemctl status {service_path.name}")
         
     def configura_ssh(self):
