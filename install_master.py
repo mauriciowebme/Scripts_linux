@@ -1530,6 +1530,8 @@ WantedBy=timers.target
             f"""docker run -d \
                     --name rustdesk-hbbs \
                     --restart=unless-stopped \
+                    -memory=256m \
+                    --cpus=1 \
                     -p 21114:21114 \
                     -p 21115:21115 \
                     -p 21116:21116 \
@@ -1542,6 +1544,8 @@ WantedBy=timers.target
             f"""docker run -d \
                     --name rustdesk-hbbr \
                     --restart=unless-stopped \
+                    -memory=256m \
+                    --cpus=1 \
                     -p 21117:21117 \
                     -p 21119:21119 \
                     -v {self.install_principal}/rustdesk/rustdesk-hbbr:/root \
