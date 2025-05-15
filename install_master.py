@@ -3159,6 +3159,7 @@ CMD ["sh", "-c", "\
         RUN apt-get install -y \
             wget \
             fuse \
+            libfuse2 \
             curl \
             gdebi \
             python3 \
