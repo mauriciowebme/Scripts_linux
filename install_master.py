@@ -3158,9 +3158,6 @@ CMD ["sh", "-c", "\
         #--no-install-recommends
         RUN apt-get install -y \
             wget \
-            fuse \
-            fuse3 \
-            libfuse2 \
             curl \
             gdebi \
             python3 \
@@ -3286,7 +3283,6 @@ CMD ["sh", "-c", "\
             "--restart=unless-stopped",
             "-e", "PUID=1000",
             "-e", "PGID=1000",
-            "--device /dev/fuse"
             "-e", "TZ=America/Sao_Paulo",
             "-e", "CUSTOM_USER=master",
             "-e", f"PASSWORD={senha}",
