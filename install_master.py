@@ -3329,7 +3329,7 @@ CMD ["sh", "-c", "\
         config.read(read_conf_path)
 
         # 2) Para cada seção (remote), cria a pasta no host
-        base_mount = "/mnt/rclone_remotes"
+        base_mount = f"{self.install_principal}/rclone/rclone_remotes"
         base_container = "/data"
         entrypoint = []
         for remote in config.sections():
