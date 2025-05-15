@@ -4393,6 +4393,7 @@ class Sistema(Docker, Executa_comados):
             ("Instala windows KVM docker", self.instala_windows_KVM_docker),
             ("Instala Sistema CISO docker", self.instala_sistema_CISO_docker),
             ("Instala deskto ubuntu webtop", self.desktop_ubuntu_webtop),
+            ("Instala Ubuntu", self.ubuntu),
             ("Instala rustdesk", self.instala_rustdesk),
             ("Instala pritunel", self.instala_pritunel),
             ("Instala nextcloud", self.instala_nextcloud),
@@ -4400,7 +4401,6 @@ class Sistema(Docker, Executa_comados):
             ("Instala Open WebUI", self.instala_open_webui),
             ("Instala Redis Docker", self.instala_redis_docker),
             ("Instala selenium-firefox", self.instala_selenium_firefox),
-            ("Instala ubuntu", self.ubuntu),
             ("Instala rclone", self.rclone),
         ]
         self.mostrar_menu(opcoes_menu)
