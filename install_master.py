@@ -3286,6 +3286,7 @@ CMD ["sh", "-c", "\
             "--restart=unless-stopped",
             "-e", "PUID=1000",
             "-e", "PGID=1000",
+            "--device /dev/fuse"
             "-e", "TZ=America/Sao_Paulo",
             "-e", "CUSTOM_USER=master",
             "-e", f"PASSWORD={senha}",
