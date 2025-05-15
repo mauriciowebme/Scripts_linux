@@ -4298,7 +4298,13 @@ class Sistema(Docker, Executa_comados):
         subprocess.run(["systemctl", "enable", "--now", service_path.name], check=True)
 
         print("✔ Serviço ativado e em execução – verifique com:")
-        print(f"   sudo systemctl status {service_path.name}")
+        print(f"   sudo systemctl status inicializar.service")
+        print("✔ Para desativar, use:")
+        print(f"   sudo systemctl disable --now inicializar.service")
+        print("✔ Para iniciar, use:")
+        print(f"   sudo systemctl start inicializar.service")
+        print("✔ Para parar, use:")
+        print(f"   sudo systemctl stop inicializar.service")
         
     def configura_ssh(self):
         try:
