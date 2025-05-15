@@ -502,7 +502,7 @@ class Docker(Executa_comados):
             f"""docker run -d \
             --name mon_grafana \
             --restart=unless-stopped \
-            --memory=512m \
+            --memory=256m \
             --cpus=1 \
             -p 3000:3000 \
             -v {caminho_grafana}:/var/lib/grafana \
