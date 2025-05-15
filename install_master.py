@@ -3342,8 +3342,12 @@ CMD ["sh", "-c", "\
             entrypoint.append(f"mkdir -p {dest_cont} && chmod 777 {dest_cont}; ")
             # --no-update-config
             # entrypoint.append(f"rclone mount {remote}: /data/{remote} & ")
-            entrypoint.append(f"rclone mount {remote}: /data/{remote} --vfs-cache-mode=writes & ")
-
+            # entrypoint.append(f"rclone mount {remote}: /data/{remote} --vfs-cache-mode=full & ")
+            entrypoint.append(f"rclone mount {remote}: /data/{remote} "
+                  f"--vfs-cache-mode=full "
+                  f"--dir-cache-time=1h "
+                  f"--poll-interval=30s "
+                  f"& ")
         
         entrypoint.append("wait")
         # Concatena tudo numa única string
