@@ -251,10 +251,15 @@ class Docker(Executa_comados):
             print(f"Nenhuma porta disponível entre {inicio} e {fim}.")
             return None
 
-    def cria_rede_docker(self, associar_todos=False, associar_container_nome=False, numero_rede=None):
+    def cria_rede_docker(self, associar_todos=False, associar_container_nome=False, numero_rede=None, nome_rede=None):
         # Verifica se a rede já existe
         try:
             result = subprocess.run(["docker", "network", "ls"], capture_output=True, text=True)
+            
+            if nome_rede != None:
+                self.redes_docker = [nome_rede]
+                numero_rede = -1
+                
             for rede in self.redes_docker:
                 if rede not in result.stdout:
                     print(f"Rede '{rede}' não encontrada. Criando rede...")
@@ -1544,6 +1549,8 @@ WantedBy=timers.target
         self.remove_container('rustdesk-hbbr')
         resultados = self.executar_comandos(comandos)
         time.sleep(10)
+        self.cria_rede_docker(associar_container_nome=f'rustdesk-hbbs', nome_rede='rustdesk')
+        self.cria_rede_docker(associar_container_nome=f'rustdesk-hbbr', nome_rede='rustdesk')
         
         comandos = [
             f"docker logs rustdesk-hbbs",
