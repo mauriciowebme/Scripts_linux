@@ -3351,7 +3351,7 @@ CMD ["sh", "-c", "\
                     f"--vfs-cache-max-size=10M "
                     f"--vfs-cache-max-age=1m "
                     f"--dir-cache-time=30s "
-                    f"--poll-interval=15s "
+                    f"--poll-interval=30s "
                     f"& ")
         
         entrypoint.append("wait")
