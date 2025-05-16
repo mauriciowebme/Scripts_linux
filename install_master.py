@@ -3347,10 +3347,12 @@ CMD ["sh", "-c", "\
             # entrypoint.append(f"rclone mount {remote}: /data/{remote} & ")
             # entrypoint.append(f"rclone mount {remote}: /data/{remote} --vfs-cache-mode=full & ")
             entrypoint.append(f"rclone mount {remote}: /data/{remote} "
-                  f"--vfs-cache-mode=full "
-                  f"--dir-cache-time=30s "
-                  f"--poll-interval=15s "
-                  f"& ")
+                    f"--vfs-cache-mode=full "
+                    f"--vfs-cache-max-size 1000M"
+                    f"--vfs-cache-max-age 1h"
+                    f"--dir-cache-time=30s "
+                    f"--poll-interval=15s "
+                    f"& ")
         
         entrypoint.append("wait")
         # Concatena tudo numa única string
@@ -3365,6 +3367,7 @@ CMD ["sh", "-c", "\
             "-e", "RCLONE_CONFIG=/config/rclone/rclone.conf",
             "-v", f"{conf_path}:/config/rclone",
             "-v", f"{base_mount}:/data:shared",
+            "-v", f"{self.install_principal}/rclone/cache:/tmp/rclone-cache",
             "-v", "/etc/passwd:/etc/passwd:ro",
             "-v", "/etc/group:/etc/group:ro",
             "--user", f"{os.getuid()}:{os.getgid()}",
