@@ -3348,8 +3348,8 @@ CMD ["sh", "-c", "\
             # entrypoint.append(f"rclone mount {remote}: /data/{remote} --vfs-cache-mode=full & ")
             entrypoint.append(f"rclone mount {remote}: /data/{remote} "
                     f"--vfs-cache-mode=full "
-                    f"--vfs-cache-max-size 10M "
-                    f"--vfs-cache-max-age 1m "
+                    f"--vfs-cache-max-size=10M "
+                    f"--vfs-cache-max-age=1m "
                     f"--dir-cache-time=30s "
                     f"--poll-interval=15s "
                     f"& ")
