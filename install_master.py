@@ -4265,13 +4265,41 @@ class Sistema(Docker, Executa_comados):
         # 1) script de exemplo (somente se não existir)
         if not script_path.exists():
             script_code = textwrap.dedent("""\
-                #!/usr/bin/env python3
-                import os
-                from datetime import datetime
+            #!/usr/bin/env python3
 
-                log_path = os.path.join(os.path.dirname(__file__), "inicializar.log")
-                with open(log_path, "a") as f:
-                    f.write(f"{datetime.now():%Y-%m-%d %H:%M:%S} – Script inicializar.py executado.\\n")
+            ## Para iniciar o serviço
+            # sudo systemctl start inicializar.service
+            ## Para parar o serviço
+            # sudo systemctl status inicializar.service
+            ## reiniciar o serviço
+            # sudo systemctl restart inicializar.service
+
+            import os
+            from datetime import datetime
+            import subprocess
+            import time
+
+            time.sleep(30)
+
+            class inicializar:
+                def __init__(self):
+                    self.escrever_log("Script inicializar.py executado.")
+                    self.start()
+                    
+                def start(self,):
+                    while True:
+                        print("Executando o script inicializar.py...")
+                        
+                        # Espera 1 hora
+                        time.sleep(60*60*1)
+
+                def escrever_log(self, mensagem):
+                    # Escreve uma mensagem no arquivo de log.
+                    with open(self.log_path, "a") as f:
+                        f.write(f'{datetime.now():%Y-%m-%d %H:%M:%S} – {mensagem}')
+            
+            if __name__ == "__main__":
+                inicializar()
             """)
             script_path.parent.mkdir(parents=True, exist_ok=True)
             script_path.write_text(script_code)
