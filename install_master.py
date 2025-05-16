@@ -3371,7 +3371,7 @@ CMD ["sh", "-c", "\
             "-e", "RCLONE_CONFIG=/config/rclone/rclone.conf",
             "-v", f"{conf_path}:/config/rclone",
             "-v", f"{base_mount}:/data:shared",
-            "-v", f"{pasta_cache}:/tmp/rclone-cache",
+            "-v", f"{pasta_cache}:/root/.cache/rclone",
             "-v", "/etc/passwd:/etc/passwd:ro",
             "-v", "/etc/group:/etc/group:ro",
             "--user", f"{os.getuid()}:{os.getgid()}",
