@@ -3359,6 +3359,10 @@ CMD ["sh", "-c", "\
         entrypoint = "".join(entrypoint)
         print(entrypoint)
         
+        pasta_cache = f"{self.install_principal}/rclone/cache"
+        os.makedirs(pasta_cache, exist_ok=True)
+        os.chmod(pasta_cache, 0o777)
+        
         run_args = [
             "--name", "rclone",
             "--restart=unless-stopped",
@@ -3367,7 +3371,7 @@ CMD ["sh", "-c", "\
             "-e", "RCLONE_CONFIG=/config/rclone/rclone.conf",
             "-v", f"{conf_path}:/config/rclone",
             "-v", f"{base_mount}:/data:shared",
-            "-v", f"{self.install_principal}/rclone/cache:/tmp/rclone-cache",
+            "-v", f"{pasta_cache}:/tmp/rclone-cache",
             "-v", "/etc/passwd:/etc/passwd:ro",
             "-v", "/etc/group:/etc/group:ro",
             "--user", f"{os.getuid()}:{os.getgid()}",
