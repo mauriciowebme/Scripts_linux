@@ -3626,29 +3626,47 @@ class Sistema(Docker, Executa_comados):
         
     def instalar_interface_xfce(self,):
         """
-        Instala a interface XFCE4 se ainda não estiver instalada e a inicia.
+        Instala ou reinstala a interface XFCE4 e a inicia.
+        Permite que o usuário escolha reinstalar mesmo que já esteja instalada.
         """
         try:
             print("Verificando se o xfce4 já está instalado...")
             
             if self.verificar_instalacao('xfce4'):
                 print("xfce4 já está instalado.")
-                # Inicia o lxqt
-                print("Iniciando xfce4...")
-                self.executar_comandos(["startxfce4 "], comando_direto=True)
+                resposta = input("Deseja reinstalar o xfce4? (s/n): ").lower()
+                
+                if resposta == 's':
+                    print("Reinstalando xfce4...")
+                    self.atualizar_sistema_completa()
+                    comandos = [
+                        "sudo apt remove --purge xfce4* -y",
+                        "sudo apt autoremove -y",
+                        "sudo apt install xfce4 -y"
+                    ]
+                    self.executar_comandos(comandos, comando_direto=True)
+                    print("xfce4 reinstalado com sucesso.")
+                else:
+                    # Apenas inicia o xfce4
+                    print("Iniciando xfce4...")
+                    self.executar_comandos(["startxfce4 "], comando_direto=True)
             else:
                 print("xfce4 não encontrado. Instalando xfce4...")
                 self.atualizar_sistema_completa()
                 comandos = [
-                    "sudo apt install xfce4 -y",
-                    # "sudo apt install lxqt -y",
-                    # "sudo apt install lightdm",
-                    # "sudo systemctl enable lightdm",
-                    # "sudo systemctl start lightdm",
+                    # "sudo apt install xfce4 -y",
+                    "sudo apt install xfce4 xfce4-goodies lightdm dbus-x11 xinit",
+                    "sudo dpkg-reconfigure lightdm",
+                    "sudo systemctl enable lightdm --now",
+                    "rm -f ~/.Xauthority ~/.cache/sessions/*",
+                    "reboot",
                 ]
                 self.executar_comandos(comandos, comando_direto=True)
                 print("xfce4 instalado com sucesso.")
-            
+                
+                # Iniciar o xfce4 após a instalação
+                print("Iniciando xfce4...")
+                self.executar_comandos(["startxfce4 "], comando_direto=True)
             
         except subprocess.CalledProcessError as e:
             print(f"Erro durante a execução do comando: {e}")
