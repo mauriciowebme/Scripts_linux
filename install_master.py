@@ -2448,6 +2448,39 @@ module.exports = { setupPythonEnv, runPythonScript };
         print('Instalando o mysql.\n')
         # self.gerenciar_permissoes_pasta(f"{self.install_principal}/mysql/{versao_}", permissao="777")
         
+        # docker_file = textwrap.dedent(f"""\
+        #     FROM mysql:8.0
+
+        #     # Instala cron
+        #     RUN apt-get update && apt-get install -y cron && rm -rf /var/lib/apt/lists/*
+
+        #     # Cria diretório de backup
+        #     RUN mkdir -p /backup
+
+        #     # Adiciona script de backup diretamente
+        #     RUN echo '#!/bin/bash\n\
+        #     DATE=$(date +%F_%H-%M)\n\
+        #     BACKUP_DIR="/backup"\n\
+        #     MYSQL_USER="root"\n\
+        #     MYSQL_PASS="$MYSQL_ROOT_PASSWORD"\n\
+        #     MYSQL_HOST="localhost"\n\
+        #     mysqldump -h $MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PASS --all-databases > $BACKUP_DIR/backup_$DATE.sql\n'\
+        #     > /usr/local/bin/backup.sh && chmod +x /usr/local/bin/backup.sh
+
+        #     # Cria agendamento no crontab (todo dia às 2h da manhã)
+        #     RUN echo '0 2 * * * root /usr/local/bin/backup.sh >> /var/log/cron.log 2>&1' > /etc/cron.d/mysql-backup
+
+        #     # Aplica o cron agendado
+        #     RUN crontab /etc/cron.d/mysql-backup
+
+        #     # Cria log para o cron
+        #     RUN touch /var/log/cron.log
+
+        #     # Comando para iniciar cron e MySQL juntos
+        #     CMD service cron start && docker-entrypoint.sh mysqld
+        #     """)
+        # self.executar_comandos_run_OrAnd_dockerfile(dockerfile_str=docker_file, run_cmd=None)
+        
         container_db = f"""docker run -d \
                         --name mysql_{versao_} \
                         --restart=unless-stopped \
@@ -4266,13 +4299,41 @@ class Sistema(Docker, Executa_comados):
         # 1) script de exemplo (somente se não existir)
         if not script_path.exists():
             script_code = textwrap.dedent("""\
-                #!/usr/bin/env python3
-                import os
-                from datetime import datetime
+            #!/usr/bin/env python3
 
-                log_path = os.path.join(os.path.dirname(__file__), "inicializar.log")
-                with open(log_path, "a") as f:
-                    f.write(f"{datetime.now():%Y-%m-%d %H:%M:%S} – Script inicializar.py executado.\\n")
+            ## Para iniciar o serviço
+            # sudo systemctl start inicializar.service
+            ## Para parar o serviço
+            # sudo systemctl status inicializar.service
+            ## reiniciar o serviço
+            # sudo systemctl restart inicializar.service
+
+            import os
+            from datetime import datetime
+            import subprocess
+            import time
+
+            time.sleep(30)
+
+            class inicializar:
+                def __init__(self):
+                    self.escrever_log("Script inicializar.py executado.")
+                    self.start()
+                    
+                def start(self,):
+                    while True:
+                        print("Executando o script inicializar.py...")
+                        
+                        # Espera 1 hora
+                        time.sleep(60*60*1)
+
+                def escrever_log(self, mensagem):
+                    # Escreve uma mensagem no arquivo de log.
+                    with open(self.log_path, "a") as f:
+                        f.write(f'{datetime.now():%Y-%m-%d %H:%M:%S} – {mensagem}')
+            
+            if __name__ == "__main__":
+                inicializar()
             """)
             script_path.parent.mkdir(parents=True, exist_ok=True)
             script_path.write_text(script_code)
