@@ -3642,7 +3642,7 @@ class Sistema(Docker, Executa_comados):
                     comandos = [
                         "sudo apt remove --purge xfce4* -y",
                         "sudo apt autoremove -y",
-                        "sudo apt install xfce4 xfce4-goodies lightdm dbus-x11 xinit",
+                        "sudo apt install -y xfce4 xfce4-goodies lightdm dbus-x11 xinit",
                         "sudo dpkg-reconfigure lightdm",
                         "sudo systemctl enable lightdm --now",
                         "rm -f ~/.Xauthority ~/.cache/sessions/*",
