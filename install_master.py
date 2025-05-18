@@ -2871,7 +2871,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         resposta = input().strip().lower()
         if resposta != 's':
             print("Instalação cancelada pelo usuário.")
-            return
+            os._exit(0)
         user = input("Digite o nome do usuário com permissões de acesso extra: ")
         for i in range(2):
             comandos = [
