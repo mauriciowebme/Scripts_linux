@@ -1594,7 +1594,6 @@ WantedBy=timers.target
     def instala_app_nodejs(self,):
         nome_dominio = input('Digite o dominio ou nome do projeto: ')
         desenvolvimento = input('O container é para desenvolvimento?: S ou N: ')
-        resposta_traefik = input('Deseja redirecionar com traefik?: S ou N: ')
         
         if desenvolvimento.lower() != 's':
             senha_ftp = input('Digite uma senha para o ftp: ')
@@ -2066,8 +2065,6 @@ module.exports = { setupPythonEnv, runPythonScript };
             ]
         self.remove_container(nome_dominio_)
         resultados = self.executar_comandos(comandos)
-        if resposta_traefik.lower() == 's':
-            self.adiciona_roteador_servico_traefik(dominio=nome_dominio, endereco=nome_dominio_, porta=portas[0])
     
     def instala_ftp_sftpgo(self,):
         print('Instalando o ftp_sftpgo.\n')
