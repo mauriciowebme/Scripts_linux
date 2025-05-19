@@ -981,9 +981,6 @@ certificatesResolvers:
                     -v {self.install_principal}/filebrowser/database.db:/database.db \
                     filebrowser/filebrowser
                 """
-        resposta = input('Deseja redirecionar com traefik?: S ou N: ')
-        # if resposta.lower() == 's':
-        #     container = self.adiciona_redirecionamento_traefik(container, porta='80')
         
         comandos = [
             # f"rm -r {self.install_principal}/filebrowser",
@@ -993,9 +990,7 @@ certificatesResolvers:
             ]
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
-        if resposta.lower() == 's':
-            self.adiciona_roteador_servico_traefik(endereco='filebrowser', porta='80')
-            self.cria_rede_docker(associar_container_nome=f'filebrowser', numero_rede=0)
+        
         print(f"Possiveis ip's para acesso:")
         comandos = [
             "ip addr show | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1",
