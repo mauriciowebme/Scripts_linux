@@ -2253,7 +2253,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         self.cria_rede_docker(associar_container_nome='guacamole_guacd', numero_rede=1)
         
         print('Instalação do guacamole completa.\n')
-        print('Acesse: http://194.163.161.229:8086/guacamole')
+        print('Acesse: http://<seu_ip>:8086/guacamole')
         print('Usuario: guacadmin')
         print('Senha: guacadmin')
         
