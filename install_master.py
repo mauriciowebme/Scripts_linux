@@ -2135,7 +2135,7 @@ module.exports = { setupPythonEnv, runPythonScript };
             print('Digite os dados para criação do novo usuario FTP:')
             simples_usuario = input('Digite o nome de usuario: ')
             simples_senha = input('Digite uma senha: ')
-            simples_base_diretorio = input('Digite um diretorio dentro de /install_principal começando com /: ')
+            simples_base_diretorio = input('Digite um diretorio dentro de /install_principal começando com /. (Ex: /teste): ')
             print('\n')
 
         if '/' != simples_base_diretorio.split()[0]:
