@@ -2101,7 +2101,11 @@ module.exports = { setupPythonEnv, runPythonScript };
             ]
         self.remove_container(f'ftp_sftpgo')
         resultados = self.executar_comandos(comandos)
-        # self.cria_rede_docker(associar_container_nome=f'mysql_5_7', numero_rede=1)
+        print("sftpgo instalado com sucesso.")
+        print("Instalação concluída. FTP SFTPGo está pronto para uso.")
+        print("porta de acesso: 8085")
+        print("Usuario e senha padrão: Vc cria no primeiro acesso. ")
+        print("Crie o usuario admin e uma senha forte.")
         
     def gerenciar_usuarios_sftp(self, manual=True, simples_usuario=None, simples_senha=None, simples_base_diretorio=None):
         """
