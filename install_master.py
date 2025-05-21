@@ -2051,7 +2051,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         container = f"""docker run -d \
                         --name {nome_dominio_} \
                         --restart=unless-stopped \
-                        --memory=1g \
+                        --memory=256m \
                         --cpus=1 \
                         -p {portas[0]}:{portas[0]} \
                         -v {diretorio_projeto}:/usr/src/app:rw \
@@ -2076,7 +2076,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         container = f"""docker run -d \
                         --name ftp_sftpgo \
                         --restart=unless-stopped \
-                        --memory=1g \
+                        --memory=256m \
                         --cpus=1 \
                         -p 2025:2022 \
                         -p 8085:8080 \
@@ -2093,7 +2093,11 @@ module.exports = { setupPythonEnv, runPythonScript };
             ]
         self.remove_container(f'ftp_sftpgo')
         resultados = self.executar_comandos(comandos)
-        # self.cria_rede_docker(associar_container_nome=f'mysql_5_7', numero_rede=1)
+        print("sftpgo instalado com sucesso.")
+        print("Instalação concluída. FTP SFTPGo está pronto para uso.")
+        print("porta de acesso: 8085")
+        print("Usuario e senha padrão: Vc cria no primeiro acesso. ")
+        print("Crie o usuario admin e uma senha forte.")
         
     def gerenciar_usuarios_sftp(self, manual=True, simples_usuario=None, simples_senha=None, simples_base_diretorio=None):
         """
@@ -2131,7 +2135,7 @@ module.exports = { setupPythonEnv, runPythonScript };
             print('Digite os dados para criação do novo usuario FTP:')
             simples_usuario = input('Digite o nome de usuario: ')
             simples_senha = input('Digite uma senha: ')
-            simples_base_diretorio = input('Digite um diretorio dentro de /install_principal começando com /: ')
+            simples_base_diretorio = input('Digite um diretorio dentro de /install_principal começando com /. (Ex: /teste): ')
             print('\n')
 
         if '/' != simples_base_diretorio.split()[0]:
