@@ -2076,7 +2076,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         container = f"""docker run -d \
                         --name ftp_sftpgo \
                         --restart=unless-stopped \
-                        --memory=1g \
+                        --memory=256m \
                         --cpus=1 \
                         -p 2025:2022 \
                         -p 8085:8080 \
