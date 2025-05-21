@@ -2051,7 +2051,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         container = f"""docker run -d \
                         --name {nome_dominio_} \
                         --restart=unless-stopped \
-                        --memory=1g \
+                        --memory=256m \
                         --cpus=1 \
                         -p {portas[0]}:{portas[0]} \
                         -v {diretorio_projeto}:/usr/src/app:rw \
