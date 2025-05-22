@@ -211,7 +211,7 @@ class Executa_comados():
 
 class Docker(Executa_comados):
     def __init__(self):
-        Executa_comados.__init__(self)
+        Executa_comandos.__init__(self)
         self.install_principal = '/install_principal'
         self.bds = self.install_principal+'/bds'
         self.redes_docker = ['_traefik', 'interno']
@@ -2335,7 +2335,7 @@ module.exports = { setupPythonEnv, runPythonScript };
             self.remove_container(f'postgres_{versao_}_slave')
             self.executar_comandos(comandos)
             self.cria_rede_docker(associar_container_nome=f'postgres_{versao_}_slave', numero_rede=1)
-
+            
             time.sleep(30)
 
             master_container = f"postgres_{versao_}"
@@ -2355,7 +2355,7 @@ module.exports = { setupPythonEnv, runPythonScript };
         print(f' - Senha: {self.postgres_password}')
         print(f' - Porta interna: 5432')
         print(f' - Porta externa: {porta}')
-
+        
     def configure_postgres_replication(self, master_container, slave_container, replication_user, replication_password):
         try:
             print("Configurando replicação...")
@@ -2501,7 +2501,7 @@ module.exports = { setupPythonEnv, runPythonScript };
             container_db,
         ]
         self.remove_container(f'mysql_{versao_}')
-        resultados = self.executar_comandos(comandos)
+        self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
         
         if novo_db:
@@ -4306,6 +4306,26 @@ class Sistema(Docker, Executa_comados):
 
         raise RuntimeError(f"Falhou após {max_retries} tentativas.")
 
+    def vnstat(self):
+        """
+        Instala e configura o vnstat, caso ainda não esteja instalado.
+        Em seguida, exibe as estatísticas mensais de uso de rede.
+        """
+        if not self.verificar_instalacao("vnstat"):
+            print("Instalando o vnstat...")
+            comandos = [
+                "sudo apt update",
+                "sudo apt install -y vnstat",
+                "sudo systemctl enable vnstat",
+                "sudo systemctl start vnstat",
+            ]
+            self.executar_comandos(comandos, comando_direto=True)
+            print("vnstat instalado e iniciado com sucesso.")
+            print("Aguarde alguns minutos para que o vnstat colete dados de uso de rede.")
+        else:
+            print("\nExibindo estatísticas mensais de uso de rede:")
+            self.executar_comandos(["vnstat -m"], comando_direto=True)
+        
     def setup_inicializar_service(self):
         """
         1. Cria /install_principal/inicializar.py (com log simples) se não existir.
@@ -4465,6 +4485,7 @@ class Sistema(Docker, Executa_comados):
             ("Verificar velocidade da internet", self.verifica_velocidade),
             ("configura ssh", self.configura_ssh),
             ("Faz copia inteligente com rsync", self.rsync_sync),
+            ("Inatala/Executa monitor de rede vnstat", self.vnstat),
         ]
         self.mostrar_menu(opcoes_menu)
         
@@ -4583,7 +4604,7 @@ def main():
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.221
+Versão 1.222
 ===========================================================================
 ===========================================================================
 ip server:
