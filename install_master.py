@@ -151,7 +151,7 @@ ensure("glances",
        pip_pkg="glances[web]")
 
 
-class Executa_comados():
+class Executa_comandos():
     def __init__(self):
         pass
     
@@ -209,7 +209,7 @@ class Executa_comados():
                     
         return resultados
 
-class Docker(Executa_comados):
+class Docker(Executa_comandos):
     def __init__(self):
         Executa_comandos.__init__(self)
         self.install_principal = '/install_principal'
@@ -3445,10 +3445,10 @@ CMD ["sh", "-c", "\
         print("Aponte seus testes do WebDriver para http://servidor:4444")
         print("")
 
-class Sistema(Docker, Executa_comados):
+class Sistema(Docker, Executa_comandos):
     def __init__(self):
         Docker.__init__(self)
-        Executa_comados.__init__(self)
+        Executa_comandos.__init__(self)
         
     def Reiniciar(self):
         comandos = [
