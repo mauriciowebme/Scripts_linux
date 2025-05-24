@@ -2294,13 +2294,13 @@ WantedBy=timers.target
 
         versao_ = versao.replace('.', '_')
 
-        replicacao = input('Habilitar a replicação de dados? \n1 - Sim \n2 - Não \n')
-        if replicacao == '1':
+        replicacao = input('Habilitar a replicação de dados? (s/n): ')
+        if replicacao.lower() == 's':
             local_slave = input(f'Informe o local para armazenar o Postgres SLAVE (/mnt/dados resultado: /mnt/dados/postgres/{versao_}_slave): ')
 
         print('Instalando o Postgres.\n')
 
-        if replicacao == '1':
+        if replicacao.lower() == 's':
             container_db = f"""docker run -d \
             --name postgres_{versao_} \
             --restart=unless-stopped \
@@ -2329,7 +2329,7 @@ WantedBy=timers.target
 
         time.sleep(30)
 
-        if replicacao == '1':
+        if replicacao.lower() == 's':
             container_db_slave = f"""docker run -d \
                                 --name postgres_{versao_}_slave \
                                 --restart=unless-stopped \
