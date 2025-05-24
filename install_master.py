@@ -1592,7 +1592,7 @@ WantedBy=timers.target
         print('Porta de acesso: 9443')
         
     def instala_app_nodejs(self,):
-        nome_dominio = input('Digite o dominio ou nome do projeto: ')
+        nome_dominio = input('Digite o dominio sem o www ou nome do projeto: ')
         desenvolvimento = input('O container é para desenvolvimento?: S ou N: ')
         
         if desenvolvimento.lower() != 's':
@@ -1816,9 +1816,9 @@ WantedBy=timers.target
                 arquivo.write(index_html)
             print(f"Arquivo index.html criado em {caminho_index_html}")
 
-        index_js = f"""\
-require('./assets/scripts_node/start.js');
-"""
+        index_js = textwrap.dedent(f"""\
+            require('./assets/scripts_node/start.js');
+            """)
         # Caminho para o arquivo index.js
         caminho_index_js = os.path.join(diretorio_projeto, "index.js")
         if not os.path.exists(caminho_index_js):
