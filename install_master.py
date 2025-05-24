@@ -2070,6 +2070,10 @@ WantedBy=timers.target
             ]
         self.remove_container(nome_dominio_)
         resultados = self.executar_comandos(comandos)
+        self.gerenciar_permissoes_pasta(diretorio_projeto, '777')
+        
+        print("Instalação concluída. O projeto está pronto para uso.")
+        print(f"Acesse o projeto pelo IP do servidor na porta {portas[0]}")
     
     def instala_ftp_sftpgo(self,):
         print('Instalando o ftp_sftpgo.\n')
