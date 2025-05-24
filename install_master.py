@@ -894,7 +894,6 @@ certificatesResolvers:
                 'certResolver': 'le'
             }
         }
-        print(f"Roteador adicionado para o domínio: {dominio}")
     
         # Criar o serviço para o domínio com o URL de destino e a porta
         config['http']['services'][service_name] = {
@@ -904,11 +903,14 @@ certificatesResolvers:
                 ]
             }
         }
-        print(f"Serviço adicionado para o domínio: {dominio}")
 
         # Salvar o arquivo de configuração atualizado
         with open(dynamic_conf, 'w') as file:
             yaml.dump(config, file)
+            
+        print(f"Roteador e Serviço adicionados para o domínio: {dominio}")
+        print(f"Verifique o arquivo de configuração em: {dynamic_conf}")
+        print("\n⚠️ O redirecionamento começa imediatamente, mas pode levar alguns minutos para o DNS se propagar e o Let's Encrypt gerar o certificado resultando em HTTPS ainda não seguro.\n")
 
     def instala_traefik(self,):
         print("Iniciando instalação do Traefik.")
