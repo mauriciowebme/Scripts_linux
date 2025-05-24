@@ -1598,7 +1598,7 @@ WantedBy=timers.target
         if desenvolvimento.lower() != 's':
             senha_ftp = input('Digite uma senha para o ftp: ')
         
-        self.verifica_container_existe('redis', self.instala_redis_docker)
+        # self.verifica_container_existe('redis', self.instala_redis_docker)
         nome_dominio_ = nome_dominio.replace('.', '_')
         portas = self.escolher_porta_disponivel()
         
@@ -1681,48 +1681,49 @@ WantedBy=timers.target
                 json.dump(sftp_json, arquivo, indent=4)
             print(f"Arquivo nodemon.json criado em {caminho_sftp_json}")
             
-        yml_content = """\
-name: SFTP Deploy
+        yml_content = textwrap.dedent("""\
+            name: SFTP Deploy
 
-on:
-  push:
-    branches:
-      - main
+            on:
+            push:
+                branches:
+                - main
 
-concurrency:
-  group: sftp-deploy
-  cancel-in-progress: false
+            concurrency:
+            group: sftp-deploy
+            cancel-in-progress: false
 
-jobs:
-  deploy:
-    name: Deploy via SFTP
-    runs-on: ubuntu-latest
+            jobs:
+            deploy:
+                name: Deploy via SFTP
+                runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+                steps:
+                - name: Checkout repository
+                    uses: actions/checkout@v3
 
-      - name: Install LFTP
-        run: sudo apt-get install -y lftp
+                - name: Install LFTP
+                    run: sudo apt-get install -y lftp
 
-      - name: Deploy files to server
-        env:
-          SFTP_HOST: ${{ secrets.SFTP_HOST }}
-          SFTP_USER: ${{ secrets.SFTP_USER }}
-          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-        run: |
-          lftp -u "$SFTP_USER","$SFTP_PASSWORD" sftp://$SFTP_HOST:2025 <<EOF
-          set sftp:connect-program "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-          mirror --reverse --only-newer --ignore-time --verbose \\
-          --exclude-glob .git/ \\
-          --exclude-glob node_modules/ \\
-          --exclude-glob python_env/ \\
-          --exclude-glob arquivos/ \\
-          --exclude-glob package-lock.json \\
-          ./ /
-          bye
-          EOF
-    """
+                - name: Deploy files to server
+                    env:
+                    SFTP_HOST: ${{ secrets.SFTP_HOST }}
+                    SFTP_USER: ${{ secrets.SFTP_USER }}
+                    SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+                    run: |
+                    lftp -u "$SFTP_USER","$SFTP_PASSWORD" sftp://$SFTP_HOST:2025 <<EOF
+                    set sftp:connect-program "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+                    mirror --reverse --only-newer --ignore-time --verbose \\
+                    --exclude-glob .git/ \\
+                    --exclude-glob node_modules/ \\
+                    --exclude-glob python_env/ \\
+                    --exclude-glob arquivos/ \\
+                    --exclude-glob package-lock.json \\
+                    ./ /
+                    bye
+                    EOF
+            """)
+        
         caminho_yml = os.path.join(diretorio_projeto, ".github", "workflows", "sftp-deploy.yml")
         os.makedirs(os.path.dirname(caminho_yml), exist_ok=True)
         if not os.path.exists(caminho_yml):
@@ -1751,61 +1752,62 @@ jobs:
                 json.dump(nodemon_json, arquivo, indent=4)
             print(f"Arquivo nodemon.json criado em {caminho_nodemon_json}")
             
-        index_html = """\
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bem-vindo</title>
-<style>
-    body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background: linear-gradient(135deg, #6a11cb, #2575fc);
-    color: white;
-    text-align: center;
-    }
-    h1 {
-    font-size: 3rem;
-    margin-bottom: 0.5rem;
-    }
-    p {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    }
-    .button-container {
-    margin-top: 2rem;
-    }
-    a {
-    text-decoration: none;
-    color: #ffffff;
-    background-color: #ff7f50;
-    padding: 0.8rem 1.5rem;
-    border-radius: 5px;
-    font-size: 1.2rem;
-    transition: background-color 0.3s ease;
-    }
-    a:hover {
-    background-color: #ff6347;
-    }
-</style>
-</head>
-<body>
-    <div>
-        <h1>Bem-vindo ao Servidor Node.js com Python.</h1>
-        <p>Seu ambiente está configurado e funcionando corretamente.</p>
-        <div class="button-container">
-        <a href="/teste">Ir para a pagina de teste</a>
-        </div>
-    </div>
-</body>
-</html>
-        """
+        index_html = textwrap.dedent("""\
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Bem-vindo</title>
+            <style>
+                body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                background: linear-gradient(135deg, #6a11cb, #2575fc);
+                color: white;
+                text-align: center;
+                }
+                h1 {
+                font-size: 3rem;
+                margin-bottom: 0.5rem;
+                }
+                p {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+                }
+                .button-container {
+                margin-top: 2rem;
+                }
+                a {
+                text-decoration: none;
+                color: #ffffff;
+                background-color: #ff7f50;
+                padding: 0.8rem 1.5rem;
+                border-radius: 5px;
+                font-size: 1.2rem;
+                transition: background-color 0.3s ease;
+                }
+                a:hover {
+                background-color: #ff6347;
+                }
+            </style>
+            </head>
+            <body>
+                <div>
+                    <h1>Bem-vindo ao Servidor Node.js com Python.</h1>
+                    <p>Seu ambiente está configurado e funcionando corretamente.</p>
+                    <div class="button-container">
+                    <a href="/teste">Ir para a pagina de teste</a>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """)
+        
         # Caminho para o arquivo index.html
         caminho_index_html = os.path.join(dir_dados_assets_public, "index.html")
         if not os.path.exists(caminho_index_html):
@@ -1825,67 +1827,68 @@ require('./assets/scripts_node/start.js');
                 arquivo.write(index_js)
             print(f"Arquivo index.js criado em {caminho_index_js}")
             
-        start_js = f"""\
-// Importa o setupPythonEnv
-const {{ setupPythonEnv, runPythonScript }} = require('./setupPythonEnv');
-const express = require('express');
-const app = express();
-const PORT = {portas[0]};
-const path = require('path');
+        start_js = textwrap.dedent(f"""\
+            // Importa o setupPythonEnv
+            const {{ setupPythonEnv, runPythonScript }} = require('./setupPythonEnv');
+            const express = require('express');
+            const app = express();
+            const PORT = {portas[0]};
+            const path = require('path');
 
-// Diretório publico do projeto
-app.use('/public', express.static(path.join(__dirname, '../public')));
+            // Diretório publico do projeto
+            app.use('/public', express.static(path.join(__dirname, '../public')));
 
-// Diretório raiz do projeto
-const projectRoot = path.dirname(require.main.filename);
+            // Diretório raiz do projeto
+            const projectRoot = path.dirname(require.main.filename);
 
-pythonOutput = 'Aguardando ambiente Python...';
+            pythonOutput = 'Aguardando ambiente Python...';
 
-app.listen(PORT, () => {{
-  console.log(`Servidor rodando na porta {portas[0]}`);
-}});
+            app.listen(PORT, () => {{
+            console.log(`Servidor rodando na porta {portas[0]}`);
+            }});
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// Criação de rotas Nodejs adicionais aqui...
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
+            // Criação de rotas Nodejs adicionais aqui...
 
-// Rota de testes
-app.get('/teste', (req, res) => {{
-  const responseText = `
-  Servidor Node.js com Express funcionando!<br>
-  ${{pythonOutput}}
-  `;
-  res.send(responseText);
-}});
+            // Rota de testes
+            app.get('/teste', (req, res) => {{
+            const responseText = `
+            Servidor Node.js com Express funcionando!<br>
+            ${{pythonOutput}}
+            `;
+            res.send(responseText);
+            }});
 
-// Rota index.html
-app.get('/', (req, res) => {{
-  const htmlPath = path.join(projectRoot, 'assets', 'public', 'index.html');
-  res.sendFile(htmlPath);
-}});
+            // Rota index.html
+            app.get('/', (req, res) => {{
+            const htmlPath = path.join(projectRoot, 'assets', 'public', 'index.html');
+            res.sendFile(htmlPath);
+            }});
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Configura o ambiente Python em paralelo
-setupPythonEnv(() => {{
-  console.log('Terminada a configuração do ambiente Python.');
-  
-  ///////////////////////////////////////////////////////////////////////////////////////////////////
-  // Rotas dos scripts Python
-  
-  // Rota do start.py
-  runPythonScript('start.py', (error, output) => {{
-  if (error) {{
-    console.error('Erro ao executar o script:', error);
-    return;
-  }}
-    console.log('Saída recebida do script Python:', output);
-    pythonOutput = output; // Armazena o resultado do script
-  }});
-  
-  ///////////////////////////////////////////////////////////////////////////////////////////////////
+            // Configura o ambiente Python em paralelo
+            setupPythonEnv(() => {{
+            console.log('Terminada a configuração do ambiente Python.');
+            
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
+            // Rotas dos scripts Python
+            
+            // Rota do start.py
+            runPythonScript('start.py', (error, output) => {{
+            if (error) {{
+                console.error('Erro ao executar o script:', error);
+                return;
+            }}
+                console.log('Saída recebida do script Python:', output);
+                pythonOutput = output; // Armazena o resultado do script
+            }});
+            
+            ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-}});
-"""
+            }});
+            """)
+        
         # Caminho para o arquivo start.js
         caminho_start_js = os.path.join(dir_dados_assets_scripts_node, "start.js")
         if not os.path.exists(caminho_start_js):
@@ -1895,133 +1898,134 @@ setupPythonEnv(() => {{
             print(f"Arquivo start.js criado em {caminho_start_js}")
         
         # Conteúdo do arquivo setupPythonEnv.js
-        setup_python_env_js = """\
-const { exec } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+        setup_python_env_js = textwrap.dedent("""\
+            const { exec } = require('child_process');
+            const path = require('path');
+            const fs = require('fs');
 
-// Diretório raiz do projeto
-const projectRoot = path.dirname(require.main.filename);
+            // Diretório raiz do projeto
+            const projectRoot = path.dirname(require.main.filename);
 
-const scripts_python = path.join(projectRoot, 'assets', 'scripts_python'); // Diretório do ambiente virtual Python
-const pythonDir = path.join(projectRoot, 'python_env'); // Diretório do ambiente virtual Python
-const pythonBin = path.join(pythonDir, 'bin', 'python'); // Python do ambiente virtual
-const pipPath = path.join(pythonDir, 'bin', 'pip');
-const requirementsFile = path.join(projectRoot, 'requirements.txt');
+            const scripts_python = path.join(projectRoot, 'assets', 'scripts_python'); // Diretório do ambiente virtual Python
+            const pythonDir = path.join(projectRoot, 'python_env'); // Diretório do ambiente virtual Python
+            const pythonBin = path.join(pythonDir, 'bin', 'python'); // Python do ambiente virtual
+            const pipPath = path.join(pythonDir, 'bin', 'pip');
+            const requirementsFile = path.join(projectRoot, 'requirements.txt');
 
-// Instala Python3 e ferramentas necessárias
-function installPython(callback) {
-  const installCmd = 'apt update && apt install -y python3 python3-pip python3-venv';
+            // Instala Python3 e ferramentas necessárias
+            function installPython(callback) {
+            const installCmd = 'apt update && apt install -y python3 python3-pip python3-venv';
 
-  console.log('Instalando Python3 e ferramentas...');
-  exec(installCmd, (error, stdout, stderr) => {
-    if (error) {
-      console.error('Erro ao instalar Python3: ' + stderr);
-      return;
-    }
-    console.log('Python3 e ferramentas instalados com sucesso.');
-    if (callback) callback();
-  });
-}
+            console.log('Instalando Python3 e ferramentas...');
+            exec(installCmd, (error, stdout, stderr) => {
+                if (error) {
+                console.error('Erro ao instalar Python3: ' + stderr);
+                return;
+                }
+                console.log('Python3 e ferramentas instalados com sucesso.');
+                if (callback) callback();
+            });
+            }
 
-// Cria o ambiente virtual, se necessário
-function createVirtualEnv(callback) {
-  console.log('Criando ambiente virtual...');
-  exec('python3 -m venv ' + pythonDir, (error, stdout, stderr) => {
-    if (error) {
-      console.error('Erro ao criar o ambiente virtual: ' + stderr);
-      return;
-    }
-    console.log('Ambiente virtual criado com sucesso.');
-    if (callback) callback();
-  });
-}
+            // Cria o ambiente virtual, se necessário
+            function createVirtualEnv(callback) {
+            console.log('Criando ambiente virtual...');
+            exec('python3 -m venv ' + pythonDir, (error, stdout, stderr) => {
+                if (error) {
+                console.error('Erro ao criar o ambiente virtual: ' + stderr);
+                return;
+                }
+                console.log('Ambiente virtual criado com sucesso.');
+                if (callback) callback();
+            });
+            }
 
-// Instala dependências do arquivo requirements.txt
-function installDependencies(callback) {
-  if (!fs.existsSync(requirementsFile)) {
-    console.error('Erro: O arquivo requirements.txt não foi encontrado.');
-    return;
-  }
+            // Instala dependências do arquivo requirements.txt
+            function installDependencies(callback) {
+            if (!fs.existsSync(requirementsFile)) {
+                console.error('Erro: O arquivo requirements.txt não foi encontrado.');
+                return;
+            }
 
-  console.log('Instalando dependências no ambiente virtual...');
-  exec(pipPath + ' install -r ' + requirementsFile, (error, stdout, stderr) => {
-    if (error) {
-      console.error('Erro ao instalar dependências: ' + stderr);
-      return;
-    }
-    console.log('Dependências instaladas com sucesso.');
-    if (callback) callback();
-  });
-}
+            console.log('Instalando dependências no ambiente virtual...');
+            exec(pipPath + ' install -r ' + requirementsFile, (error, stdout, stderr) => {
+                if (error) {
+                console.error('Erro ao instalar dependências: ' + stderr);
+                return;
+                }
+                console.log('Dependências instaladas com sucesso.');
+                if (callback) callback();
+            });
+            }
 
-// Configura o ambiente Python
-function setupPythonEnv(callback) {
-  if (fs.existsSync(path.join(pythonDir, 'bin', 'python'))) {
-    console.log('Ambiente virtual já existe. Instalando dependências...');
-    installDependencies(() => {
-      if (callback) callback();
-    });
-  } else {
-    console.log('Ambiente virtual não encontrado. Atualizando ferramentas e criando...');
-    installPython(() => {
-      createVirtualEnv(() => {
-        installDependencies(() => {
-          if (callback) callback();
-        });
-      });
-    });
-  }
-}
+            // Configura o ambiente Python
+            function setupPythonEnv(callback) {
+            if (fs.existsSync(path.join(pythonDir, 'bin', 'python'))) {
+                console.log('Ambiente virtual já existe. Instalando dependências...');
+                installDependencies(() => {
+                if (callback) callback();
+                });
+            } else {
+                console.log('Ambiente virtual não encontrado. Atualizando ferramentas e criando...');
+                installPython(() => {
+                createVirtualEnv(() => {
+                    installDependencies(() => {
+                    if (callback) callback();
+                    });
+                });
+                });
+            }
+            }
 
-// Função para garantir que um script Python exista (como "start.py")
-function createStartPy() {
-  // Garante que o diretório de scripts Python exista
-  if (!fs.existsSync(scripts_python)) {
-    console.log(`Criando o diretório: ${scripts_python}`);
-    fs.mkdirSync(scripts_python, { recursive: true });
-    console.log(`Diretório ${scripts_python} criado com sucesso.`);
-  }
-  
-  const scriptPath = path.join(scripts_python, 'start.py');
-  if (!fs.existsSync(scriptPath)) {
-    console.log(`Criando o script ${path.basename(scriptPath)}...`);
-    const content = `# ${path.basename(scriptPath)}\nprint("O ambiente Python está funcionando corretamente!")\n`;
-    fs.writeFileSync(scriptPath, content);
-    console.log(`Script ${path.basename(scriptPath)} criado com sucesso.`);
-  } else {
-    console.log(`O script ${path.basename(scriptPath)} já existe.`);
-  }
-}
+            // Função para garantir que um script Python exista (como "start.py")
+            function createStartPy() {
+            // Garante que o diretório de scripts Python exista
+            if (!fs.existsSync(scripts_python)) {
+                console.log(`Criando o diretório: ${scripts_python}`);
+                fs.mkdirSync(scripts_python, { recursive: true });
+                console.log(`Diretório ${scripts_python} criado com sucesso.`);
+            }
+            
+            const scriptPath = path.join(scripts_python, 'start.py');
+            if (!fs.existsSync(scriptPath)) {
+                console.log(`Criando o script ${path.basename(scriptPath)}...`);
+                const content = `# ${path.basename(scriptPath)}\nprint("O ambiente Python está funcionando corretamente!")\n`;
+                fs.writeFileSync(scriptPath, content);
+                console.log(`Script ${path.basename(scriptPath)} criado com sucesso.`);
+            } else {
+                console.log(`O script ${path.basename(scriptPath)} já existe.`);
+            }
+            }
 
-// Função para rodar o script Python com nome dinâmico e capturar a saída via callback
-function runPythonScript(scriptName, callback) {
-  const scriptPy = path.join(scripts_python, scriptName);
+            // Função para rodar o script Python com nome dinâmico e capturar a saída via callback
+            function runPythonScript(scriptName, callback) {
+            const scriptPy = path.join(scripts_python, scriptName);
 
-  // Verifica se o script fornecido existe
-  if (!fs.existsSync(scriptPy)) {
-    console.warn(`O script "${scriptName}" não foi encontrado. Rodando o script padrão para testes "start.py"...`);
-    createStartPy(); // Garante que start.py exista
-    runPythonScript('start.py', callback); // Rechama a função para rodar o start.py
-    return;
-  }
+            // Verifica se o script fornecido existe
+            if (!fs.existsSync(scriptPy)) {
+                console.warn(`O script "${scriptName}" não foi encontrado. Rodando o script padrão para testes "start.py"...`);
+                createStartPy(); // Garante que start.py exista
+                runPythonScript('start.py', callback); // Rechama a função para rodar o start.py
+                return;
+            }
 
-  console.log(`Executando o script Python: ${scriptName}...`);
+            console.log(`Executando o script Python: ${scriptName}...`);
 
-  exec(`${pythonBin} ${scriptPy}`, (error, stdout, stderr) => {
-    if (error) {
-      console.error('Erro ao executar o script Python: ' + stderr);
-      callback(stderr, null);
-      return;
-    }
-    console.log('Script Python executado com sucesso.');
-    // console.log(stdout);
-    callback(null, stdout); // Passa a saída do script para o callback
-  });
-}
+            exec(`${pythonBin} ${scriptPy}`, (error, stdout, stderr) => {
+                if (error) {
+                console.error('Erro ao executar o script Python: ' + stderr);
+                callback(stderr, null);
+                return;
+                }
+                console.log('Script Python executado com sucesso.');
+                // console.log(stdout);
+                callback(null, stdout); // Passa a saída do script para o callback
+            });
+            }
 
-module.exports = { setupPythonEnv, runPythonScript };
-"""
+            module.exports = { setupPythonEnv, runPythonScript };
+            """)
+        
         # Caminho para o arquivo setupPythonEnv.js
         caminho_setup_python_env_js = os.path.join(dir_dados_assets_scripts_node, "setupPythonEnv.js")
         if not os.path.exists(caminho_setup_python_env_js):
