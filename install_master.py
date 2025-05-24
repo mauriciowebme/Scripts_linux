@@ -1593,10 +1593,10 @@ WantedBy=timers.target
         
     def instala_app_nodejs(self,):
         nome_dominio = input('Digite o dominio sem o www ou nome do projeto: ')
-        desenvolvimento = input('O container é para desenvolvimento?: S ou N: ')
+        desenvolvimento = input('O container é para desenvolvimento?: (s/n): ')
         
         if desenvolvimento.lower() != 's':
-            senha_ftp = input('Digite uma senha para o ftp: ')
+            senha_ftp = input('Digite uma senha para acessar por SFTP: ')
         
         # self.verifica_container_existe('redis', self.instala_redis_docker)
         nome_dominio_ = nome_dominio.replace('.', '_')
@@ -1819,6 +1819,7 @@ WantedBy=timers.target
         index_js = textwrap.dedent(f"""\
             require('./assets/scripts_node/start.js');
             """)
+        
         # Caminho para o arquivo index.js
         caminho_index_js = os.path.join(diretorio_projeto, "index.js")
         if not os.path.exists(caminho_index_js):
@@ -2038,7 +2039,6 @@ WantedBy=timers.target
         dependencias = [
             "psycopg2",
             "xmltodict",
-            "selenium",
             "paramiko"
         ]
         # Caminho para o arquivo requirements.txt
@@ -2052,20 +2052,19 @@ WantedBy=timers.target
             desenvolvimento_atuvacao = 'sleep infinity'
             
         print(f'Porta interna para uso: {portas[0]}')
-        container = f"""docker run -d \
-                        --name {nome_dominio_} \
-                        --restart=unless-stopped \
-                        --memory=256m \
-                        --cpus=1 \
-                        -p {portas[0]}:{portas[0]} \
-                        -v {diretorio_projeto}:/usr/src/app:rw \
-                        -w /usr/src/app \
-                        node:latest \
-                        /bin/sh -c \"{desenvolvimento_atuvacao}\"
-                    """
         
         comandos = [
-            container,
+            f"""docker run -d \
+                --name {nome_dominio_} \
+                --restart=unless-stopped \
+                --memory=256m \
+                --cpus=1 \
+                -p {portas[0]}:{portas[0]} \
+                -v {diretorio_projeto}:/usr/src/app:rw \
+                -w /usr/src/app \
+                node:latest \
+                /bin/sh -c \"{desenvolvimento_atuvacao}\"
+            """,
             ]
         self.remove_container(nome_dominio_)
         resultados = self.executar_comandos(comandos)
