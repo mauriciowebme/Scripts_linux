@@ -23,4 +23,3 @@ Este script automatiza a instalação e configuração de diversos pacotes e fer
 - **WordPress**: Sistema de gerenciamento de conteúdo para criação de sites e blogs.
 - **Traefik**: Proxy reverso e balanceador de carga para gerenciar o tráfego de microserviços.
 - **Ambientes de servidores web**: Instalação automatizada de servidores web como OpenLiteSpeed e Nodejs.
-
