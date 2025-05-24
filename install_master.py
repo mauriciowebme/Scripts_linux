@@ -2449,7 +2449,7 @@ WantedBy=timers.target
                 self.mysql_root_password = input("Digite a senha root para o MySQL: ")
         
         if novo_db:
-            replicacao = input('Habilitar a replicação de dados? s|n: ')
+            replicacao = input('Habilitar a replicação de dados? (s/n): ')
             if replicacao.lower() == 's':
                 local_slave = input(f'Informe o local para armazenzar o Mysql SLAVE (/mnt/dados resultado: /mnt/dados/mysql/{versao_}_slave): ')
         
@@ -2523,7 +2523,7 @@ WantedBy=timers.target
             # ]
             # self.executar_comandos(comandos)
             
-            if replicacao == '1':
+            if replicacao.lower() == 's':
                 # time.sleep(10)
                 # self.gerenciar_permissoes_pasta(f"{local_slave}/mysql/{versao_}_slave", permissao="777")
                 container_db = f"""docker run -d \
