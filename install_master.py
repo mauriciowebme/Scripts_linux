@@ -3572,6 +3572,8 @@ class Sistema(Docker, Executa_comandos):
         try:
             with open('/etc/fstab', 'r') as f:
                 fstab_lines = f.readlines()
+            
+            print(fstab_lines)
 
             swap_fstab_line = '/swap.img       none    swap    sw      0       0\n' #
 
