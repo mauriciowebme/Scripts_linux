@@ -3580,11 +3580,10 @@ class Sistema(Docker, Executa_comandos):
                     encontrado = True
                     break
             
-            swap_fstab_line = '/swap.img       none    swap    sw      0       0\n' #
             if not encontrado:
-                if swap_fstab_line not in fstab_lines:
-                    with open('/etc/fstab', 'a') as f:
-                        f.write(swap_fstab_line)
+                with open('/etc/fstab', 'a') as f:
+                    swap_fstab_line = '/swap.img       none    swap    sw      0       0\n' #
+                    f.write(swap_fstab_line)
         except:
             print("Erro ao abrir o arquivo /etc/fstab. Verifique se você tem permissões adequadas.")
             
