@@ -3573,13 +3573,18 @@ class Sistema(Docker, Executa_comandos):
             with open('/etc/fstab', 'r') as f:
                 fstab_lines = f.readlines()
             
-            print(fstab_lines)
-
+            encontrado = False
+            for linha in fstab_lines:
+                if '/swap.img' in linha:
+                    print("A linha de swap já existe em /etc/fstab.")
+                    encontrado = True
+                    break
+            
             swap_fstab_line = '/swap.img       none    swap    sw      0       0\n' #
-
-            if swap_fstab_line not in fstab_lines:
-                with open('/etc/fstab', 'a') as f:
-                    f.write(swap_fstab_line)
+            if not encontrado:
+                if swap_fstab_line not in fstab_lines:
+                    with open('/etc/fstab', 'a') as f:
+                        f.write(swap_fstab_line)
         except:
             print("Erro ao abrir o arquivo /etc/fstab. Verifique se você tem permissões adequadas.")
             
