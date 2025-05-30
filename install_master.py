@@ -2498,7 +2498,7 @@ WantedBy=timers.target
                         -e MYSQL_DATABASE=db_testes \
                         -e MYSQL_USER=testes \
                         -e MYSQL_PASSWORD=testes \
-                        -e MYSQL_ROOT_PASSWORD="{self.mysql_root_password}" \
+                        -e MYSQL_ROOT_PASSWORD='{self.mysql_root_password}' \
                         -v {self.bds}/mysql/{versao_}:/var/lib/mysql \
                         mysql:{versao} \
                         --server-id=1 \
