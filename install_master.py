@@ -2872,7 +2872,7 @@ WantedBy=timers.target
             
     def instala_docker_force(self,):
         print("Instalando docker...")
-        resposta = input("A instalação do Docker requer uma reinicialização do sistema. Deseja continuar? (s/n)").strip().lower()
+        resposta = input("A instalação do Docker requer uma reinicialização do sistema. Deseja continuar? (s/n) ").strip().lower()
         if resposta != 's':
             print("Instalação cancelada pelo usuário.")
             os._exit(0)
