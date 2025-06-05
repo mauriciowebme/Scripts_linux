@@ -4433,7 +4433,7 @@ class Sistema(Docker, Executa_comandos):
 
             # Se foi escolhido gerar (substituir ou adicionar)
             if key_path:
-                proteger  = input("Proteger com passphrase? [s/N] ").lower().startswith("s")
+                proteger = input("Proteger com passphrase? [s/n] ").lower().startswith("s")
                 passphrase = input("Passphrase: ") if proteger else ""
 
                 # 1) Gera o par ED25519
