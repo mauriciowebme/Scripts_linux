@@ -4481,15 +4481,15 @@ class Sistema(Docker, Executa_comandos):
                 "Abra outro terminal e confirme que consegue se conectar via chave ANTES de prosseguir."
             )
             if input("Já testou e quer continuar? [digite CONFIRMAR]: ") == "CONFIRMAR":
-                # 1) Remove/comenta QUALQUER linha existente e grava apenas uma com 'no'
+                # 1) Isso percorre o arquivo principal e todos os .conf incluídos, eliminando qualquer “yes”.
                 run(
-                    # Substitui qualquer valor (yes, no, comments) por 'no'
-                    # para todos os métodos que ainda permitem senha
-                    r"sudo sed -i "
-                    r"-e 's/^[ #]*PasswordAuthentication.*/PasswordAuthentication no/' "
-                    r"-e 's/^[ #]*KbdInteractiveAuthentication.*/KbdInteractiveAuthentication no/' "
-                    r"-e 's/^[ #]*ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' "
-                    r"/etc/ssh/sshd_config",
+                    r"for f in /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf; do "
+                    r"  sudo sed -i "
+                    r"  -e 's/^[ #]*PasswordAuthentication.*/PasswordAuthentication no/' "
+                    r"  -e 's/^[ #]*KbdInteractiveAuthentication.*/KbdInteractiveAuthentication no/' "
+                    r"  -e 's/^[ #]*ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' "
+                    r"  $f ; "
+                    r"done",
                     shell=True,
                 )
                 # 2) Reinicia o serviço SSH para aplicar
