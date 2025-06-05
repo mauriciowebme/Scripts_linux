@@ -4454,12 +4454,13 @@ class Sistema(Docker, Executa_comandos):
 
                 # 3) Garante que:
                 #    • PubkeyAuthentication esteja ativo
-                #    • root só possa logar por chave (senha bloqueada)
                 run(
                     "(grep -q '^PubkeyAuthentication' /etc/ssh/sshd_config) || "
                     "echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config",
                     shell=True,
                 )
+                # 4) Garante que:
+                #    • root só possa logar por chave (senha bloqueada)
                 run(
                     "(grep -q '^PermitRootLogin' /etc/ssh/sshd_config && "
                     " sed -i 's/^PermitRootLogin.*/PermitRootLogin prohibit-password/' "
@@ -4468,7 +4469,7 @@ class Sistema(Docker, Executa_comandos):
                     shell=True,
                 )
 
-                # 4) Reinicia o serviço para aplicar tudo
+                # 5) Reinicia o serviço para aplicar tudo
                 run("sudo systemctl restart ssh || sudo systemctl restart sshd", shell=True)
 
                 print(f"✅ Chave criada/atualizada e root liberado somente por chave: {key_path}\n")
