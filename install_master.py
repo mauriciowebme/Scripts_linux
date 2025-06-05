@@ -4437,7 +4437,7 @@ class Sistema(Docker, Executa_comandos):
                 passphrase = input("Passphrase: ") if proteger else ""
 
                 # 1) Gera o par ED25519
-                passphrase_esc = shlex.quote(passphrase)   # vira '' se vazia
+                passphrase_esc = shlex.quote(passphrase) # vira '' se vazia
                 run(
                     f"ssh-keygen -t ed25519 -a 100 -f {key_path} "
                     f"-N {passphrase_esc}"
