@@ -4352,6 +4352,7 @@ class Sistema(Docker, Executa_comandos):
             "2": "Alterar senha dos usuários",
             "3": "Gerar/atualizar chave para root",
             "4": "Desabilitar login por senha",
+            "5": "Habilitar login por senha (reverte opção 4)",
             "0": "Sair",
         }
 
@@ -4496,7 +4497,32 @@ class Sistema(Docker, Executa_comandos):
                 run("sudo systemctl restart ssh || sudo systemctl restart sshd", shell=True)
                 print("✅ Login por senha desabilitado.\n")
             else:
-                print("Operação abortada. Login por senha mantido.\n")
+                print("Operação abortada.\n")
+        # ──────────────────────────────────────────────────────────
+        # 5) Habilitar login por senha (reverte opção 4)
+        # ──────────────────────────────────────────────────────────
+        if "5" in escolhas:
+            print(
+                "\n⚠️  AVISO IMPORTANTE:\n"
+                "Habilitar PasswordAuthentication permitirá login por senha novamente.\n"
+            )
+            if input("Podemo continuar? [digite CONFIRMAR]: ") == "CONFIRMAR":
+                # 1) Isso percorre o arquivo principal e todos os .conf incluídos, eliminando qualquer “no”.
+                run(
+                    r"for f in /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf; do "
+                    r"  sudo sed -i "
+                    r"  -e 's/^[ #]*PasswordAuthentication.*/PasswordAuthentication yes/' "
+                    r"  -e 's/^[ #]*KbdInteractiveAuthentication.*/KbdInteractiveAuthentication yes/' "
+                    r"  -e 's/^[ #]*ChallengeResponseAuthentication.*/ChallengeResponseAuthentication yes/' "
+                    r"  $f ; "
+                    r"done",
+                    shell=True,
+                )
+                # 2) Reinicia o serviço SSH para aplicar
+                run("sudo systemctl restart ssh || sudo systemctl restart sshd", shell=True)
+                print("✅ Login por senha habilitado.\n")
+            else:
+                print("Operação abortada.\n")
 
         print("==== Configurações concluídas ====")
         
