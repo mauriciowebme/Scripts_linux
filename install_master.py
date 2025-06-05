@@ -4320,6 +4320,29 @@ class Sistema(Docker, Executa_comandos):
 
         raise RuntimeError(f"Falhou após {max_retries} tentativas.")
 
+    def alterar_senha_usuario(self):
+        print("Alterar senha do usuário atual.")
+        print("Digite a nova senha para o usuário atual:")
+        self.executar_comandos(["passwd"], comando_direto=True)
+        print("Tudo pronto.")
+        
+    def acess_root(self):
+        print(textwrap.dedent("""\
+        Fazer login SSH diretamente como root.
+        
+        1. Edite o arquivo /etc/ssh/sshd_config e altere a linha PermitRootLogin.
+        PermitRootLogin prohibit-password       # só chave pública
+        PermitRootLogin yes                     # senha ou chave pública
+        PermitRootLogin no                      # desabilita root via SSH
+        
+        2. Reinicie o serviço SSH com o comando sudo systemctl restart sshd.
+        
+        3. Verifique se o root pode acessar via SSH com o comando ssh root@<ip_do_servidor>.
+        
+        Tudo pronto para acessar o root via SSH.
+        ⚠️ ATENÇÃO: Habilitar o acesso root via SSH pode representar um risco de segurança.
+        """))
+        
     def vnstat(self):
         """
         Instala e configura o vnstat, caso ainda não esteja instalado.
@@ -4500,6 +4523,8 @@ class Sistema(Docker, Executa_comandos):
             ("configura ssh", self.configura_ssh),
             ("Faz copia inteligente com rsync", self.rsync_sync),
             ("Inatala/Executa monitor de rede vnstat", self.vnstat),
+            ("Alterar senha do usuario atual", self.alterar_senha_usuario),
+            ("Configurar acesso root por ssh", self.acess_root),
         ]
         self.mostrar_menu(opcoes_menu)
         
