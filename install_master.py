@@ -4489,6 +4489,7 @@ class Sistema(Docker, Executa_comandos):
                     r"-e 's/^[ #]*PasswordAuthentication.*/PasswordAuthentication no/' "
                     r"-e 's/^[ #]*KbdInteractiveAuthentication.*/KbdInteractiveAuthentication no/' "
                     r"-e 's/^[ #]*ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' "
+                    r"-e 's/^[ #]*UsePAM.*/UsePAM no/' "
                     r"/etc/ssh/sshd_config",
                     shell=True,
                 )
