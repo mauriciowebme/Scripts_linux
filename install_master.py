@@ -4483,9 +4483,13 @@ class Sistema(Docker, Executa_comandos):
             if input("Já testou e quer continuar? [digite CONFIRMAR]: ") == "CONFIRMAR":
                 # 1) Remove/comenta QUALQUER linha existente e grava apenas uma com 'no'
                 run(
-                    # troca todas as linhas que comecem (até com # ou espaço) por 'PasswordAuthentication no'
-                    "sudo sed -i 's/^[ #]*PasswordAuthentication.*/PasswordAuthentication no/' "
-                    "/etc/ssh/sshd_config",
+                    # Substitui qualquer valor (yes, no, comments) por 'no'
+                    # para todos os métodos que ainda permitem senha
+                    r"sudo sed -i "
+                    r"-e 's/^[ #]*PasswordAuthentication.*/PasswordAuthentication no/' "
+                    r"-e 's/^[ #]*KbdInteractiveAuthentication.*/KbdInteractiveAuthentication no/' "
+                    r"-e 's/^[ #]*ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' "
+                    r"/etc/ssh/sshd_config",
                     shell=True,
                 )
                 # 2) Reinicia o serviço SSH para aplicar
