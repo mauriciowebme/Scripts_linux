@@ -4433,17 +4433,14 @@ class Sistema(Docker, Executa_comandos):
 
             # Se foi escolhido gerar (substituir ou adicionar)
             if key_path:
-                comentario = (
-                    input("Comentário da chave (ENTER → root@hostname): ").strip()
-                    or "root@$(hostname)"
-                )
                 proteger  = input("Proteger com passphrase? [s/N] ").lower().startswith("s")
                 passphrase = input("Passphrase: ") if proteger else ""
 
                 # 1) Gera o par ED25519
+                passphrase_esc = shlex.quote(passphrase)   # vira '' se vazia
                 run(
                     f"ssh-keygen -t ed25519 -a 100 -f {key_path} "
-                    f"-C '{comentario}' -N '{passphrase}'"
+                    f"-N {passphrase_esc}"
                 )
 
                 # 2) Autoriza a chave pública para o root
