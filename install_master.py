@@ -4,6 +4,7 @@
 # wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
 import configparser
+import shlex
 import shutil
 import socket
 import json
@@ -4320,6 +4321,110 @@ class Sistema(Docker, Executa_comandos):
 
         raise RuntimeError(f"Falhou após {max_retries} tentativas.")
 
+    def configurar_chave_ssh_root():
+        """
+        Gera (ou substitui / adiciona) um par de chaves ED25519 em
+        /install_principal/ssh, acrescenta a pública em /root/.ssh/authorized_keys
+        e mantém o login root habilitado por senha e por chave.  Tudo acontece
+        aqui dentro, sem funções auxiliares.
+        """
+        print("==== Configurar acesso root por chave SSH ====")
+
+        # ──────────────────────────────────────────────────────────
+        # 1) Onde a chave ficará armazenada
+        # ──────────────────────────────────────────────────────────
+        key_dir = Path("/install_principal/ssh")
+        key_dir.mkdir(parents=True, exist_ok=True)
+        key_dir.chmod(0o700)  # só root lê
+
+        default_key = key_dir / "id_ed25519"
+
+        if default_key.exists():
+            while True:
+                escolha = input(
+                    "Já existe /install_principal/ssh/id_ed25519.\n"
+                    "[S] Substituir  |  [A] Adicionar outra  |  [C] Cancelar ? "
+                ).strip().lower()
+                if escolha in ("s", "a", "c"):
+                    break
+
+            if escolha == "c":
+                print("Operação cancelada.")
+                return
+
+            if escolha == "a":
+                ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+                key_path = key_dir / f"id_ed25519_{ts}"
+            else:  # substituir
+                key_path = default_key
+                subprocess.run(shlex.split(f"rm -f {key_path} {key_path}.pub"), check=True)
+        else:
+            key_path = default_key
+
+        # ──────────────────────────────────────────────────────────
+        # 2) Dados para ssh-keygen
+        # ──────────────────────────────────────────────────────────
+        comentario = (
+            input("Comentário da chave (ENTER para root@<hostname>): ").strip()
+            or "root@$(hostname)"
+        )
+        usar_pass = input("Proteger a chave com passphrase? [s/N] ").lower().startswith("s")
+        passphrase = input("Digite a passphrase (ENTER p/ nenhuma): ") if usar_pass else ""
+
+        # ──────────────────────────────────────────────────────────
+        # 3) Gera o par de chaves
+        # ──────────────────────────────────────────────────────────
+        cmd_keygen = (
+            f"ssh-keygen -t ed25519 -a 100 -f {key_path} "
+            f"-C '{comentario}' -N '{passphrase}'"
+        )
+        subprocess.run(shlex.split(cmd_keygen), check=True)
+
+        # ──────────────────────────────────────────────────────────
+        # 4) Garantir ~/.ssh do root e autorizar a chave
+        # ──────────────────────────────────────────────────────────
+        subprocess.run(shlex.split("mkdir -p /root/.ssh"), check=True)
+        subprocess.run(shlex.split("chmod 700 /root/.ssh"), check=True)
+
+        subprocess.run(
+            shlex.split(f"cat {key_path}.pub >> /root/.ssh/authorized_keys"), check=True
+        )
+        subprocess.run(shlex.split("chmod 600 /root/.ssh/authorized_keys"), check=True)
+
+        # ──────────────────────────────────────────────────────────
+        # 5) Ajustar sshd_config (PermitRootLogin / PubkeyAuth)
+        # ──────────────────────────────────────────────────────────
+        subprocess.run(
+            shlex.split(
+                "(grep -q '^PermitRootLogin' /etc/ssh/sshd_config && "
+                " sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config"
+                ") || echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config"
+            ),
+            check=True,
+        )
+        subprocess.run(
+            shlex.split(
+                "(grep -q '^PubkeyAuthentication' /etc/ssh/sshd_config) || "
+                "echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config"
+            ),
+            check=True,
+        )
+
+        # ──────────────────────────────────────────────────────────
+        # 6) Reiniciar o SSH
+        # ──────────────────────────────────────────────────────────
+        subprocess.run(
+            shlex.split("systemctl restart ssh || systemctl restart sshd"), check=True
+        )
+
+        # ──────────────────────────────────────────────────────────
+        # 7) Mensagem final
+        # ──────────────────────────────────────────────────────────
+        print("\n✅ Chave criada e configurada com sucesso!")
+        print(f"   Arquivo privado: {key_path}")
+        print("→ Copie-o para sua máquina, rode `chmod 600 id_ed25519` e, se quiser,")
+        print("  remova-o do servidor após testar o login por chave (ssh root@host).")
+
     def alterar_senha_usuario(self):
         print("Alterar senha do usuário atual.")
         print("Digite a nova senha para o usuário atual:")
@@ -4525,6 +4630,7 @@ class Sistema(Docker, Executa_comandos):
             ("Inatala/Executa monitor de rede vnstat", self.vnstat),
             ("Alterar senha do usuario atual", self.alterar_senha_usuario),
             ("Configurar acesso root por ssh", self.acess_root),
+            ("Configurar acesso root por ssh com chave", self.configurar_chave_ssh_root),
         ]
         self.mostrar_menu(opcoes_menu)
         
