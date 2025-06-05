@@ -4481,12 +4481,14 @@ class Sistema(Docker, Executa_comandos):
                 "Abra outro terminal e confirme que consegue se conectar via chave ANTES de prosseguir."
             )
             if input("Já testou e quer continuar? [digite CONFIRMAR]: ") == "CONFIRMAR":
+                # 1) Remove/comenta QUALQUER linha existente e grava apenas uma com 'no'
                 run(
-                    "(grep -q '^PasswordAuthentication' /etc/ssh/sshd_config && "
-                    " sed -i 's/^PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config) || "
-                    "echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config",
+                    # troca todas as linhas que comecem (até com # ou espaço) por 'PasswordAuthentication no'
+                    "sudo sed -i 's/^[ #]*PasswordAuthentication.*/PasswordAuthentication no/' "
+                    "/etc/ssh/sshd_config",
                     shell=True,
                 )
+                # 2) Reinicia o serviço SSH para aplicar
                 run("sudo systemctl restart ssh || sudo systemctl restart sshd", shell=True)
                 print("✅ Login por senha desabilitado.\n")
             else:
