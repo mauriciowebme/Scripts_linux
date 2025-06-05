@@ -4321,7 +4321,7 @@ class Sistema(Docker, Executa_comandos):
 
         raise RuntimeError(f"Falhou após {max_retries} tentativas.")
 
-    def configurar_chave_ssh_root():
+    def configurar_chave_ssh_root(self,):
         """
         Gera (ou substitui / adiciona) um par de chaves ED25519 em
         /install_principal/ssh, acrescenta a pública em /root/.ssh/authorized_keys
