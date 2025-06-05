@@ -4320,96 +4320,6 @@ class Sistema(Docker, Executa_comandos):
             raise subprocess.CalledProcessError(rc, cmd)
 
         raise RuntimeError(f"Falhou após {max_retries} tentativas.")
-
-    # def configurar_chave_ssh_root(self,):
-    #     """
-    #     Gera (ou substitui / adiciona) um par de chaves ED25519 em
-    #     /install_principal/ssh, acrescenta a pública em /root/.ssh/authorized_keys
-    #     e mantém o login root habilitado por senha e por chave.
-    #     """
-
-    #     def run(cmd: str, *, use_shell: bool = False) -> None:
-    #         """Pequeno wrapper com check=True; escolhe shell ou exec direto."""
-    #         if use_shell:
-    #             print(f"$ {cmd}")
-    #             subprocess.run(cmd, shell=True, check=True, executable="/bin/bash")
-    #         else:
-    #             print(f"$ {cmd}")
-    #             subprocess.run(shlex.split(cmd), check=True)
-
-    #     print("==== Configurar acesso root por chave SSH ====")
-
-    #     # ── 1) Caminho base das chaves
-    #     key_dir = Path("/install_principal/ssh")
-    #     key_dir.mkdir(parents=True, exist_ok=True)
-    #     key_dir.chmod(0o700)                          # somente root lê
-
-    #     default_key = key_dir / "id_ed25519"
-
-    #     # ── 2) Se já houver chave, perguntar o que fazer
-    #     if default_key.exists():
-    #         while True:
-    #             resp = input(
-    #                 "Já existe /install_principal/ssh/id_ed25519.\n"
-    #                 "[S] Substituir  |  [A] Adicionar outra  |  [C] Cancelar ? "
-    #             ).strip().lower()
-    #             if resp in ("s", "a", "c"):
-    #                 break
-
-    #         if resp == "c":
-    #             print("Operação cancelada.")
-    #             return
-
-    #         if resp == "a":
-    #             ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    #             key_path = key_dir / f"id_ed25519_{ts}"
-    #         else:                                     # substituir
-    #             key_path = default_key
-    #             run(f"rm -f {key_path} {key_path}.pub")
-    #     else:
-    #         key_path = default_key
-
-    #     # ── 3) Perguntas sobre comentário e passphrase
-    #     comentario = input("Comentário da chave (ENTER para root@<hostname>): ").strip() \
-    #                 or "root@$(hostname)"
-    #     usar_pass   = input("Proteger a chave com passphrase? [s/N] ").lower().startswith("s")
-    #     passphrase  = input("Digite a passphrase (ENTER p/ nenhuma): ") if usar_pass else ""
-
-    #     # ── 4) Gerar o par de chaves
-    #     run(
-    #         f"ssh-keygen -t ed25519 -a 100 -f {key_path} "
-    #         f"-C '{comentario}' -N '{passphrase}'"
-    #     )
-
-    #     # ── 5) Garantir ~/.ssh do root e autorizar a chave
-    #     run("mkdir -p /root/.ssh")
-    #     run("chmod 700 /root/.ssh")
-
-    #     # redireção precisa de shell
-    #     run(f"cat {key_path}.pub >> /root/.ssh/authorized_keys", use_shell=True)
-    #     run("chmod 600 /root/.ssh/authorized_keys")
-
-    #     # ── 6) Ajustar sshd_config (também precisa de shell por causa do && / ||)
-    #     run(
-    #         "(grep -q '^PermitRootLogin' /etc/ssh/sshd_config && "
-    #         " sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config) || "
-    #         "echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config",
-    #         use_shell=True,
-    #     )
-    #     run(
-    #         "(grep -q '^PubkeyAuthentication' /etc/ssh/sshd_config) || "
-    #         "echo 'PubkeyAuthentication yes' >> /etc/ssh/sshd_config",
-    #         use_shell=True,
-    #     )
-
-    #     # ── 7) Reiniciar o serviço SSH
-    #     run("systemctl restart ssh || systemctl restart sshd", use_shell=True)
-
-    #     # ── 8) Mensagem final
-    #     print("\n✅ Chave criada/configurada com sucesso!")
-    #     print(f"   Chave privada: {key_path}")
-    #     print("→ Copie-a para sua máquina, rode `chmod 600 id_ed25519` e, se quiser,")
-    #     print("  remova do servidor após testar o login por chave.")
         
     def configurar_ssh(self):
         """
@@ -4585,23 +4495,6 @@ class Sistema(Docker, Executa_comandos):
                 print("Operação abortada. Login por senha mantido.\n")
 
         print("==== Configurações concluídas ====")
-        
-    # def acess_root(self):
-    #     print(textwrap.dedent("""\
-    #     Fazer login SSH diretamente como root.
-        
-    #     1. Edite o arquivo /etc/ssh/sshd_config e altere a linha PermitRootLogin.
-    #     PermitRootLogin prohibit-password       # só chave pública
-    #     PermitRootLogin yes                     # senha ou chave pública
-    #     PermitRootLogin no                      # desabilita root via SSH
-        
-    #     2. Reinicie o serviço SSH com o comando sudo systemctl restart sshd.
-        
-    #     3. Verifique se o root pode acessar via SSH com o comando ssh root@<ip_do_servidor>.
-        
-    #     Tudo pronto para acessar o root via SSH.
-    #     ⚠️ ATENÇÃO: Habilitar o acesso root via SSH pode representar um risco de segurança.
-    #     """))
         
     def vnstat(self):
         """
