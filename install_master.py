@@ -2972,8 +2972,9 @@ CMD ["sh", "-c", "\
         print("Escolha o modelo:")
         print("1. llama3.3")
         print("2. llama2")
-        print("3. Instalar ambos")
-        print("4. Instalar modelo manualmente posteriormente")
+        print("3. deepseek/deepseek-r1-0528-qwen3-8b")
+        print("4. Instalar vários modelos")
+        print("5. Instalar modelo manualmente posteriormente")
         escolha = input('Digite o número do modelo: ').strip()
         
         if escolha == '1':
@@ -2981,27 +2982,29 @@ CMD ["sh", "-c", "\
         elif escolha == '2':
             modelos = ['llama2']
         elif escolha == '3':
-            modelos = ['llama3.3', 'llama2']
+            modelos = ['deepseek/deepseek-r1-0528-qwen3-8b']
         elif escolha == '4':
+            print("\nSelecione os modelos (separados por vírgula):")
+            print("1. llama3.3")
+            print("2. llama2")
+            print("3. deepseek/deepseek-r1-0528-qwen3-8b")
+            selecao = input("Digite os números (ex: 1,3): ").strip()
+            modelos = []
+            mapeamento = {
+                '1': 'llama3.3',
+                '2': 'llama2',
+                '3': 'deepseek/deepseek-r1-0528-qwen3-8b'
+            }
+            for num in selecao.split(','):
+                if num.strip() in mapeamento:
+                    modelos.append(mapeamento[num.strip()])
+        elif escolha == '5':
             modelos = []
             print("Para instalar um modelo manualmente posteriormente, use o comando:")
-            print("docker exec -it ollama bash -c \"ollama pull llama3.3\"")
+            print("docker exec ollama bash -c \"ollama pull nome-do-modelo\"")
         else:
-            print("Opção inválida. Escolha entre '1', '2', '3' ou '4'.")
+            print("Opção inválida. Escolha entre '1', '2', '3', '4' ou '5'.")
             return
-        
-        comandos = [
-            "docker network create ollama-network",
-            f"""docker run -d \
-            --name ollama \
-            --network ollama-network \
-            -p 11434:11434 \
-            -v {caminho_ollama}:/root \
-            ollama/ollama""",
-        ]
-        
-        for modelo in modelos:
-            comandos.append(f"""docker exec -it ollama bash -c "ollama pull {modelo}" """)
         
         comandos += [
             """docker exec -it ollama bash -c "ollama list" """,
