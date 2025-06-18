@@ -3011,7 +3011,7 @@ CMD ["sh", "-c", "\
             """docker run -d \
             --name open-webui \
             --network ollama-network \
-            -p 3000:8080 \
+            -p 3001:8080 \
             -e OLLAMA_BASE_URL=http://ollama:11434 \
             ghcr.io/open-webui/open-webui:main"""
         ]
