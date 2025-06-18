@@ -3023,6 +3023,19 @@ CMD ["sh", "-c", "\
         self.remove_container(f'ollama')
         self.executar_comandos(comandos, ignorar_erros=True)
         
+        # Instruções de uso no final
+        print("\n" + "="*50)
+        print("🎉 INSTALAÇÃO CONCLUÍDA COM SUCESSO!")
+        print("="*50)
+        print("\n📋 INSTRUÇÕES DE USO:")
+        print("1. Acesse a interface web em: http://seu-ip:3000")
+        print("2. Na primeira execução, você precisará criar uma conta de administrador")
+        print("3. Conecte ao Ollama no menu 'Connections' usando a URL: http://ollama:11434")
+        print("\n💡 COMANDOS ÚTEIS:")
+        print("- Ver modelos instalados: docker exec ollama bash -c \"ollama list\"")
+        print("- Instalar novo modelo:   docker exec ollama bash -c \"ollama pull nome-modelo\"")
+        print("- Reiniciar serviço:      docker restart ollama open-webui")
+        
     def instala_redis_docker(self):
         print("Iniciando instalação redis:")
         senha = input("Configure uma senha para acessar: ")
