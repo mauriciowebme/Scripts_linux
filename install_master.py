@@ -3013,7 +3013,7 @@ CMD ["sh", "-c", "\
         comandos += [
             """docker exec -it ollama bash -c "ollama list" """,
             f"""docker run -d \
-            --name open_webui \
+            --name open-webui \
             --network ollama-network \
             -p 3001:8080 \
             -v {caminho_open_webui}:/app/backend/data \
@@ -3024,7 +3024,7 @@ CMD ["sh", "-c", "\
         # Adiciona permissão 777 no caminho persistente do container ollama
         self.gerenciar_permissoes_pasta(caminho_ollama, '777')
         
-        self.remove_container(f'open_webui')
+        self.remove_container(f'open-webui')
         self.remove_container(f'ollama')
         self.executar_comandos(comandos, ignorar_erros=True)
         
