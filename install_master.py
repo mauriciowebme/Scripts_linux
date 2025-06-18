@@ -3002,7 +3002,7 @@ CMD ["sh", "-c", "\
             -p 11434:11434 \
             -e OLLAMA_MAX_LOADED_MODELS=1 \
             -e OLLAMA_NUM_PARALLEL=1 \
-            -e OLLAMA_KEEP_ALIVE=1 \
+            -e OLLAMA_KEEP_ALIVE=0 \
             -v {caminho_ollama}:/root \
             ollama/ollama""",
         ]
