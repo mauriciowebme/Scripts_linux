@@ -2967,7 +2967,8 @@ CMD ["sh", "-c", "\
         resultados = self.executar_comandos(comandos)
  
     def instala_open_webui(self):
-        caminho_ollama = f"{self.install_principal}/ollama"
+        caminho_ollama = f"{self.install_principal}/IA/ollama"
+        caminho_open_webui = f"{self.install_principal}/IA/open_webui"
         
         print("Escolha o modelo:")
         print("1. llama3.3")
@@ -3011,10 +3012,11 @@ CMD ["sh", "-c", "\
         
         comandos += [
             """docker exec -it ollama bash -c "ollama list" """,
-            """docker run -d \
-            --name open-webui \
+            f"""docker run -d \
+            --name open_webui \
             --network ollama-network \
             -p 3001:8080 \
+            -v {caminho_open_webui}:/app/backend/data \
             -e OLLAMA_BASE_URL=http://ollama:11434 \
             ghcr.io/open-webui/open-webui:main"""
         ]
@@ -3022,7 +3024,7 @@ CMD ["sh", "-c", "\
         # Adiciona permissão 777 no caminho persistente do container ollama
         self.gerenciar_permissoes_pasta(caminho_ollama, '777')
         
-        self.remove_container(f'open-webui')
+        self.remove_container(f'open_webui')
         self.remove_container(f'ollama')
         self.executar_comandos(comandos, ignorar_erros=True)
         
