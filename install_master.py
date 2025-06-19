@@ -1142,10 +1142,7 @@ vhDomain                  {nome_dominio}
 indexFiles                index.php, index.html
 """)
         
-        comandos = [
-            f"sudo chmod -R 777 {conf_dir}",
-            ]
-        resultados = self.executar_comandos(comandos)
+        self.gerenciar_permissoes_pasta(site_dir, permissao='777')
         
         # Configuração do Virtual Host e Listener no httpd_config.conf
         virtualhost_config = f"""
