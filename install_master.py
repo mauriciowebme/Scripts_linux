@@ -2998,8 +2998,8 @@ CMD ["sh", "-c", "\
             --network ollama-network \
             -p 11434:11434 \
             -e OLLAMA_MAX_LOADED_MODELS=1 \
-            -e OLLAMA_NUM_PARALLEL=1 \
-            -e OLLAMA_KEEP_ALIVE=0 \
+            -e OLLAMA_NUM_PARALLEL=2 \
+            -e OLLAMA_KEEP_ALIVE=1 \
             -v {caminho_ollama}:/root \
             ollama/ollama""",
         ]
