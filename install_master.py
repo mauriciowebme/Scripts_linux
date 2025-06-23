@@ -3,6 +3,12 @@
 # Execute com:
 # wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
 
+# Ou crie um arquivo de texto com o nome install_master.txt na raiz do pendrive USB e execute:
+# lsblk
+# mkdir -p /mnt/usb
+# mount /dev/sdX1 /mnt/usb  # substitua sdX1 pelo dispositivo correto
+# bash /mnt/usb/install_master.txt
+
 import configparser
 import shlex
 import shutil
