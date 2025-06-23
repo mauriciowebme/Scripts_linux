@@ -5,8 +5,8 @@
 
 # Ou crie um arquivo de texto com o nome install_master.txt na raiz do pendrive USB e execute:
 # lsblk
-# mkdir -p /mnt/usb
-# mount /dev/sdX1 /mnt/usb  # substitua sdX1 pelo dispositivo correto
+# sudo mkdir -p /mnt/usb
+# sudo mount /dev/sdb1 /mnt/usb
 # bash /mnt/usb/install_master.txt
 
 import configparser
