@@ -56,7 +56,7 @@ def check_for_update():
     execute_file.parent.mkdir(parents=True, exist_ok=True)
 
     if not execute_file.exists():
-        update_file.write_text("wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py")
+        execute_file.write_text("wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py")
     
     if update_file.exists():
         return
