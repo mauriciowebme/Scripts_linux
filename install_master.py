@@ -2967,29 +2967,8 @@ CMD ["sh", "-c", "\
         caminho_ollama = f"{self.install_principal}/IA/ollama"
         caminho_open_webui = f"{self.install_principal}/IA/open_webui"
         
-        print("Escolha o modelo:")
-        print("1. llama3.3")
-        print("2. llama2")
-        print("3. deepseek-r1:8b")
-        print("4. gemma3:12b")
-        print("5. Instalar modelo manualmente posteriormente")
-        escolha = input('Digite o número do modelo: ').strip()
-        
-        if escolha == '1':
-            modelos = ['llama3.3']
-        elif escolha == '2':
-            modelos = ['llama2']
-        elif escolha == '3':
-            modelos = ['deepseek-r1:8b']
-        elif escolha == '4':
-            modelos = ['gemma3:12b']
-        elif escolha == '5':
-            modelos = []
-            print("Para instalar um modelo manualmente posteriormente, use o comando:")
-            print("docker exec ollama bash -c \"ollama pull nome-do-modelo\"")
-        else:
-            print("Opção inválida. Escolha entre '1', '2', '3', '4' ou '5'.")
-            return
+        # modelos pre-definidos
+        modelos = ['gemma3:4b']
         
         comandos = [
             "docker network create ollama-network",
@@ -3030,14 +3009,21 @@ CMD ["sh", "-c", "\
         print("🎉 INSTALAÇÃO CONCLUÍDA COM SUCESSO!")
         print("="*50)
         print("\n📋 INSTRUÇÕES DE USO:")
-        print("1. Acesse a interface web em: http://seu-ip:3000")
+        print("1. Acesse a interface web em: http://seu-ip:3001")
         print("2. Na primeira execução, você precisará criar uma conta de administrador")
         print("3. Conecte ao Ollama no menu 'Connections' usando a URL: http://ollama:11434")
+        
+        print("\n💡 MODELOS ADICIONAIS:")
+        print("Você pode instalar mais modelos diretamente pela interface do Open WebUI ou usando o comando docker abaixo:")
+        
         print("\n💡 COMANDOS ÚTEIS:")
         print("- Ver modelos instalados: docker exec ollama bash -c \"ollama list\"")
         print("- Instalar novo modelo:   docker exec ollama bash -c \"ollama pull nome-modelo\"")
         print("- Reiniciar serviço:      docker restart ollama open-webui")
         
+        print("\n⚠️ ATENÇÃO:")
+        print("- Para modelos maiores (como llama3), verifique se seu hardware tem recursos suficientes")
+            
     def instala_redis_docker(self):
         print("Iniciando instalação redis:")
         senha = input("Configure uma senha para acessar: ")
