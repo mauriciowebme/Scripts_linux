@@ -8,6 +8,8 @@
 # sudo mkdir -p /mnt/usb
 # sudo mount /dev/sdb1 /mnt/usb
 # bash /mnt/usb/install_master.txt
+# depois da primeira execução, o arquivo pode ser executado com:
+# bash /install_principal/install_master.txt
 
 import configparser
 import shlex
