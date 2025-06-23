@@ -50,7 +50,12 @@ VERSAO_UBUNTU = get_ubuntu_version()
 def check_for_update():
     update_file = Path("/install_principal/update_check.txt")
     update_file.parent.mkdir(parents=True, exist_ok=True)
+    execute_file = Path("/install_principal/install_master.txt")
+    execute_file.parent.mkdir(parents=True, exist_ok=True)
 
+    if not execute_file.exists():
+        update_file.write_text("wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py")
+    
     if update_file.exists():
         return
 
