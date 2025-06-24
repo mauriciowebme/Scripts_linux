@@ -1605,6 +1605,7 @@ WantedBy=timers.target
 
         porta = self.escolher_porta_disponivel()[0]
         token = secrets.token_urlsafe(32)
+        token = 'teste'
 
         run_args = [
             "--name", "vscode_oficial",
