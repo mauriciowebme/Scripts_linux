@@ -1628,7 +1628,7 @@ WantedBy=timers.target
         )
 
         print("\nInstalação concluída.")
-        print(f"Acesse: http://<seu_servidor>:{porta}/?tkn={token}")
+        print(f"Acesse: http://<seu_servidor>:3004/?tkn={token}")
         
     def instala_rustdesk(self,):
         print('Instalando rustdesk.')
