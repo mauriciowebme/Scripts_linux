@@ -4728,7 +4728,7 @@ class Sistema(Docker, Executa_comandos):
             ("Instala rustdesk", self.instala_rustdesk),
             ("Instala pritunel", self.instala_pritunel),
             ("Instala nextcloud", self.instala_nextcloud),
-            ("Instala code-server", self.instala_openvscode),
+            ("Instala openvscode", self.instala_openvscode),
             ("Instala Open WebUI", self.instala_open_webui),
             ("Instala Redis Docker", self.instala_redis_docker),
             ("Instala selenium-firefox", self.instala_selenium_firefox),
