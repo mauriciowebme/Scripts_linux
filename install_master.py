@@ -247,7 +247,7 @@ class Docker(Executa_comandos):
             tag = f"img_{datetime.now():%Y%m%d%H%M%S}"
             with tempfile.TemporaryDirectory() as ctx:
                 Path(ctx, "Dockerfile").write_text(dockerfile_str.strip() + "\n")
-                subprocess.run(["docker", "build", "-t", tag, "."], cwd=ctx, check=True)
+                subprocess.run(["docker", "build", "--no-cache", "-t", tag, "."], cwd=ctx, check=True)
             # se quiser manter run_cmd como “somente opções”, adicione o comando aqui
             subprocess.run(["docker", "run", *run_cmd, tag], check=True)
         else:
