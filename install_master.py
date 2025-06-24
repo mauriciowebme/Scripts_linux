@@ -1582,7 +1582,6 @@ WantedBy=timers.target
         USER coder
         WORKDIR /home/coder
         EXPOSE 8000
-        ENV CONNECTION_TOKEN=${CONNECTION_TOKEN:-changeme_$(date +%s)}
         ENTRYPOINT ["bash","-c","${VSCODE_HOME}/bin/code-server serve-web \
             --port 8000 --host 0.0.0.0 --connection-token $CONNECTION_TOKEN"]
         """)
