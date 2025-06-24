@@ -1583,7 +1583,9 @@ WantedBy=timers.target
         WORKDIR /home/coder
         EXPOSE 8000
         ENTRYPOINT ["bash","-c","${VSCODE_HOME}/bin/code-server serve-web \
-            --port 8000 --host 0.0.0.0 --connection-token $CONNECTION_TOKEN"]
+            --accept-server-license-terms \
+            --port 8000 --host 0.0.0.0 \
+            --connection-token $CONNECTION_TOKEN"]
         """)
 
         caminho_principal = f"{self.install_principal}/vscode_oficial"
