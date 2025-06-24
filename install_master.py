@@ -1515,22 +1515,39 @@ WantedBy=timers.target
             ]
         resultados = self.executar_comandos(comandos, exibir_executando=False)
         
-    def instala_code_server(self,):
-        print('Instalando code-server.')
+    def instala_openvscode(self,):
+        print('Instalando openvscode.')
         senha = input('Coloque a senha que deseja para acesso: ')
         comandos = [
+            # f"""docker run -d \
+            #         --name=code-server \
+            #         --restart=unless-stopped \
+            #         -p 8443:8443 \
+            #         -e PASSWORD={senha} \
+            #         -e SUDO_PASSWORD={senha} \
+            #         -v {self.install_principal}/code-server:/config \
+            #         lscr.io/linuxserver/code-server:latest
+            #     """,
             f"""docker run -d \
-                    --name=code-server \
+                    --name openvscode \
                     --restart=unless-stopped \
-                    -p 8443:8443 \
-                    -e PASSWORD={senha} \
-                    -e SUDO_PASSWORD={senha} \
-                    -v {self.install_principal}/code-server:/config \
-                    lscr.io/linuxserver/code-server:latest
-                """,
+                    --memory=1g \
+                    --cpus=1 \
+                    -p 3002:3000 \
+                    -e PUID=1000 \
+                    -e PGID=1000 \
+                    -e TZ=America/Sao_Paulo \
+                    -e CONNECTION_TOKEN='{senha}' \
+                    -e SUDO_PASSWORD='{senha}' \
+                    -v {self.install_principal}/openvscode/config:/config \
+                    -v {self.install_principal}/openvscode/projetos:/home/workspace \
+                    lscr.io/linuxserver/openvscode-server:latest
+                """
             ]
-        self.remove_container('code-server')
+        self.remove_container('openvscode')
         resultados = self.executar_comandos(comandos)
+        print('\nInstalação concluída. openvscode está pronto para uso.')
+        print(f'Acesso: https://SEU_HOST:8443/?tkn={senha}')
         
     def instala_rustdesk(self,):
         print('Instalando rustdesk.')
@@ -4711,7 +4728,7 @@ class Sistema(Docker, Executa_comandos):
             ("Instala rustdesk", self.instala_rustdesk),
             ("Instala pritunel", self.instala_pritunel),
             ("Instala nextcloud", self.instala_nextcloud),
-            ("Instala code-server", self.instala_code_server),
+            ("Instala code-server", self.instala_openvscode),
             ("Instala Open WebUI", self.instala_open_webui),
             ("Instala Redis Docker", self.instala_redis_docker),
             ("Instala selenium-firefox", self.instala_selenium_firefox),
