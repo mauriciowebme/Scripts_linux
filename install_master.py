@@ -1546,6 +1546,7 @@ WantedBy=timers.target
             ]
         self.remove_container('openvscode')
         resultados = self.executar_comandos(comandos)
+        time.sleep(30)  # Aguarda o container iniciar completamente
         print('\nInstalação concluída. openvscode está pronto para uso.')
         print(f'Acesso: https://SEU_HOST:8443/?tkn={senha}')
         
