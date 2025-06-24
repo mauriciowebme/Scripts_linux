@@ -1588,36 +1588,35 @@ WantedBy=timers.target
             --connection-token $CONNECTION_TOKEN"]
         """)
 
-        caminho_principal = f"{self.install_principal}/vscode_oficial"
-        if os.path.exists(caminho_principal):
-            if input(f"O caminho {caminho_principal} já existe. Deseja apagá-lo? (s/n): ").lower() == 's':
-                print(f"Removendo diretório existente: {caminho_principal}")
-                os.chmod(caminho_principal, 0o777)
-                shutil.rmtree(caminho_principal)
-            else:
-                print("Mantendo diretório existente.")
-        else:
-            print(f"Criando novo diretório: {caminho_principal}")
+        # caminho_principal = f"{self.install_principal}/vscode_oficial"
+        # if os.path.exists(caminho_principal):
+        #     if input(f"O caminho {caminho_principal} já existe. Deseja apagá-lo? (s/n): ").lower() == 's':
+        #         print(f"Removendo diretório existente: {caminho_principal}")
+        #         os.chmod(caminho_principal, 0o777)
+        #         shutil.rmtree(caminho_principal)
+        #     else:
+        #         print("Mantendo diretório existente.")
+        # else:
+        #     print(f"Criando novo diretório: {caminho_principal}")
 
-        os.makedirs(f"{caminho_principal}/config", exist_ok=True)
-        os.makedirs(f"{caminho_principal}/projetos", exist_ok=True)
-        os.chmod(caminho_principal, 0o777)
+        # os.makedirs(f"{caminho_principal}/config", exist_ok=True)
+        # os.makedirs(f"{caminho_principal}/projetos", exist_ok=True)
+        # os.chmod(caminho_principal, 0o777)
 
-        porta = self.escolher_porta_disponivel()[0]
-        token = secrets.token_urlsafe(32)
+        # porta = self.escolher_porta_disponivel()[0]
+        # token = secrets.token_urlsafe(32)
         token = 'teste'
 
         run_args = [
             "--name", "vscode_oficial",
             "--restart=unless-stopped",
-            "-e", "PUID=1000",
-            "-e", "PGID=1000",
-            "-e", "TZ=America/Sao_Paulo",
+            # "-e", "PUID=1000",
+            # "-e", "PGID=1000",
+            # "-e", "TZ=America/Sao_Paulo",
             "-e", f"CONNECTION_TOKEN={token}",
             "-p", f"3004:8000",
-            "--shm-size", "2g",
-            "-v", f"{caminho_principal}/config:/config",
-            "-v", f"{caminho_principal}/projetos:/home/coder/projects",
+            # "-v", f"{caminho_principal}/config:/config",
+            # "-v", f"{caminho_principal}/projetos:/home/coder/projects",
             "-d"
         ]
 
