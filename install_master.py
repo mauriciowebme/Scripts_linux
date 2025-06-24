@@ -1614,7 +1614,7 @@ WantedBy=timers.target
             "-e", "PGID=1000",
             "-e", "TZ=America/Sao_Paulo",
             "-e", f"CONNECTION_TOKEN={token}",
-            "-p", f"{porta}:8000",
+            "-p", f"3004:8000",
             "--shm-size", "2g",
             "-v", f"{caminho_principal}/config:/config",
             "-v", f"{caminho_principal}/projetos:/home/coder/projects",
