@@ -4843,6 +4843,7 @@ class Sistema(Docker, Executa_comandos):
             ("Força instalação docker", self.instala_docker_force),
             ("Instala portainer", self.instala_portainer),
             ("Instala filebrowser", self.instala_filebrowser),
+            ("Instala webserver guacamole", self.instala_webserver_guacamole),
             ("Instala traefik", self.instala_traefik),
             ("||| Conf ||| Adiciona roteamento e serviço ao traefik", self.adiciona_roteador_servico_traefik),
             ("||| Conf ||| Configura rede do container", self.configura_rede),
@@ -4850,7 +4851,6 @@ class Sistema(Docker, Executa_comandos):
             ("||| Conf ||| Gerenciador SFTP sftpgo", self.gerenciar_usuarios_sftp),
             ("Instala openlitespeed", self.instala_openlitespeed),
             ("||| Conf ||| Controle de sites openlitespeed", self.controle_sites_openlitespeed),
-            ("Instala webserver guacamole", self.instala_webserver_guacamole),
             ("** BD ** Instala mysql", self.instala_mysql),
             ("** BD ** Instala postgres", self.instala_postgres),
             ("Instala wordpress", self.instala_wordpress),
@@ -5113,12 +5113,4 @@ ip server:
     
 
 if __name__ == "__main__":
-    result = subprocess.run(
-        "docker logs portainer".split(),
-        capture_output=True,
-        text=True
-    )
-    logs_completos = result.stdout
-    print(f"Logs de testes:")
-    print(logs_completos)
     main()
