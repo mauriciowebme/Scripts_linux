@@ -5113,7 +5113,9 @@ ip server:
     
 
 if __name__ == "__main__":
-# Teste mais robusto para capturar logs
+    print("Iniciando o teste...")
+    
+    # Teste mais robusto para capturar logs
     container_name = "portainer"
     
     try:
@@ -5154,4 +5156,7 @@ if __name__ == "__main__":
                 
     except Exception as e:
         print(f"❌ Erro ao executar comando: {e}")
+        
+    print("Teste concluído.\n")    
+        
     main()
