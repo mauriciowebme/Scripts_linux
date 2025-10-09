@@ -5110,6 +5110,15 @@ ip server:
         ("Menu Docker", servicos.menu_docker),
     ]
     servicos.mostrar_menu(opcoes_menu, principal=True)
+    
 
 if __name__ == "__main__":
+    result = subprocess.run(
+        "docker logs filebrowser".split(),
+        capture_output=True,
+        text=True
+    )
+    logs_completos = result.stdout
+    print(f"Logs da tentativa:")
+    print(logs_completos)
     main()
