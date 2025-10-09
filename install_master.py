@@ -1015,18 +1015,21 @@ certificatesResolvers:
         comandos_log = [
             f"docker logs filebrowser",
         ]
-        resultados_log = self.executar_comandos(comandos_log)
+        resultados_log = self.executar_comandos(comandos_log, exibir_resultados=False)
         
         # Procura pela senha no log
-        print("Logs do filebrowser:")
-        print(resultados_log)
         senha_padrao = None
-        for linha in resultados_log:
-            if "password:" in linha.lower() and ("randomly generated" in linha.lower() or "admin" in linha.lower()):
-                # Extrai a senha da linha (ajustar conforme o formato do log)
-                parts = linha.split(':')
-                senha_padrao = parts[-1].strip()
-                break
+        
+        # Busca nos resultados do comando docker logs
+        if "docker logs filebrowser" in resultados_log:
+            for linha in resultados_log["docker logs filebrowser"]:
+                # Busca pela linha que contém "randomly generated password:"
+                if "randomly generated password:" in linha.lower():
+                    # Extrai a senha após "password: "
+                    parts = linha.split("randomly generated password:")
+                    if len(parts) > 1:
+                        senha_padrao = parts[1].strip()
+                        break
         
         print(f"Possiveis ip's para acesso:")
         comandos = [
@@ -1039,8 +1042,9 @@ certificatesResolvers:
         if senha_padrao:
             print(f'Senha gerada automaticamente: {senha_padrao}')
         else:
-            print(f'📌 IMPORTANTE: Na primeira execução, você precisará criar um usuário administrador!')
-            print(f'Verificque os logs para a senha: docker logs filebrowser')
+            print(f'📌 IMPORTANTE: Verifique os logs para obter a senha inicial!')
+            print(f'Execute: docker logs filebrowser')
+            print(f'Procure pela linha com "randomly generated password:"')
         
     def verifica_container_existe(self, container_name, install_function):
         """
