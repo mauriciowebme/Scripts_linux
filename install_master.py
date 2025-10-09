@@ -5114,11 +5114,11 @@ ip server:
 
 if __name__ == "__main__":
     result = subprocess.run(
-        "docker logs filebrowser".split(),
+        "docker logs portainer".split(),
         capture_output=True,
         text=True
     )
     logs_completos = result.stdout
-    print(f"Logs da tentativa:")
+    print(f"Logs de testes:")
     print(logs_completos)
     main()
