@@ -1015,7 +1015,7 @@ certificatesResolvers:
         comandos_log = [
             f"docker logs filebrowser",
         ]
-        resultados_log = self.executar_comandos(comandos_log, exibir_resultados=False)
+        resultados_log = self.executar_comandos(comandos_log, exibir_resultados=True)
         
         # Procura pela senha no log
         senha_padrao = None
