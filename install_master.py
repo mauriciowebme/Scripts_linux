@@ -1018,6 +1018,8 @@ certificatesResolvers:
         resultados_log = self.executar_comandos(comandos_log)
         
         # Procura pela senha no log
+        print("Logs do filebrowser:")
+        print(resultados_log)
         senha_padrao = None
         for linha in resultados_log:
             if "password:" in linha.lower() and ("randomly generated" in linha.lower() or "admin" in linha.lower()):
@@ -5058,7 +5060,7 @@ Execute com: bash /install_principal/install_master.txt
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.223
+Versão 1.224
 ===========================================================================
 ===========================================================================
 ip server:
