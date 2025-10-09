@@ -1023,7 +1023,7 @@ certificatesResolvers:
                     capture_output=True,
                     text=True
                 )
-                logs_completos = result.stdout
+                logs_completos = result.stderr
                 print(f"Logs da tentativa {tentativa + 1}:")
                 print(logs_completos)
                 
