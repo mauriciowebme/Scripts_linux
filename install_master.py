@@ -1008,61 +1008,32 @@ certificatesResolvers:
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
         
-        # Aguarda o container inicializar e tenta capturar a senha
-        print("Aguardando container inicializar e gerando senha...")
+        # Aguarda e captura a senha gerada automaticamente
+        print("Aguardando senha ser gerada...")
+        time.sleep(15)
+        
         senha_padrao = None
-        
-        # Tenta capturar a senha por até 60 segundos
-        for tentativa in range(12):  # 12 tentativas x 5 segundos = 60 segundos
-            time.sleep(5)
+        try:
+            result = subprocess.run(
+                "docker logs filebrowser".split(),
+                capture_output=True,
+                text=True
+            )
             
-            try:
-                # Executa o comando docker logs diretamente
-                result = subprocess.run(
-                    "docker logs filebrowser".split(),
-                    capture_output=True,
-                    text=True
-                )
-                logs_completos = result.stderr
-                print(f"Logs da tentativa {tentativa + 1}:")
-                print(logs_completos)
+            # Busca pela senha nos logs
+            for linha in result.stderr.splitlines():
+                if "randomly generated password:" in linha:
+                    senha_padrao = linha.split("randomly generated password:")[1].strip()
+                    break
                 
-                # Busca pela senha no log completo
-                for linha in logs_completos.splitlines():
-                    # Busca pela linha que contém a senha gerada
-                    if "randomly generated password:" in linha:
-                        # Extrai a senha após "randomly generated password: "
-                        parts = linha.split("randomly generated password:")
-                        if len(parts) > 1:
-                            senha_padrao = parts[1].strip()
-                            break
-                    # Também busca por outro formato possível
-                    elif "password:" in linha and "admin" in linha:
-                        # Formato alternativo: extrai tudo após "password: "
-                        if "password:" in linha:
-                            parts = linha.split("password:")
-                            if len(parts) > 1:
-                                senha_padrao = parts[1].strip()
-                                break
-                
-            except Exception as e:
-                print(f"Erro ao capturar logs: {e}")
-            
-            # Se encontrou a senha, para o loop
-            if senha_padrao:
-                print(f"Senha capturada na tentativa {tentativa + 1}")
-                break
-            else:
-                print(f"Tentativa {tentativa + 1}/12 - Aguardando senha ser gerada...")
-        
-        if not senha_padrao:
-            print("⚠️ Não foi possível capturar a senha automaticamente")
+        except Exception as e:
+            print(f"Erro: {e}")
         
         print(f"Possiveis ip's para acesso:")
         comandos = [
             "ip addr show | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1",
         ]
-        self.executar_comandos(comandos)
+        self.executar_comandos(comandos, exibir_executando=False)
         print(f'Porta para uso local: {portas[0]}')
         print(f'Usuario padrão: admin')
         
