@@ -4880,6 +4880,144 @@ class Sistema(Docker, Executa_comandos):
         self.atualizar_sistema_completa()
         self.executar_comandos(['reboot '], comando_direto=True)
 
+    def comandos_essenciais_linux(self):
+        """Exibe uma lista de comandos essenciais do Linux Ubuntu."""
+        print("\n" + "="*80)
+        print("                    COMANDOS ESSENCIAIS DO LINUX UBUNTU")
+        print("="*80)
+        
+        comandos = {
+            "📁 NAVEGAÇÃO E LISTAGEM": [
+                ("pwd", "Mostra o diretório atual"),
+                ("ls", "Lista arquivos e pastas"),
+                ("ls -la", "Lista detalhada (incluindo ocultos)"),
+                ("ls -lh", "Lista com tamanhos legíveis (KB, MB, GB)"),
+                ("cd /caminho", "Navega para um diretório"),
+                ("cd ..", "Volta um diretório"),
+                ("cd ~", "Vai para o diretório home do usuário"),
+                ("find /caminho -name 'arquivo'", "Busca arquivos por nome"),
+                ("locate arquivo", "Busca arquivos rapidamente (updatedb)"),
+                ("which comando", "Mostra onde está o executável"),
+            ],
+            
+            "📄 CRIAÇÃO E EDIÇÃO DE ARQUIVOS": [
+                ("touch arquivo.txt", "Cria arquivo vazio"),
+                ("mkdir pasta", "Cria diretório"),
+                ("mkdir -p pasta/subpasta", "Cria diretórios recursivamente"),
+                ("nano arquivo.txt", "Edita arquivo com nano"),
+                ("vim arquivo.txt", "Edita arquivo com vim"),
+                ("cat arquivo.txt", "Mostra conteúdo do arquivo"),
+                ("head -n 10 arquivo.txt", "Mostra primeiras 10 linhas"),
+                ("tail -n 10 arquivo.txt", "Mostra últimas 10 linhas"),
+                ("tail -f arquivo.log", "Monitora arquivo em tempo real"),
+                ("less arquivo.txt", "Visualiza arquivo página por página"),
+            ],
+            
+            "🗑️ REMOÇÃO E MOVIMENTAÇÃO": [
+                ("rm arquivo.txt", "Remove arquivo"),
+                ("rm -rf pasta/", "Remove pasta e conteúdo recursivamente"),
+                ("rmdir pasta", "Remove pasta vazia"),
+                ("mv origem destino", "Move/renomeia arquivo ou pasta"),
+                ("cp arquivo.txt copia.txt", "Copia arquivo"),
+                ("cp -r pasta/ copia_pasta/", "Copia pasta recursivamente"),
+                ("ln -s origem link", "Cria link simbólico"),
+            ],
+            
+            "🔐 PERMISSÕES E PROPRIEDADE": [
+                ("chmod 755 arquivo", "Define permissões (rwxr-xr-x)"),
+                ("chmod +x script.sh", "Torna arquivo executável"),
+                ("chown usuario:grupo arquivo", "Muda proprietário"),
+                ("sudo comando", "Executa como administrador"),
+                ("su - usuario", "Troca de usuário"),
+                ("whoami", "Mostra usuário atual"),
+                ("id", "Mostra ID do usuário e grupos"),
+            ],
+            
+            "📊 INFORMAÇÕES DO SISTEMA": [
+                ("df -h", "Mostra espaço em disco"),
+                ("du -h pasta/", "Mostra tamanho da pasta"),
+                ("free -h", "Mostra uso de memória"),
+                ("top", "Mostra processos em execução"),
+                ("htop", "Monitor de processos interativo"),
+                ("ps aux", "Lista todos os processos"),
+                ("uptime", "Tempo de execução do sistema"),
+                ("uname -a", "Informações do sistema"),
+                ("lscpu", "Informações da CPU"),
+                ("lsblk", "Lista dispositivos de bloco"),
+            ],
+            
+            "🌐 REDE E CONECTIVIDADE": [
+                ("ping google.com", "Testa conectividade"),
+                ("wget https://site.com/arquivo", "Baixa arquivo da internet"),
+                ("curl -O https://site.com/arquivo", "Baixa arquivo com curl"),
+                ("ip addr show", "Mostra interfaces de rede"),
+                ("netstat -tuln", "Mostra portas abertas"),
+                ("ss -tuln", "Mostra conexões de rede (moderno)"),
+                ("nslookup dominio.com", "Consulta DNS"),
+            ],
+            
+            "🔄 PROCESSOS E SERVIÇOS": [
+                ("systemctl status serviço", "Status de um serviço"),
+                ("systemctl start serviço", "Inicia serviço"),
+                ("systemctl stop serviço", "Para serviço"),
+                ("systemctl restart serviço", "Reinicia serviço"),
+                ("systemctl enable serviço", "Habilita na inicialização"),
+                ("kill PID", "Mata processo por ID"),
+                ("killall nome_processo", "Mata processos por nome"),
+                ("jobs", "Lista trabalhos em background"),
+                ("nohup comando &", "Executa comando em background"),
+            ],
+            
+            "📦 GERENCIAMENTO DE PACOTES": [
+                ("sudo apt update", "Atualiza lista de pacotes"),
+                ("sudo apt upgrade", "Atualiza pacotes instalados"),
+                ("sudo apt install pacote", "Instala pacote"),
+                ("sudo apt remove pacote", "Remove pacote"),
+                ("sudo apt search termo", "Busca pacotes"),
+                ("apt list --installed", "Lista pacotes instalados"),
+                ("sudo apt autoremove", "Remove dependências não usadas"),
+                ("sudo apt clean", "Limpa cache de pacotes"),
+            ],
+            
+            "🔧 ARQUIVOS E COMPRESSÃO": [
+                ("tar -czf arquivo.tar.gz pasta/", "Compacta pasta"),
+                ("tar -xzf arquivo.tar.gz", "Descompacta arquivo"),
+                ("zip -r arquivo.zip pasta/", "Cria arquivo ZIP"),
+                ("unzip arquivo.zip", "Extrai arquivo ZIP"),
+                ("gzip arquivo.txt", "Compacta arquivo"),
+                ("gunzip arquivo.txt.gz", "Descompacta arquivo"),
+            ],
+            
+            "🔍 BUSCA E FILTROS": [
+                ("grep 'texto' arquivo.txt", "Busca texto em arquivo"),
+                ("grep -r 'texto' pasta/", "Busca recursiva em pasta"),
+                ("grep -i 'texto' arquivo.txt", "Busca ignorando case"),
+                ("awk '{print $1}' arquivo.txt", "Processa colunas"),
+                ("sed 's/old/new/g' arquivo.txt", "Substitui texto"),
+                ("sort arquivo.txt", "Ordena linhas"),
+                ("uniq arquivo.txt", "Remove linhas duplicadas"),
+                ("wc -l arquivo.txt", "Conta linhas do arquivo"),
+            ],
+        }
+        
+        for categoria, lista_comandos in comandos.items():
+            print(f"\n{categoria}")
+            print("-" * 60)
+            for comando, descricao in lista_comandos:
+                print(f"  {comando:<35} # {descricao}")
+        
+        print("\n" + "="*80)
+        print("💡 DICAS IMPORTANTES:")
+        print("   • Use 'man comando' para ver manual detalhado")
+        print("   • Use 'comando --help' para ver opções disponíveis")
+        print("   • Use Tab para autocompletar comandos e caminhos")
+        print("   • Use Ctrl+C para cancelar comando em execução")
+        print("   • Use Ctrl+Z para pausar processo (retomar com 'fg')")
+        print("   • Use history para ver comandos anteriores")
+        print("="*80)
+        
+        input("\nPressione Enter para voltar ao menu...")
+
     def sair(self,):
         """Sai do programa."""
         print("Saindo...")
@@ -4910,6 +5048,7 @@ ip server:
         ("Desligar", servicos.Desligar),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
         ("verificando status do sistema", servicos.verificando_status_sistema),
+        ("Comandos essenciais do Linux", servicos.comandos_essenciais_linux),
         ("Menu de outras opções", servicos.opcoes_sistema),
         ("Menu Docker", servicos.menu_docker),
     ]
