@@ -1008,13 +1008,39 @@ certificatesResolvers:
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
         
+        # Aguarda o container inicializar
+        time.sleep(10)
+        
+        # Captura a senha do log do container
+        comandos_log = [
+            f"docker logs filebrowser",
+        ]
+        resultados_log = self.executar_comandos(comandos_log, exibir_resultados=False)
+        
+        # Procura pela senha no log
+        senha_padrao = None
+        for linha in resultados_log.get("docker logs filebrowser", []):
+            if "password:" in linha.lower() and ("randomly generated" in linha.lower() or "admin" in linha.lower()):
+                # Extrai a senha da linha (ajustar conforme o formato do log)
+                parts = linha.split()
+                for i, part in enumerate(parts):
+                    if "password:" in part.lower() and i + 1 < len(parts):
+                        senha_padrao = parts[i + 1].strip()
+                        break
+        
         print(f"Possiveis ip's para acesso:")
         comandos = [
             "ip addr show | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1",
         ]
         self.executar_comandos(comandos)
         print(f'Porta para uso local: {portas[0]}')
-        print(f'Usuario e senha padrão: admin, admin')
+        print(f'Usuario padrão: admin')
+        
+        if senha_padrao:
+            print(f'Senha gerada automaticamente: {senha_padrao}')
+        else:
+            print(f'📌 IMPORTANTE: Na primeira execução, você precisará criar um usuário administrador!')
+            print(f'Verificque os logs para a senha: docker logs filebrowser')
         
     def verifica_container_existe(self, container_name, install_function):
         """
