@@ -1009,7 +1009,7 @@ certificatesResolvers:
         resultados = self.executar_comandos(comandos)
         
         # Aguarda o container inicializar
-        time.sleep(10)
+        time.sleep(30)
         
         # Captura a senha do log do container
         comandos_log = [
