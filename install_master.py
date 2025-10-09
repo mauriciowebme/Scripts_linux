@@ -1021,7 +1021,7 @@ certificatesResolvers:
                 f"docker logs filebrowser",
             ]
             resultados_log = self.executar_comandos(comandos_log, exibir_resultados=False)
-            print(resultados_log)
+            print(resultados_log['docker logs filebrowser'])
             
             # Busca nos resultados do comando docker logs
             if "docker logs filebrowser" in resultados_log:
