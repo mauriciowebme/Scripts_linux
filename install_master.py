@@ -1016,29 +1016,37 @@ certificatesResolvers:
         for tentativa in range(12):  # 12 tentativas x 5 segundos = 60 segundos
             time.sleep(5)
             
-            comandos = [
-            f"docker logs filebrowser",
-            ]
-            resultados_log = self.executar_comandos(comandos, exibir_resultados=False)[f"docker logs filebrowser"]
-            print(resultados_log)
-            
-            # Busca nos resultados do comando docker logs
-            for linha in resultados_log:
-                # Busca pela linha que contém a senha gerada
-                if "randomly generated password:" in linha:
-                    # Extrai a senha após "randomly generated password: "
-                    parts = linha.split("randomly generated password:")
-                    if len(parts) > 1:
-                        senha_padrao = parts[1].strip()
-                        break
-                # Também busca por outro formato possível
-                elif "password:" in linha and "admin" in linha:
-                    # Formato alternativo: extrai tudo após "password: "
-                    if "password:" in linha:
-                        parts = linha.split("password:")
+            try:
+                # Executa o comando docker logs diretamente
+                result = subprocess.run(
+                    "docker logs filebrowser".split(),
+                    capture_output=True,
+                    text=True
+                )
+                logs_completos = result.stdout
+                print(f"Logs da tentativa {tentativa + 1}:")
+                print(logs_completos)
+                
+                # Busca pela senha no log completo
+                for linha in logs_completos.splitlines():
+                    # Busca pela linha que contém a senha gerada
+                    if "randomly generated password:" in linha:
+                        # Extrai a senha após "randomly generated password: "
+                        parts = linha.split("randomly generated password:")
                         if len(parts) > 1:
                             senha_padrao = parts[1].strip()
                             break
+                    # Também busca por outro formato possível
+                    elif "password:" in linha and "admin" in linha:
+                        # Formato alternativo: extrai tudo após "password: "
+                        if "password:" in linha:
+                            parts = linha.split("password:")
+                            if len(parts) > 1:
+                                senha_padrao = parts[1].strip()
+                                break
+                
+            except Exception as e:
+                print(f"Erro ao capturar logs: {e}")
             
             # Se encontrou a senha, para o loop
             if senha_padrao:
@@ -5083,7 +5091,7 @@ Execute com: bash /install_principal/install_master.txt
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.225
+Versão 1.226
 ===========================================================================
 ===========================================================================
 ip server:
