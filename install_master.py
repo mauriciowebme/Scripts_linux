@@ -1008,28 +1008,48 @@ certificatesResolvers:
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
         
-        # Aguarda o container inicializar
-        time.sleep(40)
-        
-        # Captura a senha do log do container
-        comandos_log = [
-            f"docker logs filebrowser",
-        ]
-        resultados_log = self.executar_comandos(comandos_log, exibir_resultados=False)
-        
-        # Procura pela senha no log
+        # Aguarda o container inicializar e tenta capturar a senha
+        print("Aguardando container inicializar e gerando senha...")
         senha_padrao = None
         
-        # Busca nos resultados do comando docker logs
-        if "docker logs filebrowser" in resultados_log:
-            for linha in resultados_log["docker logs filebrowser"]:
-                # Busca pela linha que contém "randomly generated password:"
-                if "randomly generated password:" in linha.lower():
-                    # Extrai a senha após "password: "
-                    parts = linha.split("randomly generated password:")
-                    if len(parts) > 1:
-                        senha_padrao = parts[1].strip()
-                        break
+        # Tenta capturar a senha por até 60 segundos
+        for tentativa in range(12):  # 12 tentativas x 5 segundos = 60 segundos
+            time.sleep(5)
+            
+            # Captura a senha do log do container
+            comandos_log = [
+                f"docker logs filebrowser",
+            ]
+            resultados_log = self.executar_comandos(comandos_log, exibir_resultados=False)
+            
+            # Busca nos resultados do comando docker logs
+            if "docker logs filebrowser" in resultados_log:
+                for linha in resultados_log["docker logs filebrowser"]:
+                    # Busca pela linha que contém a senha gerada
+                    if "randomly generated password:" in linha:
+                        # Extrai a senha após "randomly generated password: "
+                        parts = linha.split("randomly generated password:")
+                        if len(parts) > 1:
+                            senha_padrao = parts[1].strip()
+                            break
+                    # Também busca por outro formato possível
+                    elif "password:" in linha and "admin" in linha:
+                        # Formato alternativo: extrai tudo após "password: "
+                        if "password:" in linha:
+                            parts = linha.split("password:")
+                            if len(parts) > 1:
+                                senha_padrao = parts[1].strip()
+                                break
+            
+            # Se encontrou a senha, para o loop
+            if senha_padrao:
+                print(f"Senha capturada na tentativa {tentativa + 1}")
+                break
+            else:
+                print(f"Tentativa {tentativa + 1}/12 - Aguardando senha ser gerada...")
+        
+        if not senha_padrao:
+            print("⚠️ Não foi possível capturar a senha automaticamente")
         
         print(f"Possiveis ip's para acesso:")
         comandos = [
