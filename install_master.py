@@ -1129,20 +1129,19 @@ certificatesResolvers:
         print("\n" + "="*60)
         print("Instalando extensões PHP...")
         print("="*60)
-        comando_extensoes = '''docker exec -u root -it openlitespeed bash -lc '
-set -e
-export DEBIAN_FRONTEND=noninteractive
-ver=$(readlink -f /usr/local/lsws/fcgi-bin/lsphp | sed -E "s#.*lsphp([0-9]{2}).*#\\1#")
-test -z "$ver" && ver=84
-echo "Detectado lsphp${ver}"
-apt-get update
-apt-get install -y lsphp${ver}-pgsql lsphp${ver}-mysql lsphp${ver}-curl lsphp${ver}-gd lsphp${ver}-mbstring lsphp${ver}-xml lsphp${ver}-zip lsphp${ver}-intl
-ln -sf /usr/local/lsws/lsphp${ver}/bin/lsphp /usr/local/lsws/fcgi-bin/lsphp
-/usr/local/lsws/bin/lswsctrl restart
-echo ""
-echo "Extensões instaladas:"
-/usr/local/lsws/lsphp${ver}/bin/php -m | grep -E "pdo_pgsql|pgsql|pdo_mysql|mysqli|curl|gd|mbstring|xml|zip|intl" || true
-' '''
+        comando_extensoes = """docker exec -u root -it openlitespeed bash -lc '
+        set -e
+        export DEBIAN_FRONTEND=noninteractive
+        ver=$(readlink -f /usr/local/lsws/fcgi-bin/lsphp | sed -E \\"s#.*lsphp([0-9]{2}).*#\\\\1#\\"); [ -z \\"$ver\\" ] && ver=84
+        echo \\"Detectado lsphp${ver}\\"
+        apt-get update
+        apt-get install -y lsphp${ver}-pgsql lsphp${ver}-mysql lsphp${ver}-curl lsphp${ver}-gd lsphp${ver}-mbstring lsphp${ver}-xml lsphp${ver}-zip lsphp${ver}-intl
+        ln -sf /usr/local/lsws/lsphp${ver}/bin/lsphp /usr/local/lsws/fcgi-bin/lsphp
+        /usr/local/lsws/bin/lswsctrl restart
+        echo \\"\\"
+        echo \\"Extensões instaladas:\\"
+        /usr/local/lsws/lsphp${ver}/bin/php -m | grep -E \\"pdo_pgsql|pgsql|pdo_mysql|mysqli|curl|gd|mbstring|xml|zip|intl\\" || true
+        '"""
         self.executar_comandos([comando_extensoes], comando_direto=True)
         
         print(" ")
@@ -5086,7 +5085,7 @@ Execute com: bash /install_principal/install_master.txt
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.227
+Versão 1.226
 ===========================================================================
 ===========================================================================
 ip server:
