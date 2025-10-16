@@ -1160,6 +1160,14 @@ echo "Extensões PHP instaladas:"
             text=True
         )
         
+        # Reinicia o container para aplicar as mudanças
+        print("Reiniciando o container OpenLiteSpeed...")
+        subprocess.run(
+            ["docker", "restart", "openlitespeed"],
+            check=True
+        )
+        time.sleep(10)  # Aguarda o container reiniciar completamente
+        
         print(" ")
         print("Configurações de openlitespeed concluídas.")
         print(" ")
