@@ -1137,15 +1137,7 @@ certificatesResolvers:
             test -z "$ver" && ver=84
             echo "Detectado lsphp${ver}"
             apt-get update
-            apt-get install -y \
-                lsphp${ver}-pgsql \
-                lsphp${ver}-mysql \
-                lsphp${ver}-curl \
-                lsphp${ver}-gd \
-                lsphp${ver}-mbstring \
-                lsphp${ver}-xml \
-                lsphp${ver}-zip \
-                lsphp${ver}-intl
+            apt-get install -y lsphp${ver}-pgsql lsphp${ver}-mysql lsphp${ver}-curl lsphp${ver}-gd lsphp${ver}-mbstring lsphp${ver}-xml lsphp${ver}-zip lsphp${ver}-intl
             ln -sf /usr/local/lsws/lsphp${ver}/bin/lsphp /usr/local/lsws/fcgi-bin/lsphp
             /usr/local/lsws/bin/lswsctrl restart
             echo ""
@@ -5096,7 +5088,7 @@ Execute com: bash /install_principal/install_master.txt
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.226
+Versão 1.227
 ===========================================================================
 ===========================================================================
 ip server:
