@@ -1125,6 +1125,40 @@ certificatesResolvers:
         resultados = self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'openlitespeed', numero_rede=0)
         
+        # Instalar extensões PHP
+        print("\n" + "="*60)
+        print("Instalando extensões PHP...")
+        print("="*60)
+        comando_extensoes = """docker exec -u root -it openlitespeed bash -lc '
+            set -e
+            export DEBIAN_FRONTEND=noninteractive
+            # Detecta lsphp (81/82/83/84); fallback = 84
+            ver=$(readlink -f /usr/local/lsws/fcgi-bin/lsphp | sed -E "s#.*lsphp([0-9]{2}).*#\\1#"); [ -z "$ver" ] && ver=84
+            echo "lsphp$ver"
+
+            apt-get update
+            apt-get install -y \
+                lsphp${ver}-pgsql \
+                lsphp${ver}-mysql \
+                lsphp${ver}-curl \
+                lsphp${ver}-gd   \
+                lsphp${ver}-mbstring \
+                lsphp${ver}-xml \
+                lsphp${ver}-zip \
+                lsphp${ver}-intl
+
+            # Garante que o binário padrão aponta pra versão detectada
+            ln -sf /usr/local/lsws/lsphp${ver}/bin/lsphp /usr/local/lsws/fcgi-bin/lsphp
+
+            # Reinicia OLS
+            /usr/local/lsws/bin/lswsctrl restart
+
+            echo ""
+            echo "Extensões carregadas agora:"
+            /usr/local/lsws/lsphp${ver}/bin/php -m | grep -E "pdo_pgsql|pgsql|pdo_mysql|mysqli|curl|gd|mbstring|xml|zip|intl" || true
+            '"""
+        self.executar_comandos([comando_extensoes], comando_direto=True)
+        
         print(" ")
         print("Configurações de openlitespeed concluídas.")
         print(" ")
@@ -1146,6 +1180,10 @@ certificatesResolvers:
         print("Escolha a opção Admin Password.")
         print("Insira a nova senha desejada e salve as alterações.")
         print(" ")
+        
+        
+        
+        
     
     def controle_sites_openlitespeed(self,):
         
