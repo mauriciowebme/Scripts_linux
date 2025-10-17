@@ -1199,10 +1199,6 @@ echo "Extensões PHP instaladas:"
         print("Insira a nova senha desejada e salve as alterações.")
         print(" ")
         
-        
-        
-        
-    
     def controle_sites_openlitespeed(self,):
         
         self.verifica_container_existe('openlitespeed', self.instala_openlitespeed)
