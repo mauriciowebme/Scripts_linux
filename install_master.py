@@ -1127,32 +1127,41 @@ certificatesResolvers:
         
         # Instalar extensões PHP
         print("\n" + "="*60)
-        print("Instalando extensões PHP...")
+        print("Instalando PHP 8.4 e extensões...")
         print("="*60)
         
         script_bash = """set +e
 export DEBIAN_FRONTEND=noninteractive
-ver=$(readlink -f /usr/local/lsws/fcgi-bin/lsphp | sed -E 's#.*lsphp([0-9]{2}).*#\\1#'); [ -z "$ver" ] && ver=84
-echo "Detectado lsphp${ver}"
-echo ""
+
+echo "Instalando PHP 8.4..."
 apt-get update
 
-echo "Instalando extensões disponíveis..."
-for ext in pgsql mysql curl common imap opcache; do
-    echo -n "  - lsphp${ver}-${ext}: "
-    if apt-get install -y lsphp${ver}-${ext} >/dev/null 2>&1; then
+# Instala o PHP 8.4 e extensões
+echo "Instalando lsphp84 e extensões disponíveis..."
+for ext in "" pgsql mysql curl common imap opcache; do
+    pkg="lsphp84${ext:+-}${ext}"
+    echo -n "  - ${pkg}: "
+    if apt-get install -y ${pkg} >/dev/null 2>&1; then
         echo "OK"
     else
         echo "Não disponível"
     fi
 done
 
-ln -sf /usr/local/lsws/lsphp${ver}/bin/lsphp /usr/local/lsws/fcgi-bin/lsphp
+# Define o PHP 8.4 como padrão
+echo ""
+echo "Configurando PHP 8.4 como padrão..."
+ln -sf /usr/local/lsws/lsphp84/bin/lsphp /usr/local/lsws/fcgi-bin/lsphp
+
+# Reinicia o servidor
 /usr/local/lsws/bin/lswsctrl restart >/dev/null 2>&1
 
 echo ""
+echo "Versão PHP instalada:"
+/usr/local/lsws/lsphp84/bin/php -v
+echo ""
 echo "Extensões PHP instaladas:"
-/usr/local/lsws/lsphp${ver}/bin/php -m | sort
+/usr/local/lsws/lsphp84/bin/php -m | sort
 """
         subprocess.run(
             ["docker", "exec", "-u", "root", "-it", "openlitespeed", "bash", "-lc", script_bash],
