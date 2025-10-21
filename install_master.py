@@ -1138,7 +1138,7 @@ apt-get update
 
 # Instala o PHP 8.4 e extensões
 echo "Instalando lsphp84 e extensões disponíveis..."
-for ext in "" pgsql mysql curl common imap opcache; do
+for ext in "" pgsql mysql curl common imap opcache gd; do
     pkg="lsphp84${ext:+-}${ext}"
     echo -n "  - ${pkg}: "
     if apt-get install -y ${pkg} >/dev/null 2>&1; then
