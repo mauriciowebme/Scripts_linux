@@ -831,7 +831,7 @@ class Docker(Executa_comandos):
             --name n8n \
             --restart=unless-stopped \
             --memory=512m \
-            --cpus=2 \
+            --cpus=1 \
             -p 5678:5678 \
             -v {caminho_n8n}:/home/node/.n8n \
             docker.n8n.io/n8nio/n8n
