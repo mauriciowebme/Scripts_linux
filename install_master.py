@@ -3245,28 +3245,25 @@ CMD ["sh", "-c", "\
         # Solicita informações ao usuário
         api_key = input("Digite a chave de autenticação da API (AUTHENTICATION_API_KEY): ")
         
-        # Verifica se vai usar PostgreSQL
-        usar_postgres = input("Deseja usar PostgreSQL para persistência? (s/n): ").lower() == 's'
+        # Garante que o PostgreSQL esteja instalado
+        self.verifica_container_existe('postgres_17', self.instala_postgres)
         
-        if usar_postgres:
-            self.verifica_container_existe('postgres_17', self.instala_postgres)
-            
-            # Verifica se o objeto 'self' possui o atributo 'postgres_password'
-            if not hasattr(self, 'postgres_password') or not self.postgres_password:
-                self.postgres_password = input("Digite a senha root para o PostgreSQL: ")
-            
-            # Tenta criar banco de dados para Evolution API (ignora erro se já existir)
-            print("Verificando/criando banco de dados 'evolution'...")
-            comando_db = f"docker exec -i postgres_17 psql -U postgres -c \"CREATE DATABASE evolution;\""
-            resultado = self.executar_comandos([comando_db], ignorar_erros=True, exibir_resultados=False)
-            
-            # Verifica se o banco foi criado ou já existe
-            if any('already exists' in str(line).lower() for line in resultado.get(comando_db, [])):
-                print("Banco de dados 'evolution' já existe.")
-            else:
-                print("Banco de dados 'evolution' criado com sucesso.")
-            
-            database_uri = f"postgresql://postgres:{self.postgres_password}@postgres_17:5432/evolution?schema=public"
+        # Verifica se o objeto 'self' possui o atributo 'postgres_password'
+        if not hasattr(self, 'postgres_password') or not self.postgres_password:
+            self.postgres_password = input("Digite a senha root para o PostgreSQL: ")
+        
+        # Tenta criar banco de dados para Evolution API (ignora erro se já existir)
+        print("Verificando/criando banco de dados 'evolution'...")
+        comando_db = f"docker exec -i postgres_17 psql -U postgres -c \"CREATE DATABASE evolution;\""
+        resultado = self.executar_comandos([comando_db], ignorar_erros=True, exibir_resultados=False)
+        
+        # Verifica se o banco foi criado ou já existe
+        if any('already exists' in str(line).lower() for line in resultado.get(comando_db, [])):
+            print("Banco de dados 'evolution' já existe.")
+        else:
+            print("Banco de dados 'evolution' criado com sucesso.")
+        
+        database_uri = f"postgresql://postgres:{self.postgres_password}@postgres_17:5432/evolution?schema=public"
         
         portas = self.escolher_porta_disponivel()
         
@@ -3286,18 +3283,10 @@ CMD ["sh", "-c", "\
                         --cpus=1 \
                         -p {portas[0]}:8080 \
                         -e AUTHENTICATION_API_KEY="{api_key}" \
-                        -e TZ="America/Sao_Paulo" """
-        
-        if usar_postgres:
-            container += f"""\
+                        -e TZ="America/Sao_Paulo" \
                         -e DATABASE_ENABLED="true" \
                         -e DATABASE_PROVIDER="postgresql" \
-                        -e DATABASE_CONNECTION_URI="{database_uri}" """
-        else:
-            container += f"""\
-                        -e DATABASE_ENABLED="false" """
-        
-        container += f"""\
+                        -e DATABASE_CONNECTION_URI="{database_uri}" \
                         -e CACHE_REDIS_ENABLED="false" \
                         -e CACHE_LOCAL_ENABLED="true" \
                         -v {caminho_store}:/evolution/store \
@@ -3308,18 +3297,14 @@ CMD ["sh", "-c", "\
         self.remove_container('evolution_api_whatsapp')
         resultados = self.executar_comandos([container])
         
-        if usar_postgres:
-            self.cria_rede_docker(associar_container_nome='evolution_api_whatsapp', numero_rede=1)
+        self.cria_rede_docker(associar_container_nome='evolution_api_whatsapp', numero_rede=1)
         
         print("\n" + "="*60)
         print("Instalação do Evolution API WhatsApp concluída.")
         print("="*60)
         print(f"Porta de acesso: {portas[0]}")
         print(f"API Key: {api_key}")
-        if usar_postgres:
-            print(f"Banco de dados: PostgreSQL (evolution)")
-        else:
-            print(f"Banco de dados: Desabilitado (apenas cache local)")
+        print(f"Banco de dados: PostgreSQL (evolution)")
         print(f"Cache: Local (Redis desabilitado)")
         print(f"Diretório store: {caminho_store}")
         print(f"Diretório instances: {caminho_instances}")
