@@ -2517,7 +2517,7 @@ WantedBy=timers.target
             container_db = f"""docker run -d \
             --name postgres_{versao_} \
             --restart=unless-stopped \
-            --memory=1g \
+            --memory=256m \
             --cpus=1 \
             -p {porta}:5432 \
             -e POSTGRES_PASSWORD={self.postgres_password} \
@@ -2528,7 +2528,7 @@ WantedBy=timers.target
             container_db = f"""docker run -d \
             --name postgres_{versao_} \
             --restart=unless-stopped \
-            --memory=1g \
+            --memory=256m \
             --cpus=1 \
             -p {porta}:5432 \
             -e POSTGRES_PASSWORD={self.postgres_password} \
@@ -2546,7 +2546,7 @@ WantedBy=timers.target
             container_db_slave = f"""docker run -d \
                                 --name postgres_{versao_}_slave \
                                 --restart=unless-stopped \
-                                --memory=1g \
+                                --memory=256m \
                                 --cpus=1 \
                                 -p {porta_slave}:5432 \
                                 -e POSTGRES_PASSWORD={self.postgres_password} \
@@ -3242,6 +3242,8 @@ CMD ["sh", "-c", "\
     def instala_evolution_api_whatsapp(self):
         print("Iniciando instalação Evolution API WhatsApp:")
         api_key = input("Digite a chave de autenticação da API (AUTHENTICATION_API_KEY): ")
+        DB_URL = input("Digite a URL de conexão do banco de dados Ex: usuario:senha@host:5432 : ")
+        DB_URL = "postgresql://" + DB_URL + "/evolution?schema=public"
         
         portas = self.escolher_porta_disponivel()
         
@@ -3260,7 +3262,8 @@ CMD ["sh", "-c", "\
                         --cpus=1 \
                         -p {portas[0]}:8080 \
                         -e AUTHENTICATION_API_KEY="{api_key}" \
-                        -e DATABASE_ENABLED=false \
+                        -e DATABASE_ENABLED=true \
+                        -e DATABASE_CONNECTION_URI="{DB_URL}" \
                         -v {caminho_store}:/evolution/store \
                         -v {caminho_instances}:/evolution/instances \
                         atendai/evolution-api
