@@ -3238,6 +3238,48 @@ CMD ["sh", "-c", "\
         
         print("\n⚠️ ATENÇÃO:")
         print("- Para modelos maiores (como llama3), verifique se seu hardware tem recursos suficientes")
+    
+    def instala_evolution_api(self):
+        print("Iniciando instalação Evolution API:")
+        api_key = input("Digite a chave de autenticação da API (AUTHENTICATION_API_KEY): ")
+        
+        portas = self.escolher_porta_disponivel()
+        
+        caminho_evolution = f'{self.install_principal}/evolution-api'
+        caminho_store = f'{caminho_evolution}/store'
+        caminho_instances = f'{caminho_evolution}/instances'
+        
+        os.makedirs(caminho_store, exist_ok=True)
+        os.makedirs(caminho_instances, exist_ok=True)
+        os.chmod(caminho_evolution, 0o777)
+        
+        container = f"""docker run -d \
+                        --name evolution-api \
+                        --restart=unless-stopped \
+                        --memory=512m \
+                        --cpus=1 \
+                        -p {portas[0]}:8080 \
+                        -e AUTHENTICATION_API_KEY="{api_key}" \
+                        -v {caminho_store}:/evolution/store \
+                        -v {caminho_instances}:/evolution/instances \
+                        atendai/evolution-api
+                    """
+        
+        comandos = [container]
+        self.remove_container('evolution-api')
+        resultados = self.executar_comandos(comandos)
+        
+        print("\nInstalação do Evolution API concluída.")
+        print(f"Porta de acesso: {portas[0]}")
+        print(f"API Key configurada: {api_key}")
+        print(f"Diretório de dados: {caminho_evolution}")
+        print("\nIPs possíveis para acesso:")
+        comandos = [
+            f"hostname -I | tr ' ' '\n'",
+        ]
+        self.executar_comandos(comandos, exibir_executando=False)
+        print(f"\nAcesse: http://<seu_ip>:{portas[0]}")
+        print("")
             
     def instala_redis_docker(self):
         print("Iniciando instalação redis:")
@@ -4918,6 +4960,7 @@ class Sistema(Docker, Executa_comandos):
             ("Instala vscode_oficial", self.instala_vscode_oficial),
             ("Instala Open WebUI", self.instala_open_webui),
             ("Instala Redis Docker", self.instala_redis_docker),
+            ("Instala Evolution API WhatsApp", self.instala_evolution_api),
             ("Instala selenium-firefox", self.instala_selenium_firefox),
             ("Instala rclone", self.rclone),
         ]
