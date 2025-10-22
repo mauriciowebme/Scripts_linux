@@ -3241,51 +3241,96 @@ CMD ["sh", "-c", "\
     
     def instala_evolution_api_whatsapp(self):
         print("Iniciando instalação Evolution API WhatsApp:")
+        
+        # Solicita informações ao usuário
         api_key = input("Digite a chave de autenticação da API (AUTHENTICATION_API_KEY): ")
+        
+        # Verifica se vai usar PostgreSQL
+        usar_postgres = input("Deseja usar PostgreSQL para persistência? (s/n): ").lower() == 's'
+        
+        if usar_postgres:
+            self.verifica_container_existe('postgres_17', self.instala_postgres)
+            
+            # Verifica se o objeto 'self' possui o atributo 'postgres_password'
+            if not hasattr(self, 'postgres_password') or not self.postgres_password:
+                self.postgres_password = input("Digite a senha root para o PostgreSQL: ")
+            
+            # Tenta criar banco de dados para Evolution API (ignora erro se já existir)
+            print("Verificando/criando banco de dados 'evolution'...")
+            comando_db = f"docker exec -i postgres_17 psql -U postgres -c \"CREATE DATABASE evolution;\""
+            resultado = self.executar_comandos([comando_db], ignorar_erros=True, exibir_resultados=False)
+            
+            # Verifica se o banco foi criado ou já existe
+            if any('already exists' in str(line).lower() for line in resultado.get(comando_db, [])):
+                print("Banco de dados 'evolution' já existe.")
+            else:
+                print("Banco de dados 'evolution' criado com sucesso.")
+            
+            database_uri = f"postgresql://postgres:{self.postgres_password}@postgres_17:5432/evolution?schema=public"
         
         portas = self.escolher_porta_disponivel()
         
         caminho_evolution = f'{self.install_principal}/evolution_api_whatsapp'
+        caminho_store = f'{caminho_evolution}/store'
         caminho_instances = f'{caminho_evolution}/instances'
         
+        os.makedirs(caminho_store, exist_ok=True)
         os.makedirs(caminho_instances, exist_ok=True)
         os.chmod(caminho_evolution, 0o777)
         
-        # Criar arquivo .env
-        env_file_path = f'{caminho_evolution}/.env'
-        if not os.path.exists(env_file_path):
-            with open(env_file_path, 'w') as env_file:
-                env_file.write(f"AUTHENTICATION_API_KEY={api_key}\n")
-            print(f"Arquivo .env criado em: {env_file_path}")
-        else:
-            print(f"Arquivo .env já existe em: {env_file_path}")
-        
+        # Construir o comando docker com todas as variáveis de ambiente
         container = f"""docker run -d \
                         --name evolution_api_whatsapp \
                         --restart=unless-stopped \
                         --memory=256m \
                         --cpus=1 \
                         -p {portas[0]}:8080 \
-                        --env-file {env_file_path} \
+                        -e AUTHENTICATION_API_KEY="{api_key}" \
+                        -e TZ="America/Sao_Paulo" """
+        
+        if usar_postgres:
+            container += f"""\
+                        -e DATABASE_ENABLED="true" \
+                        -e DATABASE_PROVIDER="postgresql" \
+                        -e DATABASE_CONNECTION_URI="{database_uri}" """
+        else:
+            container += f"""\
+                        -e DATABASE_ENABLED="false" """
+        
+        container += f"""\
+                        -e CACHE_REDIS_ENABLED="false" \
+                        -e CACHE_LOCAL_ENABLED="true" \
+                        -v {caminho_store}:/evolution/store \
                         -v {caminho_instances}:/evolution/instances \
-                        atendai/evolution-api:v2.1.1
+                        atendai/evolution-api
                     """
         
         self.remove_container('evolution_api_whatsapp')
         resultados = self.executar_comandos([container])
         
-        print("\nInstalação do Evolution API WhatsApp concluída.")
+        if usar_postgres:
+            self.cria_rede_docker(associar_container_nome='evolution_api_whatsapp', numero_rede=1)
+        
+        print("\n" + "="*60)
+        print("Instalação do Evolution API WhatsApp concluída.")
+        print("="*60)
         print(f"Porta de acesso: {portas[0]}")
-        print(f"API Key configurada: {api_key}")
-        print(f"Arquivo .env: {env_file_path}")
-        print(f"Diretório de dados: {caminho_evolution}")
+        print(f"API Key: {api_key}")
+        print(f"Server URL: {server_url}")
+        if usar_postgres:
+            print(f"Banco de dados: PostgreSQL (evolution)")
+        else:
+            print(f"Banco de dados: Desabilitado (apenas cache local)")
+        print(f"Cache: Local (Redis desabilitado)")
+        print(f"Diretório store: {caminho_store}")
+        print(f"Diretório instances: {caminho_instances}")
         print("\nIPs possíveis para acesso:")
         comandos = [
             f"hostname -I | tr ' ' '\n'",
         ]
         self.executar_comandos(comandos, exibir_executando=False)
         print(f"\nAcesse: http://<seu_ip>:{portas[0]}")
-        print("")
+        print("="*60)
             
     def instala_redis_docker(self):
         print("Iniciando instalação redis:")
