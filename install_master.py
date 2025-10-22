@@ -3260,6 +3260,7 @@ CMD ["sh", "-c", "\
                         --cpus=1 \
                         -p {portas[0]}:8080 \
                         -e AUTHENTICATION_API_KEY="{api_key}" \
+                        -e DATABASE_ENABLED=false \
                         -v {caminho_store}:/evolution/store \
                         -v {caminho_instances}:/evolution/instances \
                         atendai/evolution-api
