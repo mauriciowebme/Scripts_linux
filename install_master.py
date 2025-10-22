@@ -2489,15 +2489,12 @@ WantedBy=timers.target
         if selecao == "1" or selecao == "15":
             versao = '15'
             porta = '5433'
-            porta_slave = '5435'
         elif selecao == "2" or selecao == "16":
             versao = '16'
             porta = '5434'
-            porta_slave = '5436'
         elif selecao == "3" or selecao == "17":
             versao = '17'
             porta = '5435'
-            porta_slave = '5437'
         else:
             print("Seleção incorreta.")
             return
@@ -2507,25 +2504,9 @@ WantedBy=timers.target
 
         versao_ = versao.replace('.', '_')
 
-        replicacao = input('Habilitar a replicação de dados? (s/n): ')
-        if replicacao.lower() == 's':
-            local_slave = input(f'Informe o local para armazenar o Postgres SLAVE (/mnt/dados resultado: /mnt/dados/postgres/{versao_}_slave): ')
-
         print('Instalando o Postgres.\n')
 
-        if replicacao.lower() == 's':
-            container_db = f"""docker run -d \
-            --name postgres_{versao_} \
-            --restart=unless-stopped \
-            --memory=256m \
-            --cpus=1 \
-            -p {porta}:5432 \
-            -e POSTGRES_PASSWORD={self.postgres_password} \
-            -v {self.bds}/postgres/{versao_}:/var/lib/postgresql/data \
-            -v {local_slave}/postgres/{versao_}_slave:/mnt/_slave \
-            postgres:{versao}"""
-        else:
-            container_db = f"""docker run -d \
+        container_db = f"""docker run -d \
             --name postgres_{versao_} \
             --restart=unless-stopped \
             --memory=256m \
@@ -2541,33 +2522,6 @@ WantedBy=timers.target
         self.cria_rede_docker(associar_container_nome=f'postgres_{versao_}', numero_rede=1)
 
         time.sleep(30)
-
-        if replicacao.lower() == 's':
-            container_db_slave = f"""docker run -d \
-                                --name postgres_{versao_}_slave \
-                                --restart=unless-stopped \
-                                --memory=256m \
-                                --cpus=1 \
-                                -p {porta_slave}:5432 \
-                                -e POSTGRES_PASSWORD={self.postgres_password} \
-                                -v {local_slave}/postgres/{versao_}_slave:/var/lib/postgresql/data \
-                                postgres:{versao}"""
-
-            comandos = [container_db_slave]
-            self.remove_container(f'postgres_{versao_}_slave')
-            self.executar_comandos(comandos)
-            self.cria_rede_docker(associar_container_nome=f'postgres_{versao_}_slave', numero_rede=1)
-            
-            time.sleep(30)
-
-            master_container = f"postgres_{versao_}"
-            slave_container = f"postgres_{versao_}_slave"
-
-            replication_user = 'replication_user'
-
-            replication_password = self.generate_password()
-
-            self.configure_postgres_replication(master_container, slave_container, replication_user, replication_password)
 
         print(f'Instalação do Postgres completa.\n')
         print(f'Acesso:')
@@ -2628,11 +2582,9 @@ WantedBy=timers.target
         if selecao == "1" or selecao == "5.7":
             versao = '5.7'
             porta = '3316'
-            porta_slave = '3318'
         elif selecao == "2" or selecao == "8.0":
             versao = '8.0'
             porta = '3317'
-            porta_slave = '3319'
         else:
             print("Seleção incorreta.")
             return
@@ -2660,11 +2612,6 @@ WantedBy=timers.target
             # Verifica se o objeto 'self' possui o atributo 'root_password'.
             if not hasattr(self, 'root_password') and novo_db:
                 self.mysql_root_password = input("Digite a senha root para o MySQL: ")
-        
-        if novo_db:
-            replicacao = input('Habilitar a replicação de dados? (s/n): ')
-            if replicacao.lower() == 's':
-                local_slave = input(f'Informe o local para armazenzar o Mysql SLAVE (/mnt/dados resultado: /mnt/dados/mysql/{versao_}_slave): ')
         
         print('Instalando o mysql.\n')
         # self.gerenciar_permissoes_pasta(f"{self.install_principal}/mysql/{versao_}", permissao="777")
@@ -2726,68 +2673,7 @@ WantedBy=timers.target
         self.executar_comandos(comandos)
         self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}', numero_rede=1)
         
-        if novo_db:
-            # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
-            # time.sleep(30)
-            # comando para limitar as permissões do root
-            # comandos = [
-            #     # f"docker exec -i mysql_{versao_} mysql -uroot -p'{self.mysql_root_password}' -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
-            #     f"docker exec -i mysql_{versao_} mysql --user=root --password=\"{self.mysql_root_password}\" -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
-            # ]
-            # self.executar_comandos(comandos)
-            
-            if replicacao.lower() == 's':
-                # time.sleep(10)
-                # self.gerenciar_permissoes_pasta(f"{local_slave}/mysql/{versao_}_slave", permissao="777")
-                container_db = f"""docker run -d \
-                                --name mysql_{versao_}_slave \
-                                --restart=unless-stopped \
-                                -p {porta_slave}:3306 \
-                                -e MYSQL_DATABASE=db_testes \
-                                -e MYSQL_USER=testes \
-                                -e MYSQL_PASSWORD=testes \
-                                -e MYSQL_ROOT_PASSWORD={self.mysql_root_password} \
-                                -v {local_slave}/mysql/{versao_}_slave:/var/lib/mysql \
-                                mysql:{versao} \
-                                --server-id=2 \
-                                --log-bin=mysql-bin \
-                                --binlog-format=row \
-                                --default-authentication-plugin=mysql_native_password
-                            """
-                comandos = [
-                    container_db,
-                ]
-                self.remove_container(f'mysql_{versao_}_slave')
-                resultados = self.executar_comandos(comandos)
-                self.cria_rede_docker(associar_container_nome=f'mysql_{versao_}_slave', numero_rede=1)
-                
-                # Remove o usuário root com host '%', mantendo apenas o usuário root com host 'localhost'.
-                time.sleep(30)
-                comandos = [
-                    f"docker exec -i mysql_{versao_}_slave mysql -uroot -p'{self.mysql_root_password}' -e \"UPDATE mysql.user SET Host='172.%' WHERE User='root' AND Host='%'; FLUSH PRIVILEGES;\""
-                ]
-                self.executar_comandos(comandos)
-                
-                master_container = f"mysql_{versao_}"
-                master_host = f'localhost'
-                master_user = 'root'
-                master_password = self.mysql_root_password
-                master_porta = f'{porta}'
-                
-                slave_container = f"mysql_{versao_}_slave"
-                slave_host = f'localhost'
-                slave_user = 'root'
-                slave_password = self.mysql_root_password
-                slave_porta = f'{porta_slave}'
-                
-                replication_user = 'replication_user'
-                replication_password = self.generate_password()
-                
-                time.sleep(10)
-                self.configure_mysql_replication(master_container, master_host, master_user, master_password, master_porta,
-                                                slave_container, slave_host, slave_user, slave_password, slave_porta,
-                                                replication_user, replication_password)
-        else:
+        if not novo_db:
             del self.mysql_root_password
         
         time.sleep(10)
