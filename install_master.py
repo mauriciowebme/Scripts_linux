@@ -3242,18 +3242,23 @@ CMD ["sh", "-c", "\
     def instala_evolution_api_whatsapp(self):
         print("Iniciando instalação Evolution API WhatsApp:")
         api_key = input("Digite a chave de autenticação da API (AUTHENTICATION_API_KEY): ")
-        DB_URL = input("Digite a URL de conexão do banco de dados Ex: usuario:senha@host:5432 : ")
-        DB_URL = "postgresql://" + DB_URL + "/evolution?schema=public"
         
         portas = self.escolher_porta_disponivel()
         
         caminho_evolution = f'{self.install_principal}/evolution_api_whatsapp'
-        caminho_store = f'{caminho_evolution}/store'
         caminho_instances = f'{caminho_evolution}/instances'
         
-        os.makedirs(caminho_store, exist_ok=True)
         os.makedirs(caminho_instances, exist_ok=True)
         os.chmod(caminho_evolution, 0o777)
+        
+        # Criar arquivo .env
+        env_file_path = f'{caminho_evolution}/.env'
+        if not os.path.exists(env_file_path):
+            with open(env_file_path, 'w') as env_file:
+                env_file.write(f"AUTHENTICATION_API_KEY={api_key}\n")
+            print(f"Arquivo .env criado em: {env_file_path}")
+        else:
+            print(f"Arquivo .env já existe em: {env_file_path}")
         
         container = f"""docker run -d \
                         --name evolution_api_whatsapp \
@@ -3261,20 +3266,18 @@ CMD ["sh", "-c", "\
                         --memory=256m \
                         --cpus=1 \
                         -p {portas[0]}:8080 \
-                        -e AUTHENTICATION_API_KEY="{api_key}" \
-                        -e DATABASE_ENABLED=true \
-                        -e DATABASE_CONNECTION_URI="{DB_URL}" \
-                        -v {caminho_store}:/evolution/store \
+                        --env-file {env_file_path} \
                         -v {caminho_instances}:/evolution/instances \
-                        atendai/evolution-api
+                        atendai/evolution-api:v2.1.1
                     """
         
         self.remove_container('evolution_api_whatsapp')
         resultados = self.executar_comandos([container])
         
-        print("\nInstalação do Evolution API concluída.")
+        print("\nInstalação do Evolution API WhatsApp concluída.")
         print(f"Porta de acesso: {portas[0]}")
         print(f"API Key configurada: {api_key}")
+        print(f"Arquivo .env: {env_file_path}")
         print(f"Diretório de dados: {caminho_evolution}")
         print("\nIPs possíveis para acesso:")
         comandos = [
