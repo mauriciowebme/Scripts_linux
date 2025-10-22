@@ -3316,7 +3316,6 @@ CMD ["sh", "-c", "\
         print("="*60)
         print(f"Porta de acesso: {portas[0]}")
         print(f"API Key: {api_key}")
-        print(f"Server URL: {server_url}")
         if usar_postgres:
             print(f"Banco de dados: PostgreSQL (evolution)")
         else:
