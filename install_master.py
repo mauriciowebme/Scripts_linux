@@ -819,6 +819,31 @@ class Docker(Executa_comandos):
             }
             """))
     
+    def iniciar_n8n(self):
+        print("Iniciando instalação do n8n (workflow automation).")
+        
+        caminho_n8n = f'{self.install_principal}/n8n'
+        os.makedirs(caminho_n8n, exist_ok=True)
+        os.chmod(caminho_n8n, 0o777)
+        
+        comandos = [
+            f"""docker run -d \
+            --name n8n \
+            --restart=unless-stopped \
+            --memory=512m \
+            --cpus=2 \
+            -p 5678:5678 \
+            -v {caminho_n8n}:/home/node/.n8n \
+            docker.n8n.io/n8nio/n8n
+            """,
+        ]
+        self.remove_container('n8n')
+        self.executar_comandos(comandos)
+        # self.cria_rede_docker(associar_container_nome='n8n', numero_rede=1)
+        
+        print('Acesse o n8n em http://<seu_ip>:5678')
+        print('Na primeira execução você precisará criar um usuário e senha.')
+    
     def cria_dynamic_conf_traefik(self, email=None):
         dynamic_conf = f'{self.install_principal}/traefik/dynamic_conf.yml'
         if not os.path.exists(f'{self.install_principal}/traefik/'):
@@ -4880,6 +4905,7 @@ class Sistema(Docker, Executa_comandos):
             ("Instala wordpress puro", self.instala_wordpress_puro),
             ("Instala app nodejs", self.instala_app_nodejs),
             ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
+            ("Instala n8n (workflow automation)", self.iniciar_n8n),
             ("Start sync pastas com RSYNC", self.start_sync_pastas),
             ("Instala windows KVM docker", self.instala_windows_KVM_docker),
             ("Instala Sistema CISO docker", self.instala_sistema_CISO_docker),
