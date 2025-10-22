@@ -3245,7 +3245,7 @@ CMD ["sh", "-c", "\
         
         portas = self.escolher_porta_disponivel()
         
-        caminho_evolution = f'{self.install_principal}/evolution-api'
+        caminho_evolution = f'{self.install_principal}/evolution_api_whatsapp'
         caminho_store = f'{caminho_evolution}/store'
         caminho_instances = f'{caminho_evolution}/instances'
         
@@ -3254,7 +3254,7 @@ CMD ["sh", "-c", "\
         os.chmod(caminho_evolution, 0o777)
         
         container = f"""docker run -d \
-                        --name evolution-api \
+                        --name evolution_api_whatsapp \
                         --restart=unless-stopped \
                         --memory=256m \
                         --cpus=1 \
@@ -3265,9 +3265,8 @@ CMD ["sh", "-c", "\
                         atendai/evolution-api
                     """
         
-        comandos = [container]
-        self.remove_container('evolution-api')
-        resultados = self.executar_comandos(comandos)
+        self.remove_container('evolution_api_whatsapp')
+        resultados = self.executar_comandos([container])
         
         print("\nInstalação do Evolution API concluída.")
         print(f"Porta de acesso: {portas[0]}")
