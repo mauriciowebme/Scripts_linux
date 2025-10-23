@@ -3043,9 +3043,6 @@ CMD ["sh", "-c", "\
         caminho_ollama = f"{self.install_principal}/IA/ollama"
         caminho_open_webui = f"{self.install_principal}/IA/open_webui"
         
-        # modelos pre-definidos
-        modelos = ['gemma3:4b']
-        
         comandos = [
             "docker network create ollama-network",
             f"""docker run -d \
@@ -3058,9 +3055,6 @@ CMD ["sh", "-c", "\
             -v {caminho_ollama}:/root \
             ollama/ollama""",
         ]
-        
-        for modelo in modelos:
-            comandos.append(f"""docker exec -it ollama bash -c "ollama pull {modelo}" """)
         
         comandos += [
             """docker exec -it ollama bash -c "ollama list" """,
@@ -3094,7 +3088,7 @@ CMD ["sh", "-c", "\
         
         print("\n💡 COMANDOS ÚTEIS:")
         print("- Ver modelos instalados: docker exec ollama bash -c \"ollama list\"")
-        print("- Instalar novo modelo:   docker exec ollama bash -c \"ollama pull nome-modelo\"")
+        print("- Instalar novo modelo:   docker exec ollama bash -c \"ollama pull gemma3:4b\"")
         print("- Reiniciar serviço:      docker restart ollama open-webui")
         
         print("\n⚠️ ATENÇÃO:")
