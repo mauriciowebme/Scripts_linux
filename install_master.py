@@ -1382,6 +1382,16 @@ listener Default {{
                 print(f"Listener para '{nome_dominio_}' já existe.")
         
         self.gerenciar_usuarios_sftp(manual=False, simples_usuario=nome_dominio_, simples_senha=senha_ftp, simples_base_diretorio=public_html)
+        
+        # Ajusta permissões para o usuário nobody (usuário do OpenLiteSpeed)
+        print(f"Ajustando permissões do site '{nome_dominio_}'...")
+        comandos_permissoes = [
+            f"docker exec openlitespeed chown -R nobody:nogroup /var/www/vhosts/{nome_dominio_}",
+            f"docker exec openlitespeed chmod -R 755 /var/www/vhosts/{nome_dominio_}",
+            f"docker exec openlitespeed chmod -R 775 /var/www/vhosts/{nome_dominio_}/public_html",
+        ]
+        self.executar_comandos(comandos_permissoes)
+        
         self.executar_comandos(['docker restart openlitespeed'], comando_direto=True)
         
         print(f"Configuração do site '{nome_dominio_}' criada com sucesso!")
