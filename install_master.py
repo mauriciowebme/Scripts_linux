@@ -1169,8 +1169,133 @@ echo "Extensões PHP instaladas:"
             text=True
         )
         
+        # Cria arquivo de configuração personalizado do PHP
+        print("\n" + "="*60)
+        print("Criando arquivo de configuração personalizado do PHP...")
+        print("="*60)
+        
+        php_custom_ini_path = f"{conf_completa}/lsphp84/etc/php/8.4/mods-available/99-custom.ini"
+        os.makedirs(os.path.dirname(php_custom_ini_path), exist_ok=True)
+        
+        php_custom_config = """;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Configurações Personalizadas PHP 8.4 - OpenLiteSpeed
+; Arquivo: 99-custom.ini
+; 
+; Este arquivo contém APENAS configurações customizadas que sobrescrevem o php.ini padrão
+; Edite conforme suas necessidades específicas
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[PHP]
+; ============================================================================
+; TIMEOUTS E LIMITES DE RECURSOS
+; ============================================================================
+max_execution_time = 300
+max_input_time = 300
+default_socket_timeout = 300
+memory_limit = 1024M
+max_input_vars = 5000
+
+; ============================================================================
+; UPLOAD DE ARQUIVOS
+; ============================================================================
+upload_max_filesize = 1024M
+post_max_size = 1024M
+max_file_uploads = 20
+
+; ============================================================================
+; TIMEZONE
+; ============================================================================
+date.timezone = America/Sao_Paulo
+
+; ============================================================================
+; ERROS E LOGS (PRODUÇÃO)
+; ============================================================================
+display_errors = Off
+display_startup_errors = Off
+log_errors = On
+error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT
+
+; ============================================================================
+; SEGURANÇA - Funções desabilitadas
+; Remova funções desta lista se precisar usá-las
+; ============================================================================
+disable_functions = exec,passthru,shell_exec,system,proc_open,popen
+
+; ============================================================================
+; OPCACHE - OTIMIZAÇÕES DE PERFORMANCE
+; ============================================================================
+[opcache]
+opcache.enable = 1
+opcache.enable_cli = 0
+opcache.memory_consumption = 256
+opcache.interned_strings_buffer = 16
+opcache.max_accelerated_files = 20000
+opcache.validate_timestamps = 1
+opcache.revalidate_freq = 2
+opcache.save_comments = 1
+opcache.enable_file_override = 1
+opcache.fast_shutdown = 1
+
+; ============================================================================
+; SESSION - SEGURANÇA
+; ============================================================================
+[Session]
+session.cookie_httponly = 1
+session.cookie_samesite = Lax
+session.use_strict_mode = 1
+session.gc_maxlifetime = 3600
+
+; ============================================================================
+; MYSQLI - Configurações padrão
+; ============================================================================
+[MySQLi]
+mysqli.default_socket = /var/run/mysqld/mysqld.sock
+
+; ============================================================================
+; POSTGRESQL
+; ============================================================================
+[PostgreSQL]
+pgsql.allow_persistent = On
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; INSTRUÇÕES DE USO:
+;
+; 📝 Para editar: nano /install_principal/openlitespeed/conf_completa/lsphp84/etc/php/8.4/mods-available/99-custom.ini
+; 🔄 Após editar: docker exec openlitespeed /usr/local/lsws/bin/lswsctrl restart
+; 📊 Ver configurações: docker exec openlitespeed /usr/local/lsws/lsphp84/bin/php -i | grep -i "nome_da_config"
+;
+; EXEMPLOS DE CUSTOMIZAÇÃO:
+; - Para debug: display_errors = On
+; - Mais memória: memory_limit = 2048M
+; - Uploads maiores: upload_max_filesize = 2048M
+; - Timeout maior: max_execution_time = 600
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+"""
+        
+        with open(php_custom_ini_path, 'w') as f:
+            f.write(php_custom_config)
+        
+        os.chmod(php_custom_ini_path, 0o644)
+        
+        print(f"✔ Arquivo de configuração criado: {php_custom_ini_path}")
+        print("\nVocê pode editar este arquivo para ajustar as configurações do PHP.")
+        
+        # Ativa o arquivo de configuração dentro do container
+        script_ativar_ini = f"""
+ln -sf /usr/local/lsws/lsphp84/etc/php/8.4/mods-available/99-custom.ini /usr/local/lsws/lsphp84/etc/php/8.4/cli/conf.d/99-custom.ini
+ln -sf /usr/local/lsws/lsphp84/etc/php/8.4/mods-available/99-custom.ini /usr/local/lsws/lsphp84/etc/php/8.4/litespeed/conf.d/99-custom.ini
+/usr/local/lsws/bin/lswsctrl restart
+"""
+        
+        print("Ativando configurações personalizadas...")
+        subprocess.run(
+            ["docker", "exec", "-u", "root", "openlitespeed", "bash", "-c", script_ativar_ini],
+            check=True,
+            text=True
+        )
+        
         # Reinicia o container para aplicar as mudanças
-        print("Reiniciando o container OpenLiteSpeed...")
+        print("\nReiniciando o container OpenLiteSpeed...")
         subprocess.run(
             ["docker", "restart", "openlitespeed"],
             check=True
