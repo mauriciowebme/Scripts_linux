@@ -1271,31 +1271,15 @@ pgsql.allow_persistent = On
 ; - Timeout maior: max_execution_time = 600
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 """
-        
         with open(php_custom_ini_path, 'w') as f:
             f.write(php_custom_config)
         
         os.chmod(php_custom_ini_path, 0o644)
         
         print(f"✔ Arquivo de configuração criado: {php_custom_ini_path}")
-        print("\nVocê pode editar este arquivo para ajustar as configurações do PHP.")
-        
-        # Ativa o arquivo de configuração dentro do container
-        script_ativar_ini = f"""
-ln -sf /usr/local/lsws/lsphp84/etc/php/8.4/mods-available/99-custom.ini /usr/local/lsws/lsphp84/etc/php/8.4/cli/conf.d/99-custom.ini
-ln -sf /usr/local/lsws/lsphp84/etc/php/8.4/mods-available/99-custom.ini /usr/local/lsws/lsphp84/etc/php/8.4/litespeed/conf.d/99-custom.ini
-/usr/local/lsws/bin/lswsctrl restart
-"""
-        
-        print("Ativando configurações personalizadas...")
-        subprocess.run(
-            ["docker", "exec", "-u", "root", "openlitespeed", "bash", "-c", script_ativar_ini],
-            check=True,
-            text=True
-        )
         
         # Reinicia o container para aplicar as mudanças
-        print("\nReiniciando o container OpenLiteSpeed...")
+        print("Reiniciando o container OpenLiteSpeed...")
         subprocess.run(
             ["docker", "restart", "openlitespeed"],
             check=True
