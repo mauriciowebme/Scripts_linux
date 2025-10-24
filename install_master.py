@@ -943,7 +943,7 @@ class Docker(Executa_comandos):
         -v /var/run/docker.sock:/var/run/docker.sock:ro \
         -v {le_dir}:/letsencrypt \
         -v {dyn_dir}:/etc/traefik/dynamic \
-        traefik:v2.11 \
+        traefik:latest \
         --log.level=INFO \
         --api.insecure=true \
         --providers.docker=true \
