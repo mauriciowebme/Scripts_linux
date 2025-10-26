@@ -3661,68 +3661,7 @@ CMD ["sh", "-c", "\
     def instala_evolution_api_whatsapp(self):
         print("Iniciando instalação Evolution API WhatsApp:")
         
-        # Gerar chave de autenticação forte automaticamente
-        api_key = secrets.token_urlsafe(32)
-        print("\n=== CHAVE DE AUTENTICAÇÃO GERADA ===")
-        print(f"AUTHENTICATION_API_KEY: {api_key}")
-        print("⚠️  Guarde esta chave em local seguro!")
-        print("Ela será salva automaticamente no arquivo .env")
-        
-        # Configurar versão do WhatsApp Web
-        print("\n=== CONFIGURAÇÃO DA VERSÃO DO WHATSAPP WEB ===")
-        print("A versão do WhatsApp Web determina qual cliente será usado pela API.")
-        print("Versões mais recentes podem ter mais recursos, mas versões estáveis são mais confiáveis.")
-        yarn_version = input("Digite a versão do WhatsApp Web (padrão: 1.22.22): ").strip() or "1.22.22"
-        
-        # Configurar versão do telefone (para evitar banimento)
-        print("\n=== CONFIGURAÇÃO DA VERSÃO DO WHATSAPP WEB ===")
-        print("Esta configuração simula uma versão específica do WhatsApp no telefone.")
-        print("Ajuda a evitar detecção e possível banimento pela API oficial do WhatsApp.")
-        phone_version = input("Digite a versão do telefone (padrão: 2.3000.1028956288): ").strip() or "2.3000.1028956288"
-        
-        # Configurar URL do servidor
-        print("\n=== CONFIGURAÇÃO DA URL DO SERVIDOR ===")
-        print("Esta URL é usada para webhooks e integrações externas.")
-        print("Exemplo: http://seu-ip:porta ou https://seu-dominio.com")
-        server_url = input("Digite a URL do servidor (opcional, pressione Enter para pular): ").strip()
-        
-        # Configuração do banco de dados PostgreSQL
-        print("\n=== CONFIGURAÇÃO DO BANCO DE DADOS POSTGRESQL ===")
-        print("Informe os dados de conexão com o PostgreSQL:")
-        
-        host_db = input("Host do PostgreSQL (ex: postgres_17, localhost, IP): ").strip()
-        porta_db = input("Porta do PostgreSQL (padrão: 5432): ").strip() or "5432"
-        nome_banco = input("Nome do banco de dados: ").strip()
-        usuario_db = input("Nome do usuário do banco: ").strip()
-        senha_db = input("Senha do usuário: ").strip()
-        
-        # Validação dos campos obrigatórios
-        if not host_db or not nome_banco or not usuario_db or not senha_db:
-            print("ERRO: Todos os campos são obrigatórios!")
-            return
-        
-        # Validação de caracteres especiais que podem causar problemas na URI
-        
-        # Caracteres que precisam ser escapados na URI
-        caracteres_problematicos = r'[@:/\?#\[\]!$&\'()*+,;=]'
-        
-        if re.search(caracteres_problematicos, usuario_db):
-            print("⚠️  AVISO: O nome de usuário contém caracteres especiais que serão codificados na URI.")
-            usuario_db = quote_plus(usuario_db)
-        
-        if re.search(caracteres_problematicos, senha_db):
-            print("⚠️  AVISO: A senha contém caracteres especiais que serão codificados na URI.")
-            senha_db = quote_plus(senha_db)
-        
-        if re.search(caracteres_problematicos, nome_banco):
-            print("⚠️  AVISO: O nome do banco contém caracteres especiais que serão codificados na URI.")
-            nome_banco = quote_plus(nome_banco)
-        
-        # Construir URI de conexão com os dados fornecidos (já codificados se necessário)
-        database_uri = f"postgresql://{usuario_db}:{senha_db}@{host_db}:{porta_db}/{nome_banco}?schema=public"
-        
-        portas = self.escolher_porta_disponivel()
-        
+        # Preparar diretórios
         caminho_evolution = f'{self.install_principal}/evolution_api_whatsapp'
         caminho_store = f'{caminho_evolution}/store'
         caminho_instances = f'{caminho_evolution}/instances'
@@ -3733,32 +3672,84 @@ CMD ["sh", "-c", "\
         os.makedirs(caminho_env, exist_ok=True)
         os.chmod(caminho_evolution, 0o777)
         
-        # Criar arquivo .env com as credenciais (mais seguro que variáveis diretas)
+        # Verificar se o arquivo .env já existe ANTES de pedir configurações
         env_file_path = f'{caminho_env}/.env'
+        usar_config_existente = False
         
-        # Verificar se o arquivo .env já existe
         if os.path.exists(env_file_path):
             print("\n⚠️  ATENÇÃO: Arquivo .env já existe!")
             print(f"Localização: {env_file_path}")
-            resposta = input("Deseja sobrescrever o arquivo existente? (s/n) Padrão n: ").strip().lower()
-            if resposta != 's':
+            resposta = input("Deseja usar as configurações existentes? (s/n) [padrão: s]: ").strip().lower()
+            if resposta != 'n':
+                usar_config_existente = True
                 print("✅ Usando arquivo .env existente.")
                 print("💡 A instalação continuará com as configurações já salvas.")
             else:
-                print("⚠️  Sobrescrevendo arquivo .env existente...")
-                # Criar/sobrescrever o arquivo .env
-                with open(env_file_path, 'w') as f:
-                    f.write(f"AUTHENTICATION_API_KEY={api_key}\n")
-                    f.write(f"DATABASE_CONNECTION_URI={database_uri}\n")
-                    f.write(f"YARN_VERSION={yarn_version}\n")
-                    f.write(f"CONFIG_SESSION_PHONE_VERSION={phone_version}\n")
-                    if server_url:
-                        f.write(f"SERVER_URL={server_url}\n")
-                # Definir permissões restritas no arquivo .env (apenas owner pode ler)
-                os.chmod(env_file_path, 0o600)
-                print("✅ Arquivo .env criado com sucesso!")
-        else:
-            # Criar o arquivo .env pela primeira vez
+                print("⚠️  As configurações serão solicitadas para sobrescrever o arquivo existente...")
+        
+        # Só solicita configurações se NÃO estiver usando arquivo existente
+        if not usar_config_existente:
+            # Gerar chave de autenticação forte automaticamente
+            api_key = secrets.token_urlsafe(32)
+            print("\n=== CHAVE DE AUTENTICAÇÃO GERADA ===")
+            print(f"AUTHENTICATION_API_KEY: {api_key}")
+            print("⚠️  Guarde esta chave em local seguro!")
+            print("Ela será salva automaticamente no arquivo .env")
+            
+            # Configurar versão do WhatsApp Web
+            print("\n=== CONFIGURAÇÃO DA VERSÃO DO WHATSAPP WEB ===")
+            print("A versão do WhatsApp Web determina qual cliente será usado pela API.")
+            print("Versões mais recentes podem ter mais recursos, mas versões estáveis são mais confiáveis.")
+            yarn_version = input("Digite a versão do WhatsApp Web (padrão: 1.22.22): ").strip() or "1.22.22"
+
+            # Configurar versão do WhatsAppWeb (para evitar banimento)
+            print("\n=== CONFIGURAÇÃO DA VERSÃO DO WhatsAppWeb ===")
+            print("Esta configuração simula uma versão específica do WhatsApp no WhatsAppWeb.")
+            print("Ajuda a evitar detecção e possível banimento pela API oficial do WhatsApp.")
+            phone_version = input("Digite a versão do WhatsAppWeb (padrão: 2.3000.1028956288): ").strip() or "2.3000.1028956288"
+
+            # Configurar URL do servidor
+            print("\n=== CONFIGURAÇÃO DA URL DO SERVIDOR ===")
+            print("Esta URL é usada para webhooks e integrações externas.")
+            print("Exemplo: http://seu-ip:porta ou https://seu-dominio.com")
+            server_url = input("Digite a URL do servidor (opcional, pressione Enter para pular): ").strip()
+            
+            # Configuração do banco de dados PostgreSQL
+            print("\n=== CONFIGURAÇÃO DO BANCO DE DADOS POSTGRESQL ===")
+            print("Informe os dados de conexão com o PostgreSQL:")
+            
+            host_db = input("Host do PostgreSQL (ex: postgres_17, localhost, IP): ").strip()
+            porta_db = input("Porta do PostgreSQL (padrão: 5432): ").strip() or "5432"
+            nome_banco = input("Nome do banco de dados: ").strip()
+            usuario_db = input("Nome do usuário do banco: ").strip()
+            senha_db = input("Senha do usuário: ").strip()
+            
+            # Validação dos campos obrigatórios
+            if not host_db or not nome_banco or not usuario_db or not senha_db:
+                print("ERRO: Todos os campos são obrigatórios!")
+                return
+            
+            # Validação de caracteres especiais que podem causar problemas na URI
+            
+            # Caracteres que precisam ser escapados na URI
+            caracteres_problematicos = r'[@:/\?#\[\]!$&\'()*+,;=]'
+            
+            if re.search(caracteres_problematicos, usuario_db):
+                print("⚠️  AVISO: O nome de usuário contém caracteres especiais que serão codificados na URI.")
+                usuario_db = quote_plus(usuario_db)
+            
+            if re.search(caracteres_problematicos, senha_db):
+                print("⚠️  AVISO: A senha contém caracteres especiais que serão codificados na URI.")
+                senha_db = quote_plus(senha_db)
+            
+            if re.search(caracteres_problematicos, nome_banco):
+                print("⚠️  AVISO: O nome do banco contém caracteres especiais que serão codificados na URI.")
+                nome_banco = quote_plus(nome_banco)
+            
+            # Construir URI de conexão com os dados fornecidos (já codificados se necessário)
+            database_uri = f"postgresql://{usuario_db}:{senha_db}@{host_db}:{porta_db}/{nome_banco}?schema=public"
+            
+            # Criar/sobrescrever o arquivo .env
             with open(env_file_path, 'w') as f:
                 f.write(f"AUTHENTICATION_API_KEY={api_key}\n")
                 f.write(f"DATABASE_CONNECTION_URI={database_uri}\n")
@@ -3766,9 +3757,12 @@ CMD ["sh", "-c", "\
                 f.write(f"CONFIG_SESSION_PHONE_VERSION={phone_version}\n")
                 if server_url:
                     f.write(f"SERVER_URL={server_url}\n")
+            
             # Definir permissões restritas no arquivo .env (apenas owner pode ler)
             os.chmod(env_file_path, 0o600)
             print("✅ Arquivo .env criado com sucesso!")
+        
+        portas = self.escolher_porta_disponivel()
         
         # Construir o comando docker usando --env-file (credenciais não aparecem em docker inspect)
         container = f"""docker run -d \
