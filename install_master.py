@@ -5771,12 +5771,12 @@ AllowedIPs = {ip_peer}
         
         try:
             # Listar containers rodando
-            print("🟢 CONTAINERS RODANDO:")
+            print("CONTAINERS RODANDO:")
             cmd_running = ["docker", "ps", "--format", "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"]
             subprocess.run(cmd_running, check=False)
             
             # Listar containers parados
-            print("\n🔴 CONTAINERS PARADOS:")
+            print("\nCONTAINERS PARADOS:")
             cmd_stopped = ["docker", "ps", "-a", "--filter", "status=exited", "--format", "table {{.Names}}\t{{.Image}}\t{{.Status}}"]
             subprocess.run(cmd_stopped, check=False)
             
@@ -5818,9 +5818,9 @@ AllowedIPs = {ip_peer}
             else:
                 container = escolha
             
-            print(f"\n🛑 Parando container '{container}'...")
+            print(f"\nParando container '{container}'...")
             subprocess.run(["docker", "stop", container], check=True)
-            print(f"✅ Container '{container}' parado com sucesso!")
+            print(f"Container '{container}' parado com sucesso!")
             
         except Exception as e:
             print(f"❌ Erro ao parar container: {e}")
@@ -5860,9 +5860,9 @@ AllowedIPs = {ip_peer}
             else:
                 container = escolha
             
-            print(f"\n▶️ Iniciando container '{container}'...")
+            print(f"\nIniciando container '{container}'...")
             subprocess.run(["docker", "start", container], check=True)
-            print(f"✅ Container '{container}' iniciado com sucesso!")
+            print(f"Container '{container}' iniciado com sucesso!")
             
         except Exception as e:
             print(f"❌ Erro ao iniciar container: {e}")
@@ -5902,9 +5902,9 @@ AllowedIPs = {ip_peer}
             else:
                 container = escolha
             
-            print(f"\n🔄 Reiniciando container '{container}'...")
+            print(f"\nReiniciando container '{container}'...")
             subprocess.run(["docker", "restart", container], check=True)
-            print(f"✅ Container '{container}' reiniciado com sucesso!")
+            print(f"Container '{container}' reiniciado com sucesso!")
             
         except Exception as e:
             print(f"❌ Erro ao reiniciar container: {e}")
@@ -5936,7 +5936,7 @@ AllowedIPs = {ip_peer}
                 containers.append(nome)
                 print(f"[{i}] {nome} - {status}")
         
-        escolha = input("\n⚠️ Escolha o container para EXCLUIR (número ou nome): ").strip()
+        escolha = input("\nEscolha o container para EXCLUIR (numero ou nome): ").strip()
         
         try:
             # Tenta converter para índice
@@ -5950,19 +5950,19 @@ AllowedIPs = {ip_peer}
             else:
                 container = escolha
             
-            confirmacao = input(f"\n⚠️ ATENÇÃO: Deseja realmente EXCLUIR o container '{container}'? (s/N): ").strip().lower()
+            confirmacao = input(f"\nATENCAO: Deseja realmente EXCLUIR o container '{container}'? (s/N): ").strip().lower()
             
             if confirmacao != 's':
-                print("❌ Operação cancelada.")
+                print("Operacao cancelada.")
                 return
             
             # Parar container se estiver rodando
             subprocess.run(["docker", "stop", container], check=False, capture_output=True)
             
             # Excluir container
-            print(f"\n🗑️ Excluindo container '{container}'...")
+            print(f"\nExcluindo container '{container}'...")
             subprocess.run(["docker", "rm", container], check=True)
-            print(f"✅ Container '{container}' excluído com sucesso!")
+            print(f"Container '{container}' excluido com sucesso!")
             
         except Exception as e:
             print(f"❌ Erro ao excluir container: {e}")
@@ -6002,16 +6002,16 @@ AllowedIPs = {ip_peer}
             else:
                 container = escolha
             
-            print(f"\n📋 Opções de logs:")
-            print("[1] Últimas 50 linhas")
-            print("[2] Últimas 100 linhas")
-            print("[3] Últimas 500 linhas")
+            print(f"\nOpcoes de logs:")
+            print("[1] Ultimas 50 linhas")
+            print("[2] Ultimas 100 linhas")
+            print("[3] Ultimas 500 linhas")
             print("[4] Todos os logs")
             print("[5] Seguir logs (tempo real)")
             
-            opcao_log = input("\nEscolha uma opção: ").strip()
+            opcao_log = input("\nEscolha uma opcao: ").strip()
             
-            print(f"\n📄 Logs do container '{container}':\n")
+            print(f"\nLogs do container '{container}':\n")
             print("=" * 80)
             
             if opcao_log == "1":
@@ -6032,7 +6032,7 @@ AllowedIPs = {ip_peer}
             print("=" * 80)
             
         except KeyboardInterrupt:
-            print("\n\n✅ Visualização de logs interrompida.")
+            print("\n\nVisualizacao de logs interrompida.")
         except Exception as e:
             print(f"❌ Erro ao ver logs: {e}")
     
@@ -6071,7 +6071,7 @@ AllowedIPs = {ip_peer}
             else:
                 container = escolha
             
-            print(f"\n🔍 Detalhes do container '{container}':\n")
+            print(f"\nDetalhes do container '{container}':\n")
             print("=" * 80)
             
             # Informações básicas
@@ -6090,25 +6090,25 @@ AllowedIPs = {ip_peer}
         """Limpa recursos não utilizados do Docker (containers parados, imagens órfãs, volumes, etc)"""
         print("\n=== LIMPAR RECURSOS DOCKER ===\n")
         
-        print("⚠️ Esta operação irá remover:")
+        print("ATENCAO: Esta operacao ira remover:")
         print("  - Containers parados")
-        print("  - Redes não utilizadas")
-        print("  - Imagens órfãs (dangling)")
+        print("  - Redes nao utilizadas")
+        print("  - Imagens orfas (dangling)")
         print("  - Cache de build")
         
-        confirmacao = input("\n⚠️ Deseja continuar? (s/N): ").strip().lower()
+        confirmacao = input("\nDeseja continuar? (s/N): ").strip().lower()
         
         if confirmacao != 's':
-            print("❌ Operação cancelada.")
+            print("Operacao cancelada.")
             return
         
         try:
-            print("\n🧹 Limpando recursos não utilizados...\n")
+            print("\nLimpando recursos nao utilizados...\n")
             subprocess.run(["docker", "system", "prune", "-f"], check=True)
-            print("\n✅ Recursos limpos com sucesso!")
+            print("\nRecursos limpos com sucesso!")
             
             # Mostrar espaço liberado
-            print("\n📊 Espaço em disco Docker:")
+            print("\nEspaco em disco Docker:")
             subprocess.run(["docker", "system", "df"])
             
         except Exception as e:
@@ -6119,15 +6119,15 @@ AllowedIPs = {ip_peer}
         print("\n=== GERENCIAMENTO DE CONTAINERS DOCKER ===\n")
         
         opcoes_gerenciamento = [
-            ("📋 Listar Containers", self.listar_containers_docker),
-            ("▶️ Iniciar Container", self.iniciar_container_docker),
-            ("🛑 Parar Container", self.parar_container_docker),
-            ("🔄 Reiniciar Container", self.reiniciar_container_docker),
-            ("🗑️ Excluir Container", self.excluir_container_docker),
-            ("📄 Ver Logs de Container", self.ver_logs_container_docker),
-            ("🔍 Inspecionar Container", self.inspecionar_container_docker),
-            ("🧹 Limpar Recursos Não Utilizados", self.limpar_recursos_docker),
-            ("◀️ Voltar ao Menu Docker", None)
+            ("Listar Containers", self.listar_containers_docker),
+            ("Iniciar Container", self.iniciar_container_docker),
+            ("Parar Container", self.parar_container_docker),
+            ("Reiniciar Container", self.reiniciar_container_docker),
+            ("Excluir Container", self.excluir_container_docker),
+            ("Ver Logs de Container", self.ver_logs_container_docker),
+            ("Inspecionar Container", self.inspecionar_container_docker),
+            ("Limpar Recursos Nao Utilizados", self.limpar_recursos_docker),
+            ("Voltar ao Menu Docker", None)
         ]
         
         self.mostrar_menu(opcoes_gerenciamento)
@@ -6140,7 +6140,7 @@ AllowedIPs = {ip_peer}
             os.chmod(self.install_principal, 0o777)
         """Menu de opções"""
         opcoes_menu = [
-            ("🐳 Gerenciar Containers Docker", self.menu_gerenciamento_docker),
+            ("Gerenciar Containers Docker", self.menu_gerenciamento_docker),
             ("Força instalação docker", self.instala_docker_force),
             ("Instala portainer", self.instala_portainer),
             ("Instala filebrowser", self.instala_filebrowser),
