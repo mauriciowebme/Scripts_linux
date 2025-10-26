@@ -5249,6 +5249,395 @@ class Sistema(Docker, Executa_comandos):
         else:
             print("\nExibindo estatísticas mensais de uso de rede:")
             self.executar_comandos(["vnstat -m"], comando_direto=True)
+    
+    def instalar_wireguard(self):
+        """Instala o WireGuard no sistema"""
+        print("\n=== INSTALAÇÃO DO WIREGUARD ===\n")
+        
+        if self.verificar_instalacao("wireguard"):
+            print("✅ WireGuard já está instalado.")
+            return
+        
+        print("📦 Instalando WireGuard...")
+        comandos = [
+            "sudo apt update",
+            "sudo apt install -y wireguard wireguard-tools"
+        ]
+        self.executar_comandos(comandos, comando_direto=True)
+        print("\n✅ WireGuard instalado com sucesso!")
+    
+    def gerar_chaves_wireguard(self):
+        """Gera par de chaves pública/privada para WireGuard"""
+        print("\n=== GERAR CHAVES WIREGUARD ===\n")
+        
+        max_tentativas = 3
+        
+        # Solicitar nome para identificar as chaves
+        for tentativa in range(1, max_tentativas + 1):
+            nome = input(f"[Tentativa {tentativa}/{max_tentativas}] Nome para identificar as chaves (ex: servidor, worker1): ").strip()
+            if nome:
+                break
+            print(f"❌ Nome não pode ser vazio. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                print("❌ Operação cancelada.")
+                return
+        
+        # Diretório para armazenar as chaves
+        chaves_dir = Path(f"{self.install_principal}/wireguard/chaves/{nome}")
+        chaves_dir.mkdir(parents=True, exist_ok=True)
+        
+        private_key_file = chaves_dir / "private.key"
+        public_key_file = chaves_dir / "public.key"
+        
+        print(f"\n📝 Gerando chaves para '{nome}'...")
+        
+        try:
+            # Gerar chave privada
+            result_private = subprocess.run(
+                ["wg", "genkey"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            private_key = result_private.stdout.strip()
+            
+            # Gerar chave pública a partir da privada
+            result_public = subprocess.run(
+                ["wg", "pubkey"],
+                input=private_key,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            public_key = result_public.stdout.strip()
+            
+            # Salvar chaves
+            private_key_file.write_text(private_key)
+            public_key_file.write_text(public_key)
+            
+            # Ajustar permissões
+            os.chmod(private_key_file, 0o600)
+            os.chmod(public_key_file, 0o644)
+            
+            print("\n" + "="*60)
+            print("✅ CHAVES GERADAS COM SUCESSO!")
+            print("="*60)
+            print(f"📁 Localização: {chaves_dir}")
+            print(f"\n🔐 Chave Privada:")
+            print(f"   {private_key}")
+            print(f"\n🔓 Chave Pública:")
+            print(f"   {public_key}")
+            print("="*60)
+            print("\n⚠️  IMPORTANTE: Guarde a chave privada com segurança!")
+            
+        except Exception as e:
+            print(f"❌ Erro ao gerar chaves: {e}")
+    
+    def configurar_servidor_wireguard(self):
+        """Configura WireGuard como servidor"""
+        print("\n=== CONFIGURAR WIREGUARD COMO SERVIDOR ===\n")
+        
+        max_tentativas = 3
+        
+        # Coletar informações
+        print("📝 Configuração do servidor WireGuard\n")
+        
+        # IP do servidor na VPN
+        for tentativa in range(1, max_tentativas + 1):
+            ip_servidor = input(f"[{tentativa}/{max_tentativas}] IP do servidor na VPN (ex: 10.8.0.1/24): ").strip()
+            if ip_servidor:
+                break
+            print(f"❌ IP não pode ser vazio. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                return
+        
+        # Porta
+        for tentativa in range(1, max_tentativas + 1):
+            porta = input(f"[{tentativa}/{max_tentativas}] Porta (padrão 51820): ").strip() or "51820"
+            try:
+                int(porta)
+                break
+            except ValueError:
+                print(f"❌ Porta inválida. Tentativas restantes: {max_tentativas - tentativa}")
+                if tentativa == max_tentativas:
+                    porta = "51820"
+        
+        # Chave privada do servidor
+        print(f"\n🔑 Chaves disponíveis em {self.install_principal}/wireguard/chaves/")
+        subprocess.run(["ls", "-la", f"{self.install_principal}/wireguard/chaves/"], check=False)
+        
+        for tentativa in range(1, max_tentativas + 1):
+            chave_privada = input(f"\n[{tentativa}/{max_tentativas}] Cole a chave PRIVADA do servidor: ").strip()
+            if chave_privada:
+                break
+            print(f"❌ Chave não pode ser vazia. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                return
+        
+        # Criar arquivo de configuração
+        config_path = Path("/etc/wireguard/wg0.conf")
+        config_content = f"""[Interface]
+Address = {ip_servidor}
+PrivateKey = {chave_privada}
+ListenPort = {porta}
+
+# Adicione peers abaixo usando a opção 'Adicionar peer'
+
+# Exemplo de peer:
+# [Peer]
+# PublicKey = <chave_publica_do_peer>
+# AllowedIPs = <ip_peer_na_vpn>
+# Endpoint = <ip_publico_servidor>:51820
+# PersistentKeepalive = 25
+"""
+        
+        try:
+            config_path.write_text(config_content)
+            os.chmod(config_path, 0o600)
+            
+            print("\n✅ Configuração do servidor criada com sucesso!")
+            print(f"📁 Arquivo: {config_path}")
+            print("\n⚠️  Próximos passos:")
+            print("   1. Adicione peers usando a opção 'Adicionar peer'")
+            print("   2. Inicie o serviço WireGuard")
+            
+        except Exception as e:
+            print(f"❌ Erro ao criar configuração: {e}")
+    
+    def configurar_cliente_wireguard(self):
+        """Configura WireGuard como cliente/worker"""
+        print("\n=== CONFIGURAR WIREGUARD COMO CLIENTE/WORKER ===\n")
+        
+        max_tentativas = 3
+        
+        # Coletar informações
+        print("📝 Configuração do cliente WireGuard\n")
+        
+        # IP do cliente na VPN
+        for tentativa in range(1, max_tentativas + 1):
+            ip_cliente = input(f"[{tentativa}/{max_tentativas}] IP do cliente na VPN (ex: 10.8.0.2/24): ").strip()
+            if ip_cliente:
+                break
+            print(f"❌ IP não pode ser vazio. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                return
+        
+        # Chave privada do cliente
+        for tentativa in range(1, max_tentativas + 1):
+            chave_privada_cliente = input(f"\n[{tentativa}/{max_tentativas}] Cole a chave PRIVADA do cliente: ").strip()
+            if chave_privada_cliente:
+                break
+            print(f"❌ Chave não pode ser vazia. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                return
+        
+        # Chave pública do servidor
+        for tentativa in range(1, max_tentativas + 1):
+            chave_publica_servidor = input(f"[{tentativa}/{max_tentativas}] Cole a chave PÚBLICA do servidor: ").strip()
+            if chave_publica_servidor:
+                break
+            print(f"❌ Chave não pode ser vazia. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                return
+        
+        # Endpoint do servidor
+        for tentativa in range(1, max_tentativas + 1):
+            endpoint = input(f"[{tentativa}/{max_tentativas}] IP público do servidor (ex: 1.2.3.4): ").strip()
+            if endpoint:
+                break
+            print(f"❌ Endpoint não pode ser vazio. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                return
+        
+        # Porta do servidor
+        for tentativa in range(1, max_tentativas + 1):
+            porta_servidor = input(f"[{tentativa}/{max_tentativas}] Porta do servidor (padrão 51820): ").strip() or "51820"
+            try:
+                int(porta_servidor)
+                break
+            except ValueError:
+                print(f"❌ Porta inválida. Tentativas restantes: {max_tentativas - tentativa}")
+                if tentativa == max_tentativas:
+                    porta_servidor = "51820"
+        
+        # AllowedIPs
+        allowed_ips = input("IPs permitidos (padrão 10.8.0.0/24): ").strip() or "10.8.0.0/24"
+        
+        # Criar arquivo de configuração
+        config_path = Path("/etc/wireguard/wg0.conf")
+        config_content = f"""[Interface]
+Address = {ip_cliente}
+PrivateKey = {chave_privada_cliente}
+
+[Peer]
+PublicKey = {chave_publica_servidor}
+Endpoint = {endpoint}:{porta_servidor}
+AllowedIPs = {allowed_ips}
+PersistentKeepalive = 25
+"""
+        
+        try:
+            config_path.write_text(config_content)
+            os.chmod(config_path, 0o600)
+            
+            print("\n✅ Configuração do cliente criada com sucesso!")
+            print(f"📁 Arquivo: {config_path}")
+            print("\n⚠️  Próximo passo:")
+            print("   Inicie o serviço WireGuard")
+            
+        except Exception as e:
+            print(f"❌ Erro ao criar configuração: {e}")
+    
+    def adicionar_peer_wireguard(self):
+        """Adiciona um peer ao servidor WireGuard"""
+        print("\n=== ADICIONAR PEER AO SERVIDOR WIREGUARD ===\n")
+        
+        config_path = Path("/etc/wireguard/wg0.conf")
+        
+        if not config_path.exists():
+            print("❌ Arquivo de configuração não encontrado!")
+            print("   Configure o servidor primeiro usando a opção 'Configurar como servidor'")
+            return
+        
+        max_tentativas = 3
+        
+        # Nome do peer
+        for tentativa in range(1, max_tentativas + 1):
+            nome_peer = input(f"[{tentativa}/{max_tentativas}] Nome do peer (ex: worker1): ").strip()
+            if nome_peer:
+                break
+            print(f"❌ Nome não pode ser vazio. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                return
+        
+        # Chave pública do peer
+        for tentativa in range(1, max_tentativas + 1):
+            chave_publica_peer = input(f"[{tentativa}/{max_tentativas}] Cole a chave PÚBLICA do peer: ").strip()
+            if chave_publica_peer:
+                break
+            print(f"❌ Chave não pode ser vazia. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                return
+        
+        # IP do peer
+        for tentativa in range(1, max_tentativas + 1):
+            ip_peer = input(f"[{tentativa}/{max_tentativas}] IP do peer na VPN (ex: 10.8.0.2/32): ").strip()
+            if ip_peer:
+                break
+            print(f"❌ IP não pode ser vazio. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                return
+        
+        # Adicionar peer ao arquivo
+        peer_config = f"""
+[Peer]
+# {nome_peer}
+PublicKey = {chave_publica_peer}
+AllowedIPs = {ip_peer}
+"""
+        
+        try:
+            with open(config_path, 'a') as f:
+                f.write(peer_config)
+            
+            print(f"\n✅ Peer '{nome_peer}' adicionado com sucesso!")
+            print("\n⚠️  Reinicie o serviço WireGuard para aplicar:")
+            print("   sudo systemctl restart wg-quick@wg0")
+            
+        except Exception as e:
+            print(f"❌ Erro ao adicionar peer: {e}")
+    
+    def iniciar_wireguard(self):
+        """Inicia e habilita o serviço WireGuard"""
+        print("\n=== INICIAR WIREGUARD ===\n")
+        
+        try:
+            print("🚀 Habilitando WireGuard para iniciar com o sistema...")
+            subprocess.run(["sudo", "systemctl", "enable", "wg-quick@wg0"], check=True)
+            
+            print("🚀 Iniciando WireGuard...")
+            subprocess.run(["sudo", "systemctl", "start", "wg-quick@wg0"], check=True)
+            
+            print("\n✅ WireGuard iniciado com sucesso!")
+            print("\n📊 Status:")
+            subprocess.run(["sudo", "wg", "show"], check=False)
+            
+        except Exception as e:
+            print(f"❌ Erro ao iniciar WireGuard: {e}")
+    
+    def parar_wireguard(self):
+        """Para o serviço WireGuard"""
+        print("\n=== PARAR WIREGUARD ===\n")
+        
+        try:
+            print("🛑 Parando WireGuard...")
+            subprocess.run(["sudo", "systemctl", "stop", "wg-quick@wg0"], check=True)
+            print("✅ WireGuard parado com sucesso!")
+            
+        except Exception as e:
+            print(f"❌ Erro ao parar WireGuard: {e}")
+    
+    def status_wireguard(self):
+        """Mostra o status do WireGuard"""
+        print("\n=== STATUS WIREGUARD ===\n")
+        
+        try:
+            print("📊 Status do serviço:")
+            subprocess.run(["sudo", "systemctl", "status", "wg-quick@wg0"], check=False)
+            
+            print("\n" + "="*60)
+            print("📊 Conexões ativas:")
+            subprocess.run(["sudo", "wg", "show"], check=False)
+            
+        except Exception as e:
+            print(f"❌ Erro ao verificar status: {e}")
+    
+    def testar_conexao_wireguard(self):
+        """Testa a conexão WireGuard"""
+        print("\n=== TESTAR CONEXÃO WIREGUARD ===\n")
+        
+        ip_teste = input("Digite o IP do peer para testar (ex: 10.8.0.1): ").strip()
+        
+        if not ip_teste:
+            print("❌ IP não pode ser vazio.")
+            return
+        
+        print(f"\n🔍 Testando conectividade com {ip_teste}...")
+        subprocess.run(["ping", "-c", "4", ip_teste], check=False)
+    
+    def visualizar_config_wireguard(self):
+        """Visualiza a configuração atual do WireGuard"""
+        print("\n=== CONFIGURAÇÃO WIREGUARD ===\n")
+        
+        config_path = Path("/etc/wireguard/wg0.conf")
+        
+        if not config_path.exists():
+            print("❌ Arquivo de configuração não encontrado!")
+            return
+        
+        try:
+            config_content = config_path.read_text()
+            print(config_content)
+        except Exception as e:
+            print(f"❌ Erro ao ler configuração: {e}")
+    
+    def menu_wireguard(self):
+        """Menu principal do WireGuard"""
+        print("\n=== GERENCIADOR WIREGUARD VPN ===\n")
+        
+        opcoes_menu = [
+            ("Instalar WireGuard", self.instalar_wireguard),
+            ("Gerar par de chaves", self.gerar_chaves_wireguard),
+            ("Configurar como SERVIDOR", self.configurar_servidor_wireguard),
+            ("Configurar como CLIENTE/WORKER", self.configurar_cliente_wireguard),
+            ("Adicionar peer ao servidor", self.adicionar_peer_wireguard),
+            ("Iniciar/Habilitar WireGuard", self.iniciar_wireguard),
+            ("Parar WireGuard", self.parar_wireguard),
+            ("Ver status e conexões", self.status_wireguard),
+            ("Testar conexão", self.testar_conexao_wireguard),
+            ("Visualizar configuração", self.visualizar_config_wireguard),
+        ]
+        self.mostrar_menu(opcoes_menu)
         
     def setup_inicializar_service(self):
         """
@@ -5362,6 +5751,7 @@ class Sistema(Docker, Executa_comandos):
             # ("Configurar acesso root por ssh", self.acess_root),
             ("Faz copia inteligente com rsync", self.rsync_sync),
             ("Inatala/Executa monitor de rede vnstat", self.vnstat),
+            ("🔐 Gerenciador WireGuard VPN", self.menu_wireguard),
         ]
         self.mostrar_menu(opcoes_menu)
         
