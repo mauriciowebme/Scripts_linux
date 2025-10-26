@@ -12,6 +12,7 @@
 # bash /install_principal/install_master.txt
 
 import configparser
+from urllib.parse import quote_plus
 import shlex
 import shutil
 import socket
@@ -3700,7 +3701,24 @@ CMD ["sh", "-c", "\
             print("ERRO: Todos os campos são obrigatórios!")
             return
         
-        # Construir URI de conexão com os dados fornecidos
+        # Validação de caracteres especiais que podem causar problemas na URI
+        
+        # Caracteres que precisam ser escapados na URI
+        caracteres_problematicos = r'[@:/\?#\[\]!$&\'()*+,;=]'
+        
+        if re.search(caracteres_problematicos, usuario_db):
+            print("⚠️  AVISO: O nome de usuário contém caracteres especiais que serão codificados na URI.")
+            usuario_db = quote_plus(usuario_db)
+        
+        if re.search(caracteres_problematicos, senha_db):
+            print("⚠️  AVISO: A senha contém caracteres especiais que serão codificados na URI.")
+            senha_db = quote_plus(senha_db)
+        
+        if re.search(caracteres_problematicos, nome_banco):
+            print("⚠️  AVISO: O nome do banco contém caracteres especiais que serão codificados na URI.")
+            nome_banco = quote_plus(nome_banco)
+        
+        # Construir URI de conexão com os dados fornecidos (já codificados se necessário)
         database_uri = f"postgresql://{usuario_db}:{senha_db}@{host_db}:{porta_db}/{nome_banco}?schema=public"
         
         portas = self.escolher_porta_disponivel()
