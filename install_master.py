@@ -821,28 +821,158 @@ class Docker(Executa_comandos):
     
     def iniciar_n8n(self):
         print("Iniciando instalação do n8n (workflow automation).")
+        print("\n" + "="*60)
         
-        caminho_n8n = f'{self.install_principal}/n8n'
+        # Pergunta tipo de instalação
+        print("Tipo de instalação:")
+        print("1 - Main (servidor principal)")
+        print("2 - Worker (processador de tarefas)")
+        tentativas = 0
+        is_main = False
+        is_worker = False
+        while tentativas < 3:
+            tipo_instalacao = input("Digite sua escolha (1 ou 2): ").strip()
+            is_main = tipo_instalacao == "1"
+            is_worker = tipo_instalacao == "2"
+            if is_main or is_worker:
+                break
+            tentativas += 1
+            print(f"❌ Opção inválida! ({tentativas}/3 tentativas)")
+        if not (is_main or is_worker):
+            print("❌ Nenhuma opção válida após 3 tentativas. Retornando ao menu principal...")
+            return
+        
+        # Coleta informações comuns
+        print("\n" + "="*60)
+        print("Configurações de banco de dados PostgreSQL:")
+        postgres_host = input("Host do PostgreSQL (padrão: postgres): ").strip() or "postgres"
+        postgres_db = input("Nome do banco (padrão: n8n): ").strip() or "n8n"
+        postgres_user = input("Usuário do banco (padrão: n8n): ").strip() or "n8n"
+        postgres_password = input(f"Senha do usuário '{postgres_user}' do PostgreSQL: ").strip()
+        
+        if not postgres_password:
+            postgres_password = self.generate_password()
+            print(f"⚠️ Senha gerada automaticamente: {postgres_password}")
+        
+        print("\n" + "="*60)
+        print("Configurações Redis (fila):")
+        redis_host = input("Host do Redis (padrão: redis): ").strip() or "redis"
+        redis_port = input("Porta do Redis (padrão: 6379): ").strip() or "6379"
+        redis_password = input("Senha do Redis (deixe vazio se não tiver): ").strip()
+        
+        # Configurações específicas do Main
+        n8n_host = ""
+        webhook_url = ""
+        encryption_key = ""
+        porta_publicar = ""
+        
+        if is_main:
+            print("\n" + "="*60)
+            print("Configurações do servidor Main:")
+            n8n_host = input("Domínio público (ex: n8n.seudominio.com): ").strip()
+            
+            if n8n_host:
+                webhook_url = f"https://{n8n_host}/"
+                print(f"✔ Webhook URL: {webhook_url}")
+            
+            encryption_key = input("Chave de encriptação (deixe vazio para gerar): ").strip()
+            if not encryption_key:
+                encryption_key = self.generate_password(32)
+                print(f"⚠️ Chave gerada: {encryption_key}")
+                print("⚠️ GUARDE ESTA CHAVE! Necessária para descriptografar credenciais.")
+            
+            porta_publicar = input("Porta para expor (padrão: 5678): ").strip() or "5678"
+        
+        # Prepara diretórios
+        tipo_suffix = "main" if is_main else "worker"
+        caminho_n8n = f'{self.install_principal}/n8n_{tipo_suffix}'
         os.makedirs(caminho_n8n, exist_ok=True)
         os.chmod(caminho_n8n, 0o777)
         
-        comandos = [
-            f"""docker run -d \
-            --name n8n \
+        # Nome do container
+        container_name = f"n8n_{tipo_suffix}"
+        
+        # Constrói comando base
+        comando_base = f"""docker run -d \
+            --name {container_name} \
             --restart=unless-stopped \
             --memory=256m \
             --cpus=1 \
-            -p 5678:5678 \
-            -v {caminho_n8n}:/home/node/.n8n \
-            docker.n8n.io/n8nio/n8n
-            """,
-        ]
-        self.remove_container('n8n')
-        self.executar_comandos(comandos)
-        # self.cria_rede_docker(associar_container_nome='n8n', numero_rede=1)
+            -v {caminho_n8n}:/home/node/.n8n"""
         
-        print('Acesse o n8n em http://<seu_ip>:5678')
-        print('Na primeira execução você precisará criar um usuário e senha.')
+        # Variáveis de ambiente comuns
+        env_vars = f""" \
+            -e DB_TYPE=postgresdb \
+            -e DB_POSTGRESDB_HOST={postgres_host} \
+            -e DB_POSTGRESDB_DATABASE={postgres_db} \
+            -e DB_POSTGRESDB_USER={postgres_user} \
+            -e DB_POSTGRESDB_PASSWORD={postgres_password} \
+            -e QUEUE_BULL_REDIS_HOST={redis_host} \
+            -e QUEUE_BULL_REDIS_PORT={redis_port}"""
+        
+        # Adiciona senha do Redis se informada
+        if redis_password:
+            env_vars += f""" \
+            -e QUEUE_BULL_REDIS_PASSWORD={redis_password}"""
+
+        # Configurações específicas por tipo
+        if is_main:
+            # Variáveis específicas do Main
+            env_vars += f""" \
+            -e EXECUTIONS_MODE=queue \
+            -e OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true \
+            -e N8N_ENCRYPTION_KEY={encryption_key}"""
+            
+            if n8n_host:
+                env_vars += f""" \
+            -e N8N_HOST={n8n_host} \
+            -e N8N_PROTOCOL=https \
+            -e WEBHOOK_URL={webhook_url}"""
+            
+            # Porta exposta apenas no Main
+            env_vars += f""" \
+            -p {porta_publicar}:5678"""
+        
+        else:  # Worker
+            # Worker apenas processa, não precisa de porta exposta
+            env_vars += f""" \
+            -e EXECUTIONS_MODE=queue \
+            -e QUEUE_WORKER_ID={container_name}"""
+        
+        # Comando completo
+        comando_completo = comando_base + env_vars + """ \
+            docker.n8n.io/n8nio/n8n:latest
+            """
+        
+        comandos = [comando_completo]
+        
+        # Remove container se existir
+        self.remove_container(container_name)
+        
+        # Executa instalação
+        self.executar_comandos(comandos)
+        
+        # Conecta à rede se necessário
+        # self.cria_rede_docker(associar_container_nome=container_name, numero_rede=1)
+        
+        # Mensagens finais
+        print("\n" + "="*60)
+        print(f"✔ Instalação do n8n ({tipo_suffix.upper()}) concluída!")
+        print("="*60)
+        
+        if is_main:
+            print(f'\nAcesse o n8n em http://<seu_ip>:{porta_publicar}')
+            if n8n_host:
+                print(f'Ou via domínio: https://{n8n_host}')
+            print('\nNa primeira execução você precisará criar um usuário e senha.')
+            print(f'\n⚠️ IMPORTANTE - Guarde estas informações:')
+            print(f'   - Chave de encriptação: {encryption_key}')
+            print(f'   - Senha PostgreSQL: {postgres_password}')
+        else:
+            print('\n✔ Worker configurado e em execução.')
+            print('Este worker processará tarefas da fila automaticamente.')
+        
+        print("\n" + "="*60)
     
     def cria_dynamic_conf_traefik(self, email=None):
         base_dir = f"{self.install_principal}/traefik"
@@ -2625,6 +2755,287 @@ WantedBy=timers.target
         print(f' - Senha: {self.postgres_password}')
         print(f' - Porta interna: 5432')
         print(f' - Porta externa: {porta}')
+    
+    def gerenciar_bancos_postgres(self):
+        """Menu para gerenciar bancos de dados PostgreSQL"""
+        print("\n=== GERENCIAMENTO DE BANCOS DE DADOS POSTGRESQL ===\n")
+        
+        # Verificar containers PostgreSQL disponíveis
+        print("Verificando containers PostgreSQL disponíveis...")
+        result = subprocess.run(
+            ["docker", "ps", "--filter", "name=postgres_", "--format", "{{.Names}}"],
+            capture_output=True,
+            text=True
+        )
+        
+        containers = [c.strip() for c in result.stdout.split('\n') if c.strip()]
+        
+        if not containers:
+            print("❌ Nenhum container PostgreSQL em execução encontrado.")
+            print("Instale o PostgreSQL primeiro usando a opção '** BD ** Instala postgres'")
+            return
+        
+        print("\nContainers PostgreSQL disponíveis:")
+        for i, container in enumerate(containers, 1):
+            print(f"[{i}] {container}")
+        
+        escolha = input("\nEscolha o container (número): ").strip()
+        try:
+            container_idx = int(escolha) - 1
+            if container_idx < 0 or container_idx >= len(containers):
+                print("❌ Opção inválida.")
+                return
+            container = containers[container_idx]
+        except ValueError:
+            print("❌ Entrada inválida.")
+            return
+        
+        # Menu de operações
+        print(f"\n=== OPERAÇÕES NO CONTAINER: {container} ===")
+        print("[1] Criar banco de dados")
+        print("[2] Listar bancos de dados")
+        print("[3] Apagar banco de dados")
+        print("[0] Voltar")
+        
+        opcao = input("\nEscolha uma opção: ").strip()
+        
+        if opcao == "1":
+            self.criar_banco_postgres(container)
+        elif opcao == "2":
+            self.listar_bancos_postgres(container)
+        elif opcao == "3":
+            self.apagar_banco_postgres(container)
+        elif opcao == "0":
+            return
+        else:
+            print("❌ Opção inválida.")
+    
+    def criar_banco_postgres(self, container):
+        """Cria um novo banco de dados PostgreSQL com usuário e senha"""
+        print("\n=== CRIAR BANCO DE DADOS POSTGRESQL ===\n")
+        
+        max_tentativas = 3
+        
+        # ==================== COLETA NOME DO BANCO ====================
+        for tentativa in range(1, max_tentativas + 1):
+            nome_banco = input(f"[Tentativa {tentativa}/{max_tentativas}] Nome do banco de dados: ").strip()
+            if nome_banco:
+                break
+            print(f"❌ Nome do banco não pode ser vazio. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                print("❌ Número máximo de tentativas atingido. Operação cancelada.")
+                return
+        
+        # ==================== COLETA NOME DO USUÁRIO ====================
+        for tentativa in range(1, max_tentativas + 1):
+            usuario = input(f"[Tentativa {tentativa}/{max_tentativas}] Nome do usuário (deixe vazio para usar '{nome_banco}'): ").strip()
+            if not usuario:
+                usuario = nome_banco
+                print(f"ℹ️  Usando '{usuario}' como nome de usuário.")
+                break
+            elif len(usuario) >= 3:
+                break
+            print(f"❌ Usuário deve ter pelo menos 3 caracteres. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                print("❌ Número máximo de tentativas atingido. Operação cancelada.")
+                return
+        
+        # ==================== COLETA SENHA ====================
+        for tentativa in range(1, max_tentativas + 1):
+            senha = input(f"[Tentativa {tentativa}/{max_tentativas}] Senha para o usuário '{usuario}' (mínimo 4 caracteres): ").strip()
+            if len(senha) >= 4:
+                break
+            print(f"❌ Senha deve ter pelo menos 4 caracteres. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                print("❌ Número máximo de tentativas atingido. Operação cancelada.")
+                return
+        
+        # ==================== CONFIRMAÇÃO FINAL ====================
+        print("\n" + "="*60)
+        print("📋 RESUMO DA OPERAÇÃO:")
+        print(f"   Banco de dados: {nome_banco}")
+        print(f"   Usuário: {usuario}")
+        print(f"   Senha: {'*' * len(senha)}")
+        print(f"   Container: {container}")
+        print("="*60)
+        
+        confirmar = input("\n✅ Confirma a criação com esses dados? (s/n): ").strip().lower()
+        if confirmar != 's':
+            print("❌ Operação cancelada pelo usuário.")
+            return
+        
+        print(f"\n📝 Criando banco de dados '{nome_banco}' com usuário '{usuario}'...")
+        
+        try:
+            # Criar usuário
+            cmd_usuario = [
+                "docker", "exec", container, "psql", "-U", "postgres", "-c",
+                f"CREATE USER {usuario} WITH PASSWORD '{senha}';"
+            ]
+            resultado = subprocess.run(cmd_usuario, capture_output=True, text=True)
+            
+            if resultado.returncode != 0 and "already exists" not in resultado.stderr:
+                print(f"❌ Erro ao criar usuário: {resultado.stderr}")
+                return
+            elif "already exists" in resultado.stderr:
+                print(f"⚠️  Usuário '{usuario}' já existe, usando existente.")
+            else:
+                print(f"✅ Usuário '{usuario}' criado com sucesso.")
+            
+            # Criar banco de dados
+            cmd_banco = [
+                "docker", "exec", container, "psql", "-U", "postgres", "-c",
+                f"CREATE DATABASE {nome_banco} OWNER {usuario};"
+            ]
+            resultado = subprocess.run(cmd_banco, capture_output=True, text=True)
+            
+            if resultado.returncode != 0:
+                if "already exists" in resultado.stderr:
+                    print(f"⚠️  Banco '{nome_banco}' já existe.")
+                else:
+                    print(f"❌ Erro ao criar banco: {resultado.stderr}")
+                    return
+            else:
+                print(f"✅ Banco de dados '{nome_banco}' criado com sucesso.")
+            
+            # Conceder privilégios
+            cmd_grant = [
+                "docker", "exec", container, "psql", "-U", "postgres", "-c",
+                f"GRANT ALL PRIVILEGES ON DATABASE {nome_banco} TO {usuario};"
+            ]
+            subprocess.run(cmd_grant, capture_output=True, text=True)
+            print(f"✅ Privilégios concedidos ao usuário '{usuario}'.")
+            
+            print("\n" + "="*60)
+            print("📌 INFORMAÇÕES DE CONEXÃO:")
+            print(f"   Host: localhost (ou IP do servidor)")
+            print(f"   Banco: {nome_banco}")
+            print(f"   Usuário: {usuario}")
+            print(f"   Senha: {senha}")
+            print(f"   Container: {container}")
+            print("="*60)
+            
+        except Exception as e:
+            print(f"❌ Erro ao criar banco de dados: {e}")
+    
+    def listar_bancos_postgres(self, container):
+        """Lista todos os bancos de dados do PostgreSQL"""
+        print(f"\n=== BANCOS DE DADOS NO CONTAINER: {container} ===\n")
+        
+        try:
+            cmd = [
+                "docker", "exec", container, "psql", "-U", "postgres", "-c",
+                "\\l"
+            ]
+            resultado = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if resultado.returncode == 0:
+                print(resultado.stdout)
+            else:
+                print(f"❌ Erro ao listar bancos: {resultado.stderr}")
+                
+        except Exception as e:
+            print(f"❌ Erro ao listar bancos de dados: {e}")
+    
+    def apagar_banco_postgres(self, container):
+        """Apaga um banco de dados PostgreSQL"""
+        print(f"\n=== APAGAR BANCO DE DADOS NO CONTAINER: {container} ===\n")
+        
+        # Primeiro listar os bancos
+        self.listar_bancos_postgres(container)
+        
+        max_tentativas = 3
+        
+        # ==================== COLETA NOME DO BANCO ====================
+        for tentativa in range(1, max_tentativas + 1):
+            nome_banco = input(f"\n[Tentativa {tentativa}/{max_tentativas}] Nome do banco de dados a ser APAGADO: ").strip()
+            
+            if not nome_banco:
+                print(f"❌ Nome do banco não pode ser vazio. Tentativas restantes: {max_tentativas - tentativa}")
+                if tentativa == max_tentativas:
+                    print("❌ Número máximo de tentativas atingido. Operação cancelada.")
+                    return
+                continue
+            
+            # Bancos do sistema que não podem ser apagados
+            bancos_sistema = ['postgres', 'template0', 'template1']
+            if nome_banco in bancos_sistema:
+                print(f"❌ Não é permitido apagar bancos do sistema: {', '.join(bancos_sistema)}")
+                print(f"   Tentativas restantes: {max_tentativas - tentativa}")
+                if tentativa == max_tentativas:
+                    print("❌ Número máximo de tentativas atingido. Operação cancelada.")
+                    return
+                continue
+            
+            # Nome válido, sair do loop
+            break
+        
+        # ==================== CONFIRMAÇÃO DE EXCLUSÃO ====================
+        for tentativa in range(1, max_tentativas + 1):
+            print(f"\n⚠️  ATENÇÃO: Você está prestes a APAGAR o banco '{nome_banco}'!")
+            print("⚠️  Esta ação é IRREVERSÍVEL e todos os dados serão perdidos!")
+            confirmacao = input(f"[Tentativa {tentativa}/{max_tentativas}] Digite 'CONFIRMAR' para prosseguir: ").strip()
+            
+            if confirmacao == "CONFIRMAR":
+                break
+            
+            print(f"❌ Confirmação incorreta. Digite exatamente 'CONFIRMAR'.")
+            print(f"   Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                print("❌ Número máximo de tentativas atingido. Operação cancelada por segurança.")
+                return
+        
+        # ==================== PERGUNTA SOBRE USUÁRIO ====================
+        for tentativa in range(1, max_tentativas + 1):
+            apagar_usuario = input(f"[Tentativa {tentativa}/{max_tentativas}] Apagar também o usuário de mesmo nome? (s/n): ").strip().lower()
+            
+            if apagar_usuario in ['s', 'n']:
+                break
+            
+            print(f"❌ Responda apenas 's' ou 'n'. Tentativas restantes: {max_tentativas - tentativa}")
+            if tentativa == max_tentativas:
+                print("⚠️  Assumindo 'n' (não apagar usuário).")
+                apagar_usuario = 'n'
+        
+        try:
+            # Forçar desconexão de todas as sessões ativas
+            print(f"\n📝 Desconectando sessões ativas do banco '{nome_banco}'...")
+            cmd_disconnect = [
+                "docker", "exec", container, "psql", "-U", "postgres", "-c",
+                f"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '{nome_banco}';"
+            ]
+            subprocess.run(cmd_disconnect, capture_output=True, text=True)
+            
+            # Apagar banco
+            print(f"📝 Apagando banco de dados '{nome_banco}'...")
+            cmd_drop = [
+                "docker", "exec", container, "psql", "-U", "postgres", "-c",
+                f"DROP DATABASE {nome_banco};"
+            ]
+            resultado = subprocess.run(cmd_drop, capture_output=True, text=True)
+            
+            if resultado.returncode == 0:
+                print(f"✅ Banco de dados '{nome_banco}' apagado com sucesso.")
+            else:
+                print(f"❌ Erro ao apagar banco: {resultado.stderr}")
+                return
+            
+            # Apagar usuário se solicitado
+            if apagar_usuario == 's':
+                print(f"📝 Apagando usuário '{nome_banco}'...")
+                cmd_drop_user = [
+                    "docker", "exec", container, "psql", "-U", "postgres", "-c",
+                    f"DROP USER IF EXISTS {nome_banco};"
+                ]
+                resultado = subprocess.run(cmd_drop_user, capture_output=True, text=True)
+                
+                if resultado.returncode == 0:
+                    print(f"✅ Usuário '{nome_banco}' apagado com sucesso.")
+                else:
+                    print(f"⚠️  Aviso ao apagar usuário: {resultado.stderr}")
+            
+        except Exception as e:
+            print(f"❌ Erro ao apagar banco de dados: {e}")
         
     def configure_postgres_replication(self, master_container, slave_container, replication_user, replication_password):
         try:
@@ -4952,6 +5363,7 @@ class Sistema(Docker, Executa_comandos):
             ("||| Conf ||| Controle de sites openlitespeed", self.controle_sites_openlitespeed),
             ("** BD ** Instala mysql", self.instala_mysql),
             ("** BD ** Instala postgres", self.instala_postgres),
+            ("||| Conf ||| Gerenciar bancos PostgreSQL", self.gerenciar_bancos_postgres),
             ("Instala wordpress", self.instala_wordpress),
             ("Instala wordpress puro", self.instala_wordpress_puro),
             ("Instala app nodejs", self.instala_app_nodejs),
