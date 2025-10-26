@@ -3674,10 +3674,10 @@ CMD ["sh", "-c", "\
         yarn_version = input("Digite a versão do WhatsApp Web (padrão: 1.22.22): ").strip() or "1.22.22"
         
         # Configurar versão do telefone (para evitar banimento)
-        print("\n=== CONFIGURAÇÃO DA VERSÃO DO TELEFONE ===")
-        print("Esta configuração simula uma versão específica do WhatsApp no telefone.")
-        print("Ajuda a evitar detecção e possível banimento pela API oficial do WhatsApp.")
-        phone_version = input("Digite a versão do telefone (padrão: 2.3000.1028788854): ").strip() or "2.3000.1028788854"
+        # print("\n=== CONFIGURAÇÃO DA VERSÃO DO TELEFONE ===")
+        # print("Esta configuração simula uma versão específica do WhatsApp no telefone.")
+        # print("Ajuda a evitar detecção e possível banimento pela API oficial do WhatsApp.")
+        # phone_version = input("Digite a versão do telefone (padrão: 2.3000.1028788854): ").strip() or "2.3000.1028788854"
         
         # Configurar URL do servidor
         print("\n=== CONFIGURAÇÃO DA URL DO SERVIDOR ===")
@@ -3721,7 +3721,7 @@ CMD ["sh", "-c", "\
             f.write(f"AUTHENTICATION_API_KEY={api_key}\n")
             f.write(f"DATABASE_CONNECTION_URI={database_uri}\n")
             f.write(f"YARN_VERSION={yarn_version}\n")
-            f.write(f"CONFIG_SESSION_PHONE_VERSION={phone_version}\n")
+            # f.write(f"CONFIG_SESSION_PHONE_VERSION={phone_version}\n")
             if server_url:
                 f.write(f"SERVER_URL={server_url}\n")
         
@@ -3757,7 +3757,7 @@ CMD ["sh", "-c", "\
         print(f"Porta de acesso: {portas[0]}")
         print(f"API Key: {api_key}")
         print(f"Versão WhatsApp Web: {yarn_version}")
-        print(f"Versão do Telefone: {phone_version}")
+        # print(f"Versão do Telefone: {phone_version}")
         if server_url:
             print(f"URL do Servidor: {server_url}")
         print(f"Banco de dados: {host_db}:{porta_db}/{nome_banco}")
