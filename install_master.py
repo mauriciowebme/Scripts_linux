@@ -3675,9 +3675,9 @@ CMD ["sh", "-c", "\
         yarn_version = input("Digite a versão do WhatsApp Web (padrão: 1.22.22): ").strip() or "1.22.22"
         
         # Configurar versão do telefone (para evitar banimento)
-        # print("\n=== CONFIGURAÇÃO DA VERSÃO DO TELEFONE ===")
-        # print("Esta configuração simula uma versão específica do WhatsApp no telefone.")
-        # print("Ajuda a evitar detecção e possível banimento pela API oficial do WhatsApp.")
+        print("\n=== CONFIGURAÇÃO DA VERSÃO DO WHATSAPP WEB ===")
+        print("Esta configuração simula uma versão específica do WhatsApp no telefone.")
+        print("Ajuda a evitar detecção e possível banimento pela API oficial do WhatsApp.")
         phone_version = input("Digite a versão do telefone (padrão: 2.3000.1028956288): ").strip() or "2.3000.1028956288"
         
         # Configurar URL do servidor
@@ -3735,16 +3735,40 @@ CMD ["sh", "-c", "\
         
         # Criar arquivo .env com as credenciais (mais seguro que variáveis diretas)
         env_file_path = f'{caminho_env}/.env'
-        with open(env_file_path, 'w') as f:
-            f.write(f"AUTHENTICATION_API_KEY={api_key}\n")
-            f.write(f"DATABASE_CONNECTION_URI={database_uri}\n")
-            f.write(f"YARN_VERSION={yarn_version}\n")
-            f.write(f"CONFIG_SESSION_PHONE_VERSION={phone_version}\n")
-            if server_url:
-                f.write(f"SERVER_URL={server_url}\n")
         
-        # Definir permissões restritas no arquivo .env (apenas owner pode ler)
-        os.chmod(env_file_path, 0o600)
+        # Verificar se o arquivo .env já existe
+        if os.path.exists(env_file_path):
+            print("\n⚠️  ATENÇÃO: Arquivo .env já existe!")
+            print(f"Localização: {env_file_path}")
+            resposta = input("Deseja sobrescrever o arquivo existente? (s/n) Padrão n: ").strip().lower()
+            if resposta != 's':
+                print("✅ Usando arquivo .env existente.")
+                print("💡 A instalação continuará com as configurações já salvas.")
+            else:
+                print("⚠️  Sobrescrevendo arquivo .env existente...")
+                # Criar/sobrescrever o arquivo .env
+                with open(env_file_path, 'w') as f:
+                    f.write(f"AUTHENTICATION_API_KEY={api_key}\n")
+                    f.write(f"DATABASE_CONNECTION_URI={database_uri}\n")
+                    f.write(f"YARN_VERSION={yarn_version}\n")
+                    f.write(f"CONFIG_SESSION_PHONE_VERSION={phone_version}\n")
+                    if server_url:
+                        f.write(f"SERVER_URL={server_url}\n")
+                # Definir permissões restritas no arquivo .env (apenas owner pode ler)
+                os.chmod(env_file_path, 0o600)
+                print("✅ Arquivo .env criado com sucesso!")
+        else:
+            # Criar o arquivo .env pela primeira vez
+            with open(env_file_path, 'w') as f:
+                f.write(f"AUTHENTICATION_API_KEY={api_key}\n")
+                f.write(f"DATABASE_CONNECTION_URI={database_uri}\n")
+                f.write(f"YARN_VERSION={yarn_version}\n")
+                f.write(f"CONFIG_SESSION_PHONE_VERSION={phone_version}\n")
+                if server_url:
+                    f.write(f"SERVER_URL={server_url}\n")
+            # Definir permissões restritas no arquivo .env (apenas owner pode ler)
+            os.chmod(env_file_path, 0o600)
+            print("✅ Arquivo .env criado com sucesso!")
         
         # Construir o comando docker usando --env-file (credenciais não aparecem em docker inspect)
         container = f"""docker run -d \
