@@ -2867,10 +2867,10 @@ WantedBy=timers.target
         print(f"\n📝 Criando banco de dados '{nome_banco}' com usuário '{usuario}'...")
         
         try:
-            # Criar usuário
+            # Criar usuário (com aspas duplas para preservar case)
             cmd_usuario = [
                 "docker", "exec", container, "psql", "-U", "postgres", "-c",
-                f"CREATE USER {usuario} WITH PASSWORD '{senha}';"
+                f"CREATE USER \"{usuario}\" WITH PASSWORD '{senha}';"
             ]
             resultado = subprocess.run(cmd_usuario, capture_output=True, text=True)
             
@@ -2882,10 +2882,10 @@ WantedBy=timers.target
             else:
                 print(f"✅ Usuário '{usuario}' criado com sucesso.")
             
-            # Criar banco de dados
+            # Criar banco de dados (com aspas duplas para preservar case)
             cmd_banco = [
                 "docker", "exec", container, "psql", "-U", "postgres", "-c",
-                f"CREATE DATABASE {nome_banco} OWNER {usuario};"
+                f"CREATE DATABASE \"{nome_banco}\" OWNER \"{usuario}\";"
             ]
             resultado = subprocess.run(cmd_banco, capture_output=True, text=True)
             
@@ -2898,10 +2898,10 @@ WantedBy=timers.target
             else:
                 print(f"✅ Banco de dados '{nome_banco}' criado com sucesso.")
             
-            # Conceder privilégios
+            # Conceder privilégios (com aspas duplas para preservar case)
             cmd_grant = [
                 "docker", "exec", container, "psql", "-U", "postgres", "-c",
-                f"GRANT ALL PRIVILEGES ON DATABASE {nome_banco} TO {usuario};"
+                f"GRANT ALL PRIVILEGES ON DATABASE \"{nome_banco}\" TO \"{usuario}\";"
             ]
             subprocess.run(cmd_grant, capture_output=True, text=True)
             print(f"✅ Privilégios concedidos ao usuário '{usuario}'.")
@@ -3031,7 +3031,7 @@ WantedBy=timers.target
                 apagar_usuario = 'n'
         
         try:
-            # Forçar desconexão de todas as sessões ativas
+            # Forçar desconexão de todas as sessões ativas (aspas simples para string)
             print(f"\n📝 Desconectando sessões ativas do banco '{nome_banco}'...")
             cmd_disconnect = [
                 "docker", "exec", container, "psql", "-U", "postgres", "-c",
@@ -3039,11 +3039,11 @@ WantedBy=timers.target
             ]
             subprocess.run(cmd_disconnect, capture_output=True, text=True)
             
-            # Apagar banco
+            # Apagar banco (com aspas duplas para preservar case)
             print(f"📝 Apagando banco de dados '{nome_banco}'...")
             cmd_drop = [
                 "docker", "exec", container, "psql", "-U", "postgres", "-c",
-                f"DROP DATABASE {nome_banco};"
+                f"DROP DATABASE \"{nome_banco}\";"
             ]
             resultado = subprocess.run(cmd_drop, capture_output=True, text=True)
             
@@ -3053,12 +3053,12 @@ WantedBy=timers.target
                 print(f"❌ Erro ao apagar banco: {resultado.stderr}")
                 return
             
-            # Apagar usuário se solicitado
+            # Apagar usuário se solicitado (com aspas duplas para preservar case)
             if apagar_usuario == 's':
                 print(f"📝 Apagando usuário '{nome_banco}'...")
                 cmd_drop_user = [
                     "docker", "exec", container, "psql", "-U", "postgres", "-c",
-                    f"DROP USER IF EXISTS {nome_banco};"
+                    f"DROP USER IF EXISTS \"{nome_banco}\";"
                 ]
                 resultado = subprocess.run(cmd_drop_user, capture_output=True, text=True)
                 
