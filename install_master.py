@@ -2934,14 +2934,24 @@ WantedBy=timers.target
             bancos_padrao = ['postgres', 'template0', 'template1']
             bancos_usuario = []
             bancos_sistema = []
-            # Ignora cabeçalho e rodapé
-            for linha in linhas[2:]:
-                if not linha or linha.startswith('('):
+            
+            # Processa todas as linhas ignorando cabeçalho e rodapé
+            for linha in linhas:
+                # Ignora linhas vazias, cabeçalho e rodapé
+                if not linha or linha.startswith('datname|') or linha.startswith('(') or linha.startswith('-'):
                     continue
+                
                 partes = linha.split('|')
                 if len(partes) < 2:
                     continue
-                nome, owner = partes[0].strip(), partes[1].strip()
+                
+                nome = partes[0].strip()
+                owner = partes[1].strip()
+                
+                # Pula se for linha vazia após split
+                if not nome:
+                    continue
+                
                 if nome in bancos_padrao:
                     bancos_sistema.append((nome, owner))
                 else:
