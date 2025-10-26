@@ -3719,9 +3719,9 @@ CMD ["sh", "-c", "\
             print("Informe os dados de conexão com o PostgreSQL:")
             
             host_db = input("Host do PostgreSQL (ex: postgres_17, localhost, IP): ").strip()
-            porta_db = input("Porta do PostgreSQL (padrão: 5432): ").strip() or "5432"
-            nome_banco = input("Nome do banco de dados: ").strip()
-            usuario_db = input("Nome do usuário do banco: ").strip()
+            porta_db = input("Porta do PostgreSQL (padrão: 5435): ").strip() or "5435"
+            nome_banco = input("Nome do banco de dados (padrão: evolution): ").strip() or "evolution"
+            usuario_db = input("Nome do usuário do banco (padrão: evolution): ").strip() or "evolution"
             senha_db = input("Senha do usuário: ").strip()
             
             # Validação dos campos obrigatórios
