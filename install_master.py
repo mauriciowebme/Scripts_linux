@@ -924,7 +924,13 @@ class Docker(Executa_comandos):
         # Variáveis de ambiente - diferentes para cada tipo
         if is_simples:
             # Instalação simples: sem banco externo, sem Redis, sem workers
-            env_vars = ""
+            # Adiciona variáveis recomendadas para evitar warnings
+            env_vars = f""" \
+            -e DB_SQLITE_POOL_SIZE=3 \
+            -e N8N_RUNNERS_ENABLED=true \
+            -e N8N_BLOCK_ENV_ACCESS_IN_NODE=false \
+            -e N8N_GIT_NODE_DISABLE_BARE_REPOS=true \
+            -e N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true"""
         else:
             # Main ou Worker: com PostgreSQL e Redis
             env_vars = f""" \
