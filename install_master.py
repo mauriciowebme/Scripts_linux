@@ -3791,19 +3791,26 @@ CMD ["sh", "-c", "\
         print("Instalação do Evolution API WhatsApp concluída.")
         print("="*60)
         print(f"Porta de acesso: {portas[0]}")
-        print(f"API Key: {api_key}")
-        print(f"Versão WhatsApp Web: {yarn_version}")
-        # print(f"Versão do Telefone: {phone_version}")
-        if server_url:
-            print(f"URL do Servidor: {server_url}")
-        print(f"Banco de dados: {host_db}:{porta_db}/{nome_banco}")
+        
+        # Só exibe detalhes se foram coletados (novo .env criado)
+        if not usar_config_existente:
+            print(f"API Key: {api_key}")
+            print(f"Versão WhatsApp Web: {yarn_version}")
+            print(f"Versão do Telefone: {phone_version}")
+            if server_url:
+                print(f"URL do Servidor: {server_url}")
+            print(f"Banco de dados: {host_db}:{porta_db}/{nome_banco}")
+        else:
+            print("📋 Configurações: Usando arquivo .env existente")
+            print(f"   (Verifique o arquivo para detalhes: {env_file_path})")
+        
         print(f"Cache: Local (Redis desabilitado)")
         print(f"Diretório store: {caminho_store}")
         print(f"Diretório instances: {caminho_instances}")
         print(f"\nARQUIVO DE CONFIGURAÇÃO (.env):")
         print(f"  Localização: {env_file_path}")
         print(f"  Permissões: 600 (apenas owner pode ler)")
-        print(f"  Contém: API_KEY, DATABASE_URI, YARN_VERSION, PHONE_VERSION{', SERVER_URL' if server_url else ''}")
+        print(f"  Contém: API_KEY, DATABASE_URI, YARN_VERSION, PHONE_VERSION, SERVER_URL (opcional)")
         print("\nIPs possíveis para acesso:")
         comandos = [
             f"hostname -I | tr ' ' '\n'",
