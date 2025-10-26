@@ -3660,8 +3660,30 @@ CMD ["sh", "-c", "\
     def instala_evolution_api_whatsapp(self):
         print("Iniciando instalação Evolution API WhatsApp:")
         
-        # Solicita informações ao usuário
-        api_key = input("Crie a chave de autenticação da API (AUTHENTICATION_API_KEY): ")
+        # Gerar chave de autenticação forte automaticamente
+        api_key = secrets.token_urlsafe(32)
+        print("\n=== CHAVE DE AUTENTICAÇÃO GERADA ===")
+        print(f"AUTHENTICATION_API_KEY: {api_key}")
+        print("⚠️  Guarde esta chave em local seguro!")
+        print("Ela será salva automaticamente no arquivo .env")
+        
+        # Configurar versão do WhatsApp Web
+        print("\n=== CONFIGURAÇÃO DA VERSÃO DO WHATSAPP WEB ===")
+        print("A versão do WhatsApp Web determina qual cliente será usado pela API.")
+        print("Versões mais recentes podem ter mais recursos, mas versões estáveis são mais confiáveis.")
+        yarn_version = input("Digite a versão do WhatsApp Web (padrão: 1.22.22): ").strip() or "1.22.22"
+        
+        # Configurar versão do telefone (para evitar banimento)
+        print("\n=== CONFIGURAÇÃO DA VERSÃO DO TELEFONE ===")
+        print("Esta configuração simula uma versão específica do WhatsApp no telefone.")
+        print("Ajuda a evitar detecção e possível banimento pela API oficial do WhatsApp.")
+        phone_version = input("Digite a versão do telefone (padrão: 2.3000.1028788854): ").strip() or "2.3000.1028788854"
+        
+        # Configurar URL do servidor
+        print("\n=== CONFIGURAÇÃO DA URL DO SERVIDOR ===")
+        print("Esta URL é usada para webhooks e integrações externas.")
+        print("Exemplo: http://seu-ip:porta ou https://seu-dominio.com")
+        server_url = input("Digite a URL do servidor (opcional, pressione Enter para pular): ").strip()
         
         # Configuração do banco de dados PostgreSQL
         print("\n=== CONFIGURAÇÃO DO BANCO DE DADOS POSTGRESQL ===")
@@ -3698,6 +3720,10 @@ CMD ["sh", "-c", "\
         with open(env_file_path, 'w') as f:
             f.write(f"AUTHENTICATION_API_KEY={api_key}\n")
             f.write(f"DATABASE_CONNECTION_URI={database_uri}\n")
+            f.write(f"YARN_VERSION={yarn_version}\n")
+            f.write(f"CONFIG_SESSION_PHONE_VERSION={phone_version}\n")
+            if server_url:
+                f.write(f"SERVER_URL={server_url}\n")
         
         # Definir permissões restritas no arquivo .env (apenas owner pode ler)
         os.chmod(env_file_path, 0o600)
@@ -3730,6 +3756,10 @@ CMD ["sh", "-c", "\
         print("="*60)
         print(f"Porta de acesso: {portas[0]}")
         print(f"API Key: {api_key}")
+        print(f"Versão WhatsApp Web: {yarn_version}")
+        print(f"Versão do Telefone: {phone_version}")
+        if server_url:
+            print(f"URL do Servidor: {server_url}")
         print(f"Banco de dados: {host_db}:{porta_db}/{nome_banco}")
         print(f"Cache: Local (Redis desabilitado)")
         print(f"Diretório store: {caminho_store}")
@@ -3737,7 +3767,7 @@ CMD ["sh", "-c", "\
         print(f"\nARQUIVO DE CONFIGURAÇÃO (.env):")
         print(f"  Localização: {env_file_path}")
         print(f"  Permissões: 600 (apenas owner pode ler)")
-        print(f"  Contém: API_KEY e DATABASE_URI (credenciais protegidas)")
+        print(f"  Contém: API_KEY, DATABASE_URI, YARN_VERSION, PHONE_VERSION{', SERVER_URL' if server_url else ''}")
         print("\nIPs possíveis para acesso:")
         comandos = [
             f"hostname -I | tr ' ' '\n'",
