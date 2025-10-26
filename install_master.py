@@ -3661,50 +3661,58 @@ CMD ["sh", "-c", "\
         print("Iniciando instalação Evolution API WhatsApp:")
         
         # Solicita informações ao usuário
-        api_key = input("Digite a chave de autenticação da API (AUTHENTICATION_API_KEY): ")
+        api_key = input("Crie a chave de autenticação da API (AUTHENTICATION_API_KEY): ")
         
-        # Garante que o PostgreSQL esteja instalado
-        self.verifica_container_existe('postgres_17', self.instala_postgres)
+        # Configuração do banco de dados PostgreSQL
+        print("\n=== CONFIGURAÇÃO DO BANCO DE DADOS POSTGRESQL ===")
+        print("Informe os dados de conexão com o PostgreSQL:")
         
-        # Verifica se o objeto 'self' possui o atributo 'postgres_password'
-        if not hasattr(self, 'postgres_password') or not self.postgres_password:
-            self.postgres_password = input("Digite a senha root para o PostgreSQL: ")
+        host_db = input("Host do PostgreSQL (ex: postgres_17, localhost, IP): ").strip()
+        porta_db = input("Porta do PostgreSQL (padrão: 5432): ").strip() or "5432"
+        nome_banco = input("Nome do banco de dados: ").strip()
+        usuario_db = input("Nome do usuário do banco: ").strip()
+        senha_db = input("Senha do usuário: ").strip()
         
-        # Tenta criar banco de dados para Evolution API (ignora erro se já existir)
-        print("Verificando/criando banco de dados 'evolution'...")
-        comando_db = f"docker exec -i postgres_17 psql -U postgres -c \"CREATE DATABASE evolution;\""
-        resultado = self.executar_comandos([comando_db], ignorar_erros=True, exibir_resultados=False)
+        # Validação dos campos obrigatórios
+        if not host_db or not nome_banco or not usuario_db or not senha_db:
+            print("ERRO: Todos os campos são obrigatórios!")
+            return
         
-        # Verifica se o banco foi criado ou já existe
-        if any('already exists' in str(line).lower() for line in resultado.get(comando_db, [])):
-            print("Banco de dados 'evolution' já existe.")
-        else:
-            print("Banco de dados 'evolution' criado com sucesso.")
-        
-        database_uri = f"postgresql://postgres:{self.postgres_password}@postgres_17:5432/evolution?schema=public"
+        # Construir URI de conexão com os dados fornecidos
+        database_uri = f"postgresql://{usuario_db}:{senha_db}@{host_db}:{porta_db}/{nome_banco}?schema=public"
         
         portas = self.escolher_porta_disponivel()
         
         caminho_evolution = f'{self.install_principal}/evolution_api_whatsapp'
         caminho_store = f'{caminho_evolution}/store'
         caminho_instances = f'{caminho_evolution}/instances'
+        caminho_env = f'{caminho_evolution}/config'
         
         os.makedirs(caminho_store, exist_ok=True)
         os.makedirs(caminho_instances, exist_ok=True)
+        os.makedirs(caminho_env, exist_ok=True)
         os.chmod(caminho_evolution, 0o777)
         
-        # Construir o comando docker com todas as variáveis de ambiente
+        # Criar arquivo .env com as credenciais (mais seguro que variáveis diretas)
+        env_file_path = f'{caminho_env}/.env'
+        with open(env_file_path, 'w') as f:
+            f.write(f"AUTHENTICATION_API_KEY={api_key}\n")
+            f.write(f"DATABASE_CONNECTION_URI={database_uri}\n")
+        
+        # Definir permissões restritas no arquivo .env (apenas owner pode ler)
+        os.chmod(env_file_path, 0o600)
+        
+        # Construir o comando docker usando --env-file (credenciais não aparecem em docker inspect)
         container = f"""docker run -d \
                         --name evolution_api_whatsapp \
                         --restart=unless-stopped \
                         --memory=256m \
                         --cpus=1 \
                         -p {portas[0]}:8080 \
-                        -e AUTHENTICATION_API_KEY="{api_key}" \
+                        --env-file {env_file_path} \
                         -e TZ="America/Sao_Paulo" \
                         -e DATABASE_ENABLED="true" \
                         -e DATABASE_PROVIDER="postgresql" \
-                        -e DATABASE_CONNECTION_URI="{database_uri}" \
                         -e CACHE_REDIS_ENABLED="false" \
                         -e CACHE_LOCAL_ENABLED="true" \
                         -v {caminho_store}:/evolution/store \
@@ -3722,10 +3730,14 @@ CMD ["sh", "-c", "\
         print("="*60)
         print(f"Porta de acesso: {portas[0]}")
         print(f"API Key: {api_key}")
-        print(f"Banco de dados: PostgreSQL (evolution)")
+        print(f"Banco de dados: {host_db}:{porta_db}/{nome_banco}")
         print(f"Cache: Local (Redis desabilitado)")
         print(f"Diretório store: {caminho_store}")
         print(f"Diretório instances: {caminho_instances}")
+        print(f"\nARQUIVO DE CONFIGURAÇÃO (.env):")
+        print(f"  Localização: {env_file_path}")
+        print(f"  Permissões: 600 (apenas owner pode ler)")
+        print(f"  Contém: API_KEY e DATABASE_URI (credenciais protegidas)")
         print("\nIPs possíveis para acesso:")
         comandos = [
             f"hostname -I | tr ' ' '\n'",
