@@ -3696,11 +3696,11 @@ CMD ["sh", "-c", "\
             print("⚠️  Guarde esta chave em local seguro!")
             print("Ela será salva automaticamente no arquivo .env")
             
-            # Configurar versão do WhatsApp Web
-            print("\n=== CONFIGURAÇÃO DA VERSÃO DO WHATSAPP WEB ===")
-            print("A versão do WhatsApp Web determina qual cliente será usado pela API.")
+            # Configurar versão do Telefone
+            print("\n=== CONFIGURAÇÃO DA VERSÃO DO TELEFONE ===")
+            print("A versão do Telefone determina qual cliente será usado pela API.")
             print("Versões mais recentes podem ter mais recursos, mas versões estáveis são mais confiáveis.")
-            yarn_version = input("Digite a versão do WhatsApp Web (padrão: 1.22.22): ").strip() or "1.22.22"
+            yarn_version = input("Digite a versão do Telefone (padrão: 1.22.22): ").strip() or "1.22.22"
 
             # Configurar versão do WhatsAppWeb (para evitar banimento)
             print("\n=== CONFIGURAÇÃO DA VERSÃO DO WhatsAppWeb ===")
