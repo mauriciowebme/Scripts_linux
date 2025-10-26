@@ -820,72 +820,92 @@ class Docker(Executa_comandos):
             }
             """))
     
-    def iniciar_n8n(self):
+    def instalar_n8n(self):
         print("Iniciando instalação do n8n (workflow automation).")
         print("\n" + "="*60)
         
         # Pergunta tipo de instalação
         print("Tipo de instalação:")
-        print("1 - Main (servidor principal)")
-        print("2 - Worker (processador de tarefas)")
+        print("1 - Simples (SQLite local, sem banco externo)")
+        print("2 - Main (servidor principal com PostgreSQL e Redis)")
+        print("3 - Worker (processador de tarefas)")
         tentativas = 0
+        is_simples = False
         is_main = False
         is_worker = False
         while tentativas < 3:
-            tipo_instalacao = input("Digite sua escolha (1 ou 2): ").strip()
-            is_main = tipo_instalacao == "1"
-            is_worker = tipo_instalacao == "2"
-            if is_main or is_worker:
+            tipo_instalacao = input("Digite sua escolha (1, 2 ou 3): ").strip()
+            is_simples = tipo_instalacao == "1"
+            is_main = tipo_instalacao == "2"
+            is_worker = tipo_instalacao == "3"
+            if is_simples or is_main or is_worker:
                 break
             tentativas += 1
             print(f"❌ Opção inválida! ({tentativas}/3 tentativas)")
-        if not (is_main or is_worker):
+        if not (is_simples or is_main or is_worker):
             print("❌ Nenhuma opção válida após 3 tentativas. Retornando ao menu principal...")
             return
         
-        # Coleta informações comuns
-        print("\n" + "="*60)
-        print("Configurações de banco de dados PostgreSQL:")
-        postgres_host = input("Host do PostgreSQL (padrão: postgres): ").strip() or "postgres"
-        postgres_db = input("Nome do banco (padrão: n8n): ").strip() or "n8n"
-        postgres_user = input("Usuário do banco (padrão: n8n): ").strip() or "n8n"
-        postgres_password = input(f"Senha do usuário '{postgres_user}' do PostgreSQL: ").strip()
+        # Coleta informações comuns apenas para Main/Worker
+        postgres_host = ""
+        postgres_db = ""
+        postgres_user = ""
+        postgres_password = ""
+        redis_host = ""
+        redis_port = ""
+        redis_password = ""
         
-        if not postgres_password:
-            postgres_password = self.generate_password()
-            print(f"⚠️ Senha gerada automaticamente: {postgres_password}")
+        if is_main or is_worker:
+            print("\n" + "="*60)
+            print("Configurações de banco de dados PostgreSQL:")
+            postgres_host = input("Host do PostgreSQL (padrão: postgres): ").strip() or "postgres"
+            postgres_db = input("Nome do banco (padrão: n8n): ").strip() or "n8n"
+            postgres_user = input("Usuário do banco (padrão: n8n): ").strip() or "n8n"
+            postgres_password = input(f"Senha do usuário '{postgres_user}' do PostgreSQL: ").strip()
+            
+            if not postgres_password:
+                postgres_password = self.generate_password()
+                print(f"⚠️ Senha gerada automaticamente: {postgres_password}")
+            
+            print("\n" + "="*60)
+            print("Configurações Redis (fila):")
+            redis_host = input("Host do Redis (padrão: redis): ").strip() or "redis"
+            redis_port = input("Porta do Redis (padrão: 6379): ").strip() or "6379"
+            redis_password = input("Senha do Redis (deixe vazio se não tiver): ").strip()
         
-        print("\n" + "="*60)
-        print("Configurações Redis (fila):")
-        redis_host = input("Host do Redis (padrão: redis): ").strip() or "redis"
-        redis_port = input("Porta do Redis (padrão: 6379): ").strip() or "6379"
-        redis_password = input("Senha do Redis (deixe vazio se não tiver): ").strip()
-        
-        # Configurações específicas do Main
+        # Configurações específicas do Main ou Simples
         n8n_host = ""
         webhook_url = ""
         encryption_key = ""
         porta_publicar = ""
         
-        if is_main:
+        if is_main or is_simples:
             print("\n" + "="*60)
-            print("Configurações do servidor Main:")
-            n8n_host = input("Domínio público (ex: n8n.seudominio.com): ").strip()
+            tipo_texto = "servidor" if is_main else "instalação simples"
+            print(f"Configurações do {tipo_texto}:")
+            n8n_host = input("Domínio público (ex: n8n.seudominio.com, deixe vazio para pular): ").strip()
             
             if n8n_host:
                 webhook_url = f"https://{n8n_host}/"
                 print(f"✔ Webhook URL: {webhook_url}")
             
-            encryption_key = input("Chave de encriptação (deixe vazio para gerar): ").strip()
-            if not encryption_key:
-                encryption_key = self.generate_password(32)
-                print(f"⚠️ Chave gerada: {encryption_key}")
-                print("⚠️ GUARDE ESTA CHAVE! Necessária para descriptografar credenciais.")
+            if not is_simples:  # Encryption key só é necessário para Main com banco
+                encryption_key = input("Chave de encriptação (deixe vazio para gerar): ").strip()
+                if not encryption_key:
+                    encryption_key = self.generate_password(32)
+                    print(f"⚠️ Chave gerada: {encryption_key}")
+                    print("⚠️ GUARDE ESTA CHAVE! Necessária para descriptografar credenciais.")
             
             porta_publicar = input("Porta para expor (padrão: 5678): ").strip() or "5678"
         
         # Prepara diretórios
-        tipo_suffix = "main" if is_main else "worker"
+        if is_simples:
+            tipo_suffix = "simples"
+        elif is_main:
+            tipo_suffix = "main"
+        else:
+            tipo_suffix = "worker"
+            
         caminho_n8n = f'{self.install_principal}/n8n_{tipo_suffix}'
         os.makedirs(caminho_n8n, exist_ok=True)
         os.chmod(caminho_n8n, 0o777)
@@ -901,8 +921,13 @@ class Docker(Executa_comandos):
             --cpus=1 \
             -v {caminho_n8n}:/home/node/.n8n"""
         
-        # Variáveis de ambiente comuns
-        env_vars = f""" \
+        # Variáveis de ambiente - diferentes para cada tipo
+        if is_simples:
+            # Instalação simples: sem banco externo, sem Redis, sem workers
+            env_vars = ""
+        else:
+            # Main ou Worker: com PostgreSQL e Redis
+            env_vars = f""" \
             -e DB_TYPE=postgresdb \
             -e DB_POSTGRESDB_HOST={postgres_host} \
             -e DB_POSTGRESDB_DATABASE={postgres_db} \
@@ -911,13 +936,25 @@ class Docker(Executa_comandos):
             -e QUEUE_BULL_REDIS_HOST={redis_host} \
             -e QUEUE_BULL_REDIS_PORT={redis_port}"""
         
-        # Adiciona senha do Redis se informada
-        if redis_password:
+        # Adiciona senha do Redis se informada (só para Main/Worker)
+        if redis_password and not is_simples:
             env_vars += f""" \
             -e QUEUE_BULL_REDIS_PASSWORD={redis_password}"""
 
         # Configurações específicas por tipo
-        if is_main:
+        if is_simples:
+            # Instalação simples: apenas configurações básicas
+            if n8n_host:
+                env_vars += f""" \
+            -e N8N_HOST={n8n_host} \
+            -e N8N_PROTOCOL=https \
+            -e WEBHOOK_URL={webhook_url}"""
+            
+            # Porta exposta
+            env_vars += f""" \
+            -p {porta_publicar}:5678"""
+            
+        elif is_main:
             # Variáveis específicas do Main
             env_vars += f""" \
             -e EXECUTIONS_MODE=queue \
@@ -961,7 +998,19 @@ class Docker(Executa_comandos):
         print(f"✔ Instalação do n8n ({tipo_suffix.upper()}) concluída!")
         print("="*60)
         
-        if is_main:
+        if is_simples:
+            print(f'\n✔ Instalação simples configurada!')
+            print(f'\nAcesse o n8n em http://<seu_ip>:{porta_publicar}')
+            if n8n_host:
+                print(f'Ou via domínio: https://{n8n_host}')
+            print('\nNa primeira execução você precisará criar um usuário e senha.')
+            print('\n📝 Características desta instalação:')
+            print('   - Banco de dados: SQLite (arquivo local)')
+            print('   - Execuções: Modo local (sem fila/workers)')
+            print('   - Dados salvos em: ' + caminho_n8n)
+            print('\n⚠️ NOTA: Para produção com múltiplos workers, use a opção "Main"')
+            
+        elif is_main:
             print(f'\nAcesse o n8n em http://<seu_ip>:{porta_publicar}')
             if n8n_host:
                 print(f'Ou via domínio: https://{n8n_host}')
@@ -6244,7 +6293,7 @@ AllowedIPs = {ip_peer}
             ("Instala wordpress puro", self.instala_wordpress_puro),
             ("Instala app nodejs", self.instala_app_nodejs),
             ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
-            ("Instala n8n (workflow automation)", self.iniciar_n8n),
+            ("Instala n8n (workflow automation)", self.instalar_n8n),
             ("Start sync pastas com RSYNC", self.start_sync_pastas),
             ("Instala windows KVM docker", self.instala_windows_KVM_docker),
             ("Instala Sistema CISO docker", self.instala_sistema_CISO_docker),
