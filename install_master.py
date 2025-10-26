@@ -2921,20 +2921,43 @@ WantedBy=timers.target
     def listar_bancos_postgres(self, container):
         """Lista todos os bancos de dados do PostgreSQL"""
         print(f"\n=== BANCOS DE DADOS NO CONTAINER: {container} ===\n")
-        
         try:
             cmd = [
-                "docker", "exec", container, "psql", "-U", "postgres", "-c",
-                "\\l"
+                "docker", "exec", container, "psql", "-U", "postgres", "-A", "-F|", "-c",
+                "SELECT datname, pg_catalog.pg_get_userbyid(datdba) as owner FROM pg_database ORDER BY datname;"
             ]
             resultado = subprocess.run(cmd, capture_output=True, text=True)
-            
-            if resultado.returncode == 0:
-                print(resultado.stdout)
-            else:
+            if resultado.returncode != 0:
                 print(f"❌ Erro ao listar bancos: {resultado.stderr}")
-                
+                return
+            linhas = resultado.stdout.strip().split('\n')
+            bancos_padrao = ['postgres', 'template0', 'template1']
+            bancos_usuario = []
+            bancos_sistema = []
+            # Ignora cabeçalho e rodapé
+            for linha in linhas[2:]:
+                if not linha or linha.startswith('('):
+                    continue
+                partes = linha.split('|')
+                if len(partes) < 2:
+                    continue
+                nome, owner = partes[0].strip(), partes[1].strip()
+                if nome in bancos_padrao:
+                    bancos_sistema.append((nome, owner))
+                else:
+                    bancos_usuario.append((nome, owner))
+            print(f"\n=== BANCOS DE DADOS NO CONTAINER: {container} ===\n")
+            print("--- Bancos do sistema (padrão) ---")
+            for nome, owner in bancos_sistema:
+                print(f"  {nome:<15} (owner: {owner})")
+            print("\n--- Bancos criados pelo usuário ---")
+            if bancos_usuario:
+                for nome, owner in bancos_usuario:
+                    print(f"  {nome:<15} (owner: {owner})")
+            else:
+                print("  Nenhum banco de usuário encontrado.")
         except Exception as e:
+            print(f"❌ Erro ao listar bancos de dados: {e}")
             print(f"❌ Erro ao listar bancos de dados: {e}")
     
     def apagar_banco_postgres(self, container):
