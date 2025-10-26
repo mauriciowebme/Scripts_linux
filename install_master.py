@@ -830,7 +830,7 @@ class Docker(Executa_comandos):
             f"""docker run -d \
             --name n8n \
             --restart=unless-stopped \
-            --memory=512m \
+            --memory=256m \
             --cpus=1 \
             -p 5678:5678 \
             -v {caminho_n8n}:/home/node/.n8n \
@@ -3296,7 +3296,7 @@ CMD ["sh", "-c", "\
         container = f"""docker run -d \
                         --name redis \
                         --restart=unless-stopped \
-                        --memory=512m \
+                        --memory=256m \
                         --cpus=1 \
                         -p 6379:6379 \
                         redis redis-server --requirepass "{senha}"
