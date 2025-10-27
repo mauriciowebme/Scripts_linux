@@ -933,7 +933,7 @@ class Docker(Executa_comandos):
             
             if not postgres_password:
                 postgres_password = self.generate_password()
-                print(f"⚠️ Senha gerada automaticamente: {postgres_password}")
+                print("⚠️ Senha gerada automaticamente para o PostgreSQL.")
             
             print("\n" + "="*60)
             print("Configurações Redis (fila):")
@@ -956,7 +956,7 @@ class Docker(Executa_comandos):
             # Garante senha caso reuse_env não tenha trazido
             if not postgres_password:
                 postgres_password = self.generate_password()
-                print(f"⚠️ Senha do owner do banco estava vazia. Gerada automaticamente: {postgres_password}")
+                print("⚠️ Senha do owner do banco estava vazia e foi gerada automaticamente.")
             try:
                 print("\n=== Limpando banco de dados (DROP e recriação) ===")
                 print(f"Banco: '{postgres_db}' em {postgres_host}:{postgres_port} (owner: {postgres_user})")
@@ -1180,7 +1180,7 @@ class Docker(Executa_comandos):
             print('\nNa primeira execução você precisará criar um usuário e senha.')
             print(f'\n⚠️ IMPORTANTE - Guarde estas informações:')
             print(f'   - Chave de encriptação: {encryption_key}')
-            print(f'   - Senha PostgreSQL: {postgres_password}')
+            print(f'   - Senha PostgreSQL: [oculta]')
         else:
             print('\n✔ Worker configurado e em execução.')
             print('Este worker processará tarefas da fila automaticamente.')
@@ -2974,7 +2974,7 @@ WantedBy=timers.target
         print(f' - ssh -L {porta}:localhost:{porta} usuario@servidor_remoto')
         print(f' - Local instalação: {self.bds}/postgres/{versao_}')
         print(f' - Usuario: postgres')
-        print(f' - Senha: {self.postgres_password}')
+        # Senha do Postgres ocultada por segurança
         print(f' - Porta interna: 5432')
         print(f' - Porta externa: {porta}')
     
