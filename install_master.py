@@ -1213,11 +1213,19 @@ class Docker(Executa_comandos):
         
         # Configura permissões de exclusão, edição e criação
         print("\nConfigurando permissões do File Browser...")
-        comandos_config = [
-            "docker exec filebrowser filebrowser config set --perm.admin true --perm.create true --perm.delete true --perm.modify true --perm.rename true --perm.share true",
-            "docker restart filebrowser"
-        ]
-        self.executar_comandos(comandos_config)
+        try:
+            # Aguarda o container estabilizar
+            time.sleep(3)
+            
+            # Configura permissões globais do usuário admin
+            comandos_config = [
+                "docker exec filebrowser filebrowser users update admin --perm.admin --perm.create --perm.delete --perm.modify --perm.rename --perm.share",
+            ]
+            self.executar_comandos(comandos_config)
+            print("✔ Permissões configuradas com sucesso!")
+        except Exception as e:
+            print(f"⚠️ Aviso: Não foi possível configurar permissões automaticamente: {e}")
+            print("   Configure manualmente após o primeiro login.")
         
         print("\n" + "="*60)
         print("✔ File Browser instalado com sucesso!")
