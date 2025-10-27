@@ -1214,7 +1214,7 @@ class Docker(Executa_comandos):
         # Configura permissões de exclusão, edição e criação
         print("\nConfigurando permissões do File Browser...")
         comandos_config = [
-            "docker exec filebrowser filebrowser config set --scope /srv --allowNew true --allowEdit true --allowDelete true",
+            "docker exec filebrowser filebrowser config set --perm.admin true --perm.create true --perm.delete true --perm.modify true --perm.rename true --perm.share true",
             "docker restart filebrowser"
         ]
         self.executar_comandos(comandos_config)
