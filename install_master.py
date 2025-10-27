@@ -973,6 +973,14 @@ class Docker(Executa_comandos):
                     print(f"Pasta {pending_delete_dir} removida para nova instalação.")
             except Exception as ex:
                 print(f"Aviso: não foi possível remover {pending_delete_dir}: {ex}")
+
+        # Garantia final: a pasta de dados do n8n precisa existir e ser gravável
+        # para que o usuário 'node' dentro do container consiga criar /home/node/.n8n/config
+        try:
+            os.makedirs(caminho_n8n, exist_ok=True)
+            os.chmod(caminho_n8n, 0o777)
+        except Exception:
+            pass
         # PASSO 5: Configurações específicas do Main ou Simples (domínio, chave, porta)
         n8n_host = ""
         webhook_url = ""
