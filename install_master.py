@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # Execute com:
 # wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
@@ -819,7 +819,7 @@ class Docker(Executa_comandos):
         print("Iniciando instalação do n8n (workflow automation).")
         print("\n" + "="*60)
         
-        # Pergunta tipo de instalação
+        # PASSO 1: Pergunta tipo de instalação
         print("Tipo de instalação:")
         print("1 - Simples (SQLite local, sem banco externo)")
         print("2 - Main (servidor principal com PostgreSQL e Redis)")
@@ -841,7 +841,79 @@ class Docker(Executa_comandos):
             print("❌ Nenhuma opção válida após 3 tentativas. Retornando ao menu principal...")
             return
         
-        # Coleta informações comuns apenas para Main/Worker
+        # Define o sufixo e caminhos baseado no tipo escolhido
+        if is_simples:
+            tipo_suffix = "simples"
+        elif is_main:
+            tipo_suffix = "main"
+        else:
+            tipo_suffix = "worker"
+            
+        caminho_n8n = f'{self.install_principal}/n8n_{tipo_suffix}'
+        env_file_path = os.path.join(caminho_n8n, 'n8n.env')
+        container_name = f"n8n_{tipo_suffix}"
+
+        # PASSO 2: Verificação de instalação anterior e decisão manter/limpar
+        try:
+            dados_existentes = os.path.isdir(caminho_n8n) and any(os.scandir(caminho_n8n))
+        except Exception:
+            dados_existentes = os.path.isdir(caminho_n8n)
+        
+        clean_install = False
+        if dados_existentes:
+            print("\n=== Instalação existente detectada (arquivos) ===")
+            try:
+                qtd = len(list(os.scandir(caminho_n8n)))
+            except Exception:
+                qtd = -1
+            print(f" - Pasta de dados: {caminho_n8n} (itens: {qtd if qtd>=0 else 'desconhecido'})")
+            print("\nO que deseja fazer?")
+            if is_main or is_worker:
+                print("Nota: Ao escolher nova instalação, o banco PostgreSQL também será limpo.")
+            print("1) Manter dados (recomendado)")
+            print("2) Nova instalação limpa (apagar pasta de dados)")
+            print("3) Cancelar")
+            escolha = input("Escolha [1/2/3] (padrão: 1): ").strip() or "1"
+            if escolha == "3":
+                print("Operação cancelada pelo usuário.")
+                return
+            if escolha == "2":
+                try:
+                    if os.path.exists(caminho_n8n):
+                        shutil.rmtree(caminho_n8n, ignore_errors=True)
+                        print(f"Pasta {caminho_n8n} removida para nova instalação.")
+                except Exception as ex:
+                    print(f"Aviso: não foi possível remover {caminho_n8n}: {ex}")
+                clean_install = True
+            else:
+                print("Mantendo a pasta de dados existente.")
+                clean_install = False
+
+        # Garante existência e permissões da pasta de dados após as decisões acima
+        os.makedirs(caminho_n8n, exist_ok=True)
+        os.chmod(caminho_n8n, 0o777)
+        
+        # PASSO 3: Reutilização automática do n8n.env somente se manter dados
+        reuse_env = False
+        env_data = {}
+        if (not clean_install) and os.path.isfile(env_file_path):
+            print(f"\nReutilizando arquivo de configuração existente: {env_file_path}")
+            reuse_env = True
+            try:
+                with open(env_file_path, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line or line.startswith('#'):
+                            continue
+                        if '=' in line:
+                            k, v = line.split('=', 1)
+                            env_data[k.strip()] = v.strip()
+                print("✔ Configurações carregadas do arquivo existente.")
+            except Exception as ex:
+                print(f"Aviso: erro ao ler {env_file_path}: {ex}")
+                reuse_env = False
+        
+        # PASSO 4: Coletar configurações DB/Redis apenas se não reaproveitar
         postgres_host = ""
         postgres_db = ""
         postgres_user = ""
@@ -851,7 +923,7 @@ class Docker(Executa_comandos):
         redis_port = ""
         redis_password = ""
         
-        if is_main or is_worker:
+        if (is_main or is_worker) and not reuse_env:
             print("\n" + "="*60)
             print("Configurações de banco de dados PostgreSQL:")
             postgres_host = input("Host do PostgreSQL (padrão: postgres): ").strip() or "postgres"
@@ -869,8 +941,32 @@ class Docker(Executa_comandos):
             redis_host = input("Host do Redis (padrão: redis): ").strip() or "redis"
             redis_port = input("Porta do Redis (padrão: 6379): ").strip() or "6379"
             redis_password = input("Senha do Redis (deixe vazio se não tiver): ").strip()
+        elif (is_main or is_worker) and reuse_env:
+            # Carrega do env_data
+            postgres_host = env_data.get('DB_POSTGRESDB_HOST', 'postgres')
+            postgres_port = env_data.get('DB_POSTGRESDB_PORT', '5432')
+            postgres_db = env_data.get('DB_POSTGRESDB_DATABASE', 'N8N')
+            postgres_user = env_data.get('DB_POSTGRESDB_USER', 'N8N')
+            postgres_password = env_data.get('DB_POSTGRESDB_PASSWORD', '')
+            redis_host = env_data.get('QUEUE_BULL_REDIS_HOST', 'redis')
+            redis_port = env_data.get('QUEUE_BULL_REDIS_PORT', '6379')
+            redis_password = env_data.get('QUEUE_BULL_REDIS_PASSWORD', '')
+
+        # PASSO 4.1: Se usuário escolheu nova instalação, limpar o banco automaticamente
+        if (is_main or is_worker) and clean_install:
+            # Garante senha caso reuse_env não tenha trazido
+            if not postgres_password:
+                postgres_password = self.generate_password()
+                print(f"⚠️ Senha do owner do banco estava vazia. Gerada automaticamente: {postgres_password}")
+            try:
+                print("\n=== Limpando banco de dados (DROP e recriação) ===")
+                print(f"Banco: '{postgres_db}' em {postgres_host}:{postgres_port} (owner: {postgres_user})")
+                self.limpar_banco_postgres(postgres_host, postgres_port, postgres_db, postgres_user, postgres_password)
+                print("✔ Banco de dados limpo e recriado com sucesso.")
+            except Exception as ex:
+                print(f"Aviso: falha ao limpar o banco de dados: {ex}")
         
-        # Configurações específicas do Main ou Simples
+        # PASSO 5: Configurações específicas do Main ou Simples (domínio, chave, porta)
         n8n_host = ""
         webhook_url = ""
         encryption_key = ""
@@ -880,103 +976,28 @@ class Docker(Executa_comandos):
             print("\n" + "="*60)
             tipo_texto = "servidor" if is_main else "instalação simples"
             print(f"Configurações do {tipo_texto}:")
-            n8n_host = input("Domínio público (ex: n8n.seudominio.com, deixe vazio para pular): ").strip()
+            
+            if reuse_env:
+                n8n_host = env_data.get('N8N_HOST', '')
+                encryption_key = env_data.get('N8N_ENCRYPTION_KEY', '')
+                porta_publicar = "5678"  # Porta padrão quando reutilizando
+            else:
+                n8n_host = input("Domínio público (ex: n8n.seudominio.com, deixe vazio para pular): ").strip()
+                
+                if not is_simples:  # Encryption key só é necessário para Main com banco
+                    encryption_key = input("Chave de encriptação (deixe vazio para gerar): ").strip()
+                    if not encryption_key:
+                        encryption_key = self.generate_password(32)
+                        print(f"⚠️ Chave gerada: {encryption_key}")
+                        print("⚠️ GUARDE ESTA CHAVE! Necessária para descriptografar credenciais.")
+                
+                porta_publicar = input("Porta para expor (padrão: 5678): ").strip() or "5678"
             
             if n8n_host:
                 webhook_url = f"https://{n8n_host}/"
                 print(f"✔ Webhook URL: {webhook_url}")
-            
-            if not is_simples:  # Encryption key só é necessário para Main com banco
-                encryption_key = input("Chave de encriptação (deixe vazio para gerar): ").strip()
-                if not encryption_key:
-                    encryption_key = self.generate_password(32)
-                    print(f"⚠️ Chave gerada: {encryption_key}")
-                    print("⚠️ GUARDE ESTA CHAVE! Necessária para descriptografar credenciais.")
-            
-            porta_publicar = input("Porta para expor (padrão: 5678): ").strip() or "5678"
         
-        # Prepara diretórios
-        if is_simples:
-            tipo_suffix = "simples"
-        elif is_main:
-            tipo_suffix = "main"
-        else:
-            tipo_suffix = "worker"
-            
-        caminho_n8n = f'{self.install_principal}/n8n_{tipo_suffix}'
-
-        # Nome do container (apenas informativo; recriação já é tratada depois)
-        container_name = f"n8n_{tipo_suffix}"
-
-        # Verificação de instalação anterior (apenas arquivos/pasta de dados)
-        try:
-            dados_existentes = os.path.isdir(caminho_n8n) and any(os.scandir(caminho_n8n))
-        except Exception:
-            dados_existentes = os.path.isdir(caminho_n8n)
-        
-        if dados_existentes:
-            print("\n=== Instalação existente detectada (arquivos) ===")
-            try:
-                qtd = len(list(os.scandir(caminho_n8n)))
-            except Exception:
-                qtd = -1
-            print(f" - Pasta de dados: {caminho_n8n} (itens: {qtd if qtd>=0 else 'desconhecido'})")
-            print("\nO que deseja fazer?")
-            if is_main or is_worker:
-                print("Nota: Esta escolha afeta apenas a pasta de dados local do n8n, não o PostgreSQL.")
-            print("1) Manter dados (recomendado)")
-            print("2) Nova instalação limpa (apagar pasta de dados)")
-            print("3) Cancelar")
-            escolha = input("Escolha [1/2/3] (padrão: 1): ").strip() or "1"
-            if escolha == "3":
-                print("Operação cancelada pelo usuário.")
-                return
-            if escolha == "2":
-                try:
-                    if os.path.exists(caminho_n8n):
-                        shutil.rmtree(caminho_n8n, ignore_errors=True)
-                        print(f"Pasta {caminho_n8n} removida para nova instalação.")
-                except Exception as ex:
-                    print(f"Aviso: não foi possível remover {caminho_n8n}: {ex}")
-                
-                # Limpeza automática do banco de dados PostgreSQL (apenas Main/Worker)
-                if is_main or is_worker:
-                    print("\nResetando banco de dados PostgreSQL do n8n (limpeza total)...")
-                    print(f" - Host: {postgres_host} | Porta: {postgres_port} | DB: {postgres_db} | Usuário: {postgres_user}")
-                    print("ATENÇÃO: isso apagará workflows, credenciais, execuções e usuários armazenados no banco.")
-                    try:
-                        print("\nLimpando schemas/tabelas do banco...")
-                        sql_cmd = "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-                        # Executa diretamente via cliente psql efêmero em Docker, sem prompts
-                        cmd_net = (
-                            f"docker run --rm --network interno -e PGPASSWORD={shlex.quote(str(postgres_password))} "
-                            f"postgres:17-alpine psql -h {shlex.quote(str(postgres_host))} -p {shlex.quote(str(postgres_port))} "
-                            f"-U {shlex.quote(str(postgres_user))} -d {shlex.quote(str(postgres_db))} "
-                            f"-v ON_ERROR_STOP=1 -c \"{sql_cmd}\""
-                        )
-                        cmd_no_net = (
-                            f"docker run --rm -e PGPASSWORD={shlex.quote(str(postgres_password))} "
-                            f"postgres:17-alpine psql -h {shlex.quote(str(postgres_host))} -p {shlex.quote(str(postgres_port))} "
-                            f"-U {shlex.quote(str(postgres_user))} -d {shlex.quote(str(postgres_db))} "
-                            f"-v ON_ERROR_STOP=1 -c \"{sql_cmd}\""
-                        )
-                        # Primeiro tenta com rede 'interno' ignorando erros; depois tenta sem rede
-                        self.executar_comandos([cmd_net], ignorar_erros=True, comando_direto=True)
-                        self.executar_comandos([cmd_no_net], comando_direto=True)
-                        print("Banco de dados limpo com sucesso.")
-                    except Exception as ex:
-                        print(f"Falha ao limpar o banco automaticamente: {ex}")
-                        print("Você pode executar manualmente com psql usando as credenciais acima:")
-                        print(f"  psql -h {postgres_host} -p {postgres_port} -U {postgres_user} -d {postgres_db}")
-                        print(f"  SQL: {sql_cmd}")
-            else:
-                print("Mantendo a pasta de dados existente.")
-
-        # Garante existência e permissões da pasta de dados após as decisões acima
-        os.makedirs(caminho_n8n, exist_ok=True)
-        os.chmod(caminho_n8n, 0o777)
-        
-        # Constrói comando base
+        # PASSO 6: Constrói comando base do container
         comando_base = f"""docker run -d \
             --name {container_name} \
             --restart=unless-stopped \
@@ -1056,6 +1077,63 @@ class Docker(Executa_comandos):
             -e QUEUE_WORKER_ID={shlex.quote(str(container_name))}"""
         
         # Comando completo
+        # Persiste .env com as variáveis utilizadas para reutilização futura
+        try:
+            env_map = {}
+            if is_simples:
+                env_map.update({
+                    'DB_SQLITE_POOL_SIZE': '3',
+                    'N8N_RUNNERS_ENABLED': 'true',
+                    'N8N_BLOCK_ENV_ACCESS_IN_NODE': 'false',
+                    'N8N_GIT_NODE_DISABLE_BARE_REPOS': 'true',
+                    'N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS': 'true',
+                })
+            else:
+                env_map.update({
+                    'DB_TYPE': 'postgresdb',
+                    'DB_POSTGRESDB_HOST': str(postgres_host),
+                    'DB_POSTGRESDB_PORT': str(postgres_port),
+                    'DB_POSTGRESDB_DATABASE': str(postgres_db),
+                    'DB_POSTGRESDB_USER': str(postgres_user),
+                    'DB_POSTGRESDB_PASSWORD': str(postgres_password),
+                    'QUEUE_BULL_REDIS_HOST': str(redis_host),
+                    'QUEUE_BULL_REDIS_PORT': str(redis_port),
+                    'N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS': 'true',
+                    'N8N_RUNNERS_ENABLED': 'true',
+                    'N8N_BLOCK_ENV_ACCESS_IN_NODE': 'false',
+                    'N8N_GIT_NODE_DISABLE_BARE_REPOS': 'true',
+                })
+                if redis_password:
+                    env_map['QUEUE_BULL_REDIS_PASSWORD'] = str(redis_password)
+            if is_main:
+                env_map['EXECUTIONS_MODE'] = 'queue'
+                env_map['OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS'] = 'true'
+                env_map['N8N_ENCRYPTION_KEY'] = str(encryption_key)
+            if n8n_host:
+                env_map.update({
+                    'N8N_HOST': str(n8n_host),
+                    'N8N_PROTOCOL': 'https',
+                    'WEBHOOK_URL': str(webhook_url),
+                    'N8N_PROXY_HOPS': '1',
+                    'N8N_SECURE_COOKIE': 'true',
+                })
+            # Salva arquivo env
+            os.makedirs(caminho_n8n, exist_ok=True)
+            with open(env_file_path, 'w', encoding='utf-8') as fenv:
+                fenv.write('# n8n environment variables\n')
+                for k, v in env_map.items():
+                    if v is None:
+                        continue
+                    # Evita quebras de linha e espaços à direita
+                    fenv.write(f"{k}={str(v).strip()}\n")
+            try:
+                os.chmod(env_file_path, 0o600)
+            except Exception:
+                pass
+            print(f"\n✔ Arquivo de configuração salvo: {env_file_path}")
+        except Exception as ex:
+            print(f"Aviso: não foi possível salvar o env em {env_file_path}: {ex}")
+
         comando_completo = comando_base + env_vars + """ \
             docker.n8n.io/n8nio/n8n:latest
             """
@@ -3206,7 +3284,101 @@ WantedBy=timers.target
             
         except Exception as e:
             print(f"❌ Erro ao apagar banco de dados: {e}")
-        
+
+    def limpar_banco_postgres(self, host, port, db_name, db_owner, db_password):
+        """
+        Limpa o banco de dados do n8n: derruba conexões, DROP DATABASE e recria vazio com o mesmo owner.
+        Tenta priorizar execução via docker exec em um container PostgreSQL local.
+        Se não encontrar container correspondente, tenta usar psql local (se disponível).
+        """
+        import shutil
+        # Utilitário para escapar aspas simples em strings SQL
+        def _sql_escape(s: str) -> str:
+            return (s or '').replace("'", "''")
+
+        # Descobre containers postgres em execução
+        try:
+            result = subprocess.run([
+                "docker", "ps", "--filter", "name=postgres_", "--format", "{{.Names}}"
+            ], capture_output=True, text=True)
+            containers = [c.strip() for c in result.stdout.split("\n") if c.strip()]
+        except Exception:
+            containers = []
+
+        chosen_container = None
+        if host and host in containers:
+            chosen_container = host
+        elif containers:
+            # Se houver exatamente um container, usa-o automaticamente; caso contrário, tentaremos psql local
+            if len(containers) == 1:
+                chosen_container = containers[0]
+
+        sql_terminate = f"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '{_sql_escape(db_name)}';"
+        sql_drop = f"DROP DATABASE IF EXISTS \"{db_name}\";"
+        # Cria/atualiza owner e recria DB
+        sql_role = (
+            "DO $$BEGIN "
+            f"IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '{_sql_escape(db_owner)}') THEN "
+            f"CREATE ROLE \"{db_owner}\" LOGIN PASSWORD '{_sql_escape(db_password)}'; "
+            "ELSE "
+            f"ALTER ROLE \"{db_owner}\" WITH LOGIN PASSWORD '{_sql_escape(db_password)}'; "
+            "END IF; END$$;"
+        )
+        sql_create = f"CREATE DATABASE \"{db_name}\" OWNER \"{db_owner}\";"
+
+        if chosen_container:
+            print(f"Usando container PostgreSQL: {chosen_container}")
+            # Executa sequência via docker exec
+            cmds = [
+                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_terminate],
+                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_drop],
+                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_role],
+                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_create],
+            ]
+            for cmd in cmds:
+                r = subprocess.run(cmd, capture_output=True, text=True)
+                if r.returncode != 0:
+                    raise RuntimeError(f"Falha ao executar {' '.join(cmd[:5])}...: {r.stderr}")
+            return
+
+        # Fallback: usar psql local, se existir
+        if shutil.which("psql"):
+            print("psql local detectado. Tentando limpar via conexão TCP...")
+            conn = f"host={host} port={port} user=postgres dbname=postgres"
+            env = os.environ.copy()
+            # Se houver senha do superuser via variável de ambiente (opcional)
+            # Ocasionalmente, o cluster pode permitir trust ou md5 sem PGPASSWORD.
+            # Não setamos PGPASSWORD por padrão para 'postgres' superuser.
+            cmds = [
+                ["psql", conn, "-c", sql_terminate],
+                ["psql", conn, "-c", sql_drop],
+                ["psql", conn, "-c", sql_role],
+                ["psql", conn, "-c", sql_create],
+            ]
+            for cmd in cmds:
+                r = subprocess.run(cmd, capture_output=True, text=True, env=env)
+                if r.returncode != 0:
+                    raise RuntimeError(f"Falha ao executar {' '.join(cmd[:2])}...: {r.stderr}")
+            return
+
+        # Se chegamos aqui e temos containers mas não escolhemos um, usa o primeiro como melhor esforço
+        if containers:
+            chosen_container = containers[0]
+            print(f"psql local indisponível. Usando container PostgreSQL: {chosen_container}")
+            cmds = [
+                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_terminate],
+                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_drop],
+                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_role],
+                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_create],
+            ]
+            for cmd in cmds:
+                r = subprocess.run(cmd, capture_output=True, text=True)
+                if r.returncode != 0:
+                    raise RuntimeError(f"Falha ao executar {' '.join(cmd[:5])}...: {r.stderr}")
+            return
+
+        raise RuntimeError("Nenhum container PostgreSQL encontrado e psql local não disponível.")
+
     def configure_postgres_replication(self, master_container, slave_container, replication_user, replication_password):
         try:
             print("Configurando replicação...")
