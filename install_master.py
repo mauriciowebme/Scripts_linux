@@ -1174,7 +1174,6 @@ class Docker(Executa_comandos):
                     --restart=unless-stopped \
                     --memory=256m \
                     --cpus=1 \
-                    --user 0:0 \
                     -p {portas[0]}:80 \
                     -v /:/srv \
                     -v {self.install_principal}/filebrowser/database.db:/database.db \
@@ -1211,38 +1210,20 @@ class Docker(Executa_comandos):
         except Exception as e:
             print(f"Erro: {e}")
         
-        # Configura permissões de exclusão, edição e criação
-        print("\nConfigurando permissões do File Browser...")
-        comandos_config = [
-            "docker exec filebrowser filebrowser config set --scope /srv --allowNew true --allowEdit true --allowDelete true",
-            "docker restart filebrowser"
-        ]
-        self.executar_comandos(comandos_config)
-        
-        print("\n" + "="*60)
-        print("✔ File Browser instalado com sucesso!")
-        print("="*60)
-        print(f"\nPossiveis ip's para acesso:")
+        print(f"Possiveis ip's para acesso:")
         comandos = [
             "ip addr show | grep 'inet ' | awk '{print $2}' | cut -d'/' -f1",
         ]
         self.executar_comandos(comandos, exibir_executando=False)
-        print(f'\nPorta para uso local: {portas[0]}')
+        print(f'Porta para uso local: {portas[0]}')
         print(f'Usuario padrão: admin')
         
         if senha_padrao:
             print(f'Senha gerada automaticamente: {senha_padrao}')
         else:
-            print(f'\n📌 IMPORTANTE: Verifique os logs para obter a senha inicial!')
+            print(f'📌 IMPORTANTE: Verifique os logs para obter a senha inicial!')
             print(f'Execute: docker logs filebrowser')
             print(f'Procure pela linha com "randomly generated password:"')
-        
-        print(f'\n✅ Permissões configuradas:')
-        print(f'   - Criar arquivos/pastas: Habilitado')
-        print(f'   - Editar arquivos: Habilitado')
-        print(f'   - Deletar arquivos/pastas: Habilitado')
-        print(f'   - Usuário do container: root (0:0)')
-        print("="*60)
         
     def verifica_container_existe(self, container_name, install_function):
         """
@@ -7017,7 +6998,7 @@ Execute com: bash /install_principal/install_master.txt
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.228
+Versão 1.226
 ===========================================================================
 ===========================================================================
 ip server:
