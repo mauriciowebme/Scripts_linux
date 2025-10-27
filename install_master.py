@@ -3294,97 +3294,38 @@ WantedBy=timers.target
 
     def limpar_banco_postgres(self, host, port, db_name, db_owner, db_password):
         """
-        Limpa o banco de dados do n8n: derruba conexões, DROP DATABASE e recria vazio com o mesmo owner.
-        Tenta priorizar execução via docker exec em um container PostgreSQL local.
-        Se não encontrar container correspondente, tenta usar psql local (se disponível).
+        Limpeza simples do banco: remove e recria o schema 'public' usando um cliente psql
+        executado via container temporário do Postgres. Mantém o banco e o owner; apenas zera o conteúdo.
         """
-        import shutil
-        # Utilitário para escapar aspas simples em strings SQL
-        def _sql_escape(s: str) -> str:
-            return (s or '').replace("'", "''")
+        print("Iniciando container temporário do Postgres para limpar via schema (psql)...")
+        base_cmd = ["docker", "run", "--rm"]
+        # Acesso a localhost do host
+        if str(host) in ("localhost", "127.0.0.1"):
+            base_cmd += ["--network=host"]
+        base_cmd += [
+            "-e", f"PGPASSWORD={db_password}",
+            "postgres:17",
+            "psql",
+            "-h", str(host),
+            "-p", str(port),
+            "-U", str(db_owner),
+            "-d", str(db_name),
+            "-v", "ON_ERROR_STOP=1",
+        ]
 
-        # Descobre containers postgres em execução
-        try:
-            result = subprocess.run([
-                "docker", "ps", "--filter", "name=postgres_", "--format", "{{.Names}}"
-            ], capture_output=True, text=True)
-            containers = [c.strip() for c in result.stdout.split("\n") if c.strip()]
-        except Exception:
-            containers = []
-
-        chosen_container = None
-        if host and host in containers:
-            chosen_container = host
-        elif containers:
-            # Se houver exatamente um container, usa-o automaticamente; caso contrário, tentaremos psql local
-            if len(containers) == 1:
-                chosen_container = containers[0]
-
-        sql_terminate = f"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '{_sql_escape(db_name)}';"
-        sql_drop = f"DROP DATABASE IF EXISTS \"{db_name}\";"
-        # Cria/atualiza owner e recria DB
-        sql_role = (
-            "DO $$BEGIN "
-            f"IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '{_sql_escape(db_owner)}') THEN "
-            f"CREATE ROLE \"{db_owner}\" LOGIN PASSWORD '{_sql_escape(db_password)}'; "
-            "ELSE "
-            f"ALTER ROLE \"{db_owner}\" WITH LOGIN PASSWORD '{_sql_escape(db_password)}'; "
-            "END IF; END$$;"
-        )
-        sql_create = f"CREATE DATABASE \"{db_name}\" OWNER \"{db_owner}\";"
-
-        if chosen_container:
-            print(f"Usando container PostgreSQL: {chosen_container}")
-            # Executa sequência via docker exec
-            cmds = [
-                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_terminate],
-                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_drop],
-                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_role],
-                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_create],
-            ]
-            for cmd in cmds:
-                r = subprocess.run(cmd, capture_output=True, text=True)
-                if r.returncode != 0:
-                    raise RuntimeError(f"Falha ao executar {' '.join(cmd[:5])}...: {r.stderr}")
-            return
-
-        # Fallback: usar psql local, se existir
-        if shutil.which("psql"):
-            print("psql local detectado. Tentando limpar via conexão TCP...")
-            conn = f"host={host} port={port} user=postgres dbname=postgres"
-            env = os.environ.copy()
-            # Se houver senha do superuser via variável de ambiente (opcional)
-            # Ocasionalmente, o cluster pode permitir trust ou md5 sem PGPASSWORD.
-            # Não setamos PGPASSWORD por padrão para 'postgres' superuser.
-            cmds = [
-                ["psql", conn, "-c", sql_terminate],
-                ["psql", conn, "-c", sql_drop],
-                ["psql", conn, "-c", sql_role],
-                ["psql", conn, "-c", sql_create],
-            ]
-            for cmd in cmds:
-                r = subprocess.run(cmd, capture_output=True, text=True, env=env)
-                if r.returncode != 0:
-                    raise RuntimeError(f"Falha ao executar {' '.join(cmd[:2])}...: {r.stderr}")
-            return
-
-        # Se chegamos aqui e temos containers mas não escolhemos um, usa o primeiro como melhor esforço
-        if containers:
-            chosen_container = containers[0]
-            print(f"psql local indisponível. Usando container PostgreSQL: {chosen_container}")
-            cmds = [
-                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_terminate],
-                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_drop],
-                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_role],
-                ["docker", "exec", chosen_container, "psql", "-U", "postgres", "-c", sql_create],
-            ]
-            for cmd in cmds:
-                r = subprocess.run(cmd, capture_output=True, text=True)
-                if r.returncode != 0:
-                    raise RuntimeError(f"Falha ao executar {' '.join(cmd[:5])}...: {r.stderr}")
-            return
-
-        raise RuntimeError("Nenhum container PostgreSQL encontrado e psql local não disponível.")
+        schema_cmds = [
+            "DROP SCHEMA IF EXISTS public CASCADE;",
+            f"CREATE SCHEMA IF NOT EXISTS public AUTHORIZATION \"{db_owner}\";",
+            f"GRANT ALL ON SCHEMA public TO \"{db_owner}\";",
+            "GRANT ALL ON SCHEMA public TO public;",
+        ]
+        for sql in schema_cmds:
+            cmd = base_cmd + ["-c", sql]
+            r = subprocess.run(cmd, capture_output=True, text=True)
+            if r.returncode != 0:
+                raise RuntimeError(f"Falha ao executar psql via container temporário: {r.stderr}")
+        print("Schema public limpo e recriado (via container temporário).")
+        return
 
     def configure_postgres_replication(self, master_container, slave_container, replication_user, replication_password):
         try:
