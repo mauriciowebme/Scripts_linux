@@ -930,26 +930,26 @@ class Docker(Executa_comandos):
             # Main ou Worker: com PostgreSQL e Redis
             env_vars = f""" \
             -e DB_TYPE=postgresdb \
-            -e DB_POSTGRESDB_HOST={postgres_host} \
-            -e DB_POSTGRESDB_DATABASE={postgres_db} \
-            -e DB_POSTGRESDB_USER={postgres_user} \
-            -e DB_POSTGRESDB_PASSWORD={postgres_password} \
-            -e QUEUE_BULL_REDIS_HOST={redis_host} \
-            -e QUEUE_BULL_REDIS_PORT={redis_port}"""
+            -e DB_POSTGRESDB_HOST={shlex.quote(str(postgres_host))} \
+            -e DB_POSTGRESDB_DATABASE={shlex.quote(str(postgres_db))} \
+            -e DB_POSTGRESDB_USER={shlex.quote(str(postgres_user))} \
+            -e DB_POSTGRESDB_PASSWORD={shlex.quote(str(postgres_password))} \
+            -e QUEUE_BULL_REDIS_HOST={shlex.quote(str(redis_host))} \
+            -e QUEUE_BULL_REDIS_PORT={shlex.quote(str(redis_port))}"""
         
         # Adiciona senha do Redis se informada (só para Main/Worker)
         if redis_password and not is_simples:
             env_vars += f""" \
-            -e QUEUE_BULL_REDIS_PASSWORD={redis_password}"""
+            -e QUEUE_BULL_REDIS_PASSWORD={shlex.quote(str(redis_password))}"""
 
         # Configurações específicas por tipo
         if is_simples:
             # Instalação simples: apenas configurações básicas
             if n8n_host:
                 env_vars += f""" \
-            -e N8N_HOST={n8n_host} \
+            -e N8N_HOST={shlex.quote(str(n8n_host))} \
             -e N8N_PROTOCOL=https \
-            -e WEBHOOK_URL={webhook_url}"""
+            -e WEBHOOK_URL={shlex.quote(str(webhook_url))}"""
             
             # Porta exposta
             env_vars += f""" \
@@ -960,13 +960,13 @@ class Docker(Executa_comandos):
             env_vars += f""" \
             -e EXECUTIONS_MODE=queue \
             -e OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true \
-            -e N8N_ENCRYPTION_KEY={encryption_key}"""
+            -e N8N_ENCRYPTION_KEY={shlex.quote(str(encryption_key))}"""
             
             if n8n_host:
                 env_vars += f""" \
-            -e N8N_HOST={n8n_host} \
+            -e N8N_HOST={shlex.quote(str(n8n_host))} \
             -e N8N_PROTOCOL=https \
-            -e WEBHOOK_URL={webhook_url}"""
+            -e WEBHOOK_URL={shlex.quote(str(webhook_url))}"""
             
             # Porta exposta apenas no Main
             env_vars += f""" \
@@ -976,7 +976,7 @@ class Docker(Executa_comandos):
             # Worker apenas processa, não precisa de porta exposta
             env_vars += f""" \
             -e EXECUTIONS_MODE=queue \
-            -e QUEUE_WORKER_ID={container_name}"""
+            -e QUEUE_WORKER_ID={shlex.quote(str(container_name))}"""
         
         # Comando completo
         comando_completo = comando_base + env_vars + """ \
@@ -3894,6 +3894,7 @@ CMD ["sh", "-c", "\
         print("AUTH sua_senha_aqui")
         print('set meu-teste "funcionando"')
         print("get meu-teste")
+        print("info memory")
         print("")
         
     def ubuntu(self):
