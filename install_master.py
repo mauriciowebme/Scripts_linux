@@ -856,8 +856,8 @@ class Docker(Executa_comandos):
             print("Configurações de banco de dados PostgreSQL:")
             postgres_host = input("Host do PostgreSQL (padrão: postgres): ").strip() or "postgres"
             postgres_port = input("Porta do PostgreSQL (padrão: 5432): ").strip() or "5432"
-            postgres_db = input("Nome do banco (padrão: n8n): ").strip() or "n8n"
-            postgres_user = input("Usuário do banco (padrão: n8n): ").strip() or "n8n"
+            postgres_db = input("Nome do banco (padrão: N8N): ").strip() or "N8N"
+            postgres_user = input("Usuário do banco (padrão: N8N): ").strip() or "N8N"
             postgres_password = input(f"Senha do usuário '{postgres_user}' do PostgreSQL: ").strip()
             
             if not postgres_password:
