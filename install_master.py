@@ -1193,12 +1193,15 @@ class Docker(Executa_comandos):
         print("Inicializando banco de dados do File Browser...")
         time.sleep(5)
         
+        # Gera senha segura com 16 caracteres
+        senha_admin = self.generate_password(16)
+        
         # Inicializa o banco de dados e configura permissões
         print("Configurando permissões...")
         comandos_init = [
             "docker exec filebrowser filebrowser config init",
             "docker exec filebrowser filebrowser config set --auth.method=json",
-            "docker exec filebrowser filebrowser users add admin admin --perm.admin --perm.create --perm.delete --perm.modify --perm.rename --perm.share",
+            f"docker exec filebrowser filebrowser users add admin '{senha_admin}' --perm.admin --perm.create --perm.delete --perm.modify --perm.rename --perm.share",
         ]
         self.executar_comandos(comandos_init)
         
@@ -1220,7 +1223,7 @@ class Docker(Executa_comandos):
         print(f'\nPorta para uso local: {portas[0]}')
         print(f'\n🔑 Credenciais de acesso:')
         print(f'   - Usuário: admin')
-        print(f'   - Senha: admin')
+        print(f'   - Senha: {senha_admin}')
         
         print(f'\n✅ Permissões configuradas:')
         print(f'   - Criar arquivos/pastas: Habilitado')
