@@ -938,7 +938,8 @@ class Docker(Executa_comandos):
             -e DB_POSTGRESDB_USER={shlex.quote(str(postgres_user))} \
             -e DB_POSTGRESDB_PASSWORD={shlex.quote(str(postgres_password))} \
             -e QUEUE_BULL_REDIS_HOST={shlex.quote(str(redis_host))} \
-            -e QUEUE_BULL_REDIS_PORT={shlex.quote(str(redis_port))}"""
+            -e QUEUE_BULL_REDIS_PORT={shlex.quote(str(redis_port))} \
+            -e N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true"""
         
         # Adiciona senha do Redis se informada (só para Main/Worker)
         if redis_password and not is_simples:
