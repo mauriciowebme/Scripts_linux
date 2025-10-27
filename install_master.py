@@ -1169,10 +1169,6 @@ class Docker(Executa_comandos):
         
     def instala_filebrowser(self,):
         portas = self.escolher_porta_disponivel()
-        
-        # Gera senha segura com 16 caracteres
-        senha_admin = self.generate_password(16)
-        
         container = f"""docker run -d \
                     --name filebrowser \
                     --restart=unless-stopped \
@@ -1181,38 +1177,47 @@ class Docker(Executa_comandos):
                     --user 0:0 \
                     -p {portas[0]}:80 \
                     -v /:/srv \
-                    -v {self.install_principal}/filebrowser:/config \
-                    -e FB_DATABASE=/config/filebrowser.db \
-                    -e FB_ROOT=/srv \
-                    -e FB_USERNAME=admin \
-                    -e FB_PASSWORD={senha_admin} \
+                    -v {self.install_principal}/filebrowser/database.db:/database.db \
                     filebrowser/filebrowser
                 """
         
         comandos = [
+            # f"rm -r {self.install_principal}/filebrowser",
             f"mkdir -p {self.install_principal}/filebrowser",
+            f"touch {self.install_principal}/filebrowser/database.db",
             container,
             ]
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
         
-        # Aguarda o container iniciar completamente
-        print("Aguardando File Browser inicializar...")
-        time.sleep(10)
+        # Aguarda e captura a senha gerada automaticamente
+        print("Aguardando senha ser gerada...")
+        time.sleep(15)
         
-        # Configura permissões adicionais via CLI (o usuário já foi criado pelas variáveis de ambiente)
-        print("Configurando permissões administrativas...")
+        senha_padrao = None
         try:
-            comandos_config = [
-                f"docker exec filebrowser filebrowser -d /config/filebrowser.db users update admin --perm.admin --perm.create --perm.delete --perm.modify --perm.rename --perm.share",
-            ]
-            self.executar_comandos(comandos_config)
-            print("✔ Permissões atualizadas!")
+            result = subprocess.run(
+                "docker logs filebrowser".split(),
+                capture_output=True,
+                text=True
+            )
+            
+            # Busca pela senha nos logs
+            for linha in result.stderr.splitlines():
+                if "randomly generated password:" in linha:
+                    senha_padrao = linha.split("randomly generated password:")[1].strip()
+                    break
+                
         except Exception as e:
-            print(f"⚠️ Aviso ao configurar permissões: {e}")
-            print("   As permissões padrão já devem estar funcionais.")
+            print(f"Erro: {e}")
         
-        print("\n✔ File Browser configurado com todas as permissões habilitadas!")
+        # Configura permissões de exclusão, edição e criação
+        print("\nConfigurando permissões do File Browser...")
+        comandos_config = [
+            "docker exec filebrowser filebrowser config set --scope /srv --allowNew true --allowEdit true --allowDelete true",
+            "docker restart filebrowser"
+        ]
+        self.executar_comandos(comandos_config)
         
         print("\n" + "="*60)
         print("✔ File Browser instalado com sucesso!")
@@ -1223,16 +1228,20 @@ class Docker(Executa_comandos):
         ]
         self.executar_comandos(comandos, exibir_executando=False)
         print(f'\nPorta para uso local: {portas[0]}')
-        print(f'\n🔑 Credenciais de acesso:')
-        print(f'   - Usuário: admin')
-        print(f'   - Senha: {senha_admin}')
+        print(f'Usuario padrão: admin')
+        
+        if senha_padrao:
+            print(f'Senha gerada automaticamente: {senha_padrao}')
+        else:
+            print(f'\n📌 IMPORTANTE: Verifique os logs para obter a senha inicial!')
+            print(f'Execute: docker logs filebrowser')
+            print(f'Procure pela linha com "randomly generated password:"')
         
         print(f'\n✅ Permissões configuradas:')
         print(f'   - Criar arquivos/pastas: Habilitado')
         print(f'   - Editar arquivos: Habilitado')
         print(f'   - Deletar arquivos/pastas: Habilitado')
         print(f'   - Usuário do container: root (0:0)')
-        print(f'\n⚠️ IMPORTANTE: Altere a senha após o primeiro login!')
         print("="*60)
         
     def verifica_container_existe(self, container_name, install_function):
