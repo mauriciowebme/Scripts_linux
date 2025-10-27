@@ -5771,21 +5771,249 @@ AllowedIPs = {ip_peer}
         except Exception as e:
             print(f"❌ Erro ao ler configuração: {e}")
     
+    def configurar_wireguard_dinamico(self):
+        """Configuração dinâmica e inteligente do WireGuard"""
+        print("\n" + "="*70)
+        print("🔐 ASSISTENTE DE CONFIGURAÇÃO WIREGUARD VPN")
+        print("="*70)
+        
+        # 1. Auto-instalar WireGuard se necessário
+        if not self.verificar_instalacao("wireguard"):
+            print("\n📦 WireGuard não encontrado. Instalando automaticamente...")
+            comandos = [
+                "sudo apt update",
+                "sudo apt install -y wireguard wireguard-tools"
+            ]
+            try:
+                self.executar_comandos(comandos, comando_direto=True)
+                print("✅ WireGuard instalado!\n")
+            except Exception as e:
+                print(f"❌ Erro ao instalar WireGuard: {e}")
+                return
+        else:
+            print("✅ WireGuard já está instalado\n")
+        
+        # 2. Verificar/gerar chaves automaticamente
+        chaves_dir = Path(f"{self.install_principal}/wireguard/chaves")
+        private_key_file = chaves_dir / "private.key"
+        public_key_file = chaves_dir / "public.key"
+        
+        if private_key_file.exists() and public_key_file.exists():
+            print(f"✅ Par de chaves encontrado em: {chaves_dir}")
+            private_key = private_key_file.read_text().strip()
+            public_key = public_key_file.read_text().strip()
+        else:
+            print("🔑 Gerando par de chaves automaticamente...")
+            chaves_dir.mkdir(parents=True, exist_ok=True)
+            
+            try:
+                # Gerar chave privada
+                result_private = subprocess.run(
+                    ["wg", "genkey"],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                private_key = result_private.stdout.strip()
+                
+                # Gerar chave pública
+                result_public = subprocess.run(
+                    ["wg", "pubkey"],
+                    input=private_key,
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                public_key = result_public.stdout.strip()
+                
+                # Salvar chaves
+                private_key_file.write_text(private_key)
+                public_key_file.write_text(public_key)
+                os.chmod(private_key_file, 0o600)
+                os.chmod(public_key_file, 0o644)
+                
+                print("✅ Chaves geradas e salvas!")
+            except Exception as e:
+                print(f"❌ Erro ao gerar chaves: {e}")
+                return
+        
+        print(f"\n🔐 Chave Privada: {private_key}")
+        print(f"🔓 Chave Pública: {public_key}\n")
+        
+        # 3. Perguntar tipo de configuração
+        print("="*70)
+        print("Qual tipo de configuração deseja?")
+        print("[1] SERVIDOR (recebe conexões)")
+        print("[2] CLIENTE/WORKER (conecta a um servidor)")
+        print("[3] Adicionar peer ao servidor existente")
+        print("[0] Voltar")
+        print("="*70)
+        
+        escolha = input("\nEscolha uma opção: ").strip()
+        
+        if escolha == "1":
+            self._configurar_como_servidor(private_key, public_key)
+        elif escolha == "2":
+            self._configurar_como_cliente(private_key, public_key)
+        elif escolha == "3":
+            self._adicionar_peer_dinamico()
+        else:
+            print("Voltando ao menu anterior...")
+    
+    def _configurar_como_servidor(self, private_key, public_key):
+        """Configura como servidor WireGuard"""
+        print("\n" + "="*70)
+        print("📡 CONFIGURAÇÃO COMO SERVIDOR")
+        print("="*70)
+        
+        # Coleta informações
+        ip_servidor = input("IP do servidor na VPN [10.8.0.1/24]: ").strip() or "10.8.0.1/24"
+        porta = input("Porta [51820]: ").strip() or "51820"
+        
+        # Cria configuração do servidor
+        config_path = Path("/etc/wireguard/wg0.conf")
+        config_content = f"""[Interface]
+Address = {ip_servidor}
+PrivateKey = {private_key}
+ListenPort = {porta}
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+
+# Peers serão adicionados abaixo
+# Use a opção 'Adicionar peer' do menu
+"""
+        
+        try:
+            config_path.write_text(config_content)
+            os.chmod(config_path, 0o600)
+            
+            # Habilita IP forwarding
+            subprocess.run(["sudo", "sysctl", "-w", "net.ipv4.ip_forward=1"], check=True)
+            subprocess.run(["sudo", "sed", "-i", "s/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/", "/etc/sysctl.conf"], check=False)
+            
+            print("\n✅ Servidor configurado com sucesso!")
+            print(f"📁 Config: {config_path}")
+            print(f"\n📋 COMPARTILHE ESTA CHAVE PÚBLICA COM OS CLIENTES:")
+            print(f"   {public_key}")
+            
+            # Pergunta se quer iniciar
+            if input("\nDeseja iniciar o servidor agora? [S/n]: ").strip().lower() != 'n':
+                subprocess.run(["sudo", "systemctl", "enable", "wg-quick@wg0"], check=True)
+                subprocess.run(["sudo", "systemctl", "start", "wg-quick@wg0"], check=True)
+                print("✅ Servidor WireGuard iniciado!")
+                subprocess.run(["sudo", "wg", "show"], check=False)
+                
+        except Exception as e:
+            print(f"❌ Erro: {e}")
+    
+    def _configurar_como_cliente(self, private_key, public_key):
+        """Configura como cliente WireGuard"""
+        print("\n" + "="*70)
+        print("💻 CONFIGURAÇÃO COMO CLIENTE")
+        print("="*70)
+        
+        # Coleta informações
+        ip_cliente = input("IP do cliente na VPN [10.8.0.2/24]: ").strip() or "10.8.0.2/24"
+        chave_pub_servidor = input("Chave PÚBLICA do servidor: ").strip()
+        
+        if not chave_pub_servidor:
+            print("❌ Chave do servidor é obrigatória!")
+            return
+        
+        endpoint = input("IP público do servidor: ").strip()
+        if not endpoint:
+            print("❌ Endpoint é obrigatório!")
+            return
+            
+        porta_servidor = input("Porta do servidor [51820]: ").strip() or "51820"
+        allowed_ips = input("IPs permitidos [10.8.0.0/24]: ").strip() or "10.8.0.0/24"
+        
+        # Cria configuração do cliente
+        config_path = Path("/etc/wireguard/wg0.conf")
+        config_content = f"""[Interface]
+Address = {ip_cliente}
+PrivateKey = {private_key}
+
+[Peer]
+PublicKey = {chave_pub_servidor}
+Endpoint = {endpoint}:{porta_servidor}
+AllowedIPs = {allowed_ips}
+PersistentKeepalive = 25
+"""
+        
+        try:
+            config_path.write_text(config_content)
+            os.chmod(config_path, 0o600)
+            
+            print("\n✅ Cliente configurado com sucesso!")
+            print(f"📁 Config: {config_path}")
+            print(f"\n📋 COMPARTILHE ESTA CHAVE PÚBLICA COM O SERVIDOR:")
+            print(f"   {public_key}")
+            print(f"📋 E ESTE IP PARA O SERVIDOR ADICIONAR:")
+            print(f"   {ip_cliente.split('/')[0]}/32")
+            
+            # Pergunta se quer iniciar
+            if input("\nDeseja conectar ao servidor agora? [S/n]: ").strip().lower() != 'n':
+                subprocess.run(["sudo", "systemctl", "enable", "wg-quick@wg0"], check=True)
+                subprocess.run(["sudo", "systemctl", "start", "wg-quick@wg0"], check=True)
+                print("✅ Cliente conectado!")
+                subprocess.run(["sudo", "wg", "show"], check=False)
+                
+        except Exception as e:
+            print(f"❌ Erro: {e}")
+    
+    def _adicionar_peer_dinamico(self):
+        """Adiciona peer de forma dinâmica"""
+        config_path = Path("/etc/wireguard/wg0.conf")
+        
+        if not config_path.exists():
+            print("❌ Configure o servidor primeiro!")
+            return
+        
+        print("\n" + "="*70)
+        print("➕ ADICIONAR PEER")
+        print("="*70)
+        
+        nome = input("Nome do peer: ").strip() or "peer"
+        chave_pub = input("Chave PÚBLICA do peer: ").strip()
+        ip_peer = input("IP do peer [10.8.0.X/32]: ").strip()
+        
+        if not chave_pub or not ip_peer:
+            print("❌ Chave e IP são obrigatórios!")
+            return
+        
+        peer_config = f"""
+[Peer]
+# {nome}
+PublicKey = {chave_pub}
+AllowedIPs = {ip_peer}
+"""
+        
+        try:
+            with open(config_path, 'a') as f:
+                f.write(peer_config)
+            
+            print(f"✅ Peer '{nome}' adicionado!")
+            print("\n⚠️  Reinicie o servidor para aplicar:")
+            
+            if input("Reiniciar agora? [S/n]: ").strip().lower() != 'n':
+                subprocess.run(["sudo", "systemctl", "restart", "wg-quick@wg0"], check=True)
+                print("✅ Servidor reiniciado!")
+                
+        except Exception as e:
+            print(f"❌ Erro: {e}")
+    
     def menu_wireguard(self):
-        """Menu principal do WireGuard"""
+        """Menu principal do WireGuard - Versão Dinâmica"""
         print("\n=== GERENCIADOR WIREGUARD VPN ===\n")
         
         opcoes_menu = [
-            ("Instalar WireGuard", self.instalar_wireguard),
-            ("Gerar par de chaves", self.gerar_chaves_wireguard),
-            ("Configurar como SERVIDOR", self.configurar_servidor_wireguard),
-            ("Configurar como CLIENTE/WORKER", self.configurar_cliente_wireguard),
-            ("Adicionar peer ao servidor", self.adicionar_peer_wireguard),
-            ("Iniciar/Habilitar WireGuard", self.iniciar_wireguard),
-            ("Parar WireGuard", self.parar_wireguard),
-            ("Ver status e conexões", self.status_wireguard),
-            ("Testar conexão", self.testar_conexao_wireguard),
-            ("Visualizar configuração", self.visualizar_config_wireguard),
+            ("🚀 Configurar WireGuard (Auto-install)", self.configurar_wireguard_dinamico),
+            ("▶️  Iniciar/Habilitar WireGuard", self.iniciar_wireguard),
+            ("⏸️  Parar WireGuard", self.parar_wireguard),
+            ("📊 Ver status e conexões", self.status_wireguard),
+            ("🔍 Testar conexão", self.testar_conexao_wireguard),
+            ("📄 Visualizar configuração", self.visualizar_config_wireguard),
         ]
         self.mostrar_menu(opcoes_menu)
         
