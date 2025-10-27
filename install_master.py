@@ -5793,17 +5793,80 @@ AllowedIPs = {ip_peer}
         else:
             print("✅ WireGuard já está instalado\n")
         
-        # 2. Verificar/gerar chaves automaticamente
+        # 2. Verificar se já existe configuração
+        config_path = Path("/etc/wireguard/wg0.conf")
+        if config_path.exists():
+            print("⚠️  ATENÇÃO: Já existe uma configuração WireGuard!")
+            print(f"📁 Localização: {config_path}")
+            
+            # Mostra um preview da config
+            try:
+                with open(config_path, 'r') as f:
+                    linhas = f.readlines()[:10]  # primeiras 10 linhas
+                    print("\n--- Preview da configuração existente ---")
+                    for linha in linhas:
+                        print(linha.rstrip())
+                    if len(linhas) == 10:
+                        print("...")
+                    print("--- Fim do preview ---\n")
+            except:
+                pass
+            
+            resetar = input("Deseja RESETAR a configuração? [s/N]: ").strip().lower()
+            if resetar != 's':
+                print("✅ Mantendo configuração existente.")
+                print("\nVocê ainda pode:")
+                print("  - Ver status: escolha a opção de status no menu")
+                print("  - Adicionar peers: escolha a opção de adicionar peer")
+                return
+            else:
+                print("🔄 A configuração será resetada...")
+                # Backup da config antiga
+                backup_path = config_path.with_suffix('.conf.backup')
+                try:
+                    import shutil
+                    shutil.copy(config_path, backup_path)
+                    print(f"💾 Backup salvo em: {backup_path}")
+                except:
+                    pass
+        
+        # 3. Verificar/gerar chaves automaticamente
         chaves_dir = Path(f"{self.install_principal}/wireguard/chaves")
         private_key_file = chaves_dir / "private.key"
         public_key_file = chaves_dir / "public.key"
         
+        renovar_chaves = False
+        
         if private_key_file.exists() and public_key_file.exists():
-            print(f"✅ Par de chaves encontrado em: {chaves_dir}")
-            private_key = private_key_file.read_text().strip()
-            public_key = public_key_file.read_text().strip()
+            print(f"\n✅ Par de chaves encontrado em: {chaves_dir}")
+            
+            # Mostra as chaves existentes
+            try:
+                pub_key_preview = public_key_file.read_text().strip()
+                print(f"🔓 Chave Pública atual: {pub_key_preview}")
+            except:
+                pass
+            
+            renovar = input("\nDeseja RENOVAR as chaves? [s/N]: ").strip().lower()
+            if renovar == 's':
+                renovar_chaves = True
+                # Backup das chaves antigas
+                try:
+                    import shutil
+                    backup_dir = chaves_dir / "backup"
+                    backup_dir.mkdir(exist_ok=True)
+                    from datetime import datetime
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    shutil.copy(private_key_file, backup_dir / f"private.key.{timestamp}")
+                    shutil.copy(public_key_file, backup_dir / f"public.key.{timestamp}")
+                    print(f"� Backup das chaves antigas salvo em: {backup_dir}")
+                except:
+                    pass
         else:
-            print("🔑 Gerando par de chaves automaticamente...")
+            renovar_chaves = True
+        
+        if renovar_chaves:
+            print("\n🔑 Gerando novo par de chaves...")
             chaves_dir.mkdir(parents=True, exist_ok=True)
             
             try:
@@ -5832,10 +5895,14 @@ AllowedIPs = {ip_peer}
                 os.chmod(private_key_file, 0o600)
                 os.chmod(public_key_file, 0o644)
                 
-                print("✅ Chaves geradas e salvas!")
+                print("✅ Novas chaves geradas e salvas!")
             except Exception as e:
                 print(f"❌ Erro ao gerar chaves: {e}")
                 return
+        else:
+            print("✅ Usando chaves existentes.")
+            private_key = private_key_file.read_text().strip()
+            public_key = public_key_file.read_text().strip()
         
         print(f"\n🔐 Chave Privada: {private_key}")
         print(f"🔓 Chave Pública: {public_key}\n")
