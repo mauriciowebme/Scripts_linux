@@ -1169,6 +1169,10 @@ class Docker(Executa_comandos):
         
     def instala_filebrowser(self,):
         portas = self.escolher_porta_disponivel()
+        
+        # Gera senha segura com 16 caracteres
+        senha_admin = self.generate_password(16)
+        
         container = f"""docker run -d \
                     --name filebrowser \
                     --restart=unless-stopped \
@@ -1177,38 +1181,36 @@ class Docker(Executa_comandos):
                     --user 0:0 \
                     -p {portas[0]}:80 \
                     -v /:/srv \
-                    -v {self.install_principal}/filebrowser/database.db:/database.db \
+                    -v {self.install_principal}/filebrowser:/config \
+                    -e FB_DATABASE=/config/filebrowser.db \
+                    -e FB_ROOT=/srv \
+                    -e FB_USERNAME=admin \
+                    -e FB_PASSWORD={senha_admin} \
                     filebrowser/filebrowser
                 """
         
         comandos = [
-            # f"rm -r {self.install_principal}/filebrowser",
             f"mkdir -p {self.install_principal}/filebrowser",
             container,
             ]
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
         
-        # Aguarda o container iniciar e inicializa o banco de dados
-        print("Inicializando banco de dados do File Browser...")
-        time.sleep(5)
+        # Aguarda o container iniciar completamente
+        print("Aguardando File Browser inicializar...")
+        time.sleep(10)
         
-        # Gera senha segura com 16 caracteres
-        senha_admin = self.generate_password(16)
-        
-        # Inicializa o banco de dados e configura permissões
-        print("Configurando permissões...")
-        comandos_init = [
-            "docker exec filebrowser filebrowser config init",
-            "docker exec filebrowser filebrowser config set --auth.method=json",
-            f"docker exec filebrowser filebrowser users add admin '{senha_admin}' --perm.admin --perm.create --perm.delete --perm.modify --perm.rename --perm.share",
-        ]
-        self.executar_comandos(comandos_init)
-        
-        # Reinicia para aplicar configurações
-        print("Reiniciando container...")
-        subprocess.run(["docker", "restart", "filebrowser"], check=True)
-        time.sleep(5)
+        # Configura permissões adicionais via CLI (o usuário já foi criado pelas variáveis de ambiente)
+        print("Configurando permissões administrativas...")
+        try:
+            comandos_config = [
+                f"docker exec filebrowser filebrowser -d /config/filebrowser.db users update admin --perm.admin --perm.create --perm.delete --perm.modify --perm.rename --perm.share",
+            ]
+            self.executar_comandos(comandos_config)
+            print("✔ Permissões atualizadas!")
+        except Exception as e:
+            print(f"⚠️ Aviso ao configurar permissões: {e}")
+            print("   As permissões padrão já devem estar funcionais.")
         
         print("\n✔ File Browser configurado com todas as permissões habilitadas!")
         
