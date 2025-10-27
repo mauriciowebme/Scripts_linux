@@ -846,6 +846,7 @@ class Docker(Executa_comandos):
         postgres_db = ""
         postgres_user = ""
         postgres_password = ""
+        postgres_port = ""
         redis_host = ""
         redis_port = ""
         redis_password = ""
@@ -854,6 +855,7 @@ class Docker(Executa_comandos):
             print("\n" + "="*60)
             print("Configurações de banco de dados PostgreSQL:")
             postgres_host = input("Host do PostgreSQL (padrão: postgres): ").strip() or "postgres"
+            postgres_port = input("Porta do PostgreSQL (padrão: 5432): ").strip() or "5432"
             postgres_db = input("Nome do banco (padrão: n8n): ").strip() or "n8n"
             postgres_user = input("Usuário do banco (padrão: n8n): ").strip() or "n8n"
             postgres_password = input(f"Senha do usuário '{postgres_user}' do PostgreSQL: ").strip()
@@ -931,6 +933,7 @@ class Docker(Executa_comandos):
             env_vars = f""" \
             -e DB_TYPE=postgresdb \
             -e DB_POSTGRESDB_HOST={shlex.quote(str(postgres_host))} \
+            -e DB_POSTGRESDB_PORT={shlex.quote(str(postgres_port))} \
             -e DB_POSTGRESDB_DATABASE={shlex.quote(str(postgres_db))} \
             -e DB_POSTGRESDB_USER={shlex.quote(str(postgres_user))} \
             -e DB_POSTGRESDB_PASSWORD={shlex.quote(str(postgres_password))} \
