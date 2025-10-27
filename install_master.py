@@ -1174,6 +1174,7 @@ class Docker(Executa_comandos):
                     --restart=unless-stopped \
                     --memory=256m \
                     --cpus=1 \
+                    --user 0:0 \
                     -p {portas[0]}:80 \
                     -v /:/srv \
                     -v {self.install_principal}/filebrowser/database.db:/database.db \
