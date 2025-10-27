@@ -904,11 +904,80 @@ class Docker(Executa_comandos):
             tipo_suffix = "worker"
             
         caminho_n8n = f'{self.install_principal}/n8n_{tipo_suffix}'
+
+        # Nome do container (apenas informativo; recriação já é tratada depois)
+        container_name = f"n8n_{tipo_suffix}"
+
+        # Verificação de instalação anterior (apenas arquivos/pasta de dados)
+        try:
+            dados_existentes = os.path.isdir(caminho_n8n) and any(os.scandir(caminho_n8n))
+        except Exception:
+            dados_existentes = os.path.isdir(caminho_n8n)
+        
+        if dados_existentes:
+            print("\n=== Instalação existente detectada (arquivos) ===")
+            try:
+                qtd = len(list(os.scandir(caminho_n8n)))
+            except Exception:
+                qtd = -1
+            print(f" - Pasta de dados: {caminho_n8n} (itens: {qtd if qtd>=0 else 'desconhecido'})")
+            print("\nO que deseja fazer?")
+            if is_main or is_worker:
+                print("Nota: Esta escolha afeta apenas a pasta de dados local do n8n, não o PostgreSQL.")
+            print("1) Manter dados (recomendado)")
+            print("2) Nova instalação limpa (apagar pasta de dados)")
+            print("3) Cancelar")
+            escolha = input("Escolha [1/2/3] (padrão: 1): ").strip() or "1"
+            if escolha == "3":
+                print("Operação cancelada pelo usuário.")
+                return
+            if escolha == "2":
+                try:
+                    if os.path.exists(caminho_n8n):
+                        shutil.rmtree(caminho_n8n, ignore_errors=True)
+                        print(f"Pasta {caminho_n8n} removida para nova instalação.")
+                except Exception as ex:
+                    print(f"Aviso: não foi possível remover {caminho_n8n}: {ex}")
+                
+                # Opcional: limpeza do banco de dados PostgreSQL (apenas Main/Worker)
+                if is_main or is_worker:
+                    print("\nVocê deseja também limpar o banco de dados PostgreSQL usado pelo n8n?")
+                    print(f" - Host: {postgres_host} | Porta: {postgres_port} | DB: {postgres_db} | Usuário: {postgres_user}")
+                    print("ATENÇÃO: isso apagará workflows, credenciais, execuções e usuários armazenados no banco.")
+                    resp_db = input("Limpar banco agora? [s/N]: ").strip().lower()
+                    if resp_db == 's' or resp_db == 'sim':
+                        try:
+                            print("\nLimpando schemas/tabelas do banco...")
+                            sql_cmd = "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+                            # Tenta via container cliente com rede 'interno' (onde normalmente o Postgres está)
+                            cmd_net = (
+                                f"docker run --rm --network interno -e PGPASSWORD={shlex.quote(str(postgres_password))} "
+                                f"postgres:16 psql -h {shlex.quote(str(postgres_host))} -p {shlex.quote(str(postgres_port))} "
+                                f"-U {shlex.quote(str(postgres_user))} -d {shlex.quote(str(postgres_db))} "
+                                f"-v ON_ERROR_STOP=1 -c \"{sql_cmd}\""
+                            )
+                            # Fallback sem rede explícita (pode funcionar para hosts externos/IPs)
+                            cmd_no_net = (
+                                f"docker run --rm -e PGPASSWORD={shlex.quote(str(postgres_password))} "
+                                f"postgres:16 psql -h {shlex.quote(str(postgres_host))} -p {shlex.quote(str(postgres_port))} "
+                                f"-U {shlex.quote(str(postgres_user))} -d {shlex.quote(str(postgres_db))} "
+                                f"-v ON_ERROR_STOP=1 -c \"{sql_cmd}\""
+                            )
+                            # Primeiro tenta com rede 'interno' ignorando erros; depois tenta sem rede
+                            self.executar_comandos([cmd_net], ignorar_erros=True, comando_direto=True)
+                            self.executar_comandos([cmd_no_net], comando_direto=True)
+                            print("Banco de dados limpo com sucesso.")
+                        except Exception as ex:
+                            print(f"Falha ao limpar o banco automaticamente: {ex}")
+                            print("Você pode executar manualmente com psql usando as credenciais acima:")
+                            print(f"  psql -h {postgres_host} -p {postgres_port} -U {postgres_user} -d {postgres_db}")
+                            print(f"  SQL: {sql_cmd}")
+            else:
+                print("Mantendo a pasta de dados existente.")
+
+        # Garante existência e permissões da pasta de dados após as decisões acima
         os.makedirs(caminho_n8n, exist_ok=True)
         os.chmod(caminho_n8n, 0o777)
-        
-        # Nome do container
-        container_name = f"n8n_{tipo_suffix}"
         
         # Constrói comando base
         comando_base = f"""docker run -d \
