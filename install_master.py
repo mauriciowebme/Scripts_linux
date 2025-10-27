@@ -5795,31 +5795,82 @@ AllowedIPs = {ip_peer}
         
         # 2. Verificar se já existe configuração
         config_path = Path("/etc/wireguard/wg0.conf")
-        if config_path.exists():
+        config_existente = config_path.exists()
+        
+        if config_existente:
             print("⚠️  ATENÇÃO: Já existe uma configuração WireGuard!")
             print(f"📁 Localização: {config_path}")
             
-            # Mostra um preview da config
+            # Mostra a configuração completa
             try:
-                with open(config_path, 'r') as f:
-                    linhas = f.readlines()[:10]  # primeiras 10 linhas
-                    print("\n--- Preview da configuração existente ---")
-                    for linha in linhas:
-                        print(linha.rstrip())
-                    if len(linhas) == 10:
-                        print("...")
-                    print("--- Fim do preview ---\n")
-            except:
-                pass
+                config_content = config_path.read_text()
+                print("\n" + "="*70)
+                print("📄 CONFIGURAÇÃO ATUAL:")
+                print("="*70)
+                print(config_content)
+                print("="*70)
+            except Exception as e:
+                print(f"⚠️  Não foi possível ler a configuração: {e}")
             
-            resetar = input("Deseja RESETAR a configuração? [s/N]: ").strip().lower()
-            if resetar != 's':
-                print("✅ Mantendo configuração existente.")
-                print("\nVocê ainda pode:")
-                print("  - Ver status: escolha a opção de status no menu")
-                print("  - Adicionar peers: escolha a opção de adicionar peer")
+            # Verifica status do serviço
+            print("\n📊 Status do serviço:")
+            subprocess.run(["sudo", "systemctl", "status", "wg-quick@wg0", "--no-pager"], check=False)
+            
+            print("\n" + "="*70)
+            print("OPÇÕES:")
+            print("[1] Manter configuração e apenas visualizar/gerenciar")
+            print("[2] RESETAR e criar nova configuração")
+            print("[0] Voltar ao menu")
+            print("="*70)
+            
+            opcao = input("\nEscolha: ").strip()
+            
+            if opcao == "0":
                 return
-            else:
+            elif opcao == "1":
+                # Apenas mostra informações e gerenciamento
+                print("\n✅ Mantendo configuração existente.")
+                
+                # Tenta extrair e mostrar a chave pública
+                chaves_dir = Path(f"{self.install_principal}/wireguard/chaves")
+                public_key_file = chaves_dir / "public.key"
+                
+                if public_key_file.exists():
+                    public_key = public_key_file.read_text().strip()
+                    print("\n" + "="*70)
+                    print("📋 SUAS INFORMAÇÕES PARA COMPARTILHAR:")
+                    print("="*70)
+                    print(f"🔓 Chave Pública: {public_key}")
+                    
+                    # Tenta extrair IP da config
+                    try:
+                        import re
+                        match = re.search(r'Address\s*=\s*(\S+)', config_content)
+                        if match:
+                            print(f"📍 IP na VPN: {match.group(1)}")
+                    except:
+                        pass
+                    print("="*70)
+                
+                # Verifica se está rodando, se não, oferece iniciar
+                result = subprocess.run(
+                    ["sudo", "systemctl", "is-active", "wg-quick@wg0"],
+                    capture_output=True,
+                    text=True
+                )
+                
+                if result.stdout.strip() != "active":
+                    if input("\n⚠️  WireGuard não está ativo. Deseja iniciar? [S/n]: ").strip().lower() != 'n':
+                        subprocess.run(["sudo", "systemctl", "enable", "wg-quick@wg0"], check=True)
+                        subprocess.run(["sudo", "systemctl", "start", "wg-quick@wg0"], check=True)
+                        print("✅ WireGuard iniciado!")
+                        subprocess.run(["sudo", "wg", "show"], check=False)
+                else:
+                    print("\n✅ WireGuard está ativo!")
+                    subprocess.run(["sudo", "wg", "show"], check=False)
+                
+                return
+            elif opcao == "2":
                 print("🔄 A configuração será resetada...")
                 # Backup da config antiga
                 backup_path = config_path.with_suffix('.conf.backup')
@@ -5829,6 +5880,9 @@ AllowedIPs = {ip_peer}
                     print(f"💾 Backup salvo em: {backup_path}")
                 except:
                     pass
+            else:
+                print("Opção inválida. Voltando...")
+                return
         
         # 3. Verificar/gerar chaves automaticamente
         chaves_dir = Path(f"{self.install_principal}/wireguard/chaves")
@@ -5963,20 +6017,35 @@ PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING 
             
             print("\n✅ Servidor configurado com sucesso!")
             print(f"📁 Config: {config_path}")
+            
+            # Mostra a configuração criada
             print("\n" + "="*70)
-            print("📋 ENVIE ESTAS INFORMAÇÕES PARA OS CLIENTES:")
+            print("� CONFIGURAÇÃO DO SERVIDOR CRIADA:")
             print("="*70)
-            print(f"🔓 Chave Pública do Servidor: {public_key}")
-            print(f"🌐 IP do Servidor (este PC): [seu_ip_publico]")
-            print(f"🔌 Porta: {porta}")
+            print(config_content)
             print("="*70)
             
-            # Pergunta se quer iniciar
-            if input("\nDeseja iniciar o servidor agora? [S/n]: ").strip().lower() != 'n':
+            # Inicia automaticamente
+            print("\n🚀 Iniciando servidor WireGuard automaticamente...")
+            try:
                 subprocess.run(["sudo", "systemctl", "enable", "wg-quick@wg0"], check=True)
                 subprocess.run(["sudo", "systemctl", "start", "wg-quick@wg0"], check=True)
-                print("✅ Servidor WireGuard iniciado!")
+                print("✅ Servidor WireGuard iniciado e habilitado!\n")
                 subprocess.run(["sudo", "wg", "show"], check=False)
+            except Exception as e:
+                print(f"⚠️  Erro ao iniciar: {e}")
+            
+            # Mostra informações para compartilhar
+            print("\n" + "="*70)
+            print("📋 COPIE E ENVIE PARA OS CLIENTES:")
+            print("="*70)
+            print(f"🔓 Chave Pública do Servidor:\n   {public_key}")
+            print(f"\n🌐 IP Público do Servidor:\n   [execute: curl ifconfig.me]")
+            print(f"\n🔌 Porta:\n   {porta}")
+            print(f"\n📍 Rede VPN:\n   {ip_servidor}")
+            print("="*70)
+            print("\n💡 Os clientes precisarão destas informações para se conectar!")
+            print("💡 Não esqueça de adicionar os peers com a opção do menu!")
                 
         except Exception as e:
             print(f"❌ Erro: {e}")
@@ -6030,20 +6099,33 @@ PersistentKeepalive = 25
             
             print("\n✅ Cliente configurado com sucesso!")
             print(f"📁 Config: {config_path}")
-            print("\n" + "="*70)
-            print("📋 ENVIE ESTAS INFORMAÇÕES PARA O ADMINISTRADOR DO SERVIDOR:")
-            print("="*70)
-            print(f"� Sua Chave Pública: {public_key}")
-            print(f"📍 IP desejado na VPN: {ip_cliente.split('/')[0]}/32")
-            print("="*70)
-            print("\n💡 O servidor precisa adicionar você como peer com estas informações!")
             
-            # Pergunta se quer iniciar
-            if input("\nDeseja conectar ao servidor agora? [S/n]: ").strip().lower() != 'n':
+            # Mostra a configuração criada
+            print("\n" + "="*70)
+            print("� CONFIGURAÇÃO DO CLIENTE CRIADA:")
+            print("="*70)
+            print(config_content)
+            print("="*70)
+            
+            # Conecta automaticamente
+            print("\n🚀 Conectando ao servidor automaticamente...")
+            try:
                 subprocess.run(["sudo", "systemctl", "enable", "wg-quick@wg0"], check=True)
                 subprocess.run(["sudo", "systemctl", "start", "wg-quick@wg0"], check=True)
-                print("✅ Cliente conectado!")
+                print("✅ Cliente conectado e habilitado!\n")
                 subprocess.run(["sudo", "wg", "show"], check=False)
+            except Exception as e:
+                print(f"⚠️  Erro ao conectar: {e}")
+            
+            # Mostra informações para enviar ao servidor
+            print("\n" + "="*70)
+            print("📋 COPIE E ENVIE PARA O ADMINISTRADOR DO SERVIDOR:")
+            print("="*70)
+            print(f"🔓 Sua Chave Pública:\n   {public_key}")
+            print(f"\n📍 IP desejado na VPN:\n   {ip_cliente.split('/')[0]}/32")
+            print("="*70)
+            print("\n💡 O servidor precisa adicionar você como peer!")
+            print("💡 Use o comando no servidor: Adicionar peer")
                 
         except Exception as e:
             print(f"❌ Erro: {e}")
