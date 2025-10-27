@@ -1011,6 +1011,17 @@ class Docker(Executa_comandos):
             if n8n_host:
                 webhook_url = f"https://{n8n_host}/"
                 print(f"✔ Webhook URL: {webhook_url}")
+
+        # PASSO 5.1: Concorrência de workers (apenas Simples e Worker)
+        worker_concurrency = "10"
+        if is_simples or is_worker:
+            # Segue o mesmo padrão de entrada com fallback: input(...).strip() or "10"
+            worker_concurrency = (
+                env_data.get('N8N_WORKER_CONCURRENCY', '') if reuse_env else input("Quantidade de processos em paralelo (padrão: 10): ").strip()
+            ) or "10"
+            # Sanitiza valor inválido
+            if not str(worker_concurrency).isdigit() or int(worker_concurrency) < 1:
+                worker_concurrency = "10"
         
         # PASSO 6: Constrói comando base do container
         comando_base = f"""docker run -d \
@@ -1065,6 +1076,9 @@ class Docker(Executa_comandos):
             # Porta exposta
             env_vars += f""" \
             -p {porta_publicar}:5678"""
+            # Limita processos em paralelo (aplicado também no simples; sem efeito no main)
+            env_vars += f""" \
+            -e N8N_WORKER_CONCURRENCY={shlex.quote(str(worker_concurrency))}"""
             
         elif is_main:
             # Variáveis específicas do Main
@@ -1089,7 +1103,8 @@ class Docker(Executa_comandos):
             # Worker apenas processa, não precisa de porta exposta
             env_vars += f""" \
             -e EXECUTIONS_MODE=queue \
-            -e QUEUE_WORKER_ID={shlex.quote(str(container_name))}"""
+            -e QUEUE_WORKER_ID={shlex.quote(str(container_name))} \
+            -e N8N_WORKER_CONCURRENCY={shlex.quote(str(worker_concurrency))}"""
         
         # Comando completo
         # Persiste .env com as variáveis utilizadas para reutilização futura
@@ -1102,6 +1117,7 @@ class Docker(Executa_comandos):
                     'N8N_BLOCK_ENV_ACCESS_IN_NODE': 'false',
                     'N8N_GIT_NODE_DISABLE_BARE_REPOS': 'true',
                     'N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS': 'true',
+                    'N8N_WORKER_CONCURRENCY': str(worker_concurrency),
                 })
             else:
                 env_map.update({
@@ -1120,6 +1136,9 @@ class Docker(Executa_comandos):
                 })
                 if redis_password:
                     env_map['QUEUE_BULL_REDIS_PASSWORD'] = str(redis_password)
+                # Para workers, define concorrência
+                if is_worker:
+                    env_map['N8N_WORKER_CONCURRENCY'] = str(worker_concurrency)
             if is_main:
                 env_map['EXECUTIONS_MODE'] = 'queue'
                 env_map['OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS'] = 'true'
