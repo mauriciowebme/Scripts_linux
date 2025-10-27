@@ -1184,48 +1184,30 @@ class Docker(Executa_comandos):
         comandos = [
             # f"rm -r {self.install_principal}/filebrowser",
             f"mkdir -p {self.install_principal}/filebrowser",
-            f"touch {self.install_principal}/filebrowser/database.db",
             container,
             ]
         self.remove_container('filebrowser')
         resultados = self.executar_comandos(comandos)
         
-        # Aguarda e captura a senha gerada automaticamente
-        print("Aguardando senha ser gerada...")
-        time.sleep(15)
+        # Aguarda o container iniciar e inicializa o banco de dados
+        print("Inicializando banco de dados do File Browser...")
+        time.sleep(5)
         
-        senha_padrao = None
-        try:
-            result = subprocess.run(
-                "docker logs filebrowser".split(),
-                capture_output=True,
-                text=True
-            )
-            
-            # Busca pela senha nos logs
-            for linha in result.stderr.splitlines():
-                if "randomly generated password:" in linha:
-                    senha_padrao = linha.split("randomly generated password:")[1].strip()
-                    break
-                
-        except Exception as e:
-            print(f"Erro: {e}")
+        # Inicializa o banco de dados e configura permissões
+        print("Configurando permissões...")
+        comandos_init = [
+            "docker exec filebrowser filebrowser config init",
+            "docker exec filebrowser filebrowser config set --auth.method=json",
+            "docker exec filebrowser filebrowser users add admin admin --perm.admin --perm.create --perm.delete --perm.modify --perm.rename --perm.share",
+        ]
+        self.executar_comandos(comandos_init)
         
-        # Configura permissões de exclusão, edição e criação
-        print("\nConfigurando permissões do File Browser...")
-        try:
-            # Aguarda o container estabilizar
-            time.sleep(3)
-            
-            # Configura permissões globais do usuário admin
-            comandos_config = [
-                "docker exec filebrowser filebrowser users update admin --perm.admin --perm.create --perm.delete --perm.modify --perm.rename --perm.share",
-            ]
-            self.executar_comandos(comandos_config)
-            print("✔ Permissões configuradas com sucesso!")
-        except Exception as e:
-            print(f"⚠️ Aviso: Não foi possível configurar permissões automaticamente: {e}")
-            print("   Configure manualmente após o primeiro login.")
+        # Reinicia para aplicar configurações
+        print("Reiniciando container...")
+        subprocess.run(["docker", "restart", "filebrowser"], check=True)
+        time.sleep(5)
+        
+        print("\n✔ File Browser configurado com todas as permissões habilitadas!")
         
         print("\n" + "="*60)
         print("✔ File Browser instalado com sucesso!")
@@ -1236,20 +1218,16 @@ class Docker(Executa_comandos):
         ]
         self.executar_comandos(comandos, exibir_executando=False)
         print(f'\nPorta para uso local: {portas[0]}')
-        print(f'Usuario padrão: admin')
-        
-        if senha_padrao:
-            print(f'Senha gerada automaticamente: {senha_padrao}')
-        else:
-            print(f'\n📌 IMPORTANTE: Verifique os logs para obter a senha inicial!')
-            print(f'Execute: docker logs filebrowser')
-            print(f'Procure pela linha com "randomly generated password:"')
+        print(f'\n🔑 Credenciais de acesso:')
+        print(f'   - Usuário: admin')
+        print(f'   - Senha: admin')
         
         print(f'\n✅ Permissões configuradas:')
         print(f'   - Criar arquivos/pastas: Habilitado')
         print(f'   - Editar arquivos: Habilitado')
         print(f'   - Deletar arquivos/pastas: Habilitado')
         print(f'   - Usuário do container: root (0:0)')
+        print(f'\n⚠️ IMPORTANTE: Altere a senha após o primeiro login!')
         print("="*60)
         
     def verifica_container_existe(self, container_name, install_function):
