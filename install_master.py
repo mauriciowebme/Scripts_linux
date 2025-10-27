@@ -377,64 +377,58 @@ class Docker(Executa_comandos):
     
     def gerenciar_permissoes_pasta(self, pasta:str=None, permissao:str=None):
         """
-        Altera as permissões de uma pasta e de suas subpastas/arquivos recursivamente.
-        Solicita informações ao usuário interativamente.
+        Altera as permissões de um arquivo ou pasta.
+        Se for pasta, altera recursivamente.
         """
-        # Solicitar o caminho da pasta
+        # Solicitar o caminho
         if pasta == None:
-            pasta = input("Digite o caminho da pasta: ").strip()
+            pasta = input("Digite o caminho (arquivo ou pasta): ").strip()
         else:
-            os.makedirs(pasta, exist_ok=True)
+            if not os.path.exists(pasta):
+                os.makedirs(pasta, exist_ok=True)
         
         if not os.path.exists(pasta):
-            print(f"A pasta '{pasta}' não existe.")
+            print(f"Erro: '{pasta}' não existe.")
             return
         
-        if not os.path.isdir(pasta):
-            print(f"'{pasta}' não é uma pasta.")
-            return
-        
-        # Exibir permissões atuais da pasta principal
-        permissoes_atual = os.stat(pasta).st_mode
-        permissoes_octal = oct(permissoes_atual & 0o777)
-        print(f"Permissões atuais de '{pasta}': {permissoes_octal}")
-        
-        # Solicitar novas permissões
+        # Solicitar permissões
         if permissao == None:
-            novas_permissoes = input("Digite as novas permissões em formato octal (ex: 777): ").strip()
-        else:
-            novas_permissoes = permissao.strip()
+            permissao = input("Digite as permissões (ex: 777, 755, 644): ").strip()
         
         try:
-            novas_permissoes = int(novas_permissoes, 8)  # Converter de string octal para inteiro
+            permissao_octal = int(permissao, 8)
             
-            # Alterar permissões da pasta principal
-            os.chmod(pasta, novas_permissoes)
+            # Verifica se é arquivo ou pasta
+            if os.path.isfile(pasta):
+                # É arquivo
+                os.chmod(pasta, permissao_octal)
+                print(f"Permissões do arquivo alteradas para: {oct(permissao_octal)}")
             
-            # Alterar permissões de subpastas e arquivos
-            for root, dirs, files in os.walk(pasta):
-                for nome in dirs:
-                    try:
-                        caminho = os.path.join(root, nome)
-                        os.chmod(caminho, novas_permissoes)
-                        # print(f"Permissões alteradas para a pasta: {caminho}")
-                    except:
-                        print(f"Erro ao alterar permissões para a pasta: {caminho}")
+            elif os.path.isdir(pasta):
+                # É pasta - aplica recursivamente
+                os.chmod(pasta, permissao_octal)
                 
-                for nome in files:
-                    try:
-                        caminho = os.path.join(root, nome)
-                        os.chmod(caminho, novas_permissoes)
-                        # print(f"Permissões alteradas para o arquivo: {caminho}")
-                    except:
-                        print(f"Erro ao alterar permissões para o arquivo: {caminho}")
-            print(f"Permissões de '{pasta}', subpastas e itens alteradas para: {oct(novas_permissoes)}")
+                for root, dirs, files in os.walk(pasta):
+                    for nome in dirs:
+                        try:
+                            os.chmod(os.path.join(root, nome), permissao_octal)
+                        except:
+                            print(f"Erro ao alterar: {os.path.join(root, nome)}")
+                    
+                    for nome in files:
+                        try:
+                            os.chmod(os.path.join(root, nome), permissao_octal)
+                        except:
+                            print(f"Erro ao alterar: {os.path.join(root, nome)}")
+                
+                print(f"Permissões da pasta e itens alteradas para: {oct(permissao_octal)}")
+            
         except ValueError:
-            print("Erro: Permissões inválidas. Certifique-se de digitar um número octal válido.")
+            print("Erro: Permissões inválidas. Use formato octal (ex: 777, 755, 644).")
         except PermissionError:
-            print("Erro: Permissão negada. Execute o script como root para alterar permissões.")
+            print("Erro: Permissão negada. Execute como root.")
         except Exception as e:
-            print(f"Erro ao alterar permissões: {e}")
+            print(f"Erro: {e}")
         
     def adiciona_redirecionamento_traefik(self, container, dominio=None, porta=None):
         """
