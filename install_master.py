@@ -950,13 +950,13 @@ class Docker(Executa_comandos):
                         # Executa diretamente via cliente psql efêmero em Docker, sem prompts
                         cmd_net = (
                             f"docker run --rm --network interno -e PGPASSWORD={shlex.quote(str(postgres_password))} "
-                            f"postgres:16-alpine psql -h {shlex.quote(str(postgres_host))} -p {shlex.quote(str(postgres_port))} "
+                            f"postgres:17-alpine psql -h {shlex.quote(str(postgres_host))} -p {shlex.quote(str(postgres_port))} "
                             f"-U {shlex.quote(str(postgres_user))} -d {shlex.quote(str(postgres_db))} "
                             f"-v ON_ERROR_STOP=1 -c \"{sql_cmd}\""
                         )
                         cmd_no_net = (
                             f"docker run --rm -e PGPASSWORD={shlex.quote(str(postgres_password))} "
-                            f"postgres:16-alpine psql -h {shlex.quote(str(postgres_host))} -p {shlex.quote(str(postgres_port))} "
+                            f"postgres:17-alpine psql -h {shlex.quote(str(postgres_host))} -p {shlex.quote(str(postgres_port))} "
                             f"-U {shlex.quote(str(postgres_user))} -d {shlex.quote(str(postgres_db))} "
                             f"-v ON_ERROR_STOP=1 -c \"{sql_cmd}\""
                         )
@@ -1023,7 +1023,8 @@ class Docker(Executa_comandos):
             -e N8N_HOST={shlex.quote(str(n8n_host))} \
             -e N8N_PROTOCOL=https \
             -e WEBHOOK_URL={shlex.quote(str(webhook_url))} \
-            -e N8N_PROXY_HOPS=1"""
+            -e N8N_PROXY_HOPS=1 \
+            -e N8N_SECURE_COOKIE=true"""
             
             # Porta exposta
             env_vars += f""" \
@@ -1041,7 +1042,8 @@ class Docker(Executa_comandos):
             -e N8N_HOST={shlex.quote(str(n8n_host))} \
             -e N8N_PROTOCOL=https \
             -e WEBHOOK_URL={shlex.quote(str(webhook_url))} \
-            -e N8N_PROXY_HOPS=1"""
+            -e N8N_PROXY_HOPS=1 \
+            -e N8N_SECURE_COOKIE=true"""
             
             # Porta exposta apenas no Main
             env_vars += f""" \
@@ -1098,6 +1100,14 @@ class Docker(Executa_comandos):
             print('\n✔ Worker configurado e em execução.')
             print('Este worker processará tarefas da fila automaticamente.')
         
+        # Note about secure cookies when behind HTTPS
+        try:
+            if n8n_host:
+                print("\nAviso: N8N_SECURE_COOKIE=true habilitado (requer HTTPS).")
+                print("Para testar via HTTP, pare o container e defina N8N_SECURE_COOKIE=false, depois reinicie.")
+        except Exception:
+            pass
+
         print("\n" + "="*60)
     
     def cria_dynamic_conf_traefik(self, email=None):
