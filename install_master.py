@@ -939,7 +939,10 @@ class Docker(Executa_comandos):
             -e DB_POSTGRESDB_PASSWORD={shlex.quote(str(postgres_password))} \
             -e QUEUE_BULL_REDIS_HOST={shlex.quote(str(redis_host))} \
             -e QUEUE_BULL_REDIS_PORT={shlex.quote(str(redis_port))} \
-            -e N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true"""
+            -e N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
+            -e N8N_RUNNERS_ENABLED=true \
+            -e N8N_BLOCK_ENV_ACCESS_IN_NODE=false \
+            -e N8N_GIT_NODE_DISABLE_BARE_REPOS=true"""
         
         # Adiciona senha do Redis se informada (só para Main/Worker)
         if redis_password and not is_simples:
@@ -953,7 +956,8 @@ class Docker(Executa_comandos):
                 env_vars += f""" \
             -e N8N_HOST={shlex.quote(str(n8n_host))} \
             -e N8N_PROTOCOL=https \
-            -e WEBHOOK_URL={shlex.quote(str(webhook_url))}"""
+            -e WEBHOOK_URL={shlex.quote(str(webhook_url))} \
+            -e N8N_PROXY_HOPS=1"""
             
             # Porta exposta
             env_vars += f""" \
@@ -970,7 +974,8 @@ class Docker(Executa_comandos):
                 env_vars += f""" \
             -e N8N_HOST={shlex.quote(str(n8n_host))} \
             -e N8N_PROTOCOL=https \
-            -e WEBHOOK_URL={shlex.quote(str(webhook_url))}"""
+            -e WEBHOOK_URL={shlex.quote(str(webhook_url))} \
+            -e N8N_PROXY_HOPS=1"""
             
             # Porta exposta apenas no Main
             env_vars += f""" \
