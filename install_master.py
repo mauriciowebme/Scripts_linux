@@ -5928,10 +5928,13 @@ AllowedIPs = {ip_peer}
             print("Voltando ao menu anterior...")
     
     def _configurar_como_servidor(self, private_key, public_key):
-        """Configura como servidor WireGuard"""
+        """Configura como servidor WireGuard - usa chave local automaticamente"""
         print("\n" + "="*70)
         print("📡 CONFIGURAÇÃO COMO SERVIDOR")
         print("="*70)
+        
+        print(f"\n🔑 Usando chave privada local automaticamente")
+        print(f"🔓 Sua chave pública: {public_key}\n")
         
         # Coleta informações
         ip_servidor = input("IP do servidor na VPN [10.8.0.1/24]: ").strip() or "10.8.0.1/24"
@@ -5960,8 +5963,13 @@ PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING 
             
             print("\n✅ Servidor configurado com sucesso!")
             print(f"📁 Config: {config_path}")
-            print(f"\n📋 COMPARTILHE ESTA CHAVE PÚBLICA COM OS CLIENTES:")
-            print(f"   {public_key}")
+            print("\n" + "="*70)
+            print("📋 ENVIE ESTAS INFORMAÇÕES PARA OS CLIENTES:")
+            print("="*70)
+            print(f"🔓 Chave Pública do Servidor: {public_key}")
+            print(f"🌐 IP do Servidor (este PC): [seu_ip_publico]")
+            print(f"🔌 Porta: {porta}")
+            print("="*70)
             
             # Pergunta se quer iniciar
             if input("\nDeseja iniciar o servidor agora? [S/n]: ").strip().lower() != 'n':
@@ -5974,26 +5982,34 @@ PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING 
             print(f"❌ Erro: {e}")
     
     def _configurar_como_cliente(self, private_key, public_key):
-        """Configura como cliente WireGuard"""
+        """Configura como cliente WireGuard - usa chave local automaticamente"""
         print("\n" + "="*70)
         print("💻 CONFIGURAÇÃO COMO CLIENTE")
         print("="*70)
         
-        # Coleta informações
-        ip_cliente = input("IP do cliente na VPN [10.8.0.2/24]: ").strip() or "10.8.0.2/24"
-        chave_pub_servidor = input("Chave PÚBLICA do servidor: ").strip()
+        print(f"\n🔑 Usando chave privada local automaticamente")
+        print(f"🔓 Sua chave pública: {public_key}\n")
         
+        # Coleta informações - APENAS do servidor remoto
+        print("Digite as informações do SERVIDOR:")
+        print("-" * 70)
+        
+        chave_pub_servidor = input("🔓 Chave PÚBLICA do servidor: ").strip()
         if not chave_pub_servidor:
             print("❌ Chave do servidor é obrigatória!")
             return
         
-        endpoint = input("IP público do servidor: ").strip()
+        endpoint = input("🌐 IP público do servidor: ").strip()
         if not endpoint:
             print("❌ Endpoint é obrigatório!")
             return
             
-        porta_servidor = input("Porta do servidor [51820]: ").strip() or "51820"
-        allowed_ips = input("IPs permitidos [10.8.0.0/24]: ").strip() or "10.8.0.0/24"
+        porta_servidor = input("🔌 Porta do servidor [51820]: ").strip() or "51820"
+        
+        print("\n" + "-" * 70)
+        print("Configurações da VPN local:")
+        ip_cliente = input("📍 IP deste cliente na VPN [10.8.0.2/24]: ").strip() or "10.8.0.2/24"
+        allowed_ips = input("🌍 IPs permitidos [10.8.0.0/24]: ").strip() or "10.8.0.0/24"
         
         # Cria configuração do cliente
         config_path = Path("/etc/wireguard/wg0.conf")
@@ -6014,10 +6030,13 @@ PersistentKeepalive = 25
             
             print("\n✅ Cliente configurado com sucesso!")
             print(f"📁 Config: {config_path}")
-            print(f"\n📋 COMPARTILHE ESTA CHAVE PÚBLICA COM O SERVIDOR:")
-            print(f"   {public_key}")
-            print(f"📋 E ESTE IP PARA O SERVIDOR ADICIONAR:")
-            print(f"   {ip_cliente.split('/')[0]}/32")
+            print("\n" + "="*70)
+            print("📋 ENVIE ESTAS INFORMAÇÕES PARA O ADMINISTRADOR DO SERVIDOR:")
+            print("="*70)
+            print(f"� Sua Chave Pública: {public_key}")
+            print(f"📍 IP desejado na VPN: {ip_cliente.split('/')[0]}/32")
+            print("="*70)
+            print("\n💡 O servidor precisa adicionar você como peer com estas informações!")
             
             # Pergunta se quer iniciar
             if input("\nDeseja conectar ao servidor agora? [S/n]: ").strip().lower() != 'n':
