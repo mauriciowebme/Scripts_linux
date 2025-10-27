@@ -6103,7 +6103,7 @@ PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING 
         print("\n" + "-" * 70)
         print("Configurações da VPN local:")
         ip_cliente = input("📍 IP deste cliente na VPN [10.8.0.2/24]: ").strip() or "10.8.0.2/24"
-        allowed_ips = input("🌍 IPs permitidos [10.8.0.0/24]: ").strip() or "10.8.0.0/24"
+        allowed_ips = input("🌍 Tráfego permitido - Só VPN [10.8.0.0/24] ou Com Internet [0.0.0.0/0]: ").strip() or "10.8.0.0/24"
         
         # Cria configuração do cliente
         config_path = Path("/etc/wireguard/wg0.conf")
