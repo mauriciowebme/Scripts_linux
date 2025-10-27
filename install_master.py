@@ -860,6 +860,7 @@ class Docker(Executa_comandos):
             dados_existentes = os.path.isdir(caminho_n8n)
         
         clean_install = False
+        pending_delete_dir = None
         if dados_existentes:
             print("\n=== Instalação existente detectada (arquivos) ===")
             try:
@@ -878,20 +879,18 @@ class Docker(Executa_comandos):
                 print("Operação cancelada pelo usuário.")
                 return
             if escolha == "2":
-                try:
-                    if os.path.exists(caminho_n8n):
-                        shutil.rmtree(caminho_n8n, ignore_errors=True)
-                        print(f"Pasta {caminho_n8n} removida para nova instalação.")
-                except Exception as ex:
-                    print(f"Aviso: não foi possível remover {caminho_n8n}: {ex}")
+                # Remoção da pasta será feita após a limpeza do banco
+                pending_delete_dir = caminho_n8n
+                print(f"Pasta {caminho_n8n} será removida após a limpeza do banco.")
                 clean_install = True
             else:
                 print("Mantendo a pasta de dados existente.")
                 clean_install = False
 
-        # Garante existência e permissões da pasta de dados após as decisões acima
-        os.makedirs(caminho_n8n, exist_ok=True)
-        os.chmod(caminho_n8n, 0o777)
+        # Garante existência e permissões da pasta de dados apenas se NÃO for instalação limpa
+        if not clean_install:
+            os.makedirs(caminho_n8n, exist_ok=True)
+            os.chmod(caminho_n8n, 0o777)
         
         # PASSO 3: Reutilização automática do n8n.env somente se manter dados
         reuse_env = False
@@ -966,6 +965,14 @@ class Docker(Executa_comandos):
             except Exception as ex:
                 print(f"Aviso: falha ao limpar o banco de dados: {ex}")
         
+        # Após limpeza do banco (se aplicável), remover a pasta de dados se estiver pendente
+        if clean_install and pending_delete_dir:
+            try:
+                if os.path.exists(pending_delete_dir):
+                    shutil.rmtree(pending_delete_dir, ignore_errors=True)
+                    print(f"Pasta {pending_delete_dir} removida para nova instalação.")
+            except Exception as ex:
+                print(f"Aviso: não foi possível remover {pending_delete_dir}: {ex}")
         # PASSO 5: Configurações específicas do Main ou Simples (domínio, chave, porta)
         n8n_host = ""
         webhook_url = ""
