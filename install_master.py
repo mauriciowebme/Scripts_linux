@@ -6131,25 +6131,49 @@ PersistentKeepalive = 25
             print(f"❌ Erro: {e}")
     
     def _adicionar_peer_dinamico(self):
-        """Adiciona peer de forma dinâmica"""
+        """Adiciona peer de forma dinâmica ao servidor"""
         config_path = Path("/etc/wireguard/wg0.conf")
         
         if not config_path.exists():
-            print("❌ Configure o servidor primeiro!")
+            print("\n❌ Arquivo de configuração não encontrado!")
+            print("💡 Configure o WireGuard como SERVIDOR primeiro usando a opção [1] do menu")
+            return
+        
+        # Verifica se é um servidor (tem ListenPort)
+        config_content = config_path.read_text()
+        if "ListenPort" not in config_content:
+            print("\n❌ Esta configuração não parece ser de um servidor!")
+            print("💡 Apenas servidores podem adicionar peers")
             return
         
         print("\n" + "="*70)
-        print("➕ ADICIONAR PEER")
+        print("➕ ADICIONAR NOVO PEER AO SERVIDOR")
         print("="*70)
         
-        nome = input("Nome do peer: ").strip() or "peer"
-        chave_pub = input("Chave PÚBLICA do peer: ").strip()
-        ip_peer = input("IP do peer [10.8.0.X/32]: ").strip()
+        print("\n📋 O cliente deve ter enviado estas informações:")
+        print("   - Chave Pública do cliente")
+        print("   - IP desejado na VPN (ex: 10.8.0.2/32)")
         
-        if not chave_pub or not ip_peer:
-            print("❌ Chave e IP são obrigatórios!")
+        print("\n" + "-"*70)
+        
+        # Coleta informações do peer
+        nome = input("📝 Nome/identificação do peer (ex: worker1, laptop): ").strip() or "peer"
+        
+        chave_pub = input("🔓 Chave PÚBLICA do peer: ").strip()
+        if not chave_pub:
+            print("❌ Chave pública é obrigatória!")
             return
         
+        ip_peer = input("📍 IP do peer na VPN (ex: 10.8.0.2/32) [/32]: ").strip()
+        if not ip_peer:
+            print("❌ IP é obrigatório!")
+            return
+        
+        # Garante que termina com /32
+        if '/32' not in ip_peer:
+            ip_peer = ip_peer.rstrip('/') + '/32'
+        
+        # Configuração do peer
         peer_config = f"""
 [Peer]
 # {nome}
@@ -6158,15 +6182,33 @@ AllowedIPs = {ip_peer}
 """
         
         try:
+            # Adiciona ao arquivo
             with open(config_path, 'a') as f:
                 f.write(peer_config)
             
-            print(f"✅ Peer '{nome}' adicionado!")
-            print("\n⚠️  Reinicie o servidor para aplicar:")
+            print("\n✅ Peer adicionado à configuração!")
             
-            if input("Reiniciar agora? [S/n]: ").strip().lower() != 'n':
+            # Mostra a config atualizada
+            print("\n" + "="*70)
+            print("📄 CONFIGURAÇÃO ATUALIZADA:")
+            print("="*70)
+            updated_config = config_path.read_text()
+            print(updated_config)
+            print("="*70)
+            
+            # Reinicia automaticamente
+            print("\n🔄 Reiniciando WireGuard para aplicar mudanças...")
+            try:
                 subprocess.run(["sudo", "systemctl", "restart", "wg-quick@wg0"], check=True)
-                print("✅ Servidor reiniciado!")
+                print("✅ WireGuard reiniciado com sucesso!")
+                print("\n📊 Conexões ativas:")
+                subprocess.run(["sudo", "wg", "show"], check=False)
+            except Exception as e:
+                print(f"⚠️  Erro ao reiniciar: {e}")
+                print("💡 Execute manualmente: sudo systemctl restart wg-quick@wg0")
+                
+        except Exception as e:
+            print(f"❌ Erro ao adicionar peer: {e}")
                 
         except Exception as e:
             print(f"❌ Erro: {e}")
