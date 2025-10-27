@@ -5828,7 +5828,7 @@ AllowedIPs = {ip_peer}
             if opcao == "0":
                 return
             elif opcao == "1":
-                # Apenas mostra informações e gerenciamento
+                # Menu de gerenciamento da configuração existente
                 print("\n✅ Mantendo configuração existente.")
                 
                 # Tenta extrair e mostrar a chave pública
@@ -5868,6 +5868,36 @@ AllowedIPs = {ip_peer}
                 else:
                     print("\n✅ WireGuard está ativo!")
                     subprocess.run(["sudo", "wg", "show"], check=False)
+                
+                # Menu de ações adicionais
+                print("\n" + "="*70)
+                print("O QUE DESEJA FAZER?")
+                print("="*70)
+                print("[1] ➕ Adicionar novo peer (para servidores)")
+                print("[2] 📊 Ver status detalhado")
+                print("[3] 🔍 Testar conexão com peer")
+                print("[0] Voltar ao menu principal")
+                print("="*70)
+                
+                acao = input("\nEscolha: ").strip()
+                
+                if acao == "1":
+                    # Adicionar peer
+                    self._adicionar_peer_dinamico()
+                elif acao == "2":
+                    # Status detalhado
+                    print("\n📊 STATUS DETALHADO:")
+                    subprocess.run(["sudo", "systemctl", "status", "wg-quick@wg0", "--no-pager"], check=False)
+                    print("\n🔗 CONEXÕES:")
+                    subprocess.run(["sudo", "wg", "show"], check=False)
+                elif acao == "3":
+                    # Testar conexão
+                    ip_teste = input("\nDigite o IP do peer para testar (ex: 10.8.0.2): ").strip()
+                    if ip_teste:
+                        print(f"\n🔍 Testando conectividade com {ip_teste}...")
+                        subprocess.run(["ping", "-c", "4", ip_teste], check=False)
+                
+                return
                 
                 return
             elif opcao == "2":
