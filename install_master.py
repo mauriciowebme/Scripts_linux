@@ -2,6 +2,7 @@
 
 # Execute com:
 # wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
+# rm -rf /tmp/Scripts_linux && git clone --depth=1 https://github.com/mauriciowebme/Scripts_linux.git /tmp/Scripts_linux && python3 /tmp/Scripts_linux/install_master.py
 
 # Ou crie um arquivo de texto com o nome install_master.txt na raiz do pendrive USB e execute:
 # lsblk
