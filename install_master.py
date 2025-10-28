@@ -869,8 +869,10 @@ class Docker(Executa_comandos):
                 qtd = -1
             print(f" - Pasta de dados: {caminho_n8n} (itens: {qtd if qtd>=0 else 'desconhecido'})")
             print("\nO que deseja fazer?")
-            if is_main or is_worker:
+            if is_main:
                 print("Nota: Ao escolher nova instalação, o banco PostgreSQL também será limpo.")
+            elif is_worker:
+                print("Nota: A nova instalação do worker não alterará o banco PostgreSQL compartilhado.")
             print("1) Manter dados (recomendado)")
             print("2) Nova instalação limpa (apagar pasta de dados)")
             print("3) Cancelar")
@@ -879,9 +881,12 @@ class Docker(Executa_comandos):
                 print("Operação cancelada pelo usuário.")
                 return
             if escolha == "2":
-                # Remoção da pasta será feita após a limpeza do banco
+                # Remoção da pasta será feita após as ações adicionais abaixo
                 pending_delete_dir = caminho_n8n
-                print(f"Pasta {caminho_n8n} será removida após a limpeza do banco.")
+                if is_main:
+                    print(f"Pasta {caminho_n8n} será removida após a limpeza do banco.")
+                else:
+                    print(f"Pasta {caminho_n8n} será removida para preparar a nova instalação.")
                 clean_install = True
             else:
                 print("Mantendo a pasta de dados existente.")
@@ -951,12 +956,12 @@ class Docker(Executa_comandos):
             redis_port = env_data.get('QUEUE_BULL_REDIS_PORT', '6379')
             redis_password = env_data.get('QUEUE_BULL_REDIS_PASSWORD', '')
 
-        # PASSO 4.1: Se usuário escolheu nova instalação, limpar o banco automaticamente
-        if (is_main or is_worker) and clean_install:
+        # PASSO 4.1: Se usuário escolheu nova instalação no Main, limpar o banco automaticamente
+        if is_main and clean_install:
             # Garante senha caso reuse_env não tenha trazido
             if not postgres_password:
                 postgres_password = self.generate_password()
-                print("⚠️ Senha do owner do banco estava vazia e foi gerada automaticamente.")
+                print("[!] Senha do owner do banco estava vazia e foi gerada automaticamente.")
             try:
                 print("\n=== Limpando banco de dados (DROP e recriação) ===")
                 print(f"Banco: '{postgres_db}' em {postgres_host}:{postgres_port} (owner: {postgres_user})")
