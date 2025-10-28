@@ -1204,9 +1204,12 @@ class Docker(Executa_comandos):
         except Exception as ex:
             print(f"Aviso: não foi possível salvar o env em {env_file_path}: {ex}")
 
-        comando_completo = comando_base + env_vars + """ \
-            docker.n8n.io/n8nio/n8n:latest
-            """
+        # Seleciona a imagem e entrypoint correto (web padrão ou worker)
+        image_cmd = "docker.n8n.io/n8nio/n8n:latest"
+        if is_worker:
+            image_cmd += " worker"
+
+        comando_completo = comando_base + env_vars + f" \\\n+            {image_cmd}\n            "
         
         comandos = [comando_completo]
         
