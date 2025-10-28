@@ -1211,6 +1211,8 @@ class Docker(Executa_comandos):
 
         comando_completo = comando_base + env_vars + f" \\\n+            {image_cmd}\n            "
         
+        # Saneia string do comando para evitar '+' deixado por engano e quebras formatadas
+        comando_completo = comando_completo.replace("+            ", "")
         comandos = [comando_completo]
         
         # Remove container se existir
