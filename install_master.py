@@ -58,8 +58,8 @@ def check_for_update():
     execute_file = Path("/install_principal/install_master.txt")
     execute_file.parent.mkdir(parents=True, exist_ok=True)
 
-    if not execute_file.exists():
-        execute_file.write_text("rm -rf /tmp/Scripts_linux && git clone --depth=1 https://github.com/mauriciowebme/Scripts_linux.git /tmp/Scripts_linux && python3 /tmp/Scripts_linux/install_master.py")
+    # if not execute_file.exists():
+    execute_file.write_text("rm -rf /tmp/Scripts_linux && git clone --depth=1 https://github.com/mauriciowebme/Scripts_linux.git /tmp/Scripts_linux && python3 /tmp/Scripts_linux/install_master.py")
     
     if update_file.exists():
         return
@@ -1030,7 +1030,7 @@ class Docker(Executa_comandos):
         # PASSO 5.1: Concorrência de workers (apenas Simples e Worker)
         # Worker: solicitar a N8N_ENCRYPTION_KEY usada no Main
         if is_worker and not reuse_env:
-            encryption_key = input("Informe a mesma N8N_ENCRYPTION_KEY usada no servidor Main (obrigatorio para descriptografar credenciais): ").strip()
+            encryption_key = input("Informe a mesma N8N_ENCRYPTION_KEY usada no servidor Main: ").strip()
             if not encryption_key:
                 print("Aviso: N8N_ENCRYPTION_KEY nao informada no Worker; workflows com credenciais podem falhar.")
         elif is_worker and reuse_env:
