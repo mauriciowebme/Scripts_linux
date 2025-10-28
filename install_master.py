@@ -1000,6 +1000,16 @@ class Docker(Executa_comandos):
             if reuse_env:
                 n8n_host = env_data.get('N8N_HOST', '')
                 encryption_key = env_data.get('N8N_ENCRYPTION_KEY', '')
+                # Se estiver reutilizando env, mas a chave estiver ausente em modo Main, gere uma nova
+                if is_main and not encryption_key:
+                    try:
+                        encryption_key = self.generate_password(32)
+                        print(f"?? Chave de encriptação ausente no n8n.env. Gerada: {encryption_key}")
+                        print("?? GUARDE ESTA CHAVE! Necessária para descriptografar credenciais.")
+                        # Garante que o env_data contenha a chave para persistência adiante
+                        env_data['N8N_ENCRYPTION_KEY'] = encryption_key
+                    except Exception as ex:
+                        print(f"Aviso: falha ao gerar chave de encriptação: {ex}")
                 porta_publicar = "5678"  # Porta padrão quando reutilizando
             else:
                 n8n_host = input("Domínio público (ex: n8n.seudominio.com, deixe vazio para pular): ").strip()
@@ -1089,7 +1099,10 @@ class Docker(Executa_comandos):
             # Variáveis específicas do Main
             env_vars += f""" \
             -e EXECUTIONS_MODE=queue \
-            -e OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true \
+            -e OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS=true"""
+            # Exporta N8N_ENCRYPTION_KEY somente se não estiver vazia
+            if encryption_key:
+                env_vars += f""" \
             -e N8N_ENCRYPTION_KEY={shlex.quote(str(encryption_key))}"""
             
             if n8n_host:
@@ -1147,7 +1160,8 @@ class Docker(Executa_comandos):
             if is_main:
                 env_map['EXECUTIONS_MODE'] = 'queue'
                 env_map['OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS'] = 'true'
-                env_map['N8N_ENCRYPTION_KEY'] = str(encryption_key)
+                if encryption_key:
+                    env_map['N8N_ENCRYPTION_KEY'] = str(encryption_key)
             if n8n_host:
                 env_map.update({
                     'N8N_HOST': str(n8n_host),
