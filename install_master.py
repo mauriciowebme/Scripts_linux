@@ -984,6 +984,12 @@ class Docker(Executa_comandos):
         try:
             os.makedirs(caminho_n8n, exist_ok=True)
             os.chmod(caminho_n8n, 0o777)
+            nodes_dir = os.path.join(caminho_n8n, 'nodes')
+            os.makedirs(nodes_dir, exist_ok=True)
+            try:
+                os.chmod(nodes_dir, 0o777)
+            except Exception:
+                pass
         except Exception:
             pass
         # PASSO 5: Configurações específicas do Main ou Simples (domínio, chave, porta)
