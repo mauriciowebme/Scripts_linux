@@ -1028,6 +1028,13 @@ class Docker(Executa_comandos):
                 print(f"✔ Webhook URL: {webhook_url}")
 
         # PASSO 5.1: Concorrência de workers (apenas Simples e Worker)
+        # Worker: solicitar a N8N_ENCRYPTION_KEY usada no Main
+        if is_worker and not reuse_env:
+            encryption_key = input("Informe a mesma N8N_ENCRYPTION_KEY usada no servidor Main (obrigatorio para descriptografar credenciais): ").strip()
+            if not encryption_key:
+                print("Aviso: N8N_ENCRYPTION_KEY nao informada no Worker; workflows com credenciais podem falhar.")
+        elif is_worker and reuse_env:
+            encryption_key = env_data.get('N8N_ENCRYPTION_KEY', encryption_key)
         worker_concurrency = "10"
         if is_simples or is_worker:
             # Segue o mesmo padrão de entrada com fallback: input(...).strip() or "10"
@@ -1124,6 +1131,14 @@ class Docker(Executa_comandos):
             -e QUEUE_WORKER_ID={shlex.quote(str(container_name))} \
             -e N8N_WORKER_CONCURRENCY={shlex.quote(str(worker_concurrency))}"""
         
+        # Injeta N8N_ENCRYPTION_KEY para Worker, se informada
+        try:
+            if is_worker and encryption_key:
+                env_vars += f""" \
+            -e N8N_ENCRYPTION_KEY={shlex.quote(str(encryption_key))}"""
+        except Exception:
+            pass
+
         # Comando completo
         # Persiste .env com as variáveis utilizadas para reutilização futura
         try:
@@ -1157,6 +1172,8 @@ class Docker(Executa_comandos):
                 # Para workers, define concorrência
                 if is_worker:
                     env_map['N8N_WORKER_CONCURRENCY'] = str(worker_concurrency)
+                    if encryption_key:
+                        env_map['N8N_ENCRYPTION_KEY'] = str(encryption_key)
             if is_main:
                 env_map['EXECUTIONS_MODE'] = 'queue'
                 env_map['OFFLOAD_MANUAL_EXECUTIONS_TO_WORKERS'] = 'true'
