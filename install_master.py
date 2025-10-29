@@ -1229,6 +1229,7 @@ class Docker(Executa_comandos):
         
         time.sleep(10)
         os.chmod(caminho_n8n, 0o777)
+        
         # Mensagens finais
         print("\n" + "="*60)
         print(f"✔ Instalação do n8n ({tipo_suffix.upper()}) concluída!")
