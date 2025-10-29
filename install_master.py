@@ -1227,7 +1227,7 @@ class Docker(Executa_comandos):
         # Executa instalação
         self.executar_comandos(comandos)
         
-        time.sleep(10)
+        time.sleep(30)
         os.chmod(caminho_n8n, 0o777)
         
         # Mensagens finais
