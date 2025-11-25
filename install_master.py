@@ -359,10 +359,20 @@ class Docker(Executa_comandos):
         print(f"docker-compose.yml salvo em: {compose_path}")
 
         comandos = [
-            f"docker compose -f {compose_path} pull",
-            f"docker compose -f {compose_path} up -d",
+            ["docker", "compose", "-f", str(compose_path), "pull"],
+            ["docker", "compose", "-f", str(compose_path), "up", "-d"],
         ]
-        self.executar_comandos(comandos, ignorar_erros=True)
+
+        for cmd in comandos:
+            print("\n" + "*" * 40)
+            print(" " * 5 + "---> Executando comando: <---")
+            print(" " * 5 + " ".join(cmd))
+            print("*" * 40 + "\n")
+            try:
+                subprocess.run(cmd, check=True)
+            except subprocess.CalledProcessError as e:
+                print(f"Erro ao executar {' '.join(cmd)}: {e}")
+                raise
 
         try:
             compose_path.unlink(missing_ok=True)
