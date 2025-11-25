@@ -351,6 +351,27 @@ class Docker(Executa_comandos):
             ]
         resultados = self.executar_comandos(comandos)
     
+    def aplicar_compose(self, compose_yml: str, compose_filename: str = "docker-compose.yml"):
+        tmp_dir = Path(".tmp/compose-run")
+        tmp_dir.mkdir(parents=True, exist_ok=True)
+        compose_path = tmp_dir / compose_filename
+        compose_path.write_text(compose_yml, encoding="utf-8")
+        print(f"docker-compose.yml salvo em: {compose_path}")
+
+        comandos = [
+            f"cd {tmp_dir} && docker compose pull",
+            f"cd {tmp_dir} && docker compose up -d",
+        ]
+        self.executar_comandos(comandos, ignorar_erros=True)
+
+        try:
+            compose_path.unlink(missing_ok=True)
+            tmp_dir.rmdir()
+        except Exception:
+            pass
+
+        return str(compose_path)
+    
     def generate_password(self, length=16):
         ascii_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         ascii_lowercase = 'abcdefghijklmnopqrstuvwxyz'
@@ -4696,6 +4717,43 @@ CMD ["sh", "-c", "\
 
         print("\nInstalação do rclone concluída.")
     
+    def instala_browserless(self):
+        print("Iniciando instalacao do Browserless (Chromium headless).")
+
+        base_dir = f"{self.install_principal}/browserless"
+
+        porta = self.escolher_porta_disponivel()[0]
+        max_sessions = "2"
+        timeout_ms = "15000"
+        token_input = input("TOKEN de acesso (Enter gera automaticamente): ").strip()
+        token = token_input or self.generate_password(24)
+        if not token_input:
+            print(f"TOKEN gerado automaticamente: {token}")
+
+        self.remove_container("browserless_central")
+
+        compose_yml = textwrap.dedent(f"""
+        version: '3'
+        services:
+          browserless:
+            image: ghcr.io/browserless/chromium:latest
+            container_name: browserless_central
+            restart: always
+            ports:
+              - "{porta}:3000"
+            environment:
+              - MAX_CONCURRENT_SESSIONS={max_sessions}
+              - TOKEN={token}
+              - CONNECTION_TIMEOUT={timeout_ms}
+            shm_size: "1gb"
+        """).strip() + "\n"
+
+        self.aplicar_compose(compose_yml=compose_yml)
+
+        print("\nBrowserless disponivel.")
+        print(f"- URL: http://<ip-servidor>:{porta}")
+        print("- Use o TOKEN configurado para autenticar as requisicoes.")
+
     def instala_selenium_firefox(self):
         print("Iniciando instalação selenium_firefox:")
         # senha = input("Configure uma senha para acessar: ")
@@ -7193,6 +7251,7 @@ AllowedIPs = {ip_peer}
             ("Instala Redis Docker", self.instala_redis_docker),
             ("Instala Evolution API WhatsApp", self.instala_evolution_api_whatsapp),
             ("Instala WAHA WhatsApp (devlikeapro)", self.instala_waha_whatsapp),
+            ("Instala browserless (chromium headless)", self.instala_browserless),
             ("Instala selenium-firefox", self.instala_selenium_firefox),
             ("Instala rclone", self.rclone),
         ]
