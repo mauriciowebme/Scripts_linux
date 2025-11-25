@@ -352,15 +352,15 @@ class Docker(Executa_comandos):
         resultados = self.executar_comandos(comandos)
     
     def aplicar_compose(self, compose_yml: str, compose_filename: str = "docker-compose.yml"):
-        tmp_dir = Path(".tmp/compose-run")
+        tmp_dir = Path(".tmp/compose-run").resolve()
         tmp_dir.mkdir(parents=True, exist_ok=True)
         compose_path = tmp_dir / compose_filename
         compose_path.write_text(compose_yml, encoding="utf-8")
         print(f"docker-compose.yml salvo em: {compose_path}")
 
         comandos = [
-            f"cd {tmp_dir} && docker compose pull",
-            f"cd {tmp_dir} && docker compose up -d",
+            f"docker compose -f {compose_path} pull",
+            f"docker compose -f {compose_path} up -d",
         ]
         self.executar_comandos(comandos, ignorar_erros=True)
 
