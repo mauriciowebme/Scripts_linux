@@ -4755,7 +4755,12 @@ CMD ["sh", "-c", "\
               - MAX_CONCURRENT_SESSIONS={max_sessions}
               - TOKEN={token}
               - CONNECTION_TIMEOUT={timeout_ms}
-            shm_size: "1gb"
+            deploy:
+              resources:
+                limits:
+                  cpus: "1"
+                  memory: "512m"
+            shm_size: "512m"
         """).strip() + "\n"
 
         self.aplicar_compose(compose_yml=compose_yml)
