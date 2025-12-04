@@ -4812,6 +4812,9 @@ class Sistema(Docker, Executa_comandos):
         filtro = ""
         
         while True:
+            # Empurra o conteúdo antigo para cima (mantém histórico)
+            print("\n" * 50)
+            
             # Aplica filtro se houver
             if filtro:
                 opcoes_filtradas = [
@@ -4833,7 +4836,7 @@ class Sistema(Docker, Executa_comandos):
             opcoes_pagina = opcoes_filtradas[inicio:fim]
             
             # Exibe cabeçalho
-            print("\n" + "="*80)
+            print("="*80)
             print(f"  {titulo}")
             if filtro:
                 print(f"  🔍 Filtro: '{filtro}' | {total_opcoes} resultado(s)")
@@ -4858,6 +4861,7 @@ class Sistema(Docker, Executa_comandos):
                     pagina_atual += 1
                 else:
                     print("\n⚠️  Você já está na última página!")
+                    input("Pressione Enter para continuar...")
                 continue
             
             elif escolha.lower() == 'p' or escolha.lower() == 'prev':
@@ -4865,21 +4869,19 @@ class Sistema(Docker, Executa_comandos):
                     pagina_atual -= 1
                 else:
                     print("\n⚠️  Você já está na primeira página!")
+                    input("Pressione Enter para continuar...")
                 continue
             
             elif escolha.startswith('/'):
                 # Busca/filtro
                 filtro = escolha[1:].strip()
                 pagina_atual = 0
-                if filtro:
-                    print(f"\n🔍 Filtrando por: '{filtro}'")
                 continue
             
             elif escolha.lower() == 'c' or escolha.lower() == 'clear':
                 # Limpa filtro
                 filtro = ""
                 pagina_atual = 0
-                print("\n✓ Filtro limpo!")
                 continue
             
             # Seleção numérica
@@ -4894,7 +4896,10 @@ class Sistema(Docker, Executa_comandos):
                         break
                 
                 if opcao_selecionada:
-                    print(f"\n✓ Executando: {opcao_selecionada[0]}")
+                    print("\n" * 3)
+                    print(f"{'='*80}")
+                    print(f"  ✓ Executando: {opcao_selecionada[0]}")
+                    print(f"{'='*80}\n")
                     opcao_selecionada[1]()
                     
                     if principal:
@@ -4903,9 +4908,11 @@ class Sistema(Docker, Executa_comandos):
                         return
                 else:
                     print(f"\n❌ Opção [{escolha_num}] não encontrada!")
+                    input("Pressione Enter para continuar...")
                     
             except ValueError:
                 print("\n❌ Entrada inválida! Use um número, 'n', 'p', '/busca' ou 'c'")
+                input("Pressione Enter para continuar...")
         
     def ecaminhamentos_portas_tuneis(self,):
         comandos = [
