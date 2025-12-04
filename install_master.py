@@ -351,6 +351,37 @@ class Docker(Executa_comandos):
             ]
         resultados = self.executar_comandos(comandos)
     
+    def aplicar_compose(self, compose_yml: str, compose_filename: str = "docker-compose.yml"):
+        tmp_dir = Path(".tmp/compose-run").resolve()
+        tmp_dir.mkdir(parents=True, exist_ok=True)
+        compose_path = tmp_dir / compose_filename
+        compose_path.write_text(compose_yml, encoding="utf-8")
+        print(f"docker-compose.yml salvo em: {compose_path}")
+
+        comandos = [
+            ["docker", "compose", "-f", str(compose_path), "pull"],
+            ["docker", "compose", "-f", str(compose_path), "up", "-d"],
+        ]
+
+        for cmd in comandos:
+            print("\n" + "*" * 40)
+            print(" " * 5 + "---> Executando comando: <---")
+            print(" " * 5 + " ".join(cmd))
+            print("*" * 40 + "\n")
+            try:
+                subprocess.run(cmd, check=True)
+            except subprocess.CalledProcessError as e:
+                print(f"Erro ao executar {' '.join(cmd)}: {e}")
+                raise
+
+        try:
+            compose_path.unlink(missing_ok=True)
+            tmp_dir.rmdir()
+        except Exception:
+            pass
+
+        return str(compose_path)
+    
     def generate_password(self, length=16):
         ascii_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         ascii_lowercase = 'abcdefghijklmnopqrstuvwxyz'
@@ -4121,6 +4152,141 @@ CMD ["sh", "-c", "\
         print(f"\nAcesse: http://<seu_ip>:{portas[0]}")
         print("="*60)
             
+    def instala_waha_whatsapp(self):
+        print("Iniciando instalação WAHA WhatsApp HTTP API (devlikeapro/waha):")
+
+        caminho_waha = f'{self.install_principal}/waha_whatsapp'
+        caminho_sessions = f'{caminho_waha}/sessions'
+        caminho_media = f'{caminho_waha}/media'
+        caminho_env = f'{caminho_waha}/config'
+
+        portas = self.escolher_porta_disponivel()
+
+        os.makedirs(caminho_waha, exist_ok=True)
+        os.makedirs(caminho_sessions, exist_ok=True)
+        os.makedirs(caminho_media, exist_ok=True)
+        os.makedirs(caminho_env, exist_ok=True)
+        os.chmod(caminho_waha, 0o777)
+
+        env_file_path = f'{caminho_env}/.env'
+        usar_config_existente = False
+
+        if os.path.exists(env_file_path):
+            print("\n⚠  ATENÇÃO: Arquivo .env já existe para o WAHA!")
+            print(f"Localização: {env_file_path}")
+            resposta = input("Deseja usar as configurações existentes? (s/n) [padrão: s]: ").strip().lower()
+            if resposta != 'n':
+                usar_config_existente = True
+                print("✅ Usando arquivo .env existente.")
+            else:
+                print("As novas configurações serão solicitadas e sobrescreverão o arquivo.")
+
+        api_key = dashboard_user = dashboard_password = None
+        swagger_user = swagger_password = None
+        base_url = engine_padrao = None
+        dashboard_enabled = swagger_enabled = None
+
+        if not usar_config_existente:
+            api_key = secrets.token_hex(16)
+            print("\n=== CHAVE DE AUTENTICAÇÃO GERADA ===")
+            print(f"WAHA_API_KEY: {api_key}")
+            print("Anote esta chave, ela será necessária para proteger as chamadas API.")
+
+            dashboard_user = input("\nUsuário do dashboard (padrão: admin): ").strip() or "admin"
+            dashboard_password = input("Senha do dashboard (Enter para gerar automaticamente): ").strip()
+            if not dashboard_password:
+                dashboard_password = secrets.token_urlsafe(16)
+                print(f"Senha do dashboard gerada: {dashboard_password}")
+
+            swagger_user = input("\nUsuário do Swagger (padrão: admin): ").strip() or "admin"
+            swagger_password = input("Senha do Swagger (Enter para gerar automaticamente): ").strip()
+            if not swagger_password:
+                swagger_password = secrets.token_urlsafe(16)
+                print(f"Senha do Swagger gerada: {swagger_password}")
+
+            base_url_padrao = f"http://localhost:{portas[0]}"
+            base_url = input(f"\nBase URL pública da API (padrão: {base_url_padrao}): ").strip() or base_url_padrao
+
+            engine_padrao = input("\nEngine padrão do WhatsApp (WEBJS/GOWS/NOWEB) [WEBJS]: ").strip().upper() or "WEBJS"
+
+            dash_enabled_input = input("Deseja habilitar o dashboard web? (s/n) [s]: ").strip().lower()
+            dashboard_enabled = "False" if dash_enabled_input == 'n' else "True"
+
+            swagger_enabled_input = input("Deseja habilitar o Swagger? (s/n) [s]: ").strip().lower()
+            swagger_enabled = "False" if swagger_enabled_input == 'n' else "True"
+
+            with open(env_file_path, 'w') as f:
+                f.write(f"WAHA_API_KEY={api_key}\n")
+                f.write(f"WAHA_DASHBOARD_USERNAME={dashboard_user}\n")
+                f.write(f"WAHA_DASHBOARD_PASSWORD={dashboard_password}\n")
+                f.write(f"WHATSAPP_SWAGGER_USERNAME={swagger_user}\n")
+                f.write(f"WHATSAPP_SWAGGER_PASSWORD={swagger_password}\n")
+                f.write(f"WAHA_DASHBOARD_ENABLED={dashboard_enabled}\n")
+                f.write(f"WHATSAPP_SWAGGER_ENABLED={swagger_enabled}\n")
+                f.write(f"WAHA_BASE_URL={base_url}\n")
+                f.write(f"WHATSAPP_DEFAULT_ENGINE={engine_padrao}\n")
+                f.write("WAHA_MEDIA_STORAGE=LOCAL\n")
+                f.write("WHATSAPP_FILES_FOLDER=/app/.media\n")
+                f.write("WHATSAPP_FILES_LIFETIME=0\n")
+                f.write("WAHA_LOG_FORMAT=JSON\n")
+                f.write("WAHA_LOG_LEVEL=info\n")
+                f.write("WAHA_PRINT_QR=False\n")
+
+            os.chmod(env_file_path, 0o600)
+            print("✅ Arquivo .env criado com sucesso!")
+
+        container = f"""docker run -d \
+                        --name waha_whatsapp \
+                        --restart=unless-stopped \
+                        --memory=512m \
+                        --cpus=1 \
+                        -p {portas[0]}:3000 \
+                        --env-file {env_file_path} \
+                        -e TZ="America/Sao_Paulo" \
+                        -v {caminho_sessions}:/app/.sessions \
+                        -v {caminho_media}:/app/.media \
+                        devlikeapro/waha
+                    """
+
+        self.remove_container('waha_whatsapp')
+        resultados = self.executar_comandos([container])
+
+        self.cria_rede_docker(associar_container_nome='waha_whatsapp', numero_rede=1)
+
+        print("\n" + "="*60)
+        print("Instalação do WAHA WhatsApp concluída.")
+        print("="*60)
+        print(f"Porta de acesso: {portas[0]}")
+
+        if not usar_config_existente:
+            print(f"API Key: {api_key}")
+            print(f"Usuário Dashboard: {dashboard_user}")
+            print(f"Senha Dashboard: {dashboard_password}")
+            print(f"Usuário Swagger: {swagger_user}")
+            print(f"Senha Swagger: {swagger_password}")
+            print(f"Base URL configurada: {base_url}")
+            print(f"Engine padrão: {engine_padrao}")
+            print(f"Dashboard habilitado: {dashboard_enabled}")
+            print(f"Swagger habilitado: {swagger_enabled}")
+        else:
+            print("Usando configurações existentes do arquivo .env.")
+            print(f"Consulte: {env_file_path}")
+
+        print(f"Diretório Sessions: {caminho_sessions}")
+        print(f"Diretório Media: {caminho_media}")
+        print("\nArquivo .env")
+        print(f"  Localização: {env_file_path}")
+        print(f"  Permissões: 600 (somente proprietário)")
+
+        print("\nIPs disponíveis para acesso:")
+        comandos = [
+            "hostname -I | tr ' ' '\\n'",
+        ]
+        self.executar_comandos(comandos, exibir_executando=False)
+        print(f"\nDashboard: http://<seu_ip>:{portas[0]}/dashboard")
+        print(f"Swagger:   http://<seu_ip>:{portas[0]}/swagger")
+        print("="*60)
+            
     def instala_redis_docker(self):
         print("Iniciando instalação redis:")
         senha = input("Configure uma senha para acessar: ")
@@ -4533,6 +4699,48 @@ CMD ["sh", "-c", "\
 
         print("\nInstalação do rclone concluída.")
     
+    def instala_browserless(self):
+        print("Iniciando instalacao do Browserless (Chromium headless).")
+
+        base_dir = f"{self.install_principal}/browserless"
+
+        porta = self.escolher_porta_disponivel()[0]
+        max_sessions = "2"
+        timeout_ms = "15000"
+        token_input = input("TOKEN de acesso (Enter gera automaticamente): ").strip()
+        token = token_input or self.generate_password(24)
+        if not token_input:
+            print(f"TOKEN gerado automaticamente: {token}")
+
+        self.remove_container("browserless_central")
+
+        compose_yml = textwrap.dedent(f"""
+        version: '3'
+        services:
+          browserless:
+            image: ghcr.io/browserless/chromium:latest
+            container_name: browserless_central
+            restart: always
+            ports:
+              - "{porta}:3000"
+            environment:
+              - MAX_CONCURRENT_SESSIONS={max_sessions}
+              - TOKEN={token}
+              - CONNECTION_TIMEOUT={timeout_ms}
+            deploy:
+              resources:
+                limits:
+                  cpus: "1"
+                  memory: "512m"
+            shm_size: "512m"
+        """).strip() + "\n"
+
+        self.aplicar_compose(compose_yml=compose_yml)
+
+        print("\nBrowserless disponivel.")
+        print(f"- URL: http://<ip-servidor>:{porta}")
+        print("- Use o TOKEN configurado para autenticar as requisicoes.")
+
     def instala_selenium_firefox(self):
         print("Iniciando instalação selenium_firefox:")
         # senha = input("Configure uma senha para acessar: ")
@@ -7029,6 +7237,8 @@ AllowedIPs = {ip_peer}
             ("Instala Open WebUI", self.instala_open_webui),
             ("Instala Redis Docker", self.instala_redis_docker),
             ("Instala Evolution API WhatsApp", self.instala_evolution_api_whatsapp),
+            ("Instala WAHA WhatsApp (devlikeapro)", self.instala_waha_whatsapp),
+            ("Instala browserless (chromium headless)", self.instala_browserless),
             ("Instala selenium-firefox", self.instala_selenium_firefox),
             ("Instala rclone", self.rclone),
         ]
@@ -7251,7 +7461,7 @@ Execute com: bash /install_principal/install_master.txt
 ===========================================================================
 ===========================================================================
 Arquivo install_master.py iniciado!
-Versão 1.226
+Versão 1.227
 ===========================================================================
 ===========================================================================
 ip server:
