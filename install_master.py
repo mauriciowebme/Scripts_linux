@@ -4812,8 +4812,10 @@ class Sistema(Docker, Executa_comandos):
         filtro = ""
         
         while True:
-            # Empurra o conteúdo antigo para cima (mantém histórico)
-            print("\n" * 50)
+            # Limpa a tela usando ANSI escape codes
+            # \033[2J = limpa tela | \033[H = move cursor para topo
+            # Mantém histórico no buffer (pode scrollar para cima)
+            print("\033[2J\033[H", end='')
             
             # Aplica filtro se houver
             if filtro:
@@ -4835,41 +4837,47 @@ class Sistema(Docker, Executa_comandos):
             fim = min(inicio + itens_por_pagina, total_opcoes)
             opcoes_pagina = opcoes_filtradas[inicio:fim]
             
-            # Exibe cabeçalho
-            print("="*80)
-            print(f"  {titulo}")
+            # Exibe cabeçalho com cores ANSI
+            # \033[1m = negrito | \033[36m = ciano | \033[0m = reset
+            print("\033[1;36m" + "="*80 + "\033[0m")
+            print(f"\033[1;37m  {titulo}\033[0m")
             if filtro:
-                print(f"  🔍 Filtro: '{filtro}' | {total_opcoes} resultado(s)")
-            print(f"  📄 Página {pagina_atual + 1}/{total_paginas} | Exibindo {inicio + 1}-{fim} de {total_opcoes}")
-            print("="*80)
+                print(f"\033[33m  🔍 Filtro: '{filtro}' | {total_opcoes} resultado(s)\033[0m")
+            print(f"\033[90m  📄 Página {pagina_atual + 1}/{total_paginas} | Exibindo {inicio + 1}-{fim} de {total_opcoes}\033[0m")
+            print("\033[1;36m" + "="*80 + "\033[0m")
             
             # Exibe opções da página
             for idx_original, (texto, funcao) in opcoes_pagina:
-                print(f"  [{idx_original}] {texto}")
+                if idx_original == 0:
+                    # Opção "Sair" em vermelho
+                    print(f"\033[91m  [{idx_original}] {texto}\033[0m")
+                else:
+                    # Opções normais em branco/verde claro
+                    print(f"\033[92m  [{idx_original}]\033[0m {texto}")
             
             # Exibe rodapé com comandos
-            print("\n" + "-"*80)
-            print("  NAVEGAÇÃO: [n]ext | [p]rev | [número] para selecionar")
-            print("  BUSCA: /palavra | [c]limpar filtro | [0] Sair")
-            print("-"*80)
+            print("\n" + "\033[2m" + "-"*80 + "\033[0m")
+            print("\033[96m  NAVEGAÇÃO:\033[0m [n]ext | [p]rev | [número] para selecionar")
+            print("\033[96m  BUSCA:\033[0m /palavra | [c]limpar filtro | [0] Sair")
+            print("\033[2m" + "-"*80 + "\033[0m")
             
-            escolha = input("\n➤ Digite sua escolha: ").strip()
+            escolha = input("\n\033[1;33m➤ Digite sua escolha:\033[0m ").strip()
             
             # Comandos especiais
             if escolha.lower() == 'n' or escolha.lower() == 'next':
                 if pagina_atual < total_paginas - 1:
                     pagina_atual += 1
                 else:
-                    print("\n⚠️  Você já está na última página!")
-                    input("Pressione Enter para continuar...")
+                    print("\n\033[93m⚠️  Você já está na última página!\033[0m")
+                    input("\033[90mPressione Enter para continuar...\033[0m")
                 continue
             
             elif escolha.lower() == 'p' or escolha.lower() == 'prev':
                 if pagina_atual > 0:
                     pagina_atual -= 1
                 else:
-                    print("\n⚠️  Você já está na primeira página!")
-                    input("Pressione Enter para continuar...")
+                    print("\n\033[93m⚠️  Você já está na primeira página!\033[0m")
+                    input("\033[90mPressione Enter para continuar...\033[0m")
                 continue
             
             elif escolha.startswith('/'):
@@ -4896,10 +4904,10 @@ class Sistema(Docker, Executa_comandos):
                         break
                 
                 if opcao_selecionada:
-                    print("\n" * 3)
-                    print(f"{'='*80}")
-                    print(f"  ✓ Executando: {opcao_selecionada[0]}")
-                    print(f"{'='*80}\n")
+                    print("\033[2J\033[H", end='')
+                    print(f"\033[1;32m{'='*80}\033[0m")
+                    print(f"\033[1;32m  ✓ Executando: {opcao_selecionada[0]}\033[0m")
+                    print(f"\033[1;32m{'='*80}\033[0m\n")
                     opcao_selecionada[1]()
                     
                     if principal:
@@ -4907,12 +4915,12 @@ class Sistema(Docker, Executa_comandos):
                     else:
                         return
                 else:
-                    print(f"\n❌ Opção [{escolha_num}] não encontrada!")
-                    input("Pressione Enter para continuar...")
+                    print(f"\n\033[91m❌ Opção [{escolha_num}] não encontrada!\033[0m")
+                    input("\033[90mPressione Enter para continuar...\033[0m")
                     
             except ValueError:
-                print("\n❌ Entrada inválida! Use um número, 'n', 'p', '/busca' ou 'c'")
-                input("Pressione Enter para continuar...")
+                print("\n\033[91m❌ Entrada inválida! Use um número, 'n', 'p', '/busca' ou 'c'\033[0m")
+                input("\033[90mPressione Enter para continuar...\033[0m")
         
     def ecaminhamentos_portas_tuneis(self,):
         comandos = [
