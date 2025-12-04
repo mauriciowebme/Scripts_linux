@@ -4803,6 +4803,109 @@ class Sistema(Docker, Executa_comandos):
                         
             else:
                 print("\nOpção inválida. Tente novamente.\n")
+    
+    def mostrar_menu_paginado(self, opcoes_menu, titulo="Menu de Opções", itens_por_pagina=15, principal=False):
+        """Mostra menu com paginação, busca e navegação melhorada."""
+        opcoes_menu.insert(0, ("Sair", self.sair))
+        
+        pagina_atual = 0
+        filtro = ""
+        
+        while True:
+            # Aplica filtro se houver
+            if filtro:
+                opcoes_filtradas = [
+                    (idx, opcao) for idx, opcao in enumerate(opcoes_menu)
+                    if filtro.lower() in opcao[0].lower()
+                ]
+            else:
+                opcoes_filtradas = list(enumerate(opcoes_menu))
+            
+            total_opcoes = len(opcoes_filtradas)
+            total_paginas = (total_opcoes + itens_por_pagina - 1) // itens_por_pagina
+            
+            # Ajusta página se exceder o limite
+            if pagina_atual >= total_paginas:
+                pagina_atual = max(0, total_paginas - 1)
+            
+            inicio = pagina_atual * itens_por_pagina
+            fim = min(inicio + itens_por_pagina, total_opcoes)
+            opcoes_pagina = opcoes_filtradas[inicio:fim]
+            
+            # Exibe cabeçalho
+            print("\n" + "="*80)
+            print(f"  {titulo}")
+            if filtro:
+                print(f"  🔍 Filtro: '{filtro}' | {total_opcoes} resultado(s)")
+            print(f"  📄 Página {pagina_atual + 1}/{total_paginas} | Exibindo {inicio + 1}-{fim} de {total_opcoes}")
+            print("="*80)
+            
+            # Exibe opções da página
+            for idx_original, (texto, funcao) in opcoes_pagina:
+                print(f"  [{idx_original}] {texto}")
+            
+            # Exibe rodapé com comandos
+            print("\n" + "-"*80)
+            print("  NAVEGAÇÃO: [n]ext | [p]rev | [número] para selecionar")
+            print("  BUSCA: /palavra | [c]limpar filtro | [0] Sair")
+            print("-"*80)
+            
+            escolha = input("\n➤ Digite sua escolha: ").strip()
+            
+            # Comandos especiais
+            if escolha.lower() == 'n' or escolha.lower() == 'next':
+                if pagina_atual < total_paginas - 1:
+                    pagina_atual += 1
+                else:
+                    print("\n⚠️  Você já está na última página!")
+                continue
+            
+            elif escolha.lower() == 'p' or escolha.lower() == 'prev':
+                if pagina_atual > 0:
+                    pagina_atual -= 1
+                else:
+                    print("\n⚠️  Você já está na primeira página!")
+                continue
+            
+            elif escolha.startswith('/'):
+                # Busca/filtro
+                filtro = escolha[1:].strip()
+                pagina_atual = 0
+                if filtro:
+                    print(f"\n🔍 Filtrando por: '{filtro}'")
+                continue
+            
+            elif escolha.lower() == 'c' or escolha.lower() == 'clear':
+                # Limpa filtro
+                filtro = ""
+                pagina_atual = 0
+                print("\n✓ Filtro limpo!")
+                continue
+            
+            # Seleção numérica
+            try:
+                escolha_num = int(escolha)
+                
+                # Verifica se é uma opção válida
+                opcao_selecionada = None
+                for idx_original, (texto, funcao) in opcoes_filtradas:
+                    if idx_original == escolha_num:
+                        opcao_selecionada = (texto, funcao)
+                        break
+                
+                if opcao_selecionada:
+                    print(f"\n✓ Executando: {opcao_selecionada[0]}")
+                    opcao_selecionada[1]()
+                    
+                    if principal:
+                        break
+                    else:
+                        return
+                else:
+                    print(f"\n❌ Opção [{escolha_num}] não encontrada!")
+                    
+            except ValueError:
+                print("\n❌ Entrada inválida! Use um número, 'n', 'p', '/busca' ou 'c'")
         
     def ecaminhamentos_portas_tuneis(self,):
         comandos = [
@@ -5414,14 +5517,13 @@ class Sistema(Docker, Executa_comandos):
         print(f"\n✅ Operação de {'expansão' if acao == 'aumentar' else 'redução'} do RAID concluída com sucesso!")
 
     def menu_raid(self):
-        print("\nMenu de raids.\n")
         """Menu de opções"""
         opcoes_menu = [
             ("Exibe o estado atual da raid", self.estado_raid),
             ("Formata o disco para usar em raid existente", self.formatar_criar_particao_raid),
             ("Controle de tamanho do raid", self.gerenciar_raid),
         ]
-        self.mostrar_menu(opcoes_menu)
+        self.mostrar_menu_paginado(opcoes_menu, titulo="💾 GERENCIAMENTO DE RAID", itens_por_pagina=10)
         
     def monta_particao(self,):
         self.listar_particoes()
@@ -5450,7 +5552,6 @@ class Sistema(Docker, Executa_comandos):
         self.gerenciar_fstab(ponto_montagem=ponto_montagem, acao='desmontar')
     
     def menu_particoes(self):
-        print("\nMenu de partições.\n")
         """Menu de opções"""
         opcoes_menu = [
             ("Menu RAID", self.menu_raid),
@@ -5460,7 +5561,7 @@ class Sistema(Docker, Executa_comandos):
             ("Desmontar particao", self.desmontar_particao),
             ("Formata o disco e cria partição e monta", self.formata_cria_particao),
         ]
-        self.mostrar_menu(opcoes_menu)
+        self.mostrar_menu_paginado(opcoes_menu, titulo="💿 GERENCIAMENTO DE PARTIÇÕES", itens_por_pagina=10)
     
     def ver_uso_espaco_pasta(self):
         pasta = input('Digite o caminho absoluto da pasta que deseja ver o tamanho: ')
@@ -6701,8 +6802,6 @@ AllowedIPs = {ip_peer}
     
     def menu_wireguard(self):
         """Menu principal do WireGuard - Versão Dinâmica"""
-        print("\n=== GERENCIADOR WIREGUARD VPN ===\n")
-        
         opcoes_menu = [
             ("🚀 Configurar WireGuard (Auto-install)", self.configurar_wireguard_dinamico),
             ("▶️  Iniciar/Habilitar WireGuard", self.iniciar_wireguard),
@@ -6711,7 +6810,7 @@ AllowedIPs = {ip_peer}
             ("🔍 Testar conexão", self.testar_conexao_wireguard),
             ("📄 Visualizar configuração", self.visualizar_config_wireguard),
         ]
-        self.mostrar_menu(opcoes_menu)
+        self.mostrar_menu_paginado(opcoes_menu, titulo="🔐 GERENCIADOR WIREGUARD VPN", itens_por_pagina=10)
         
     def setup_inicializar_service(self):
         """
@@ -6804,7 +6903,6 @@ AllowedIPs = {ip_peer}
         print(f"   sudo systemctl stop inicializar.service")
         
     def opcoes_sistema(self):
-        print("\nMenu de sistema.\n")
         """Menu de opções"""
         opcoes_menu = [
             ("Menu partições", self.menu_particoes),
@@ -6827,7 +6925,7 @@ AllowedIPs = {ip_peer}
             ("Inatala/Executa monitor de rede vnstat", self.vnstat),
             ("🔐 Gerenciador WireGuard VPN", self.menu_wireguard),
         ]
-        self.mostrar_menu(opcoes_menu)
+        self.mostrar_menu_paginado(opcoes_menu, titulo="⚙️  OPÇÕES DO SISTEMA", itens_por_pagina=15)
         
     def listar_containers_docker(self):
         """Lista todos os containers Docker (rodando e parados)"""
@@ -7180,8 +7278,6 @@ AllowedIPs = {ip_peer}
     
     def menu_gerenciamento_docker(self):
         """Menu de gerenciamento de containers Docker"""
-        print("\n=== GERENCIAMENTO DE CONTAINERS DOCKER ===\n")
-        
         opcoes_gerenciamento = [
             ("Listar Containers", self.listar_containers_docker),
             ("Iniciar Container", self.iniciar_container_docker),
@@ -7194,7 +7290,7 @@ AllowedIPs = {ip_peer}
             ("Voltar ao Menu Docker", None)
         ]
         
-        self.mostrar_menu(opcoes_gerenciamento)
+        self.mostrar_menu_paginado(opcoes_gerenciamento, titulo="📦 GERENCIAMENTO DE CONTAINERS", itens_por_pagina=10)
     
     def menu_docker(self):
         print("\nBem-vindo ao Gerenciador Docker\n")
@@ -7242,7 +7338,7 @@ AllowedIPs = {ip_peer}
             ("Instala selenium-firefox", self.instala_selenium_firefox),
             ("Instala rclone", self.rclone),
         ]
-        self.mostrar_menu(opcoes_menu)
+        self.mostrar_menu_paginado(opcoes_menu, titulo="🐳 GERENCIADOR DOCKER", itens_por_pagina=15)
     
     def exibe_ip(self,):
         comandos = [
@@ -7287,7 +7383,7 @@ AllowedIPs = {ip_peer}
             ("atualizar_sistema_completa", self.atualizar_sistema_completa),
             ("atualizar_sistema_completa_reiniciar", self.atualizar_sistema_completa_reiniciar),
         ]
-        self.mostrar_menu(opcoes_menu)
+        self.mostrar_menu_paginado(opcoes_menu, titulo="🔄 ATUALIZAÇÕES DO SISTEMA", itens_por_pagina=10)
         
     def atualizar_sistema_simples(self,):
         """Executa o comando para atualizar o sistema."""
@@ -7479,7 +7575,7 @@ ip server:
         ("Menu de outras opções", servicos.opcoes_sistema),
         ("Menu Docker", servicos.menu_docker),
     ]
-    servicos.mostrar_menu(opcoes_menu, principal=True)
+    servicos.mostrar_menu_paginado(opcoes_menu, titulo="🖥️  MENU PRINCIPAL - INSTALL MASTER", itens_por_pagina=10, principal=True)
     
 
 if __name__ == "__main__":
