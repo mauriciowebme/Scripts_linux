@@ -1333,7 +1333,7 @@ class Docker(Executa_comandos):
         if endereco is None:
             endereco = input('Coloque o endereço do container ou IP da rede que deseja apontar: ').strip()
         if porta is None:
-            porta = input('Digite a porta: ').strip()
+            porta = input('Digite a porta (se for container, use a porta INTERNA): ').strip()
 
         # valida domínio (sem underscore)
         if "_" in dominio or not re.match(r"^[A-Za-z0-9.-]+$", dominio):
