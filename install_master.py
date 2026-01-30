@@ -7362,6 +7362,49 @@ AllowedIPs = {ip_peer}
                 print("Instalação limpa iniciada...")
                 install()
 
+        def status():
+            print("\n=== Status Open Claw ===")
+            config_path = os.path.expanduser("~/.openclaw/openclaw.json")
+            if not os.path.exists(config_path):
+                 print("❌ Arquivo de configuração não encontrado (~/.openclaw/openclaw.json).")
+                 print("O Open Claw pode não estar configurado ou inicializado.")
+                 return
+
+            try:
+                import json
+                with open(config_path, "r") as f:
+                    data = json.load(f)
+                
+                # Verifica API (exemplo genérico, ajustável conforme estrutura real)
+                api_key = data.get("api_key") or data.get("apiKey")
+                llm_provider = data.get("llm_provider") or data.get("provider") 
+                
+                print(f"📄 Configuração encontrada em: {config_path}")
+                
+                if api_key:
+                    masked_key = api_key[:4] + "*" * (len(api_key)-8) + api_key[-4:] if len(api_key) > 8 else "***"
+                    print(f"✅ API Key detectada: {masked_key}")
+                else:
+                    print("⚠️  Nenhuma API Key encontrada na configuração.")
+
+                if llm_provider:
+                    print(f"🧠 Provedor LLM: {llm_provider}")
+                
+                # Verifica Canais (exemplo genérico)
+                channels = data.get("channels", [])
+                if channels:
+                    print(f"\n📡 Canais Ativos ({len(channels)}):")
+                    for ch in channels:
+                        # Tenta extrair nome ou tipo do canal
+                        nome = ch.get("name") or ch.get("type") or "Desconhecido"
+                        status_ch = ch.get("status", "N/A")
+                        print(f"   - {nome} (Status: {status_ch})")
+                else:
+                    print("\n⚠️  Nenhum canal configurado.")
+                    
+            except Exception as e:
+                print(f"❌ Erro ao ler configuração: {e}")
+
         while True:
             print("\n" + "="*40)
             print("🦀 OPEN CLAW MANAGER - MENU CENTRALIZADO")
@@ -7369,8 +7412,9 @@ AllowedIPs = {ip_peer}
             print("[1] Instalar / Atualizar")
             print("[2] Correção (Doctor)")
             print("[3] Configurar / API / Canal")
-            print("[4] Reinstalar do Zero (Limpar e Instalar)")
-            print("[0] Voltar ao Menu Docker")
+            print("[4] Status (API / Canais)")
+            print("[5] Reinstalar do Zero (Limpar e Instalar)")
+            print("[0] Voltar ao Menu Anterior")
             print("="*40)
             
             opt = input("\nEscolha uma opção: ").strip()
@@ -7378,7 +7422,8 @@ AllowedIPs = {ip_peer}
             if opt == '1': install()
             elif opt == '2': doctor()
             elif opt == '3': configure()
-            elif opt == '4': clean_install()
+            elif opt == '4': status()
+            elif opt == '5': clean_install()
             elif opt == '0': break
             else: print("❌ Opção inválida, tente novamente.")
 
