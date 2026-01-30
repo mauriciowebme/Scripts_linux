@@ -7340,6 +7340,9 @@ AllowedIPs = {ip_peer}
     def gerenciar_open_claw(self):
         """Gerenciador centralizado do Open Claw"""
         
+        print("\n⚠️  AVISO: A instalação correta do Open Claw não deve ser feita com usuário root!")
+        print("   Recomendamos usar um usuário comum para evitar problemas de permissão.\n")
+
         def install():
             print('Instalando/Atualizando Open Claw...')
             cmd = 'export NODE_OPTIONS="--max-old-space-size=2048" && curl -fsSL https://openclaw.bot/install.sh | bash'
