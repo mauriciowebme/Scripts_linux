@@ -1,14 +1,15 @@
-# Task: Mover informações para dentro do cabeçalho do menu
+# Task: Ajustes finais de layout no menu
 
 ## Status
-- [x] Ocultar banner inicial (passar a ser simples no início).
-- [x] Integrar informações do banner (Versão, Comando, IP) dentro do cabeçalho do menu paginado.
-- [x] Ajustar layout dentro da função `mostrar_menu_paginado`.
+- [x] Ocultar banner inicial.
+- [x] Integrar informações no cabeçalho.
+- [x] Alinhar e formatar textos do banner dentro do menu.
 
 ## Contexto
-O usuário solicitou que as informações de versão, comando de execução e IP do servidor sejam exibidas DENTRO da moldura do menu principal, logo abaixo do título, para ficar mais organizado e visível.
+O usuário solicitou melhorias visuais para que as informações de versão e instruções fiquem alinhadas corretamente dentro do quadro do menu, melhorando a estética.
 
 ## Alterações
 - Modificado `c:\DESENVOLVIMENTO\Scripts_linux\install_master.py`:
-    - Simplificar `banner` em `main`.
-    - Ajustar `mostrar_menu_paginado` para renderizar `mensagem_topo` dentro do bloco do cabeçalho.
+    - Adicionado padding (2 espaços) para cada linha do banner no `mostrar_menu_paginado`.
+    - Adicionado separador inferior após o banner para isolar do conteúdo da página.
+    - Limpo string `banner` em `main` para evitar formatação manual conflitante.

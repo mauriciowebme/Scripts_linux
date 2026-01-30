@@ -4846,8 +4846,9 @@ class Sistema(Docker, Executa_comandos):
             
             if mensagem_topo:
                 print("\033[1;36m" + "-"*80 + "\033[0m")
-                # Remove first and last whitespace chars for cleaner look when embedding
-                print(f"\033[0;97m{mensagem_topo.strip()}\033[0m")
+                for linha in mensagem_topo.strip().split('\n'):
+                    print(f"\033[0;97m  {linha}\033[0m")
+                print("\033[1;36m" + "-"*80 + "\033[0m")
                 
             if filtro:
                 print(f"\033[33m  🔍 Filtro: '{filtro}' | {total_opcoes} resultado(s)\033[0m")
@@ -7572,13 +7573,10 @@ AllowedIPs = {ip_peer}
 def main():
     servicos = Sistema()
     
-    banner = f"""
-Arquivo install_master.py iniciado!
+    banner = f"""Arquivo install_master.py iniciado!
 Versão 1.227
 Execute com: bash /install_principal/install_master.txt
---------------------------------------------------------------------------------
-ip server: {servicos.exibe_ip()}
-"""
+ip server: {servicos.exibe_ip()}"""
     """Função principal que controla o menu."""
     opcoes_menu = [
         ("Reiniciar", servicos.Reiniciar),
