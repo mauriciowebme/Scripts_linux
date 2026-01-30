@@ -4817,9 +4817,6 @@ class Sistema(Docker, Executa_comandos):
             # Mantém histórico no buffer (pode scrollar para cima)
             print("\033[2J\033[H", end='')
             
-            if mensagem_topo:
-                print(mensagem_topo)
-            
             # Aplica filtro se houver
             if filtro:
                 opcoes_filtradas = [
@@ -4842,8 +4839,16 @@ class Sistema(Docker, Executa_comandos):
             
             # Exibe cabeçalho com cores ANSI
             # \033[1m = negrito | \033[36m = ciano | \033[0m = reset
+            # Exibe cabeçalho com cores ANSI
+            # \033[1m = negrito | \033[36m = ciano | \033[0m = reset
             print("\033[1;36m" + "="*80 + "\033[0m")
             print(f"\033[1;37m  {titulo}\033[0m")
+            
+            if mensagem_topo:
+                print("\033[1;36m" + "-"*80 + "\033[0m")
+                # Remove first and last whitespace chars for cleaner look when embedding
+                print(f"\033[0;97m{mensagem_topo.strip()}\033[0m")
+                
             if filtro:
                 print(f"\033[33m  🔍 Filtro: '{filtro}' | {total_opcoes} resultado(s)\033[0m")
             print(f"\033[90m  📄 Página {pagina_atual + 1}/{total_paginas} | Exibindo {inicio + 1}-{fim} de {total_opcoes}\033[0m")
@@ -7568,16 +7573,11 @@ def main():
     servicos = Sistema()
     
     banner = f"""
-===========================================================================
 Arquivo install_master.py iniciado!
 Versão 1.227
 Execute com: bash /install_principal/install_master.txt
-===========================================================================
-===========================================================================
-ip server:
-{servicos.exibe_ip()}
-===========================================================================
-===========================================================================
+--------------------------------------------------------------------------------
+ip server: {servicos.exibe_ip()}
 """
     """Função principal que controla o menu."""
     opcoes_menu = [
