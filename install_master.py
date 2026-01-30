@@ -53,13 +53,30 @@ def get_ubuntu_version() -> float:
 VERSAO_UBUNTU = get_ubuntu_version()
 
 def check_for_update():
-    update_file = Path("/install_principal/update_check.txt")
-    update_file.parent.mkdir(parents=True, exist_ok=True)
-    execute_file = Path("/install_principal/install_master.txt")
-    execute_file.parent.mkdir(parents=True, exist_ok=True)
+    path_principal = Path("/install_principal")
+    
+    # Garante que o diretório principal exista e seja acessível
+    if not path_principal.exists():
+        try:
+            path_principal.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            print(f"Criando {path_principal} com sudo...")
+            subprocess.run(["sudo", "mkdir", "-p", str(path_principal)], check=True)
+            
+    # Ajusta permissões se não for possível escrever
+    if not os.access(path_principal, os.W_OK):
+        print(f"Ajustando permissões de {path_principal}...")
+        user = os.getenv('USER') or os.environ.get('USERNAME') or 'root'
+        subprocess.run(["sudo", "chown", "-R", f"{user}:{user}", str(path_principal)], check=True)
 
+    update_file = path_principal / "update_check.txt"
+    execute_file = path_principal / "install_master.txt"
+    
     # if not execute_file.exists():
-    execute_file.write_text("rm -rf /tmp/Scripts_linux && git clone --depth=1 https://github.com/mauriciowebme/Scripts_linux.git /tmp/Scripts_linux && python3 /tmp/Scripts_linux/install_master.py")
+    try:
+        execute_file.write_text("rm -rf /tmp/Scripts_linux && git clone --depth=1 https://github.com/mauriciowebme/Scripts_linux.git /tmp/Scripts_linux && python3 /tmp/Scripts_linux/install_master.py")
+    except Exception as e:
+        print(f"Aviso: Não foi possível escrever em {execute_file}: {e}")
     
     if update_file.exists():
         return
@@ -75,16 +92,19 @@ def check_for_update():
     subprocess.run("sudo systemctl mask NetworkManager-wait-online.service".split(), check=False)
     
     try:
-        subprocess.run(["timedatectl", "set-timezone", "America/Sao_Paulo"], check=True)
-        subprocess.run(["timedatectl", "set-ntp", "true"], check=True)
+        subprocess.run(["sudo", "timedatectl", "set-timezone", "America/Sao_Paulo"], check=True)
+        subprocess.run(["sudo", "timedatectl", "set-ntp", "true"], check=True)
     except Exception as ex:
         try:
-            subprocess.run(["ln", "-sf", "/usr/share/zoneinfo/America/Sao_Paulo", "/etc/localtime"], check=True)
+            subprocess.run(["sudo", "ln", "-sf", "/usr/share/zoneinfo/America/Sao_Paulo", "/etc/localtime"], check=True)
         except Exception as ex:
             print(f"⚠️  Erro ao atualizar o sistema: {ex}\n")
         
-    update_file.write_text("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
-    print("Atualização concluída.\n")
+    try:
+        update_file.write_text("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
+        print("Atualização concluída.\n")
+    except Exception as e:
+        print(f"Não foi possível salvar log de atualização: {e}")
     
 check_for_update()
 
@@ -94,8 +114,8 @@ def ensure_pip_installed():
                               stdout=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
         print("pip não encontrado. Instalando com apt...")
-        subprocess.check_call(["apt-get", "update"])
-        subprocess.check_call(["apt-get", "install", "-y", "python3-pip"])
+        subprocess.check_call(["sudo", "apt-get", "update"])
+        subprocess.check_call(["sudo", "apt-get", "install", "-y", "python3-pip"])
         print("pip instalado com sucesso.\n")
 ensure_pip_installed()
 
@@ -123,9 +143,9 @@ def ensure(module: str,
 
     # 2) tenta instalar via APT
     try:
-        subprocess.run(["apt-get", "update", "-qq"], check=True,
+        subprocess.run(["sudo", "apt-get", "update", "-qq"], check=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(["apt-get", "install", "-y", "--no-install-recommends",
+        subprocess.run(["sudo", "apt-get", "install", "-y", "--no-install-recommends",
                         apt_pkg], check=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         importlib.import_module(module)  # checa de novo
@@ -137,13 +157,13 @@ def ensure(module: str,
     try:
         # 3) fallback: pip
         if shutil.which("pip") is None:
-            subprocess.run(["apt-get", "install", "-y", "--no-install-recommends",
+            subprocess.run(["sudo", "apt-get", "install", "-y", "--no-install-recommends",
                             "python3-pip"], check=True,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        pip_cmd = [sys.executable, "-m", "pip", "install", "--no-cache-dir", pip_pkg]
+        pip_cmd = ["sudo", sys.executable, "-m", "pip", "install", "--no-cache-dir", pip_pkg]
         if VERSAO_UBUNTU >= 24.04:
-            pip_cmd.insert(4, "--break-system-packages")
+            pip_cmd.insert(5, "--break-system-packages")
             
         subprocess.run(pip_cmd, check=True)
         
