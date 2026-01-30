@@ -7345,8 +7345,12 @@ AllowedIPs = {ip_peer}
 
         def install():
             print('Instalando/Atualizando Open Claw...')
-            cmd = 'export NODE_OPTIONS="--max-old-space-size=2048" && curl -fsSL https://openclaw.bot/install.sh | bash'
-            subprocess.run(cmd, shell=True, executable='/bin/bash')
+            
+            # 1. Executa o comando de export
+            subprocess.run('export NODE_OPTIONS="--max-old-space-size=2048"', shell=True)
+
+            # 2. Executa o comando de instalação
+            subprocess.run('curl -fsSL https://openclaw.bot/install.sh | bash', shell=True)
 
         def doctor():
             print('Executando diagnóstico (doctor)...')
