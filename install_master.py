@@ -7336,21 +7336,34 @@ AllowedIPs = {ip_peer}
                 print("Tentando rodar o script de instalação para correção...")
                 install()
         
-        def configure():
-            print('=== Configuração Open Claw ===')
-            opcoes_conf = [
-                ("Executar 'openclaw configure'", "openclaw configure"),
-                ("Executar 'openclaw init'", "openclaw init"),
-                ("Executar 'openclaw --help'", "openclaw --help"),
-            ]
-            print("\nEscolha uma tentativa de configuração:")
-            for i, (desc, _) in enumerate(opcoes_conf, 1):
-                print(f"[{i}] {desc}")
+        def config_api():
+            print("\n=== Configuração de API (LLM) ===")
+            print("Configure aqui sua chave de API (OpenAI, Anthropic, etc).")
+            # Tenta rodar o comando específico se existir, senão usa o configure geral
+            print("Executando 'openclaw configure' focado em API...")
+            subprocess.run("openclaw configure", shell=True)
+
+        def config_channels():
+            print("\n=== Configuração de Canais (WhatsApp/Telegram) ===")
+            print("Escolha o canal para configurar:")
+            print("[1] WhatsApp (QR Code)")
+            print("[2] Telegram (Bot Token)")
+            print("[3] Discord")
             print("[0] Cancelar")
             
             c = input("Opção: ").strip()
-            if c in ['1', '2', '3']:
-                subprocess.run(opcoes_conf[int(c)-1][1], shell=True)
+            if c == '1':
+                print("\nIniciando configuração WhatsApp...")
+                # Tenta comando específico ou instrui usuário
+                subprocess.run("openclaw channels login whatsapp", shell=True)
+            elif c == '2':
+                print("\nIniciando configuração Telegram...")
+                subprocess.run("openclaw channels telegram", shell=True)
+            elif c == '3':
+                print("\nIniciando configuração Discord...")
+                subprocess.run("openclaw channels discord", shell=True)
+            else:
+                print("Operação cancelada.")
 
         def clean_install():
             print("ATENÇÃO: Isso irá remover o Open Claw e configurações locais (como ~/.openclaw) antes de reinstalar.")
@@ -7383,9 +7396,10 @@ AllowedIPs = {ip_peer}
             print("="*40)
             print("[1] Instalar / Atualizar")
             print("[2] Correção (Doctor)")
-            print("[3] Configurar / API / Canal")
-            print("[4] Status (API / Canais)")
-            print("[5] Reinstalar do Zero (Limpar e Instalar)")
+            print("[3] Configurar API (Chaves)")
+            print("[4] Configurar Canais (Whats/Tele)")
+            print("[5] Status")
+            print("[6] Reinstalar do Zero (Limpar e Instalar)")
             print("[0] Voltar ao Menu Anterior")
             print("="*40)
             
@@ -7393,9 +7407,10 @@ AllowedIPs = {ip_peer}
             
             if opt == '1': install()
             elif opt == '2': doctor()
-            elif opt == '3': configure()
-            elif opt == '4': status()
-            elif opt == '5': clean_install()
+            elif opt == '3': config_api()
+            elif opt == '4': config_channels()
+            elif opt == '5': status()
+            elif opt == '6': clean_install()
             elif opt == '0': break
             else: print("❌ Opção inválida, tente novamente.")
 
