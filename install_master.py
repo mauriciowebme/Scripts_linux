@@ -7363,49 +7363,19 @@ AllowedIPs = {ip_peer}
                 install()
 
         def status():
-            print("\n=== Status Open Claw (CLI & Serviço) ===")
-            
-            # 1. Verificar serviço (Daemon)
-            print("\n--- Serviço (Daemon) ---")
+            print("\n=== Status Open Claw ===")
+            print("Executando: openclaw status")
             try:
-                # Verifica se o serviço está ativo
-                res = subprocess.run("systemctl is-active openclaw", shell=True, capture_output=True, text=True)
-                if res.returncode == 0:
-                    print("✅ Serviço 'openclaw' está ATIVO (running).")
-                else:
-                    print("⚠️  Serviço 'openclaw' NÃO está ativo ou não instalado como systemd service.")
-                    print("   (Se você usa execução manual 'openclaw gateway', isso é normal)")
-            except Exception:
-                pass
-
-            # 2. Executar Doctor (Diagnóstico oficial)
-            print("\n--- Diagnóstico (Doctor) ---")
-            try:
-                subprocess.run("openclaw doctor", shell=True)
+                # Tenta o comando simples e direto
+                res = subprocess.run("openclaw status", shell=True)
+                if res.returncode != 0:
+                    print("⚠️  Comando 'openclaw status' retornou erro ou não disponível.")
+                    print("Tentando 'openclaw doctor'...")
+                    subprocess.run("openclaw doctor", shell=True)
             except Exception as e:
-                print(f"❌ Falha ao executar 'openclaw doctor': {e}")
+                print(f"❌ Erro ao executar status: {e}")
             
-            # 3. Tentar listar canais via CLI (se disponível)
-            print("\n--- Canais (Tentativa CLI) ---")
-            try:
-                # Tenta listar canais. Nota: comando pode variar conforme versão.
-                # Se 'channels list' não existir, vai dar erro, capturamos e seguimos.
-                res = subprocess.run("openclaw channels list", shell=True, capture_output=True, text=True)
-                if res.returncode == 0 and res.stdout.strip():
-                     print(res.stdout)
-                else:
-                    # Fallback: tentar 'channels status'
-                    res2 = subprocess.run("openclaw channels status", shell=True, capture_output=True, text=True)
-                    if res2.returncode == 0 and res2.stdout.strip():
-                        print(res2.stdout)
-                    else:
-                        print("ℹ️  Não foi possível listar canais via CLI (comandos 'list/status' podem não estar disponíveis nesta versão).")
-                        print("   Use a Dashboard Web para ver detalhes.")
-            except Exception:
-                 print("ℹ️  Verificação de canais via CLI ignorada.")
-
-            print("\n--- Acesso ---")
-            print("Dashboard Web padrão: http://localhost:18789 (se o gateway estiver rodando)")
+            print("\nDashboard Web: http://localhost:18789")
 
         while True:
             print("\n" + "="*40)
