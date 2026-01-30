@@ -7363,47 +7363,49 @@ AllowedIPs = {ip_peer}
                 install()
 
         def status():
-            print("\n=== Status Open Claw ===")
-            config_path = os.path.expanduser("~/.openclaw/openclaw.json")
-            if not os.path.exists(config_path):
-                 print("❌ Arquivo de configuração não encontrado (~/.openclaw/openclaw.json).")
-                 print("O Open Claw pode não estar configurado ou inicializado.")
-                 return
-
+            print("\n=== Status Open Claw (CLI & Serviço) ===")
+            
+            # 1. Verificar serviço (Daemon)
+            print("\n--- Serviço (Daemon) ---")
             try:
-                import json
-                with open(config_path, "r") as f:
-                    data = json.load(f)
-                
-                # Verifica API (exemplo genérico, ajustável conforme estrutura real)
-                api_key = data.get("api_key") or data.get("apiKey")
-                llm_provider = data.get("llm_provider") or data.get("provider") 
-                
-                print(f"📄 Configuração encontrada em: {config_path}")
-                
-                if api_key:
-                    masked_key = api_key[:4] + "*" * (len(api_key)-8) + api_key[-4:] if len(api_key) > 8 else "***"
-                    print(f"✅ API Key detectada: {masked_key}")
+                # Verifica se o serviço está ativo
+                res = subprocess.run("systemctl is-active openclaw", shell=True, capture_output=True, text=True)
+                if res.returncode == 0:
+                    print("✅ Serviço 'openclaw' está ATIVO (running).")
                 else:
-                    print("⚠️  Nenhuma API Key encontrada na configuração.")
+                    print("⚠️  Serviço 'openclaw' NÃO está ativo ou não instalado como systemd service.")
+                    print("   (Se você usa execução manual 'openclaw gateway', isso é normal)")
+            except Exception:
+                pass
 
-                if llm_provider:
-                    print(f"🧠 Provedor LLM: {llm_provider}")
-                
-                # Verifica Canais (exemplo genérico)
-                channels = data.get("channels", [])
-                if channels:
-                    print(f"\n📡 Canais Ativos ({len(channels)}):")
-                    for ch in channels:
-                        # Tenta extrair nome ou tipo do canal
-                        nome = ch.get("name") or ch.get("type") or "Desconhecido"
-                        status_ch = ch.get("status", "N/A")
-                        print(f"   - {nome} (Status: {status_ch})")
-                else:
-                    print("\n⚠️  Nenhum canal configurado.")
-                    
+            # 2. Executar Doctor (Diagnóstico oficial)
+            print("\n--- Diagnóstico (Doctor) ---")
+            try:
+                subprocess.run("openclaw doctor", shell=True)
             except Exception as e:
-                print(f"❌ Erro ao ler configuração: {e}")
+                print(f"❌ Falha ao executar 'openclaw doctor': {e}")
+            
+            # 3. Tentar listar canais via CLI (se disponível)
+            print("\n--- Canais (Tentativa CLI) ---")
+            try:
+                # Tenta listar canais. Nota: comando pode variar conforme versão.
+                # Se 'channels list' não existir, vai dar erro, capturamos e seguimos.
+                res = subprocess.run("openclaw channels list", shell=True, capture_output=True, text=True)
+                if res.returncode == 0 and res.stdout.strip():
+                     print(res.stdout)
+                else:
+                    # Fallback: tentar 'channels status'
+                    res2 = subprocess.run("openclaw channels status", shell=True, capture_output=True, text=True)
+                    if res2.returncode == 0 and res2.stdout.strip():
+                        print(res2.stdout)
+                    else:
+                        print("ℹ️  Não foi possível listar canais via CLI (comandos 'list/status' podem não estar disponíveis nesta versão).")
+                        print("   Use a Dashboard Web para ver detalhes.")
+            except Exception:
+                 print("ℹ️  Verificação de canais via CLI ignorada.")
+
+            print("\n--- Acesso ---")
+            print("Dashboard Web padrão: http://localhost:18789 (se o gateway estiver rodando)")
 
         while True:
             print("\n" + "="*40)
