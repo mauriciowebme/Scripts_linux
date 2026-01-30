@@ -6948,6 +6948,7 @@ AllowedIPs = {ip_peer}
             ("Faz copia inteligente com rsync", self.rsync_sync),
             ("Inatala/Executa monitor de rede vnstat", self.vnstat),
             ("🔐 Gerenciador WireGuard VPN", self.menu_wireguard),
+            ("🦀 Gerenciar Open Claw", self.gerenciar_open_claw),
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="⚙️  OPÇÕES DO SISTEMA", itens_por_pagina=15)
         
@@ -7426,7 +7427,6 @@ AllowedIPs = {ip_peer}
             ("Instala browserless (chromium headless)", self.instala_browserless),
             ("Instala selenium-firefox", self.instala_selenium_firefox),
             ("Instala rclone", self.rclone),
-            ("Menu Open Claw (Instalar/Configurar)", self.gerenciar_open_claw),
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="🐳 GERENCIADOR DOCKER", itens_por_pagina=15)
     
