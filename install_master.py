@@ -4804,7 +4804,7 @@ class Sistema(Docker, Executa_comandos):
             else:
                 print("\nOpção inválida. Tente novamente.\n")
     
-    def mostrar_menu_paginado(self, opcoes_menu, titulo="Menu de Opções", itens_por_pagina=15, principal=False):
+    def mostrar_menu_paginado(self, opcoes_menu, titulo="Menu de Opções", itens_por_pagina=15, principal=False, mensagem_topo=None):
         """Mostra menu com paginação, busca e navegação melhorada."""
         opcoes_menu.insert(0, ("Sair", self.sair))
         
@@ -4816,6 +4816,9 @@ class Sistema(Docker, Executa_comandos):
             # \033[2J = limpa tela | \033[H = move cursor para topo
             # Mantém histórico no buffer (pode scrollar para cima)
             print("\033[2J\033[H", end='')
+            
+            if mensagem_topo:
+                print(mensagem_topo)
             
             # Aplica filtro se houver
             if filtro:
@@ -7563,13 +7566,27 @@ AllowedIPs = {ip_peer}
 
 def main():
     servicos = Sistema()
-    print(f"""
+    
+    # Verifica se está rodando do caminho esperado (/tmp/Scripts_linux)
+    # Se não estiver, sugere o comando correto
+    caminho_atual = os.path.abspath(__file__)
+    aviso_comando = ""
+    
+    # Lógica: Se NÃO estiver no /tmp/Scripts_linux (padrão do loader), mostra o aviso
+    # No Windows (desenvolvimento) também vai mostrar, o que é útil para validar a lógica
+    if "/tmp/Scripts_linux" not in caminho_atual:
+        aviso_comando = """
 ===========================================================================
-===========================================================================
+    ⚠️  ATENÇÃO: EXECUÇÃO FORA DO PADRÃO DETECTADA ⚠️
+    
+    Para garantir a versão mais recente e execução correta,
+    utilize o seguinte comando:
 
-Execute com: bash /install_principal/install_master.txt
-
+    bash /install_principal/install_master.txt
 ===========================================================================
+"""
+
+    banner = f"""{aviso_comando}
 ===========================================================================
 Arquivo install_master.py iniciado!
 Versão 1.227
@@ -7579,7 +7596,7 @@ ip server:
 {servicos.exibe_ip()}
 ===========================================================================
 ===========================================================================
-""")
+"""
     """Função principal que controla o menu."""
     opcoes_menu = [
         ("Reiniciar", servicos.Reiniciar),
@@ -7590,7 +7607,7 @@ ip server:
         ("Menu de outras opções", servicos.opcoes_sistema),
         ("Menu Docker", servicos.menu_docker),
     ]
-    servicos.mostrar_menu_paginado(opcoes_menu, titulo="🖥️  MENU PRINCIPAL - INSTALL MASTER", itens_por_pagina=10, principal=True)
+    servicos.mostrar_menu_paginado(opcoes_menu, titulo="🖥️  MENU PRINCIPAL - INSTALL MASTER", itens_por_pagina=10, principal=True, mensagem_topo=banner)
     
 
 if __name__ == "__main__":
