@@ -7567,29 +7567,11 @@ AllowedIPs = {ip_peer}
 def main():
     servicos = Sistema()
     
-    # Verifica se está rodando do caminho esperado (/tmp/Scripts_linux)
-    # Se não estiver, sugere o comando correto
-    caminho_atual = os.path.abspath(__file__)
-    aviso_comando = ""
-    
-    # Lógica: Se NÃO estiver no /tmp/Scripts_linux (padrão do loader), mostra o aviso
-    # No Windows (desenvolvimento) também vai mostrar, o que é útil para validar a lógica
-    if "/tmp/Scripts_linux" not in caminho_atual:
-        aviso_comando = """
-===========================================================================
-    ⚠️  ATENÇÃO: EXECUÇÃO FORA DO PADRÃO DETECTADA ⚠️
-    
-    Para garantir a versão mais recente e execução correta,
-    utilize o seguinte comando:
-
-    bash /install_principal/install_master.txt
-===========================================================================
-"""
-
-    banner = f"""{aviso_comando}
+    banner = f"""
 ===========================================================================
 Arquivo install_master.py iniciado!
 Versão 1.227
+Execute com: bash /install_principal/install_master.txt
 ===========================================================================
 ===========================================================================
 ip server:
