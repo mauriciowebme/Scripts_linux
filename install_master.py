@@ -7316,6 +7316,71 @@ AllowedIPs = {ip_peer}
         
         self.mostrar_menu_paginado(opcoes_gerenciamento, titulo="📦 GERENCIAMENTO DE CONTAINERS", itens_por_pagina=10)
     
+    def gerenciar_open_claw(self):
+        """Gerenciador centralizado do Open Claw"""
+        
+        def install():
+            print('Instalando/Atualizando Open Claw...')
+            cmd = 'export NODE_OPTIONS="--max-old-space-size=2048" && curl -fsSL https://openclaw.bot/install.sh | bash'
+            subprocess.run(cmd, shell=True, executable='/bin/bash')
+
+        def doctor():
+            print('Executando diagnóstico (doctor)...')
+            try:
+                res = subprocess.run("openclaw doctor", shell=True)
+                if res.returncode != 0:
+                    raise Exception("Doctor falhou")
+            except Exception:
+                print("Comando 'openclaw doctor' falhou ou não foi encontrado.")
+                print("Tentando rodar o script de instalação para correção...")
+                install()
+        
+        def configure():
+            print('=== Configuração Open Claw ===')
+            opcoes_conf = [
+                ("Executar 'openclaw configure'", "openclaw configure"),
+                ("Executar 'openclaw init'", "openclaw init"),
+                ("Executar 'openclaw --help'", "openclaw --help"),
+            ]
+            print("\nEscolha uma tentativa de configuração:")
+            for i, (desc, _) in enumerate(opcoes_conf, 1):
+                print(f"[{i}] {desc}")
+            print("[0] Cancelar")
+            
+            c = input("Opção: ").strip()
+            if c in ['1', '2', '3']:
+                subprocess.run(opcoes_conf[int(c)-1][1], shell=True)
+
+        def clean_install():
+            print("ATENÇÃO: Isso irá remover o Open Claw e configurações locais (como ~/.openclaw) antes de reinstalar.")
+            if input("Tem certeza? (s/N): ").lower() == 's':
+                print("Removendo Open Claw...")
+                subprocess.run("npm uninstall -g openclaw", shell=True)
+                subprocess.run("rm -f $HOME/.local/bin/openclaw", shell=True)
+                subprocess.run("rm -rf ~/.openclaw", shell=True)
+                print("Instalação limpa iniciada...")
+                install()
+
+        while True:
+            print("\n" + "="*40)
+            print("🦀 OPEN CLAW MANAGER - MENU CENTRALIZADO")
+            print("="*40)
+            print("[1] Instalar / Atualizar")
+            print("[2] Correção (Doctor)")
+            print("[3] Configurar / API / Canal")
+            print("[4] Reinstalar do Zero (Limpar e Instalar)")
+            print("[0] Voltar ao Menu Docker")
+            print("="*40)
+            
+            opt = input("\nEscolha uma opção: ").strip()
+            
+            if opt == '1': install()
+            elif opt == '2': doctor()
+            elif opt == '3': configure()
+            elif opt == '4': clean_install()
+            elif opt == '0': break
+            else: print("❌ Opção inválida, tente novamente.")
+
     def menu_docker(self):
         print("\nBem-vindo ao Gerenciador Docker\n")
         self.instala_docker()
@@ -7361,6 +7426,7 @@ AllowedIPs = {ip_peer}
             ("Instala browserless (chromium headless)", self.instala_browserless),
             ("Instala selenium-firefox", self.instala_selenium_firefox),
             ("Instala rclone", self.rclone),
+            ("Menu Open Claw (Instalar/Configurar)", self.gerenciar_open_claw),
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="🐳 GERENCIADOR DOCKER", itens_por_pagina=15)
     
