@@ -7343,17 +7343,28 @@ AllowedIPs = {ip_peer}
         print("\n⚠️  AVISO: A instalação correta do Open Claw não deve ser feita com usuário root!")
         print("   Recomendamos usar um usuário comum para evitar problemas de permissão.\n")
 
+        def ensure_node_options():
+            # 1. Configura para a sessão atual (Python e subprocessos filhos)
+            os.environ["NODE_OPTIONS"] = "--max-old-space-size=2048"
+            
+            # 2. Persiste no servidor para reinícios futuros (Global)
+            # O comando tee sobrescreve o arquivo, evitando duplicações se rodar múltiplas vezes.
+            print("Configurando persistência global da variável NODE_OPTIONS (2GB)...")
+            cmd_persist = 'echo \'export NODE_OPTIONS="--max-old-space-size=2048"\' | sudo tee /etc/profile.d/99-node-options.sh > /dev/null'
+            subprocess.run(cmd_persist, shell=True)
+            subprocess.run('sudo chmod 644 /etc/profile.d/99-node-options.sh', shell=True)
+
         def install():
             print('Instalando/Atualizando Open Claw...')
-            
-            # 1. Executa o comando de export
-            subprocess.run('export NODE_OPTIONS="--max-old-space-size=2048"', shell=True)
+            ensure_node_options()
 
-            # 2. Executa o comando de instalação
+            # Executa o comando de instalação
             subprocess.run('curl -fsSL https://openclaw.bot/install.sh | bash', shell=True)
 
         def doctor():
             print('Executando diagnóstico (doctor)...')
+            ensure_node_options()
+            
             try:
                 res = subprocess.run("openclaw doctor", shell=True)
                 if res.returncode != 0:
