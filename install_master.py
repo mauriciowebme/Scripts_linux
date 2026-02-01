@@ -21,7 +21,7 @@ import json
 import random
 import re
 import tempfile
-import os, sys, time, subprocess, textwrap
+import os, sys, time, subprocess, textwrap, select
 from pathlib import Path
 from typing import List, Union
 from datetime import datetime
@@ -7498,7 +7498,17 @@ AllowedIPs = {ip_peer}
         print('Pressione H para ver as opções de ajuda')
         print('Pressione Q para sair')
         
-        resposta = input("Para ver o modo web digite 'w' ou 'Outra tecla' para o modo normal. (w / Outra tecla): ")
+        print("Para ver o modo web digite 'w' ou 'Outra tecla' para o modo normal. (w / Outra tecla)")
+        print("(Aguardando 4 segundos, padrão: terminal)...")
+        
+        # Timeout de 4 segundos
+        i, o, e = select.select([sys.stdin], [], [], 4)
+        
+        if i:
+            resposta = sys.stdin.readline().strip()
+        else:
+            print("\nTempo esgotado! Iniciando modo terminal...")
+            resposta = ""
         if resposta.lower() == "w":
             print("Iniciando o modo web do glances...")
             comandos = [
