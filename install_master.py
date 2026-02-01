@@ -7688,7 +7688,6 @@ ip server: {servicos.exibe_ip()}"""
         ("Menu Docker", servicos.menu_docker),
     ]
     servicos.mostrar_menu_paginado(opcoes_menu, titulo="🖥️  MENU PRINCIPAL - INSTALL MASTER", itens_por_pagina=10, principal=True, mensagem_topo=banner)
-    
 
 if __name__ == "__main__":
     main()
