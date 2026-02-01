@@ -3899,7 +3899,7 @@ WantedBy=timers.target
                     "sleep 10",
                     f"sudo usermod -aG docker {user}",
                     # "newgrp docker",
-                    "reboot"
+                    "sudo reboot"
                     ]
                 self.executar_comandos(comandos, comando_direto=True)
 
@@ -4791,7 +4791,7 @@ class Sistema(Docker, Executa_comandos):
         
     def Reiniciar(self):
         comandos = [
-            f"reboot"
+            f"sudo reboot"
         ]
         self.executar_comandos(comandos, comando_direto=True)
                 
@@ -4993,14 +4993,14 @@ class Sistema(Docker, Executa_comandos):
             self.executar_comandos([
                 "sudo apt install ubuntu-gnome-desktop -y",
                 "sudo apt install gnome-software -y",
-                "reboot",
+                "sudo reboot",
                 ], comando_direto=True)
         elif escolha == "2":
             self.executar_comandos([
             "sudo apt install gnome-shell gdm3 gnome-session -y",
             "sudo systemctl enable gdm",
             "sudo systemctl start gdm",
-            "reboot",
+            "sudo reboot",
             ], comando_direto=True)
         else:
             print("Opção inválida. Nenhuma ação foi realizada.")
@@ -5114,7 +5114,7 @@ class Sistema(Docker, Executa_comandos):
                         "sudo dpkg-reconfigure lightdm",
                         "sudo systemctl enable lightdm --now",
                         "rm -f ~/.Xauthority ~/.cache/sessions/*",
-                        "reboot",
+                        "sudo reboot",
                     ]
                     self.executar_comandos(comandos, comando_direto=True)
                     print("xfce4 reinstalado com sucesso.")
@@ -5131,7 +5131,7 @@ class Sistema(Docker, Executa_comandos):
                     "sudo dpkg-reconfigure lightdm",
                     "sudo systemctl enable lightdm --now",
                     "rm -f ~/.Xauthority ~/.cache/sessions/*",
-                    "reboot",
+                    "sudo reboot",
                 ]
                 self.executar_comandos(comandos, comando_direto=True)
                 print("xfce4 instalado com sucesso.")
@@ -7548,7 +7548,7 @@ AllowedIPs = {ip_peer}
         print("Reiniciando o sistema...")
         self.atualizar_sistema_simples()
         self.atualizar_sistema_completa()
-        self.executar_comandos(['reboot '], comando_direto=True)
+        self.executar_comandos(['sudo reboot '], comando_direto=True)
 
     def comandos_essenciais_linux(self):
         """Exibe uma lista de comandos essenciais do Linux Ubuntu."""
