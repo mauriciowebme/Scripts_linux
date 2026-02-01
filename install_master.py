@@ -7373,6 +7373,8 @@ AllowedIPs = {ip_peer}
                 print("Comando 'openclaw doctor' falhou ou não foi encontrado.")
                 print("Tentando rodar o script de instalação para correção...")
                 install()
+                print("Tentando executar auto-fix (openclaw doctor --fix)...")
+                subprocess.run("openclaw doctor --fix", shell=True)
         
         def configure():
             print("\n=== Configuração Geral (API e Canais) ===")
