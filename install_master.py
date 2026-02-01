@@ -7347,12 +7347,20 @@ AllowedIPs = {ip_peer}
             # 1. Configura para a sessão atual (Python e subprocessos filhos)
             os.environ["NODE_OPTIONS"] = "--max-old-space-size=2048"
             
-            # 2. Persiste no servidor para reinícios futuros (Global)
-            # O comando tee sobrescreve o arquivo, evitando duplicações se rodar múltiplas vezes.
+            # 2. Persiste no servidor para reinícios futuros
             print("Configurando persistência global da variável NODE_OPTIONS (2GB)...")
-            cmd_persist = 'echo \'export NODE_OPTIONS="--max-old-space-size=2048"\' | sudo tee /etc/profile.d/99-node-options.sh > /dev/null'
-            subprocess.run(cmd_persist, shell=True)
+            
+            # Método 1: /etc/profile.d (para sessões de login interativas - SSH, terminal)
+            cmd_profile = 'echo \'export NODE_OPTIONS="--max-old-space-size=2048"\' | sudo tee /etc/profile.d/99-node-options.sh > /dev/null'
+            subprocess.run(cmd_profile, shell=True)
             subprocess.run('sudo chmod 644 /etc/profile.d/99-node-options.sh', shell=True)
+            
+            # Método 2: /etc/environment (para TODOS os processos, incluindo systemd e serviços de boot)
+            # Remove linha antiga se existir, depois adiciona a nova
+            cmd_remove = "sudo sed -i '/^NODE_OPTIONS=/d' /etc/environment"
+            cmd_add = 'echo \'NODE_OPTIONS="--max-old-space-size=2048"\' | sudo tee -a /etc/environment > /dev/null'
+            subprocess.run(cmd_remove, shell=True)
+            subprocess.run(cmd_add, shell=True)
 
         def install():
             print('Instalando/Atualizando Open Claw...')
