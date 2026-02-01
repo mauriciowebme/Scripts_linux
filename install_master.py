@@ -7369,12 +7369,12 @@ AllowedIPs = {ip_peer}
                 res = subprocess.run("openclaw doctor", shell=True)
                 if res.returncode != 0:
                     raise Exception("Doctor falhou")
+                print("Tentando executar auto-fix (openclaw doctor --fix)...")
+                subprocess.run("openclaw doctor --fix", shell=True)
             except Exception:
                 print("Comando 'openclaw doctor' falhou ou não foi encontrado.")
                 print("Tentando rodar o script de instalação para correção...")
                 install()
-                print("Tentando executar auto-fix (openclaw doctor --fix)...")
-                subprocess.run("openclaw doctor --fix", shell=True)
         
         def configure():
             print("\n=== Configuração Geral (API e Canais) ===")
