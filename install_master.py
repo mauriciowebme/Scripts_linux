@@ -21,7 +21,7 @@ import json
 import random
 import re
 import tempfile
-import os, sys, time, subprocess, textwrap
+import os, sys, time, subprocess, textwrap, select
 from pathlib import Path
 from typing import List, Union
 from datetime import datetime
@@ -3899,7 +3899,7 @@ WantedBy=timers.target
                     "sleep 10",
                     f"sudo usermod -aG docker {user}",
                     # "newgrp docker",
-                    "reboot"
+                    "sudo reboot"
                     ]
                 self.executar_comandos(comandos, comando_direto=True)
 
@@ -4791,7 +4791,7 @@ class Sistema(Docker, Executa_comandos):
         
     def Reiniciar(self):
         comandos = [
-            f"reboot"
+            f"sudo reboot"
         ]
         self.executar_comandos(comandos, comando_direto=True)
                 
@@ -4993,14 +4993,14 @@ class Sistema(Docker, Executa_comandos):
             self.executar_comandos([
                 "sudo apt install ubuntu-gnome-desktop -y",
                 "sudo apt install gnome-software -y",
-                "reboot",
+                "sudo reboot",
                 ], comando_direto=True)
         elif escolha == "2":
             self.executar_comandos([
             "sudo apt install gnome-shell gdm3 gnome-session -y",
             "sudo systemctl enable gdm",
             "sudo systemctl start gdm",
-            "reboot",
+            "sudo reboot",
             ], comando_direto=True)
         else:
             print("Opção inválida. Nenhuma ação foi realizada.")
@@ -5114,7 +5114,7 @@ class Sistema(Docker, Executa_comandos):
                         "sudo dpkg-reconfigure lightdm",
                         "sudo systemctl enable lightdm --now",
                         "rm -f ~/.Xauthority ~/.cache/sessions/*",
-                        "reboot",
+                        "sudo reboot",
                     ]
                     self.executar_comandos(comandos, comando_direto=True)
                     print("xfce4 reinstalado com sucesso.")
@@ -5131,7 +5131,7 @@ class Sistema(Docker, Executa_comandos):
                     "sudo dpkg-reconfigure lightdm",
                     "sudo systemctl enable lightdm --now",
                     "rm -f ~/.Xauthority ~/.cache/sessions/*",
-                    "reboot",
+                    "sudo reboot",
                 ]
                 self.executar_comandos(comandos, comando_direto=True)
                 print("xfce4 instalado com sucesso.")
@@ -7343,21 +7343,42 @@ AllowedIPs = {ip_peer}
         print("\n⚠️  AVISO: A instalação correta do Open Claw não deve ser feita com usuário root!")
         print("   Recomendamos usar um usuário comum para evitar problemas de permissão.\n")
 
+        def ensure_node_options():
+            # 1. Configura para a sessão atual (Python e subprocessos filhos)
+            os.environ["NODE_OPTIONS"] = "--max-old-space-size=2048"
+            
+            # 2. Persiste no servidor para reinícios futuros
+            print("Configurando persistência global da variável NODE_OPTIONS (2GB)...")
+            
+            # Método 1: /etc/profile.d (para sessões de login interativas - SSH, terminal)
+            cmd_profile = 'echo \'export NODE_OPTIONS="--max-old-space-size=2048"\' | sudo tee /etc/profile.d/99-node-options.sh > /dev/null'
+            subprocess.run(cmd_profile, shell=True)
+            subprocess.run('sudo chmod 644 /etc/profile.d/99-node-options.sh', shell=True)
+            
+            # Método 2: /etc/environment (para TODOS os processos, incluindo systemd e serviços de boot)
+            # Remove linha antiga se existir, depois adiciona a nova
+            cmd_remove = "sudo sed -i '/^NODE_OPTIONS=/d' /etc/environment"
+            cmd_add = 'echo \'NODE_OPTIONS="--max-old-space-size=2048"\' | sudo tee -a /etc/environment > /dev/null'
+            subprocess.run(cmd_remove, shell=True)
+            subprocess.run(cmd_add, shell=True)
+
         def install():
             print('Instalando/Atualizando Open Claw...')
-            
-            # 1. Executa o comando de export
-            subprocess.run('export NODE_OPTIONS="--max-old-space-size=2048"', shell=True)
+            ensure_node_options()
 
-            # 2. Executa o comando de instalação
+            # Executa o comando de instalação
             subprocess.run('curl -fsSL https://openclaw.bot/install.sh | bash', shell=True)
 
         def doctor():
             print('Executando diagnóstico (doctor)...')
+            ensure_node_options()
+            
             try:
                 res = subprocess.run("openclaw doctor", shell=True)
                 if res.returncode != 0:
                     raise Exception("Doctor falhou")
+                print("Tentando executar auto-fix (openclaw doctor --fix)...")
+                subprocess.run("openclaw doctor --fix", shell=True)
             except Exception:
                 print("Comando 'openclaw doctor' falhou ou não foi encontrado.")
                 print("Tentando rodar o script de instalação para correção...")
@@ -7498,7 +7519,17 @@ AllowedIPs = {ip_peer}
         print('Pressione H para ver as opções de ajuda')
         print('Pressione Q para sair')
         
-        resposta = input("Para ver o modo web digite 'w' ou 'Outra tecla' para o modo normal. (w / Outra tecla): ")
+        print("Para ver o modo web digite 'w' ou 'Outra tecla' para o modo normal. (w / Outra tecla)")
+        print("(Aguardando 4 segundos, padrão: terminal)...")
+        
+        # Timeout de 4 segundos
+        i, o, e = select.select([sys.stdin], [], [], 4)
+        
+        if i:
+            resposta = sys.stdin.readline().strip()
+        else:
+            print("\nTempo esgotado! Iniciando modo terminal...")
+            resposta = ""
         if resposta.lower() == "w":
             print("Iniciando o modo web do glances...")
             comandos = [
@@ -7536,7 +7567,7 @@ AllowedIPs = {ip_peer}
         print("Reiniciando o sistema...")
         self.atualizar_sistema_simples()
         self.atualizar_sistema_completa()
-        self.executar_comandos(['reboot '], comando_direto=True)
+        self.executar_comandos(['sudo reboot '], comando_direto=True)
 
     def comandos_essenciais_linux(self):
         """Exibe uma lista de comandos essenciais do Linux Ubuntu."""
@@ -7699,7 +7730,6 @@ ip server: {servicos.exibe_ip()}"""
         ("Menu Docker", servicos.menu_docker),
     ]
     servicos.mostrar_menu_paginado(opcoes_menu, titulo="🖥️  MENU PRINCIPAL - INSTALL MASTER", itens_por_pagina=10, principal=True, mensagem_topo=banner)
-    
 
 if __name__ == "__main__":
     main()
