@@ -7368,6 +7368,15 @@ AllowedIPs = {ip_peer}
             print("Executando o assistente de configuração principal...")
             subprocess.run("openclaw configure", shell=True)
 
+        def chat_terminal():
+            """Chat via Terminal usando comando CLI"""
+            print("\n=== Chat Terminal Open Claw ===")
+            print("Executando: openclaw chat")
+            try:
+                subprocess.run("openclaw chat", shell=True)
+            except Exception as e:
+                print(f"❌ Erro ao tentar executar 'openclaw chat': {e}")
+                print("💡 Dica: Verifique se o comando existe ou use o Dashboard.")
 
         def clean_install():
             print("ATENÇÃO: Isso irá remover o Open Claw e configurações locais (como ~/.openclaw) antes de reinstalar.")
@@ -7395,16 +7404,17 @@ AllowedIPs = {ip_peer}
             print("\nDashboard Web: http://localhost:18789")
 
         while True:
-            print("\n" + "="*40)
+            print("\n" + "="*45)
             print("🦀 OPEN CLAW MANAGER - MENU CENTRALIZADO")
-            print("="*40)
+            print("="*45)
             print("[1] Instalar / Atualizar")
             print("[2] Correção (Doctor)")
-            print("[3] Configurar (API / Canais)")
+            print("[3] Configurar (openclaw configure)")
             print("[4] Status")
             print("[5] Reinstalar do Zero (Limpar e Instalar)")
+            print("[6] Chat no Terminal (openclaw chat)")
             print("[0] Voltar ao Menu Anterior")
-            print("="*40)
+            print("="*45)
             
             opt = input("\nEscolha uma opção: ").strip()
             
@@ -7413,6 +7423,7 @@ AllowedIPs = {ip_peer}
             elif opt == '3': configure()
             elif opt == '4': status()
             elif opt == '5': clean_install()
+            elif opt == '6': chat_terminal()
             elif opt == '0': break
             else: print("❌ Opção inválida, tente novamente.")
 
