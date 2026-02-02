@@ -7391,12 +7391,12 @@ AllowedIPs = {ip_peer}
 
         def chat_terminal():
             """Chat via Terminal usando comando CLI"""
-            print("\n=== Chat Terminal Open Claw ===")
-            print("Executando: openclaw chat")
+            print("\n=== Chat Terminal Open Claw (TUI) ===")
+            print("Executando: openclaw tui")
             try:
-                subprocess.run("openclaw chat", shell=True)
+                subprocess.run("openclaw tui", shell=True)
             except Exception as e:
-                print(f"❌ Erro ao tentar executar 'openclaw chat': {e}")
+                print(f"❌ Erro ao tentar executar 'openclaw tui': {e}")
                 print("💡 Dica: Verifique se o comando existe ou use o Dashboard.")
 
         def clean_install():
@@ -7433,7 +7433,7 @@ AllowedIPs = {ip_peer}
             print("[3] Configurar (openclaw configure)")
             print("[4] Status")
             print("[5] Reinstalar do Zero (Limpar e Instalar)")
-            print("[6] Chat no Terminal (openclaw chat)")
+            print("[6] Chat no Terminal (openclaw tui)")
             print("[0] Voltar ao Menu Anterior")
             print("="*45)
             
