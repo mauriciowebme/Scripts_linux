@@ -4799,7 +4799,7 @@ class Sistema(Docker, Executa_comandos):
                 
     def Desligar(self):
         comandos = [
-            f"poweroff"
+            f"sudo poweroff"
         ]
         self.executar_comandos(comandos, comando_direto=True)
     
