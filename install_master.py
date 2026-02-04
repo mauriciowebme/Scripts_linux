@@ -3966,6 +3966,7 @@ CMD ["sh", "-c", "\
             --name ollama \
             --network ollama-network \
             -p 11434:11434 \
+            -e OLLAMA_HOST=0.0.0.0 \
             -e OLLAMA_MAX_LOADED_MODELS=1 \
             -e OLLAMA_NUM_PARALLEL=2 \
             -e OLLAMA_KEEP_ALIVE=1 \
