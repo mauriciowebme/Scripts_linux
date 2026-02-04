@@ -4006,6 +4006,7 @@ CMD ["sh", "-c", "\
         print("\n💡 COMANDOS ÚTEIS:")
         print("- Ver modelos instalados: docker exec ollama bash -c \"ollama list\"")
         print("- Instalar novo modelo:   docker exec ollama bash -c \"ollama pull gemma3:4b\"")
+        print("- Interagir com modelo:   docker exec -it ollama bash -c \"ollama run gemma3:4b\"")
         print("- Reiniciar serviço:      docker restart ollama open-webui")
         
         print("\n⚠️ ATENÇÃO:")
