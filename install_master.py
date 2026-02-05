@@ -7408,8 +7408,15 @@ AllowedIPs = {ip_peer}
             print('Instalando/Atualizando Open Claw...')
             ensure_node_options()
 
-            # Executa o comando de instalação
-            subprocess.run('curl -fsSL https://openclaw.bot/install.sh | sudo bash', shell=True)
+            print("NOTA: O instalador pode iniciar o servidor (Gateway) automaticamente ao final.")
+            print("      Se o processo ficar parado em 'Onboarding complete' ou similar,")
+            print("      pressione Ctrl+C para encerrar o servidor e voltar ao menu.\n")
+            
+            try:
+                # Executa o comando de instalação
+                subprocess.run('curl -fsSL https://openclaw.bot/install.sh | sudo bash', shell=True)
+            except KeyboardInterrupt:
+                print("\n\nExecução interrompida. Retornando ao menu...")
 
         def doctor():
             print('Executando diagnóstico (doctor)...')
