@@ -2673,7 +2673,7 @@ WantedBy=timers.target
 
             // Instala Python3 e ferramentas necessárias
             function installPython(callback) {
-            const installCmd = 'apt update && apt install -y python3 python3-pip python3-venv';
+            const installCmd = 'sudo apt update && apt install -y python3 python3-pip python3-venv';
 
             console.log('Instalando Python3 e ferramentas...');
             exec(installCmd, (error, stdout, stderr) => {
@@ -3870,7 +3870,7 @@ WantedBy=timers.target
         user = input("Digite o nome do usuário com permissões de acesso extra: ")
         for i in range(2):
             comandos = [
-                "apt update && apt upgrade -y",
+                "sudo apt update && sudo apt upgrade -y",
                 "for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove -y $pkg; done",
                 # Add Docker's official GPG key:
                 "sudo apt-get update",
