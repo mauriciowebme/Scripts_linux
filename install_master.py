@@ -7812,9 +7812,26 @@ AllowedIPs = {ip_peer}
         def integracao_openclaw():
             print("\n=== INTEGRAÇÃO OPEN CLAW ===")
             
-            # Configura gateway mode para local para evitar erro "Gateway start blocked"
+            # 1. Configura gateway mode para local (Segurança)
             print("Configurando gateway.mode=local...")
             subprocess.run("openclaw config set gateway.mode local", shell=True)
+
+            # 2. Força a configuração correta da URL do Ollama (Correção para erro de 'tokens 0')
+            print("Configurando URL do provider Ollama para http://127.0.0.1:11434...")
+            subprocess.run("openclaw config set models.providers.ollama.baseUrl http://127.0.0.1:11434", shell=True)
+            
+            # 3. Verifica se o serviço Ollama está rodando
+            try:
+                print("Verificando conexão com Ollama...")
+                res = subprocess.run("curl -s http://127.0.0.1:11434", shell=True, capture_output=True, text=True)
+                if "Ollama is running" in res.stdout:
+                     print("✅ Ollama detectado e respondendo.")
+                else:
+                     print("⚠️  Aviso: Não foi possível confirmar se o Ollama está respondendo em 127.0.0.1:11434.")
+                     print("   Tentando reiniciar o serviço Ollama...")
+                     subprocess.run("sudo systemctl restart ollama", shell=True)
+            except Exception:
+                pass
 
             print("Executando: ollama launch openclaw --config")
             try:
