@@ -1,16 +1,10 @@
 ﻿#!/bin/bash
 
-# Execute com:
+# Instalação Inicial:
 # wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
-# rm -rf /tmp/Scripts_linux && git clone --depth=1 https://github.com/mauriciowebme/Scripts_linux.git /tmp/Scripts_linux && python3 /tmp/Scripts_linux/install_master.py
-
-# Ou crie um arquivo de texto com o nome install_master.txt na raiz do pendrive USB e execute:
-# lsblk
-# sudo mkdir -p /mnt/usb
-# sudo mount /dev/sdb1 /mnt/usb
-# bash /mnt/usb/install_master.txt
-# depois da primeira execução, o arquivo pode ser executado com:
-# bash /install_principal/install_master.txt
+#
+# Execuções Futuras:
+# install_master
 
 import configparser
 from urllib.parse import quote_plus
@@ -74,7 +68,24 @@ def check_for_update():
     
     # if not execute_file.exists():
     try:
-        execute_file.write_text("rm -rf /tmp/Scripts_linux && git clone --depth=1 https://github.com/mauriciowebme/Scripts_linux.git /tmp/Scripts_linux && python3 /tmp/Scripts_linux/install_master.py")
+        content = (
+            "#!/bin/bash\n"
+            "rm -rf /tmp/Scripts_linux && "
+            "git clone --depth=1 https://github.com/mauriciowebme/Scripts_linux.git /tmp/Scripts_linux && "
+            "python3 /tmp/Scripts_linux/install_master.py \"$@\""
+        )
+        execute_file.write_text(content)
+        
+        # Torna executável
+        subprocess.run(["sudo", "chmod", "+x", str(execute_file)], check=False)
+        
+        # Cria link simbólico para facilitar execução
+        # Tenta /usr/local/bin primeiro, se não /usr/bin
+        link_path = "/usr/local/bin/install_master"
+        if not os.path.exists(link_path):
+             subprocess.run(["sudo", "ln", "-sf", str(execute_file), link_path], check=False)
+             print(f"Bônus: Comando '{link_path.split('/')[-1]}' criado! Nas próximas vezes basta digitar: install_master")
+
     except Exception as e:
         print(f"Aviso: Não foi possível escrever em {execute_file}: {e}")
     
@@ -7922,8 +7933,8 @@ def main():
     servicos = Sistema()
     
     banner = f"""Arquivo install_master.py iniciado!
-Versão 1.227
-Execute com: bash /install_principal/install_master.txt
+Versão 1.228
+Execute com: install_master
 ip server: {servicos.exibe_ip()}"""
     """Função principal que controla o menu."""
     opcoes_menu = [
