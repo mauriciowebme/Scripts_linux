@@ -44,6 +44,11 @@ O sistema filtra automaticamente as atualizações para o cliente final seguindo
 - **IMPORTANTE**: Para commits que aparecem para o cliente, as mensagens DEVEM ser escritas de forma amigável, focando no benefício e evitando termos técnicos.
 - **Princípio**: Escreva como se estivesse conversando com o cliente.
 
+### Entrega em Bloco Único (Terminal)
+Quando solicitado gerar comandos de commit:
+- **Agrupamento**: Gere um **único bloco de código** contendo toda a sequência de comandos (`git add` + `git commit`).
+- **Estrutura**: Separe cada commit lógico com linhas em branco dentro do mesmo bloco, permitindo que o usuário copie tudo de uma vez e cole no terminal.
+
 ## 3. Documentação
 - Mantenha toda a documentação (artifacts, tasks, planos) sempre atualizada e em **PT-BR**.
 
