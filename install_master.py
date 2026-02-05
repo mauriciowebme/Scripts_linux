@@ -7458,7 +7458,7 @@ AllowedIPs = {ip_peer}
             print("ATENÇÃO: Isso irá remover o Open Claw e configurações locais (como ~/.openclaw) antes de reinstalar.")
             if input("Tem certeza? (s/N): ").lower() == 's':
                 print("Removendo Open Claw...")
-                subprocess.run("npm uninstall -g openclaw", shell=True)
+                subprocess.run("sudo npm uninstall -g openclaw", shell=True)
                 subprocess.run("rm -f $HOME/.local/bin/openclaw", shell=True)
                 subprocess.run("rm -rf ~/.openclaw", shell=True)
                 print("Instalação limpa iniciada...")
