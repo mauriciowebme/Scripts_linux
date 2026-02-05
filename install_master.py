@@ -7414,6 +7414,19 @@ AllowedIPs = {ip_peer}
         def doctor():
             print('Executando diagnóstico (doctor)...')
             ensure_node_options()
+
+            # --- Correções Preventivas de Segurança e Limpeza ---
+            try:
+                print("Aplicando correções de segurança...")
+                # Corrige permissões críticas (CRITICAL: Credentials dir is writable by others)
+                subprocess.run("chmod 700 ~/.openclaw/credentials", shell=True)
+                
+                # Opcional: define trustedProxies se for vazio para evitar WARNING (assumindo uso local seguro)
+                # subprocess.run("openclaw config set gateway.trustedProxies '[\"127.0.0.1\"]'", shell=True)
+                
+                print("✅ Correções de permissões aplicadas.")
+            except Exception as e:
+                print(f"⚠️ Erro ao aplicar correções preventivas: {e}")
             
             try:
                 res = subprocess.run("openclaw doctor", shell=True)
