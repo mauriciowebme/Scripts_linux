@@ -7796,6 +7796,14 @@ AllowedIPs = {ip_peer}
                 print(f"Removendo {modelo}...")
                 subprocess.run(f"ollama rm {modelo}", shell=True)
 
+        def integracao_openclaw():
+            print("\n=== INTEGRAÇÃO OPEN CLAW ===")
+            print("Executando: ollama launch openclaw --config")
+            try:
+                subprocess.run("ollama launch openclaw --config", shell=True)
+            except Exception as e:
+                print(f"❌ Erro ao executar integração: {e}")
+
         def submenu_modelos():
             while True:
                 print("\n" + "="*45)
@@ -7838,6 +7846,7 @@ AllowedIPs = {ip_peer}
             print("[2] Gerenciar Modelos / Chat")
             print("[3] Verificar Status do Serviço")
             print("[4] Reiniciar Serviço")
+            print("[5] Integração Open Claw")
             print("[0] Voltar ao Menu Principal")
             print("="*45)
             
@@ -7853,6 +7862,9 @@ AllowedIPs = {ip_peer}
                 input("\nEnter para continuar...")
             elif opt == '4': 
                 restart_service()
+                input("\nEnter para continuar...")
+            elif opt == '5':
+                integracao_openclaw()
                 input("\nEnter para continuar...")
             elif opt == '0': 
                 break
