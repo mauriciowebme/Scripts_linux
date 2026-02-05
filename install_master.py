@@ -7798,6 +7798,11 @@ AllowedIPs = {ip_peer}
 
         def integracao_openclaw():
             print("\n=== INTEGRAÇÃO OPEN CLAW ===")
+            
+            # Configura gateway mode para local para evitar erro "Gateway start blocked"
+            print("Configurando gateway.mode=local...")
+            subprocess.run("openclaw config set gateway.mode local", shell=True)
+
             print("Executando: ollama launch openclaw --config")
             try:
                 subprocess.run("ollama launch openclaw --config", shell=True)
