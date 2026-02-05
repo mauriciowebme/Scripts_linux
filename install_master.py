@@ -7409,7 +7409,7 @@ AllowedIPs = {ip_peer}
             ensure_node_options()
 
             # Executa o comando de instalação
-            subprocess.run('curl -fsSL https://openclaw.bot/install.sh | bash', shell=True)
+            subprocess.run('curl -fsSL https://openclaw.bot/install.sh | sudo bash', shell=True)
 
         def doctor():
             print('Executando diagnóstico (doctor)...')
@@ -7754,8 +7754,8 @@ AllowedIPs = {ip_peer}
 
         def check_status():
             print("\n=== STATUS DO SERVIÇO OLLAMA ===")
-            print("Executando: systemctl status ollama")
-            subprocess.run("systemctl status ollama", shell=True)
+            print("Executando: sudo systemctl status ollama")
+            subprocess.run("sudo systemctl status ollama", shell=True)
 
         def restart_service():
             print("\n=== REINICIAR SERVIÇO OLLAMA ===")
@@ -7770,7 +7770,7 @@ AllowedIPs = {ip_peer}
                 print("Instalando curl...")
                 subprocess.run("sudo apt-get install -y curl", shell=True)
             
-            cmd = "curl -fsSL https://ollama.com/install.sh | sh"
+            cmd = "curl -fsSL https://ollama.com/install.sh | sudo sh"
             try:
                 subprocess.run(cmd, shell=True, check=True)
                 print("\n✅ Ollama instalado com sucesso!")
