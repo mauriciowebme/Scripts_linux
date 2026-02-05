@@ -6948,31 +6948,71 @@ AllowedIPs = {ip_peer}
         print("✔ Para parar, use:")
         print(f"   sudo systemctl stop inicializar.service")
         
-    def opcoes_sistema(self):
-        """Menu de opções"""
-        opcoes_menu = [
-            ("Menu partições", self.menu_particoes),
-            ("Menu swap", self.menu_swap),
-            ("Cria o .py para inicializar", self.setup_inicializar_service),
-            ("instalar deb", self.instalar_deb),
-            ("fecha_tela_noot", self.fecha_tela_noot),
-            ("Instala/Inicia interface xfce", self.instalar_interface_xfce),
-            ("Instala interface gnome", self.instalar_interface_gnome),
-            ("Ecaminhamentos portas tuneis", self.ecaminhamentos_portas_tuneis),
-            ("Instala gerenciador de WIFI nmtui", self.setup_wifi),
-            ("Configura ip fixo", self.configura_ip_fixo),
-            ("Ver uso do espaço em pasta", self.ver_uso_espaco_pasta),
-            ("Gerenciar permissoes de pasta", self.gerenciar_permissoes_pasta),
-            ("Verificar temperatura", self.verifica_temperatura),
-            ("Verificar velocidade da internet", self.verifica_velocidade),
-            ("configura ssh", self.configurar_ssh),
-            # ("Configurar acesso root por ssh", self.acess_root),
-            ("Faz copia inteligente com rsync", self.rsync_sync),
-            ("Inatala/Executa monitor de rede vnstat", self.vnstat),
-            ("🔐 Gerenciador WireGuard VPN", self.menu_wireguard),
-            ("🦀 Gerenciar Open Claw", self.gerenciar_open_claw),
+    def menu_interfaces_graficas(self):
+        """Submenu para instalação de interfaces gráficas"""
+        opcoes = [
+            ("Instalar/Iniciar XFCE (Leve)", self.instalar_interface_xfce),
+            ("Instalar GNOME (Padrão Ubuntu)", self.instalar_interface_gnome),
+            ("Instalar Desktop Ubuntu Webtop (Docker)", self.desktop_ubuntu_webtop),
+            ("Voltar", None)
         ]
-        self.mostrar_menu_paginado(opcoes_menu, titulo="⚙️  OPÇÕES DO SISTEMA", itens_por_pagina=15)
+        self.mostrar_menu_paginado(opcoes, titulo="🖥️  INTERFACES GRÁFICAS", itens_por_pagina=10)
+
+    def menu_instalacoes(self):
+        """Menu centralizado para instalações de softwares e serviços"""
+        opcoes = [
+            ("🐳 Docker e Aplicações em Containers", self.menu_docker),
+            ("🧠 Inteligência Artificial (Ollama Local)", self.gerenciar_ollama),
+            ("🦀 Open Claw (Automação/Agentes)", self.gerenciar_open_claw),
+            ("🖥️ Interfaces Gráficas (Desktop)", self.menu_interfaces_graficas),
+            ("📦 Instalar pacote .deb manualmente", self.instalar_deb),
+            ("📊 Monitor de Rede (vnstat)", self.vnstat),
+            ("📝 Editores de Código (VSCode/OpenVSCode)", self.submenu_editores), # Criar helper se necessário ou chamar direto se já existir
+        ]
+        self.mostrar_menu_paginado(opcoes, titulo="⬇️  CENTRAL DE INSTALAÇÕES", itens_por_pagina=10)
+
+    def opcoes_sistema(self):
+        """Menu de configurações e utilitários do sistema"""
+        opcoes_menu = [
+            ("Configurações de Rede (IP, Wifi, SSH)", self.submenu_rede),
+            ("Gerenciamento de Disco e Partições", self.menu_particoes),
+            ("Gerenciamento de Swap", self.menu_swap),
+            ("Gerenciamento de Permissões", self.gerenciar_permissoes_pasta),
+            ("Diagnóstico (Temp, Velocidade, Espaço)", self.submenu_diagnostico),
+            ("Ferramentas de Backup (Rsync)", self.rsync_sync),
+            ("Configurar Inicialização (.py service)", self.setup_inicializar_service),
+            ("VPN WireGuard", self.menu_wireguard),
+            ("Fechar tampa notebook (NooT)", self.fecha_tela_noot),
+            ("Ecaminhamentos de Portas/Tuneis", self.ecaminhamentos_portas_tuneis),
+        ]
+        self.mostrar_menu_paginado(opcoes_menu, titulo="⚙️  CONFIGURAÇÕES DO SISTEMA", itens_por_pagina=15)
+    
+    def submenu_rede(self):
+        opcoes = [
+            ("Gerenciar Wifi (nmtui)", self.setup_wifi),
+            ("Configurar IP Fixo", self.configura_ip_fixo),
+            ("Configurar SSH", self.configurar_ssh),
+            ("Voltar", None)
+        ]
+        self.mostrar_menu_paginado(opcoes, titulo="🌐 CONFIGURAÇÕES DE REDE", itens_por_pagina=10)
+        
+    def submenu_diagnostico(self):
+        opcoes = [
+            ("Verificar Temperatura", self.verifica_temperatura),
+            ("Teste de Velocidade Internet", self.verifica_velocidade),
+            ("Ver Uso de Espaço", self.ver_uso_espaco_pasta),
+            ("Status do Sistema (Glances)", self.verificando_status_sistema),
+            ("Voltar", None)
+        ]
+        self.mostrar_menu_paginado(opcoes, titulo="🔍 DIAGNÓSTICO DO SISTEMA", itens_por_pagina=10)
+    
+    def submenu_editores(self):
+        opcoes = [
+            ("Instalar VSCode Oficial", self.instala_vscode_oficial),
+            ("Instalar OpenVSCode (Server)", self.instala_openvscode),
+            ("Voltar", None)
+        ]
+        self.mostrar_menu_paginado(opcoes, titulo="📝 EDITORES DE CÓDIGO", itens_por_pagina=10)
         
     def listar_containers_docker(self):
         """Lista todos os containers Docker (rodando e parados)"""
@@ -7709,6 +7749,116 @@ AllowedIPs = {ip_peer}
         
         input("\nPressione Enter para voltar ao menu...")
 
+    def gerenciar_ollama(self):
+        """Gerenciador Centralizado para Ollama"""
+
+        def check_status():
+            print("\n=== STATUS DO SERVIÇO OLLAMA ===")
+            print("Executando: systemctl status ollama")
+            subprocess.run("systemctl status ollama", shell=True)
+
+        def restart_service():
+            print("\n=== REINICIAR SERVIÇO OLLAMA ===")
+            print("Executando: sudo systemctl restart ollama")
+            subprocess.run("sudo systemctl restart ollama", shell=True)
+
+        def install_ollama():
+            print("\n=== INSTALAÇÃO OLLAMA (LOCAL) ===\n")
+            print("Baixando e executando script de instalação oficial...")
+            # Garante que curl está instalado
+            if shutil.which("curl") is None:
+                print("Instalando curl...")
+                subprocess.run("sudo apt-get install -y curl", shell=True)
+            
+            cmd = "curl -fsSL https://ollama.com/install.sh | sh"
+            try:
+                subprocess.run(cmd, shell=True, check=True)
+                print("\n✅ Ollama instalado com sucesso!")
+                print("O serviço deve iniciar automaticamente via systemd.")
+            except subprocess.CalledProcessError as e:
+                print(f"\n❌ Erro durante a instalação: {e}")
+                print("Verifique se você tem permissões de root ou sudo ajustado.")
+
+        def run_modelo(nome_modelo):
+            print(f"\n🚀 Iniciando modelo: {nome_modelo}")
+            print("O download será iniciado automaticamente se o modelo não existir.")
+            print("Pressione Ctrl+D ou digite '/bye' para sair do chat.\n")
+            try:
+                subprocess.run(f"ollama run {nome_modelo}", shell=True)
+            except Exception as e:
+                print(f"❌ Erro ao rodar modelo: {e}")
+
+        def remover_modelo():
+            print("\n=== REMOVER MODELO ===")
+            subprocess.run("ollama list", shell=True)
+            modelo = input("\nDigite o nome do modelo para remover: ").strip()
+            if modelo:
+                print(f"Removendo {modelo}...")
+                subprocess.run(f"ollama rm {modelo}", shell=True)
+
+        def submenu_modelos():
+            while True:
+                print("\n" + "="*45)
+                print("🧠 MODELOS OLLAMA - SELECIONE")
+                print("="*45)
+                print("[1] Llama 3.1")
+                print("[2] Llama 3.2")
+                print("[3] Gemma 3 (Beta)")
+                print("[4] Outro Modelo (Digitar Nome)")
+                print("[5] Listar Instalados")
+                print("[6] Remover Modelo")
+                print("[0] Voltar")
+                print("="*45)
+                
+                escolha = input("\nEscolha: ").strip()
+                
+                if escolha == '1': run_modelo("llama3.1")
+                elif escolha == '2': run_modelo("llama3.2")
+                elif escolha == '3': run_modelo("gemma3")
+                elif escolha == '4':
+                    nome = input("Digite o nome do modelo: ").strip()
+                    if nome: run_modelo(nome)
+                elif escolha == '5':
+                    subprocess.run("ollama list", shell=True)
+                    input("\nEnter para continuar...")
+                elif escolha == '6':
+                    remover_modelo()
+                    input("\nEnter para continuar...")
+                elif escolha == '0':
+                    break
+                else:
+                    print("❌ Opção inválida.")
+
+        # Loop principal do menu Ollama
+        while True:
+            print("\n" + "="*45)
+            print("🦙 GERENCIADOR OLLAMA (LOCAL)")
+            print("="*45)
+            print("[1] Instalar Ollama (Script Oficial)")
+            print("[2] Gerenciar Modelos / Chat")
+            print("[3] Verificar Status do Serviço")
+            print("[4] Reiniciar Serviço")
+            print("[0] Voltar ao Menu Principal")
+            print("="*45)
+            
+            opt = input("\nEscolha uma opção: ").strip()
+            
+            if opt == '1': 
+                install_ollama()
+                input("\nEnter para continuar...")
+            elif opt == '2': 
+                submenu_modelos()
+            elif opt == '3': 
+                check_status()
+                input("\nEnter para continuar...")
+            elif opt == '4': 
+                restart_service()
+                input("\nEnter para continuar...")
+            elif opt == '0': 
+                break
+            else: 
+                print("❌ Opção inválida.")
+
     def sair(self,):
         """Sai do programa."""
         print("Saindo...")
@@ -7726,10 +7876,10 @@ ip server: {servicos.exibe_ip()}"""
         ("Reiniciar", servicos.Reiniciar),
         ("Desligar", servicos.Desligar),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
-        ("verificando status do sistema", servicos.verificando_status_sistema),
+        ("Central de Instalações", servicos.menu_instalacoes),
+        ("Configurações do Sistema", servicos.opcoes_sistema),
+        ("Diagnóstico e Monitoramento", servicos.submenu_diagnostico),
         ("Comandos essenciais do Linux", servicos.comandos_essenciais_linux),
-        ("Menu de outras opções", servicos.opcoes_sistema),
-        ("Menu Docker", servicos.menu_docker),
     ]
     servicos.mostrar_menu_paginado(opcoes_menu, titulo="🖥️  MENU PRINCIPAL - INSTALL MASTER", itens_por_pagina=10, principal=True, mensagem_topo=banner)
 
