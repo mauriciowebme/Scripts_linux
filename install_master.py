@@ -5690,14 +5690,21 @@ class Sistema(Docker, Executa_comandos):
         self.executar_comandos(["sensors"])
         
     def verifica_velocidade(self):
-        if not self.verificar_instalacao("speedtest-cli"):
+        # Verifica se o binario oficial speedtest esta instalado ou se a versao antiga esta presente
+        # Se estiver usando o speedtest-cli (python/antigo), ele remove e instala o oficial
+        # Nota: speedtest oficial geralmente nao aparece no dpkg como 'speedtest-cli' do apt padrao, mas verificamos ambos
+        if self.verificar_instalacao("speedtest-cli") or not self.verificar_instalacao("speedtest"):
+            print("Atualizando para o cliente oficial Ookla Speedtest...")
             comandos = [
-                "sudo apt update",
-                "sudo apt-get install -y speedtest-cli",
+                "sudo apt-get remove -y speedtest-cli",
+                "sudo apt-get install -y curl",
+                "curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash",
+                "sudo apt-get install -y speedtest"
             ]
             self.executar_comandos(comandos)
-        # Executar o comando sensors
-        self.executar_comandos(["speedtest "], comando_direto=True)
+
+        # Executar o comando oficial com aceite de licenca
+        self.executar_comandos(["speedtest --accept-license --accept-gdpr"], comando_direto=True)
 
     def rsync_sync(
         self,
