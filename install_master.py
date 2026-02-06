@@ -7828,40 +7828,9 @@ AllowedIPs = {ip_peer}
                 print("Verifique se você tem permissões de root ou sudo ajustado.")
 
         def run_modelo(nome_modelo):
-            print(f"\n🚀 Preparando modelo: {nome_modelo}")
-            
-            # Verifica se o modelo ja existe localmente
-            try:
-                result = subprocess.run("ollama list", shell=True, capture_output=True, text=True)
-                modelo_existe = nome_modelo in result.stdout or f"{nome_modelo}:latest" in result.stdout
-            except:
-                modelo_existe = False
-
-            if not modelo_existe:
-                 print(f"Modelo '{nome_modelo}' não encontrado localmente.")
-                 
-                 # Estrategia Agressiva para Ubuntu 24.04: Kill + Restart limpo
-                 # INFO: Solucao para travamento "pulling manifest" no Ubuntu 24
-                 print("🔄 Reiniciando COMPLETAMENTE o serviço Ollama (Stop -> Kill -> Start)...")
-                 subprocess.run("sudo systemctl stop ollama", shell=True)
-                 subprocess.run("sudo pkill -9 -x ollama", shell=True, stderr=subprocess.DEVNULL) # Garante fim de processos zumbis
-                 time.sleep(2)
-                 subprocess.run("sudo systemctl start ollama", shell=True)
-                 
-                 print("⏳ Aguardando serviço restabelecer (5s)...")
-                 time.sleep(5)
-
-                 print(f"📥 Baixando modelo '{nome_modelo}' (ollama pull)...")
-                 print("Acompanhe o progresso abaixo:")
-                 try:
-                     subprocess.run(f"ollama pull {nome_modelo}", shell=True, check=True)
-                 except subprocess.CalledProcessError:
-                     print(f"\n❌ Falha ao baixar o modelo '{nome_modelo}'.")
-                     print("Possíveis causas: Internet instável, DNS (IPv6) ou Firewall.")
-                     return
-
-            print(f"\n💬 Iniciando chat com {nome_modelo}...")
-            print("Pressione Ctrl+D ou digite '/bye' para sair.\n")
+            print(f"\n🚀 Iniciando modelo: {nome_modelo}")
+            print("O download será iniciado automaticamente se o modelo não existir.")
+            print("Pressione Ctrl+D ou digite '/bye' para sair do chat.\n")
             try:
                 subprocess.run(f"ollama run {nome_modelo}", shell=True)
             except Exception as e:
