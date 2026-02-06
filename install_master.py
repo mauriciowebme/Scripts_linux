@@ -6994,7 +6994,8 @@ AllowedIPs = {ip_peer}
             ("🖥️ Interfaces Gráficas (Desktop)", self.menu_interfaces_graficas),
             ("📦 Instalar pacote .deb manualmente", self.instalar_deb),
             ("📊 Monitor de Rede (vnstat)", self.vnstat),
-            ("📝 Editores de Código (VSCode/OpenVSCode)", self.submenu_editores), # Criar helper se necessário ou chamar direto se já existir
+            ("📝 Editores de Código (VSCode/OpenVSCode)", self.submenu_editores),
+            ("☁️ Cloudflare WARP (VPN - Contorna bloqueios)", self.gerenciar_cloudflare_warp),
         ]
         self.mostrar_menu_paginado(opcoes, titulo="⬇️  CENTRAL DE INSTALAÇÕES", itens_por_pagina=10)
 
@@ -7970,6 +7971,84 @@ AllowedIPs = {ip_peer}
                 break
             else: 
                 print("❌ Opção inválida.")
+
+    def gerenciar_cloudflare_warp(self):
+        """Gerencia o Cloudflare WARP para contornar bloqueios de ISP (Claro/NET/Vivo)"""
+        while True:
+            # Verifica status atual
+            try:
+                result = subprocess.run("warp-cli status", shell=True, capture_output=True, text=True)
+                if "Connected" in result.stdout:
+                    status_warp = "🟢 Conectado"
+                elif "Disconnected" in result.stdout:
+                    status_warp = "🔴 Desconectado"
+                else:
+                    status_warp = "⚪ Não instalado"
+            except:
+                status_warp = "⚪ Não instalado"
+
+            print("\n" + "="*55)
+            print("☁️  CLOUDFLARE WARP - VPN GRATUITA")
+            print("="*55)
+            print(f"Status: {status_warp}")
+            print("-"*55)
+            print("Útil para contornar bloqueios de ISP (Claro/NET/Vivo)")
+            print("que impedem downloads do Ollama, Docker Hub, etc.")
+            print("-"*55)
+            print("[1] Instalar WARP")
+            print("[2] Conectar")
+            print("[3] Desconectar")
+            print("[4] Ver Status Detalhado")
+            print("[5] Testar Conexão com Cloudflare")
+            print("[0] Voltar")
+            print("="*55)
+
+            opt_warp = input("\nEscolha: ").strip()
+
+            if opt_warp == '1':
+                print("\n📦 Instalando Cloudflare WARP...")
+                cmds = [
+                    "curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg",
+                    'echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list',
+                    "sudo apt-get update",
+                    "sudo apt-get install -y cloudflare-warp"
+                ]
+                for cmd in cmds:
+                    subprocess.run(cmd, shell=True)
+                
+                print("\n🔑 Registrando dispositivo...")
+                subprocess.run("warp-cli registration new", shell=True)
+                print("✅ WARP instalado! Use a opção 2 para conectar.")
+                input("\nEnter para continuar...")
+
+            elif opt_warp == '2':
+                print("\n🔌 Conectando ao WARP...")
+                subprocess.run("warp-cli connect", shell=True)
+                time.sleep(2)
+                subprocess.run("warp-cli status", shell=True)
+                input("\nEnter para continuar...")
+
+            elif opt_warp == '3':
+                print("\n🔌 Desconectando do WARP...")
+                subprocess.run("warp-cli disconnect", shell=True)
+                input("\nEnter para continuar...")
+
+            elif opt_warp == '4':
+                subprocess.run("warp-cli status", shell=True)
+                subprocess.run("warp-cli settings", shell=True)
+                input("\nEnter para continuar...")
+
+            elif opt_warp == '5':
+                print("\n🔍 Testando conexão com Cloudflare (CDN de vários serviços)...")
+                result = subprocess.run("ping -c 3 r2.cloudflarestorage.com", shell=True)
+                if result.returncode == 0:
+                    print("\n✅ Conexão OK! Downloads devem funcionar normalmente.")
+                else:
+                    print("\n❌ Sem conexão com Cloudflare. Conecte o WARP (opção 2).")
+                input("\nEnter para continuar...")
+
+            elif opt_warp == '0':
+                break
 
     def sair(self,):
         """Sai do programa."""
