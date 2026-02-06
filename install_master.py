@@ -7827,9 +7827,25 @@ AllowedIPs = {ip_peer}
                 print("Verifique se você tem permissões de root ou sudo ajustado.")
 
         def run_modelo(nome_modelo):
-            print(f"\n🚀 Iniciando modelo: {nome_modelo}")
-            print("O download será iniciado automaticamente se o modelo não existir.")
-            print("Pressione Ctrl+D ou digite '/bye' para sair do chat.\n")
+            print(f"\n🚀 Prepando modelo: {nome_modelo}")
+            
+            # Verifica se o modelo ja existe localmente para evitar travamentos silenciosos no 'run'
+            try:
+                result = subprocess.run("ollama list", shell=True, capture_output=True, text=True)
+                if nome_modelo not in result.stdout and f"{nome_modelo}:latest" not in result.stdout:
+                     print(f"Modelo '{nome_modelo}' não encontrado localmente.")
+                     print("📥 Iniciando download (ollama pull)... Aguarde, isso pode levar alguns minutos.")
+                     # Força o pull explícito para garantir o download antes de abrir o chat
+                     subprocess.run(f"ollama pull {nome_modelo}", shell=True, check=True)
+            except subprocess.CalledProcessError:
+                 print(f"\n❌ Falha grave ao baixar o modelo '{nome_modelo}'.")
+                 print("Dica: Verifique sua internet ou se o serviço Ollama está rodando (Opção 3).")
+                 return
+            except Exception as e:
+                 print(f"⚠️  Aviso: Não foi possível verificar lista de modelos ({e}). Tentando rodar direto...")
+
+            print(f"\n💬 Iniciando chat com {nome_modelo}...")
+            print("Pressione Ctrl+D ou digite '/bye' para sair.\n")
             try:
                 subprocess.run(f"ollama run {nome_modelo}", shell=True)
             except Exception as e:
