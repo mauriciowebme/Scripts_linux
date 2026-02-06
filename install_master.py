@@ -7969,6 +7969,7 @@ AllowedIPs = {ip_peer}
             print("[3] Desconectar")
             print("[4] Ver Status Detalhado")
             print("[5] Testar Conexão com Cloudflare")
+            print("[6] Habilitar Conexão Automática (boot)")
             print("[0] Voltar")
             print("="*55)
 
@@ -8014,6 +8015,14 @@ AllowedIPs = {ip_peer}
                     print("\n✅ Conexão OK! Downloads devem funcionar normalmente.")
                 else:
                     print("\n❌ Sem conexão com Cloudflare. Conecte o WARP (opção 2).")
+                input("\nEnter para continuar...")
+
+            elif opt_warp == '6':
+                print("\n⚙️ Habilitando conexão automática no boot...")
+                subprocess.run("warp-cli set-mode warp", shell=True)
+                subprocess.run("warp-cli connect", shell=True)
+                print("\n✅ WARP configurado para conectar automaticamente!")
+                print("O servidor reconectará ao WARP após cada reinicialização.")
                 input("\nEnter para continuar...")
 
             elif opt_warp == '0':
