@@ -5690,20 +5690,28 @@ class Sistema(Docker, Executa_comandos):
         self.executar_comandos(["sensors"])
         
     def verifica_velocidade(self):
-        # Verifica se o binario oficial speedtest esta instalado ou se a versao antiga esta presente
-        # Se estiver usando o speedtest-cli (python/antigo), ele remove e instala o oficial
-        if self.verificar_instalacao("speedtest-cli") or not self.verificar_instalacao("speedtest"):
-            print("Atualizando para o cliente oficial Ookla Speedtest...")
+        # 1. Limpar repositório quebrado se existir (evita erro no apt update futuro)
+        # O repositorio da Ookla falhou (404) para Ubuntu Noble, entao removemos para nao quebrar o sistema
+        lists_file = "/etc/apt/sources.list.d/ookla_speedtest-cli.list"
+        if os.path.exists(lists_file):
+            print(f"Removendo repositorio invalido: {lists_file}")
+            self.executar_comandos([f"sudo rm {lists_file}"], ignorar_erros=True)
+        
+        # 2. Se não tiver 'speedtest' (binário oficial), instala via download direto (evita repo)
+        if not self.verificar_instalacao("speedtest"):
+            print("Instalando speedtest oficial (binario direto)...")
             comandos = [
-                "sudo apt-get remove -y speedtest-cli",
-                "sudo apt-get install -y curl",
-                "curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash",
-                "sudo apt-get update",
-                "sudo apt-get install -y speedtest"
+                "sudo apt-get install -y curl", 
+                "curl -L https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-x86_64.tgz -o /tmp/speedtest.tgz",
+                "tar -xzf /tmp/speedtest.tgz -C /tmp speedtest",
+                "sudo mv /tmp/speedtest /usr/bin/speedtest",
+                "sudo chmod +x /usr/bin/speedtest",
+                "rm -f /tmp/speedtest.tgz"
             ]
             self.executar_comandos(comandos)
 
-        # Executar o comando oficial com aceite de licenca
+        # 3. Executa
+        print("Executando teste de velocidade...")
         self.executar_comandos(["speedtest --accept-license --accept-gdpr"], comando_direto=True)
 
     def rsync_sync(
