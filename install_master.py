@@ -5660,13 +5660,13 @@ class Sistema(Docker, Executa_comandos):
         
     def verificar_instalacao(self, pacote):
         """
-        Verifica se um pacote está instalado no sistema.
+        Verifica se um pacote está instalado no sistema (via dpkg) ou se o comando existe no PATH.
         Exemplo:
         if not self.verificar_instalacao("nome_pacote"):
             pass
             #instale o pacote
-        
         """
+        # 1. Tenta via dpkg (para pacotes do sistema)
         try:
             resultado = subprocess.run(
                 ["dpkg", "-s", pacote],
@@ -5674,8 +5674,16 @@ class Sistema(Docker, Executa_comandos):
                 stderr=subprocess.PIPE,
                 text=True
             )
-            return resultado.returncode == 0
-        except subprocess.CalledProcessError:
+            if resultado.returncode == 0:
+                return True
+        except Exception:
+            pass
+
+        # 2. Tenta via shutil.which (para binários manuais ou pip no path)
+        if shutil.which(pacote):
+            return True
+
+        return False
             return False
         
     def verifica_temperatura(self):
