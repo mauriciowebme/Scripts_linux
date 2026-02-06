@@ -46,7 +46,12 @@ def get_ubuntu_version() -> float:
 
 VERSAO_UBUNTU = get_ubuntu_version()
 
-def check_for_update():
+def check_for_update(sistema_instance=None):
+    """Verifica se é a primeira execução e configura o sistema.
+    
+    Args:
+        sistema_instance: Instância da classe Sistema para usar métodos centralizados de atualização.
+    """
     path_principal = Path("/install_principal")
     
     # Garante que o diretório principal exista e seja acessível
@@ -66,7 +71,7 @@ def check_for_update():
     update_file = path_principal / "update_check.txt"
     execute_file = path_principal / "install_master.txt"
     
-    # if not execute_file.exists():
+    # Cria script de execução rápida
     try:
         content = (
             "#!/bin/bash\n"
@@ -80,7 +85,6 @@ def check_for_update():
         subprocess.run(["sudo", "chmod", "+x", str(execute_file)], check=False)
         
         # Cria link simbólico para facilitar execução
-        # Tenta /usr/local/bin primeiro, se não /usr/bin
         link_path = "/usr/local/bin/install_master"
         if not os.path.exists(link_path):
              subprocess.run(["sudo", "ln", "-sf", str(execute_file), link_path], check=False)
@@ -89,12 +93,22 @@ def check_for_update():
     except Exception as e:
         print(f"Aviso: Não foi possível escrever em {execute_file}: {e}")
     
+    # Se já foi executado antes, não faz a atualização inicial
     if update_file.exists():
         return
 
     print("Primeira execução detectada. Atualizando o sistema...")
-    subprocess.run("sudo apt-get update".split(), check=False)
-    subprocess.run("sudo apt-get upgrade -y".split(), check=False)
+    
+    # Usa os métodos centralizados se a instância foi fornecida
+    if sistema_instance:
+        sistema_instance.atualizar_sistema_completa()
+    else:
+        # Fallback para execução direta (caso seja chamado antes da classe existir)
+        subprocess.run("sudo apt update".split(), check=False)
+        subprocess.run("sudo apt upgrade -y".split(), check=False)
+        subprocess.run("sudo apt full-upgrade -y".split(), check=False)
+        subprocess.run("sudo apt autoremove -y".split(), check=False)
+        subprocess.run("sudo apt autoclean".split(), check=False)
     
     # Evitar espera de rede na inicialização
     subprocess.run("sudo systemctl disable NetworkManager-wait-online.service".split(), check=False)
@@ -102,6 +116,7 @@ def check_for_update():
     subprocess.run("sudo systemctl mask systemd-networkd-wait-online.service".split(), check=False)
     subprocess.run("sudo systemctl mask NetworkManager-wait-online.service".split(), check=False)
     
+    # Configura timezone
     try:
         subprocess.run(["sudo", "timedatectl", "set-timezone", "America/Sao_Paulo"], check=True)
         subprocess.run(["sudo", "timedatectl", "set-ntp", "true"], check=True)
@@ -109,87 +124,83 @@ def check_for_update():
         try:
             subprocess.run(["sudo", "ln", "-sf", "/usr/share/zoneinfo/America/Sao_Paulo", "/etc/localtime"], check=True)
         except Exception as ex:
-            print(f"⚠️  Erro ao atualizar o sistema: {ex}\n")
+            print(f"⚠️  Erro ao configurar timezone: {ex}\n")
         
     try:
         update_file.write_text("Atualização realizada em: " + time.strftime("%Y-%m-%d %H:%M:%S"))
         print("Atualização concluída.\n")
     except Exception as e:
         print(f"Não foi possível salvar log de atualização: {e}")
-    
-check_for_update()
 
-def ensure_pip_installed():
+# Nota: check_for_update() é chamado em main() após a criação da instância de Sistema
+
+def garantir_pip():
+    """Garante que o pip está instalado antes de qualquer dependência."""
     try:
-        subprocess.check_call([sys.executable, "-m", "pip", "--version"],
-                              stdout=subprocess.DEVNULL)
-    except subprocess.CalledProcessError:
-        print("pip não encontrado. Instalando com apt...")
-        subprocess.check_call(["sudo", "apt-get", "update"])
-        subprocess.check_call(["sudo", "apt-get", "install", "-y", "python3-pip"])
-        print("pip instalado com sucesso.\n")
-ensure_pip_installed()
+        subprocess.run([sys.executable, "-m", "pip", "--version"], 
+                      check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print("📦 pip não encontrado. Instalando...")
+        subprocess.run(["sudo", "apt", "update"], check=False)
+        subprocess.run(["sudo", "apt", "install", "-y", "python3-pip"], check=True)
+        print("✅ pip instalado com sucesso.\n")
+
+garantir_pip()  # Chamado UMA VEZ antes de qualquer dependência
 
 def ensure(module: str,
            apt_pkg: str | None = None,
            pip_pkg: str | None = None) -> None:
     """
     Importa <module>. Se falhar:
-        1. instala <apt_pkg> via APT (padrão: python3-<module>).
-        2. se ainda faltar, instala <pip_pkg> via pip
-           (padrão: mesmo nome do módulo).
+        1. Tenta instalar via APT (padrão: python3-<module>)
+        2. Se falhar, instala via pip (padrão: mesmo nome do módulo)
+    
+    Nota: pip já está garantido pela função garantir_pip() chamada anteriormente.
     """
-    import importlib, subprocess, sys, shutil
+    import importlib
 
-    # 0) já existe?
+    # Verifica se o módulo já existe
     try:
         importlib.import_module(module)
         return
     except ImportError:
         pass
 
-    # 1) define nomes padrão caso não venham
+    # Define nomes padrão
     apt_pkg = apt_pkg or f"python3-{module.replace('.', '-')}"
     pip_pkg = pip_pkg or module
 
-    # 2) tenta instalar via APT
+    # Tenta instalar via APT primeiro
     try:
-        subprocess.run(["sudo", "apt-get", "update", "-qq"], check=True,
+        subprocess.run(["sudo", "apt", "update", "-qq"], check=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(["sudo", "apt-get", "install", "-y", "--no-install-recommends",
+        subprocess.run(["sudo", "apt", "install", "-y", "--no-install-recommends",
                         apt_pkg], check=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        importlib.import_module(module)  # checa de novo
+        importlib.import_module(module)
         print(f"✓ {module} disponível via APT ({apt_pkg})")
         return
     except Exception:
         print(f"APT falhou para {apt_pkg}; tentando pip…")
 
+    # Fallback: instala via pip (pip já está garantido)
     try:
-        # 3) fallback: pip
-        if shutil.which("pip") is None:
-            subprocess.run(["sudo", "apt-get", "install", "-y", "--no-install-recommends",
-                            "python3-pip"], check=True,
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
         pip_cmd = ["sudo", sys.executable, "-m", "pip", "install", "--no-cache-dir", pip_pkg]
         if VERSAO_UBUNTU >= 24.04:
             pip_cmd.insert(5, "--break-system-packages")
             
         subprocess.run(pip_cmd, check=True)
-        
-        print(f"✓ {module} instalado via pip ({pip_pkg})")
-
         importlib.import_module(module)
+        print(f"✓ {module} instalado via pip ({pip_pkg})")
         return
-    except ImportError:
+    except Exception:
         print(f"✗ Falha ao instalar {module} via pip ({pip_pkg})")
-        pass
 
 # ---- dependências do script ----
 ensure("mysql.connector",
        apt_pkg="python3-mysql.connector",
        pip_pkg="mysql-connector-python")
+       
 ensure("yaml",
        apt_pkg="python3-yaml",
        pip_pkg="PyYAML")
@@ -5124,7 +5135,7 @@ class Sistema(Docker, Executa_comandos):
         
         comandos = [
                 f"sudo dpkg -i {caminho}",
-                f"sudo apt-get install -f",
+                f"sudo apt install -f -y",
             ]
         self.executar_comandos(comandos, comando_direto=True)
         self.atualizar_sistema_completa()
@@ -5728,7 +5739,7 @@ class Sistema(Docker, Executa_comandos):
                  self.executar_comandos(["sudo rm /etc/apt/sources.list.d/ookla_speedtest-cli.list"], exibir_executando=False, exibir_resultados=False)
             
             cmds_install = [
-                "sudo apt-get install -y curl",
+                "sudo apt install -y curl",
                 "curl -L https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-x86_64.tgz -o /tmp/speedtest.tgz",
                 "tar -xzf /tmp/speedtest.tgz -C /tmp speedtest",
                 "sudo mv /tmp/speedtest /usr/bin/speedtest",
@@ -7657,31 +7668,59 @@ AllowedIPs = {ip_peer}
         self.executar_comandos(comandos, comando_direto=True)
     
     def menu_atualizacoes(self,):
-        """Menu de opções"""
+        """Menu de atualizações do sistema"""
         opcoes_menu = [
-            ("atualizar_sistema_simples", self.atualizar_sistema_simples),
-            ("atualizar_sistema_completa", self.atualizar_sistema_completa),
-            ("atualizar_sistema_completa_reiniciar", self.atualizar_sistema_completa_reiniciar),
+            ("🔄 Atualizar Lista de Pacotes (apt update)", self.atualizar_sistema_simples),
+            ("⬆️ Atualização Rápida (update + upgrade)", self.atualizar_sistema_rapida),
+            ("🚀 Atualização Completa (update + upgrade + full-upgrade + limpeza)", self.atualizar_sistema_completa),
+            ("🔁 Atualização Completa + Reiniciar", self.atualizar_sistema_completa_reiniciar),
+            ("🧹 Limpeza de Pacotes (autoremove + autoclean)", self.limpar_pacotes),
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="🔄 ATUALIZAÇÕES DO SISTEMA", itens_por_pagina=10)
         
     def atualizar_sistema_simples(self,):
-        """Executa o comando para atualizar o sistema."""
-        print("Atualizando o sistema com update...")
-        self.executar_comandos(['sudo apt-get update'], comando_direto=True)
+        """Atualiza apenas a lista de pacotes disponíveis."""
+        print("\n📦 Atualizando lista de pacotes...")
+        self.executar_comandos(['sudo apt update'], comando_direto=True)
+        print("\n✅ Lista de pacotes atualizada!")
+
+    def atualizar_sistema_rapida(self,):
+        """Atualização rápida: update + upgrade."""
+        print("\n⬆️ Iniciando atualização rápida...")
+        self.executar_comandos(['sudo apt update'], comando_direto=True)
+        self.executar_comandos(['sudo apt upgrade -y'], comando_direto=True)
+        print("\n✅ Atualização rápida concluída!")
         
     def atualizar_sistema_completa(self,):
-        """Executa o comando para atualizar o sistema."""
-        print("Atualizando o sistema com upgrade...")
-        self.atualizar_sistema_simples()
-        self.executar_comandos(["sudo apt-get upgrade -y"], comando_direto=True)
+        """Atualização completa: update + upgrade + full-upgrade + limpeza."""
+        print("\n🚀 Iniciando atualização completa do sistema...")
+        print("\n📦 [1/5] Atualizando lista de pacotes...")
+        self.executar_comandos(['sudo apt update'], comando_direto=True)
+        print("\n⬆️ [2/5] Atualizando pacotes (upgrade)...")
+        self.executar_comandos(['sudo apt upgrade -y'], comando_direto=True)
+        print("\n🔄 [3/5] Atualizando pacotes com dependências (full-upgrade)...")
+        self.executar_comandos(['sudo apt full-upgrade -y'], comando_direto=True)
+        print("\n🗑️ [4/5] Removendo pacotes órfãos (autoremove)...")
+        self.executar_comandos(['sudo apt autoremove -y'], comando_direto=True)
+        print("\n🧹 [5/5] Limpando cache de pacotes (autoclean)...")
+        self.executar_comandos(['sudo apt autoclean'], comando_direto=True)
+        print("\n✅ Atualização completa finalizada!")
         
     def atualizar_sistema_completa_reiniciar(self,):
-        """Executa o comando para atualizar o sistema."""
-        print("Reiniciando o sistema...")
-        self.atualizar_sistema_simples()
+        """Atualização completa + reinicialização do sistema."""
         self.atualizar_sistema_completa()
-        self.executar_comandos(['sudo reboot '], comando_direto=True)
+        print("\n🔁 Reiniciando o sistema em 5 segundos...")
+        time.sleep(5)
+        self.executar_comandos(['sudo reboot'], comando_direto=True)
+
+    def limpar_pacotes(self,):
+        """Remove pacotes órfãos e limpa cache."""
+        print("\n🧹 Iniciando limpeza de pacotes...")
+        print("\n🗑️ [1/2] Removendo pacotes órfãos...")
+        self.executar_comandos(['sudo apt autoremove -y'], comando_direto=True)
+        print("\n🧹 [2/2] Limpando cache de pacotes...")
+        self.executar_comandos(['sudo apt autoclean'], comando_direto=True)
+        print("\n✅ Limpeza concluída!")
 
     def comandos_essenciais_linux(self):
         """Exibe uma lista de comandos essenciais do Linux Ubuntu."""
@@ -7840,7 +7879,7 @@ AllowedIPs = {ip_peer}
             # Garante que curl está instalado
             if shutil.which("curl") is None:
                 print("Instalando curl...")
-                subprocess.run("sudo apt-get install -y curl", shell=True)
+                subprocess.run("sudo apt install -y curl", shell=True)
             
             cmd = "curl -fsSL https://ollama.com/install.sh | sudo sh"
             try:
@@ -8004,8 +8043,8 @@ AllowedIPs = {ip_peer}
                 cmds = [
                     "curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg",
                     'echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list',
-                    "sudo apt-get update",
-                    "sudo apt-get install -y cloudflare-warp"
+                    "sudo apt update",
+                    "sudo apt install -y cloudflare-warp"
                 ]
                 for cmd in cmds:
                     subprocess.run(cmd, shell=True)
@@ -8059,6 +8098,9 @@ AllowedIPs = {ip_peer}
 
 def main():
     servicos = Sistema()
+    
+    # Verifica atualizações usando os métodos centralizados
+    check_for_update(sistema_instance=servicos)
     
     banner = f"""Arquivo install_master.py iniciado!
 Versão 1.228
