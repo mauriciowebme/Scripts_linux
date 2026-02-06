@@ -5684,7 +5684,6 @@ class Sistema(Docker, Executa_comandos):
             return True
 
         return False
-            return False
         
     def verifica_temperatura(self):
         if not self.verificar_instalacao("lm-sensors"):
