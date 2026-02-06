@@ -5018,81 +5018,105 @@ class Sistema(Docker, Executa_comandos):
         else:
             print("Opção inválida. Nenhuma ação foi realizada.")
         
-    def menu_swap(self,):
-        menu = input('Digite: \n1 para ver a memoria \n2 para configurar \n')
-        comandos = []
-        if menu == '1':
-            print("Verificando o arquivo de swap existente...")
-            comandos += ["sudo swapon --show"]
-            comandos += ["free -h"]
-        elif menu == '2':
-            novo_tamanho = input('Digite o novo tamanho em GB da swap (apenas numeros): ')
-            print("Realizando configuração...")
-            comandos += ["sudo swapoff /swap.img"]
-            comandos += ["sudo rm /swap.img"]
-            comandos += [f"sudo fallocate -l {novo_tamanho}G /swap.img"]
-            comandos += [f"sudo chmod 600 /swap.img"]
-            comandos += [f"sudo mkswap /swap.img"]
-            comandos += [f"sudo swapon /swap.img"]
-            print("Configuração realizada.")
-        
-        self.executar_comandos(comandos, comando_direto=True, exibir_executando=False)
-        
-        # Verificar se /swap.img já está no /etc/fstab
-        try:
-            with open('/etc/fstab', 'r') as f:
-                fstab_lines = f.readlines()
+    def menu_swap(self):
+        """Menu de gerenciamento de Swap"""
+        while True:
+            print("\n" + "="*50)
+            print("💾 GERENCIAMENTO DE SWAP")
+            print("="*50)
             
-            encontrado = False
-            for linha in fstab_lines:
-                if '/swap.img' in linha:
-                    print("A linha de swap já existe em /etc/fstab.")
-                    encontrado = True
-                    break
+            # Mostra status atual
+            print("\n📊 Status Atual:")
+            subprocess.run("sudo swapon --show", shell=True)
+            subprocess.run("free -h | grep -E 'Mem|Swap'", shell=True)
             
-            if not encontrado:
-                with open('/etc/fstab', 'a') as f:
-                    swap_fstab_line = '/swap.img       none    swap    sw      0       0\n' #
-                    f.write(swap_fstab_line)
-        except:
-            print("Erro ao abrir o arquivo /etc/fstab. Verifique se você tem permissões adequadas.")
+            # Mostra swappiness atual
+            try:
+                result = subprocess.run("cat /proc/sys/vm/swappiness", shell=True, capture_output=True, text=True)
+                print(f"\n⚙️  Swappiness atual: {result.stdout.strip()}")
+            except:
+                pass
             
-        try:
-            # Definir o swappiness temporariamente
-            value = '10'
-            self.executar_comandos([f'sudo sysctl vm.swappiness={value}'], comando_direto=False, exibir_resultados=False)
-            # subprocess.run(['sudo', 'sysctl', f'vm.swappiness={value}'], check=True)
+            print("\n" + "-"*50)
+            print("[1] Criar/Redimensionar Swap")
+            print("[2] Remover Swap")
+            print("[3] Ajustar Swappiness")
+            print("[4] Recarregar Swap (desliga e liga)")
+            print("[0] Voltar")
+            print("="*50)
             
-            # Verificar se a configuração já existe em /etc/sysctl.conf
-            with open('/etc/sysctl.conf', 'r') as f:
-                lines = f.readlines()
+            escolha = input("\nEscolha: ").strip()
             
-            # Se a configuração já existe, atualizar o valor; caso contrário, adicionar a linha
-            swappiness_line = f'vm.swappiness={value}\n'
-            found = False
-            
-            for i, line in enumerate(lines):
-                if line.startswith('vm.swappiness='):
-                    lines[i] = swappiness_line
-                    found = True
-                    break
-            
-            if not found:
-                lines.append(swappiness_line)
-            
-            # Escrever as alterações de volta ao arquivo
-            with open('/etc/sysctl.conf', 'w') as f:
-                f.writelines(lines)
-            
-            # Aplicar a configuração permanente
-            self.executar_comandos([f'sudo sysctl -p'], comando_direto=False, exibir_resultados=False)
-            # subprocess.run(['sudo', 'sysctl', '-p'], check=True)
-            
-            # print(f"vm.swappiness definido para {value} com sucesso.")
-        except subprocess.CalledProcessError as e:
-            print(f"Erro ao definir vm.swappiness: {e}")
-        except PermissionError:
-            print("Erro: Permissão negada. Execute o script com permissões de superusuário (sudo).")
+            if escolha == '1':
+                novo_tamanho = input('\n📐 Digite o tamanho em GB (ex: 4): ').strip()
+                if not novo_tamanho.isdigit():
+                    print("❌ Digite apenas números.")
+                    continue
+                
+                print(f"\n🔧 Criando swap de {novo_tamanho}GB...")
+                comandos = [
+                    "sudo swapoff /swap.img 2>/dev/null || true",
+                    "sudo rm -f /swap.img",
+                    f"sudo fallocate -l {novo_tamanho}G /swap.img",
+                    "sudo chmod 600 /swap.img",
+                    "sudo mkswap /swap.img",
+                    "sudo swapon /swap.img"
+                ]
+                for cmd in comandos:
+                    subprocess.run(cmd, shell=True)
+                
+                # Adiciona ao fstab se não existir
+                result = subprocess.run("grep -q '/swap.img' /etc/fstab", shell=True)
+                if result.returncode != 0:
+                    print("📝 Adicionando swap ao /etc/fstab...")
+                    subprocess.run('echo "/swap.img none swap sw 0 0" | sudo tee -a /etc/fstab', shell=True)
+                
+                print(f"\n✅ Swap de {novo_tamanho}GB criado com sucesso!")
+                input("\nEnter para continuar...")
+                
+            elif escolha == '2':
+                confirma = input("\n⚠️  Tem certeza que deseja remover o swap? (s/n): ").strip().lower()
+                if confirma == 's':
+                    print("\n🗑️  Removendo swap...")
+                    subprocess.run("sudo swapoff /swap.img 2>/dev/null || true", shell=True)
+                    subprocess.run("sudo rm -f /swap.img", shell=True)
+                    subprocess.run("sudo sed -i '/\\/swap.img/d' /etc/fstab", shell=True)
+                    print("✅ Swap removido!")
+                input("\nEnter para continuar...")
+                
+            elif escolha == '3':
+                print("\n📖 Swappiness define quando o sistema usa swap:")
+                print("   0  = Usa swap apenas em emergência")
+                print("   10 = Recomendado para servidores com SSD")
+                print("   60 = Padrão do Linux")
+                print("   100 = Usa swap agressivamente")
+                
+                valor = input("\nDigite o valor (0-100): ").strip()
+                if not valor.isdigit() or int(valor) > 100:
+                    print("❌ Valor inválido.")
+                    continue
+                
+                print(f"\n⚙️  Configurando swappiness para {valor}...")
+                subprocess.run(f"sudo sysctl vm.swappiness={valor}", shell=True)
+                
+                # Torna permanente
+                result = subprocess.run("grep -q 'vm.swappiness' /etc/sysctl.conf", shell=True)
+                if result.returncode == 0:
+                    subprocess.run(f"sudo sed -i 's/vm.swappiness=.*/vm.swappiness={valor}/' /etc/sysctl.conf", shell=True)
+                else:
+                    subprocess.run(f'echo "vm.swappiness={valor}" | sudo tee -a /etc/sysctl.conf', shell=True)
+                
+                print(f"✅ Swappiness configurado para {valor} (permanente)!")
+                input("\nEnter para continuar...")
+                
+            elif escolha == '4':
+                print("\n🔄 Recarregando swap...")
+                subprocess.run("sudo swapoff -a && sudo swapon -a", shell=True)
+                print("✅ Swap recarregado!")
+                input("\nEnter para continuar...")
+                
+            elif escolha == '0':
+                break
         
     def instalar_deb(self,):
         caminho = input('Insira o caminho absoluto do .deb para instalar: ')
