@@ -4028,8 +4028,8 @@ CMD ["sh", "-c", "\
         
         print("\n💡 COMANDOS ÚTEIS:")
         print("- Ver modelos instalados: docker exec ollama bash -c \"ollama list\"")
-        print("- Instalar novo modelo:   docker exec ollama bash -c \"ollama pull gemma3:4b\"")
-        print("- Interagir com modelo:   docker exec -it ollama bash -c \"ollama run gemma3:4b\"")
+        print("- Instalar novo modelo:   docker exec ollama bash -c \"ollama pull qwen2.5:3b\"")
+        print("- Interagir com modelo:   docker exec -it ollama bash -c \"ollama run qwen2.5:3b\"")
         print("- Reiniciar serviço:      docker restart ollama open-webui")
         
         print("\n⚠️ ATENÇÃO:")
@@ -7945,9 +7945,10 @@ AllowedIPs = {ip_peer}
                 print("[1] Llama 3.1")
                 print("[2] Llama 3.2")
                 print("[3] Gemma 3 (Beta)")
-                print("[4] Outro Modelo (Digitar Nome)")
-                print("[5] Listar Instalados")
-                print("[6] Remover Modelo")
+                print("[4] Qwen 2.5 (3B) - Suporte a Tools")
+                print("[5] Outro Modelo (Digitar Nome)")
+                print("[6] Listar Instalados")
+                print("[7] Remover Modelo")
                 print("[0] Voltar")
                 print("="*45)
                 
@@ -7956,13 +7957,14 @@ AllowedIPs = {ip_peer}
                 if escolha == '1': run_modelo("llama3.1")
                 elif escolha == '2': run_modelo("llama3.2")
                 elif escolha == '3': run_modelo("gemma3")
-                elif escolha == '4':
+                elif escolha == '4': run_modelo("qwen2.5")
+                elif escolha == '5':
                     nome = input("Digite o nome do modelo: ").strip()
                     if nome: run_modelo(nome)
-                elif escolha == '5':
+                elif escolha == '6':
                     subprocess.run("ollama list", shell=True)
                     input("\nEnter para continuar...")
-                elif escolha == '6':
+                elif escolha == '7':
                     remover_modelo()
                     input("\nEnter para continuar...")
                 elif escolha == '0':
