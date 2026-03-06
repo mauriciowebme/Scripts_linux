@@ -4028,7 +4028,7 @@ CMD ["sh", "-c", "\
         
         print("\n💡 COMANDOS ÚTEIS:")
         print("- Ver modelos instalados: docker exec ollama bash -c \"ollama list\"")
-        print("- Instalar novo modelo:   docker exec ollama bash -c \"ollama pull qwen2.5:3b\"")
+        print("- Instalar novo modelo:   docker exec ollama bash -c \"ollama pull qwen2.5:3b\" # Qwen 2.5 3B (32k)")
         print("- Interagir com modelo:   docker exec -it ollama bash -c \"ollama run qwen2.5:3b\"")
         print("- Reiniciar serviço:      docker restart ollama open-webui")
         
@@ -7945,7 +7945,7 @@ AllowedIPs = {ip_peer}
                 print("[1] Llama 3.1")
                 print("[2] Llama 3.2")
                 print("[3] Gemma 3 (Beta)")
-                print("[4] Qwen 2.5 (3B) - Suporte a Tools")
+                print("[4] Qwen 2.5 (3B) 32k - Suporte a Tools")
                 print("[5] Outro Modelo (Digitar Nome)")
                 print("[6] Listar Instalados")
                 print("[7] Remover Modelo")
