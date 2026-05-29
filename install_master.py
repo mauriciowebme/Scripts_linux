@@ -71,11 +71,18 @@ def check_for_update(sistema_instance=None):
     update_file = path_principal / "update_check.txt"
     execute_file = path_principal / "install_master.txt"
     
-    # Cria script de execução rápida
+    # Cria script de execução rápida com limpeza segura (usa sudo se a pasta for protegida)
     try:
         content = (
             "#!/bin/bash\n"
-            "rm -rf /tmp/Scripts_linux && "
+            "# Limpeza segura: usa sudo apenas se a pasta for protegida (ex: criada pelo root)\n"
+            "if [ -d \"/tmp/Scripts_linux\" ]; then\n"
+            "    if [ ! -w \"/tmp/Scripts_linux\" ]; then\n"
+            "        sudo rm -rf /tmp/Scripts_linux\n"
+            "    else\n"
+            "        rm -rf /tmp/Scripts_linux\n"
+            "    fi\n"
+            "fi\n"
             "git clone --depth=1 https://github.com/mauriciowebme/Scripts_linux.git /tmp/Scripts_linux && "
             "python3 /tmp/Scripts_linux/install_master.py \"$@\""
         )
