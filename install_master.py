@@ -4785,6 +4785,117 @@ CMD ["sh", "-c", "\
         print(f"- URL: http://<ip-servidor>:{porta}")
         print("- Use o TOKEN configurado para autenticar as requisicoes.")
 
+    def instala_opencode(self):
+        """Instala o OpenCode (CLI AI) e configura o modo web com senha"""
+        print("\n" + "="*60)
+        print("🚀 INSTALAÇÃO DO OPENCODE (AI CLI TOOL)")
+        print("="*60)
+
+        # Pede senha para o modo web
+        print("\n🔐 O OpenCode possui um modo web (interface browser).")
+        senha_web = input("Digite uma senha para proteger o modo web: ").strip()
+        if not senha_web:
+            print("⚠️  Senha vazia! Gerando senha automática...")
+            senha_web = self.generate_password(16)
+            print(f"🔑 Senha gerada: {senha_web}")
+            print("⚠️  GUARDE ESTA SENHA! Necessária para acessar o modo web.")
+
+        # Pergunta sobre porta
+        print("\n🌐 Configuração de porta para o modo web:")
+        porta_input = input("Porta para o modo web (padrão: 7860, Enter para usar padrão): ").strip()
+        porta_web = porta_input if porta_input else "7860"
+
+        # Confirmação
+        print("\n" + "="*60)
+        print("📋 RESUMO DA INSTALAÇÃO:")
+        print(f"   - Instalação via script oficial")
+        print(f"   - Modo web: ATIVADO")
+        print(f"   - Porta do modo web: {porta_web}")
+        print(f"   - Senha do modo web: {'*' * len(senha_web)}")
+        print("="*60)
+
+        confirmar = input("\n✅ Deseja prosseguir? (s/n): ").strip().lower()
+        if confirmar != 's':
+            print("Instalação cancelada.")
+            return
+
+        # Executa instalação
+        print("\n📦 Baixando e executando script de instalação...")
+        print("⏳ Aguarde, isso pode levar alguns minutos...\n")
+
+        try:
+            # Executa o comando de instalação oficial
+            subprocess.run(
+                "curl -fsSL https://opencode.ai/install | bash",
+                shell=True,
+                check=True
+            )
+            print("\n✅ OpenCode instalado com sucesso!")
+        except subprocess.CalledProcessError as e:
+            print(f"\n❌ Erro durante a instalação: {e}")
+            print("Verifique sua conexão e tente novamente.")
+            return
+        except FileNotFoundError:
+            print("\n❌ curl não encontrado. Instalando...")
+            subprocess.run(["sudo", "apt", "update"], check=False)
+            subprocess.run(["sudo", "apt", "install", "-y", "curl"], check=True)
+            print("Tentando novamente...")
+            try:
+                subprocess.run(
+                    "curl -fsSL https://opencode.ai/install | bash",
+                    shell=True,
+                    check=True
+                )
+                print("\n✅ OpenCode instalado com sucesso!")
+            except Exception as e2:
+                print(f"\n❌ Erro na segunda tentativa: {e2}")
+                return
+
+        # Configura variáveis de ambiente para o modo web
+        print("\n⚙️ Configurando modo web...")
+
+        # Determina onde salvar as configurações
+        opencode_config_dir = Path.home() / ".config" / "opencode"
+        opencode_config_dir.mkdir(parents=True, exist_ok=True)
+
+        # Salva configuração do modo web
+        config_file = opencode_config_dir / "opencode.json"
+        
+        # Tenta ler config existente ou cria nova
+        config_data = {}
+        if config_file.exists():
+            try:
+                with open(config_file, 'r') as f:
+                    config_data = json.load(f)
+            except:
+                pass
+
+        # Adiciona/atualiza configuração do web mode
+        config_data.setdefault("web", {})
+        config_data["web"]["enabled"] = True
+        config_data["web"]["port"] = int(porta_web)
+        config_data["web"]["password"] = senha_web
+
+        with open(config_file, 'w') as f:
+            json.dump(config_data, f, indent=2)
+
+        print(f"✔ Configuração salva em: {config_file}")
+
+        # Instruções finais
+        print("\n" + "="*60)
+        print("🎉 INSTALAÇÃO CONCLUÍDA!")
+        print("="*60)
+        print(f"\n📌 PARA USAR:")
+        print(f"   Terminal: digite 'opencode' no terminal")
+        print(f"   Modo Web: acesse http://<seu_ip>:{porta_web}")
+        print(f"   Senha Web: {senha_web}")
+        print(f"\n💡 COMANDOS ÚTEIS:")
+        print(f"   opencode              # Inicia no terminal")
+        print(f"   opencode --web        # Inicia modo web")
+        print(f"   opencode --help       # Ajuda completa")
+        print("\n⚠️  IMPORTANTE: Guarde a senha do modo web em local seguro!")
+        print("="*60)
+
     def instala_selenium_firefox(self):
         print("Iniciando instalação selenium_firefox:")
         # senha = input("Configure uma senha para acessar: ")
@@ -7028,6 +7139,7 @@ AllowedIPs = {ip_peer}
             ("🦀 Open Claw (Automação/Agentes)", self.gerenciar_open_claw),
             ("🖥️ Interfaces Gráficas (Desktop)", self.menu_interfaces_graficas),
             ("📦 Instalar pacote .deb manualmente", self.instalar_deb),
+            ("🤖 Instalar OpenCode (AI CLI)", self.instala_opencode),
             ("📊 Monitor de Rede (vnstat)", self.vnstat),
             ("📝 Editores de Código (VSCode/OpenVSCode)", self.submenu_editores),
             ("☁️ Cloudflare WARP (VPN - Contorna bloqueios)", self.gerenciar_cloudflare_warp),
