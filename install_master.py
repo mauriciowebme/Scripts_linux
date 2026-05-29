@@ -5017,7 +5017,7 @@ CMD ["sh", "-c", "\
                 User={service_user}
                 Environment=HOME={service_home}
                 Environment=PATH={service_home}/.opencode/bin:{service_home}/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-                ExecStart={opencode_bin} web --hostname 0.0.0.0
+                ExecStart={opencode_bin} web --hostname 0.0.0.0 --port {porta_web}
                 Restart=on-failure
                 RestartSec=10
 
