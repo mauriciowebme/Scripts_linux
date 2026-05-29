@@ -4927,39 +4927,79 @@ CMD ["sh", "-c", "\
         print(f"✔ Configuração salva em: {config_file}")
 
         # Cria serviço systemd para iniciar no boot
-        print("\n⚙️ Configurando inicialização automática no boot...")
+        print("\n️ Configurando inicialização automática no boot...")
 
-        service_path = Path("/etc/systemd/system/opencode-web.service")
-        service_content = textwrap.dedent(f"""\
-            [Unit]
-            Description=OpenCode Web Server
-            After=network-online.target
-            Wants=network-online.target
+        # 1. Detectar caminho do executável e usuário correto
+        opencode_bin = None
+        service_user = os.getenv('USER', 'root')
+        service_home = os.path.expanduser(f"~{service_user}")
 
-            [Service]
-            Type=simple
-            User={os.getenv('USER', 'root')}
-            Environment=HOME=/home/{os.getenv('USER', 'root')}
-            ExecStart=/usr/local/bin/opencode --web
-            Restart=on-failure
-            RestartSec=10
+        # Lista de caminhos prováveis
+        search_paths = [
+            Path.home() / ".opencode" / "bin" / "opencode",
+            Path.home() / ".local" / "bin" / "opencode",
+            Path("/usr/local/bin/opencode"),
+            Path("/usr/bin/opencode"),
+        ]
 
-            [Install]
-            WantedBy=multi-user.target
-        """)
+        for p in search_paths:
+            if p.exists():
+                opencode_bin = str(p)
+                break
 
-        try:
-            service_path.write_text(service_content)
-            print(f"✔ Serviço criado em: {service_path}")
+        # Se não achou nos caminhos padrão, tenta um find rápido
+        if not opencode_bin:
+            try:
+                result = subprocess.run(
+                    ["find", "/home", "-name", "opencode", "-type", "f"],
+                    capture_output=True, text=True, timeout=5
+                )
+                if result.stdout.strip():
+                    opencode_bin = result.stdout.strip().split('\n')[0]
+                    # Tenta inferir o usuário dono da pasta
+                    service_user = opencode_bin.split('/')[2] # Assume /home/USUARIO/...
+                    service_home = f"/home/{service_user}"
+            except Exception:
+                pass
 
-            # Recarrega e habilita o serviço
-            subprocess.run(["sudo", "systemctl", "daemon-reload"], check=True)
-            subprocess.run(["sudo", "systemctl", "enable", "opencode-web.service"], check=True)
-            subprocess.run(["sudo", "systemctl", "start", "opencode-web.service"], check=True)
-            print("✔ Serviço habilitado e iniciado com sucesso!")
-        except Exception as e:
-            print(f"⚠️  Erro ao criar serviço systemd: {e}")
-            print("   Você pode iniciar manualmente com: opencode --web")
+        if not opencode_bin:
+            print("⚠️  Não foi possível localizar o executável do OpenCode automaticamente.")
+            print("   O serviço systemd não será criado. Você precisará iniciar manualmente.")
+        else:
+            print(f"📍 Executável encontrado em: {opencode_bin}")
+            print(f"👤 Configurando serviço para usuário: {service_user}")
+
+            service_path = Path("/etc/systemd/system/opencode-web.service")
+            service_content = textwrap.dedent(f"""\
+                [Unit]
+                Description=OpenCode Web Server
+                After=network-online.target
+                Wants=network-online.target
+
+                [Service]
+                Type=simple
+                User={service_user}
+                Environment=HOME={service_home}
+                Environment=PATH={service_home}/.opencode/bin:{service_home}/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+                ExecStart={opencode_bin} --web
+                Restart=on-failure
+                RestartSec=10
+
+                [Install]
+                WantedBy=multi-user.target
+            """)
+
+            try:
+                service_path.write_text(service_content)
+                print(f"✔ Serviço criado em: {service_path}")
+
+                # Recarrega e habilita o serviço
+                subprocess.run(["sudo", "systemctl", "daemon-reload"], check=True)
+                subprocess.run(["sudo", "systemctl", "enable", "opencode-web.service"], check=True)
+                subprocess.run(["sudo", "systemctl", "restart", "opencode-web.service"], check=True)
+                print("✔ Serviço habilitado e reiniciado com sucesso!")
+            except Exception as e:
+                print(f"⚠️  Erro ao criar serviço systemd: {e}")
 
         # Libera porta no firewall
         print(f"\n🔓 Liberando porta {porta_web} no firewall...")
