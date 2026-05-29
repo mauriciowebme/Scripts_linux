@@ -4809,17 +4809,46 @@ CMD ["sh", "-c", "\
         versao_local = None
         versao_remota = None
         precisa_instalar = True
+        opencode_bin_path = None
 
-        # 1. Tenta pegar versão instalada
-        try:
-            result = subprocess.run(['opencode', '--version'], capture_output=True, text=True)
-            if result.returncode == 0:
-                versao_local = result.stdout.strip().lstrip('v')
-                print(f"📦 Versão local detectada: {versao_local}")
-        except FileNotFoundError:
+        # 1. Tenta localizar o executável (busca ampla para achar instalações de usuários)
+        search_paths = [
+            Path.home() / ".opencode" / "bin" / "opencode",
+            Path.home() / ".local" / "bin" / "opencode",
+            Path("/usr/local/bin/opencode"),
+            Path("/usr/bin/opencode"),
+        ]
+        
+        # Se não achar nos padrões, tenta um find rápido no /home
+        for p in search_paths:
+            if p.exists():
+                opencode_bin_path = str(p)
+                break
+        
+        if not opencode_bin_path:
+            try:
+                result = subprocess.run(
+                    ["find", "/home", "-name", "opencode", "-type", "f", "-path", "*/bin/opencode"],
+                    capture_output=True, text=True, timeout=5
+                )
+                if result.stdout.strip():
+                    opencode_bin_path = result.stdout.strip().split('\n')[0]
+            except Exception:
+                pass
+
+        # 2. Tenta pegar versão instalada usando o caminho encontrado
+        if opencode_bin_path:
+            try:
+                result = subprocess.run([opencode_bin_path, '--version'], capture_output=True, text=True)
+                if result.returncode == 0:
+                    versao_local = result.stdout.strip().lstrip('v')
+                    print(f"📦 Versão local detectada em {opencode_bin_path}: {versao_local}")
+            except Exception:
+                pass
+        else:
             print("📦 OpenCode não encontrado no sistema.")
 
-        # 2. Tenta pegar versão mais recente do GitHub
+        # 3. Tenta pegar versão mais recente do GitHub
         try:
             import urllib.request
             url_api = "https://api.github.com/repos/anomalyco/opencode/releases/latest"
@@ -4832,10 +4861,19 @@ CMD ["sh", "-c", "\
             print(f"⚠️  Não foi possível verificar a versão online: {e}")
             print("   Prosseguindo com instalação/atualização por segurança.")
 
-        # 3. Decide o que fazer
+        # 4. Decide o que fazer
         if versao_local and versao_remota:
             if versao_local == versao_remota:
                 print("\n✅ Seu OpenCode já está na versão mais recente!")
+                precisa_instalar = False
+                # Pergunta se quer reconfigurar mesmo assim
+                reconfigurar = input("Deseja reconfigurar o modo web e firewall? (s/n): ").strip().lower()
+                if reconfigurar != 's':
+                    return
+            elif versao_local < versao_remota:
+                print(f"\n🔄 Atualização disponível! ({versao_local} -> {versao_remota})")
+            else:
+                print(f"\n📦 Sua versão local ({versao_local}) parece mais recente que a remota ({versao_remota}).")
                 precisa_instalar = False
                 # Pergunta se quer reconfigurar mesmo assim
                 reconfigurar = input("Deseja reconfigurar o modo web e firewall? (s/n): ").strip().lower()
