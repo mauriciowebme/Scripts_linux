@@ -5026,7 +5026,17 @@ CMD ["sh", "-c", "\
             """)
 
             try:
-                service_path.write_text(service_content)
+                # Tenta escrever o arquivo. Se falhar por permissão, usa sudo.
+                try:
+                    service_path.write_text(service_content)
+                except PermissionError:
+                    # Cria um arquivo temporário e move com sudo
+                    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.service') as tmp:
+                        tmp.write(service_content)
+                        tmp_path = tmp.name
+                    subprocess.run(["sudo", "mv", tmp_path, str(service_path)], check=True)
+                    subprocess.run(["sudo", "chmod", "644", str(service_path)], check=True)
+                
                 print(f"✔ Serviço criado em: {service_path}")
 
                 # Recarrega e habilita o serviço
@@ -5035,7 +5045,7 @@ CMD ["sh", "-c", "\
                 subprocess.run(["sudo", "systemctl", "restart", "opencode-web.service"], check=True)
                 print("✔ Serviço habilitado e reiniciado com sucesso!")
             except Exception as e:
-                print(f"⚠️  Erro ao criar serviço systemd: {e}")
+                print(f"️  Erro ao criar serviço systemd: {e}")
 
         # Libera porta no firewall
         print(f"\n🔓 Liberando porta {porta_web} no firewall...")
