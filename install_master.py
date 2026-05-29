@@ -5068,6 +5068,8 @@ CMD ["sh", "-c", "\
             print(f"  UFW não encontrado: {e}")
 
         # Tenta iptables SEMPRE (independente do UFW)
+        # IMPORTANTE: Usa -I (insert) no topo da cadeia para garantir que a regra
+        # seja processada ANTES de qualquer regra de REJECT/DROP (comum no Oracle Cloud)
         try:
             # Verifica se regra já existe
             check_result = subprocess.run(
@@ -5077,19 +5079,26 @@ CMD ["sh", "-c", "\
             if check_result.returncode == 0:
                 print(f"  Porta {porta_web} já liberada no iptables")
             else:
+                # Insere no TOPO da cadeia INPUT (posição 1) para evitar conflito com regras de REJECT
                 subprocess.run(
-                    ["sudo", "iptables", "-A", "INPUT", "-p", "tcp", "--dport", str(porta_web), "-j", "ACCEPT"],
+                    ["sudo", "iptables", "-I", "INPUT", "1", "-p", "tcp", "--dport", str(porta_web), "-j", "ACCEPT"],
                     check=True
                 )
-                print(f"✔ Porta {porta_web} liberada no iptables")
+                print(f"✔ Porta {porta_web} liberada no iptables (inserida no topo da cadeia)")
 
-                # Salva regras iptables para persistir
-                if shutil.which("iptables-save"):
+                # Salva regras iptables para persistir no boot
+                # Tenta netfilter-persistent (padrão Debian/Ubuntu)
+                if shutil.which("netfilter-persistent"):
+                    subprocess.run(["sudo", "netfilter-persistent", "save"], check=False)
+                    print("  Regras salvas via netfilter-persistent")
+                elif shutil.which("iptables-save"):
                     subprocess.run(
                         ["sudo", "sh", "-c", "iptables-save > /etc/iptables.rules"],
                         check=False
                     )
-                    print("  Regras iptables salvas para persistir no boot")
+                    print("  Regras salvas em /etc/iptables.rules")
+                else:
+                    print("  ⚠️  Não foi encontrado utilitário para salvar regras iptables automaticamente.")
         except Exception as e:
             print(f"  ⚠️  Não foi possível configurar iptables: {e}")
 
