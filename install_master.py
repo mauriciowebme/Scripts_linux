@@ -4875,15 +4875,6 @@ CMD ["sh", "-c", "\
             else:
                 print(f"\n📦 Sua versão local ({versao_local}) parece mais recente que a remota ({versao_remota}).")
                 precisa_instalar = False
-                # Pergunta se quer reconfigurar mesmo assim
-                reconfigurar = input("Deseja reconfigurar o modo web e firewall? (s/n): ").strip().lower()
-                if reconfigurar != 's':
-                    return
-            elif versao_local < versao_remota:
-                print(f"\n🔄 Atualização disponível! ({versao_local} -> {versao_remota})")
-            else:
-                print(f"\n📦 Sua versão local ({versao_local}) parece mais recente que a remota ({versao_remota}).")
-                precisa_instalar = False
 
         if precisa_instalar:
             # Confirmação
