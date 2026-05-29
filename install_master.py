@@ -4919,7 +4919,7 @@ CMD ["sh", "-c", "\
         # Libera porta no firewall
         print(f"\n🔓 Liberando porta {porta_web} no firewall...")
 
-        # Tenta UFW primeiro (mais comum no Ubuntu)
+        # Tenta UFW (firewall padrão do Ubuntu)
         try:
             ufw_check = subprocess.run(
                 ["sudo", "ufw", "status"],
@@ -4933,33 +4933,34 @@ CMD ["sh", "-c", "\
                 print(f"✔ Porta {porta_web} liberada no UFW")
             else:
                 print("  UFW inativo, pulando...")
-        except Exception:
-            print("  UFW não encontrado, tentando iptables...")
+        except Exception as e:
+            print(f"  UFW não encontrado: {e}")
 
-        # Tenta iptables como fallback
+        # Tenta iptables SEMPRE (independente do UFW)
         try:
-            subprocess.run(
+            # Verifica se regra já existe
+            check_result = subprocess.run(
                 ["sudo", "iptables", "-C", "INPUT", "-p", "tcp", "--dport", str(porta_web), "-j", "ACCEPT"],
                 capture_output=True
             )
-            # Se chegou aqui sem erro, regra já existe
-        except subprocess.CalledProcessError:
-            # Regra não existe, adiciona
-            subprocess.run(
-                ["sudo", "iptables", "-A", "INPUT", "-p", "tcp", "--dport", str(porta_web), "-j", "ACCEPT"],
-                check=True
-            )
-            print(f"✔ Porta {porta_web} liberada no iptables")
-
-            # Salva regras iptables para persistir
-            if shutil.which("iptables-save"):
+            if check_result.returncode == 0:
+                print(f"  Porta {porta_web} já liberada no iptables")
+            else:
                 subprocess.run(
-                    ["sudo", "sh", "-c", "iptables-save > /etc/iptables.rules"],
-                    check=False
+                    ["sudo", "iptables", "-A", "INPUT", "-p", "tcp", "--dport", str(porta_web), "-j", "ACCEPT"],
+                    check=True
                 )
-                print("  Regras iptables salvas para persistir no boot")
-        except Exception:
-            print("  ⚠️  Não foi possível configurar iptables automaticamente")
+                print(f"✔ Porta {porta_web} liberada no iptables")
+
+                # Salva regras iptables para persistir
+                if shutil.which("iptables-save"):
+                    subprocess.run(
+                        ["sudo", "sh", "-c", "iptables-save > /etc/iptables.rules"],
+                        check=False
+                    )
+                    print("  Regras iptables salvas para persistir no boot")
+        except Exception as e:
+            print(f"  ⚠️  Não foi possível configurar iptables: {e}")
 
         # Instruções finais
         print("\n" + "="*60)
