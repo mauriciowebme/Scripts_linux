@@ -4805,51 +4805,96 @@ CMD ["sh", "-c", "\
         porta_input = input("Porta para o modo web (padrão: 7860, Enter para usar padrão): ").strip()
         porta_web = porta_input if porta_input else "7860"
 
-        # Confirmação
-        print("\n" + "="*60)
-        print("📋 RESUMO DA INSTALAÇÃO:")
-        print(f"   - Instalação via script oficial")
-        print(f"   - Modo web: ATIVADO")
-        print(f"   - Porta do modo web: {porta_web}")
-        print(f"   - Senha do modo web: {'*' * len(senha_web)}")
-        print("="*60)
+        # Verificação de versão
+        versao_local = None
+        versao_remota = None
+        precisa_instalar = True
 
-        confirmar = input("\n✅ Deseja prosseguir? (s/n): ").strip().lower()
-        if confirmar != 's':
-            print("Instalação cancelada.")
-            return
-
-        # Executa instalação
-        print("\n📦 Baixando e executando script de instalação...")
-        print("⏳ Aguarde, isso pode levar alguns minutos...\n")
-
+        # 1. Tenta pegar versão instalada
         try:
-            # Executa o comando de instalação oficial
-            subprocess.run(
-                "curl -fsSL https://opencode.ai/install | bash",
-                shell=True,
-                check=True
-            )
-            print("\n✅ OpenCode instalado com sucesso!")
-        except subprocess.CalledProcessError as e:
-            print(f"\n❌ Erro durante a instalação: {e}")
-            print("Verifique sua conexão e tente novamente.")
-            return
+            result = subprocess.run(['opencode', '--version'], capture_output=True, text=True)
+            if result.returncode == 0:
+                versao_local = result.stdout.strip().lstrip('v')
+                print(f"📦 Versão local detectada: {versao_local}")
         except FileNotFoundError:
-            print("\n❌ curl não encontrado. Instalando...")
-            subprocess.run(["sudo", "apt", "update"], check=False)
-            subprocess.run(["sudo", "apt", "install", "-y", "curl"], check=True)
-            print("Tentando novamente...")
+            print("📦 OpenCode não encontrado no sistema.")
+
+        # 2. Tenta pegar versão mais recente do GitHub
+        try:
+            import urllib.request
+            url_api = "https://api.github.com/repos/anomalyco/opencode/releases/latest"
+            req = urllib.request.Request(url_api, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=10) as response:
+                data = json.loads(response.read().decode())
+                versao_remota = data.get('tag_name', '').lstrip('v')
+                print(f"🌐 Última versão disponível: {versao_remota}")
+        except Exception as e:
+            print(f"⚠️  Não foi possível verificar a versão online: {e}")
+            print("   Prosseguindo com instalação/atualização por segurança.")
+
+        # 3. Decide o que fazer
+        if versao_local and versao_remota:
+            if versao_local == versao_remota:
+                print("\n✅ Seu OpenCode já está na versão mais recente!")
+                precisa_instalar = False
+                # Pergunta se quer reconfigurar mesmo assim
+                reconfigurar = input("Deseja reconfigurar o modo web e firewall? (s/n): ").strip().lower()
+                if reconfigurar != 's':
+                    return
+            elif versao_local < versao_remota:
+                print(f"\n🔄 Atualização disponível! ({versao_local} -> {versao_remota})")
+            else:
+                print(f"\n📦 Sua versão local ({versao_local}) parece mais recente que a remota ({versao_remota}).")
+                precisa_instalar = False
+
+        if precisa_instalar:
+            # Confirmação
+            print("\n" + "="*60)
+            print("📋 RESUMO DA OPERAÇÃO:")
+            if versao_local:
+                print(f"   - Ação: Atualizar de {versao_local} para {versao_remota}")
+            else:
+                print(f"   - Ação: Instalação nova")
+            print(f"   - Modo web: ATIVADO")
+            print(f"   - Porta do modo web: {porta_web}")
+            print(f"   - Senha do modo web: {'*' * len(senha_web)}")
+            print("="*60)
+
+            confirmar = input("\n✅ Deseja prosseguir? (s/n): ").strip().lower()
+            if confirmar != 's':
+                print("Operação cancelada.")
+                return
+
+            # Executa instalação
+            print("\n📦 Baixando e executando script de instalação...")
+            print("⏳ Aguarde, isso pode levar alguns minutos...\n")
+
             try:
                 subprocess.run(
                     "curl -fsSL https://opencode.ai/install | bash",
                     shell=True,
                     check=True
                 )
-                print("\n✅ OpenCode instalado com sucesso!")
-            except Exception as e2:
-                print(f"\n❌ Erro na segunda tentativa: {e2}")
+                print("\n✅ OpenCode instalado/atualizado com sucesso!")
+            except subprocess.CalledProcessError as e:
+                print(f"\n❌ Erro durante a instalação: {e}")
+                print("Verifique sua conexão e tente novamente.")
                 return
+            except FileNotFoundError:
+                print("\n❌ curl não encontrado. Instalando...")
+                subprocess.run(["sudo", "apt", "update"], check=False)
+                subprocess.run(["sudo", "apt", "install", "-y", "curl"], check=True)
+                print("Tentando novamente...")
+                try:
+                    subprocess.run(
+                        "curl -fsSL https://opencode.ai/install | bash",
+                        shell=True,
+                        check=True
+                    )
+                    print("\n✅ OpenCode instalado/atualizado com sucesso!")
+                except Exception as e2:
+                    print(f"\n❌ Erro na segunda tentativa: {e2}")
+                    return
 
         # Configura variáveis de ambiente para o modo web
         print("\n⚙️ Configurando modo web...")
@@ -4964,7 +5009,7 @@ CMD ["sh", "-c", "\
 
         # Instruções finais
         print("\n" + "="*60)
-        print("🎉 INSTALAÇÃO CONCLUÍDA!")
+        print("🎉 OPERAÇÃO CONCLUÍDA!")
         print("="*60)
         print(f"\n📌 PARA USAR:")
         print(f"   Terminal: digite 'opencode' no terminal")
