@@ -4881,6 +4881,41 @@ CMD ["sh", "-c", "\
 
         print(f"✔ Configuração salva em: {config_file}")
 
+        # Cria serviço systemd para iniciar no boot
+        print("\n⚙️ Configurando inicialização automática no boot...")
+
+        service_path = Path("/etc/systemd/system/opencode-web.service")
+        service_content = textwrap.dedent(f"""\
+            [Unit]
+            Description=OpenCode Web Server
+            After=network-online.target
+            Wants=network-online.target
+
+            [Service]
+            Type=simple
+            User={os.getenv('USER', 'root')}
+            Environment=HOME=/home/{os.getenv('USER', 'root')}
+            ExecStart=/usr/local/bin/opencode --web
+            Restart=on-failure
+            RestartSec=10
+
+            [Install]
+            WantedBy=multi-user.target
+        """)
+
+        try:
+            service_path.write_text(service_content)
+            print(f"✔ Serviço criado em: {service_path}")
+
+            # Recarrega e habilita o serviço
+            subprocess.run(["sudo", "systemctl", "daemon-reload"], check=True)
+            subprocess.run(["sudo", "systemctl", "enable", "opencode-web.service"], check=True)
+            subprocess.run(["sudo", "systemctl", "start", "opencode-web.service"], check=True)
+            print("✔ Serviço habilitado e iniciado com sucesso!")
+        except Exception as e:
+            print(f"⚠️  Erro ao criar serviço systemd: {e}")
+            print("   Você pode iniciar manualmente com: opencode --web")
+
         # Instruções finais
         print("\n" + "="*60)
         print("🎉 INSTALAÇÃO CONCLUÍDA!")
