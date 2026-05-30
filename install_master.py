@@ -4951,11 +4951,10 @@ CMD ["sh", "-c", "\
             except:
                 pass
 
-        # Adiciona/atualiza configuração do web mode
-        config_data.setdefault("web", {})
-        config_data["web"]["enabled"] = True
-        config_data["web"]["port"] = int(porta_web)
-        config_data["web"]["password"] = senha_web
+        # Adiciona/atualiza configuração do web mode (formato correto v1.15+)
+        config_data.setdefault("server", {})
+        config_data["server"]["port"] = int(porta_web)
+        config_data["server"]["hostname"] = "0.0.0.0"
 
         with open(config_file, 'w') as f:
             json.dump(config_data, f, indent=2)
@@ -5017,6 +5016,7 @@ CMD ["sh", "-c", "\
                 User={service_user}
                 Environment=HOME={service_home}
                 Environment=PATH={service_home}/.opencode/bin:{service_home}/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+                Environment=OPENCODE_SERVER_PASSWORD={senha_web}
                 ExecStart={opencode_bin} web --hostname 0.0.0.0 --port {porta_web}
                 Restart=on-failure
                 RestartSec=10
