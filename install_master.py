@@ -4951,10 +4951,14 @@ CMD ["sh", "-c", "\
             except:
                 pass
 
+        # Remove chave antiga "web" que causa erro "Unrecognized key" no v1.15+
+        config_data.pop("web", None)
+
         # Adiciona/atualiza configuração do web mode (formato correto v1.15+)
-        config_data.setdefault("server", {})
-        config_data["server"]["port"] = int(porta_web)
-        config_data["server"]["hostname"] = "0.0.0.0"
+        config_data["server"] = {
+            "port": int(porta_web),
+            "hostname": "0.0.0.0"
+        }
 
         with open(config_file, 'w') as f:
             json.dump(config_data, f, indent=2)
