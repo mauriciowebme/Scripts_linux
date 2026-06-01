@@ -5000,7 +5000,11 @@ CMD ["sh", "-c", "\
             service_path = Path("/etc/systemd/system/opencode-web.service")
             opencode_dir = Path.home() / ".opencode"
             config_dir = Path.home() / ".config" / "opencode"
+            cache_dir = Path.home() / ".cache" / "opencode"
             tmp_dir = Path("/tmp/opencode")
+            local_bin = Path.home() / ".local" / "bin" / "opencode"
+            usr_local_bin = Path("/usr/local/bin/opencode")
+            usr_bin = Path("/usr/bin/opencode")
 
             if service_path.exists():
                 itens_para_remover.append(f"Serviço systemd: {service_path}")
@@ -5008,8 +5012,16 @@ CMD ["sh", "-c", "\
                 itens_para_remover.append(f"Diretório do binário: {opencode_dir}")
             if config_dir.exists():
                 itens_para_remover.append(f"Diretório de configuração: {config_dir}")
+            if cache_dir.exists():
+                itens_para_remover.append(f"Diretório de cache: {cache_dir}")
             if tmp_dir.exists():
                 itens_para_remover.append(f"Temporários: {tmp_dir}")
+            if local_bin.exists():
+                itens_para_remover.append(f"Binário local: {local_bin}")
+            if usr_local_bin.exists():
+                itens_para_remover.append(f"Binário global (/usr/local/bin): {usr_local_bin}")
+            if usr_bin.exists():
+                itens_para_remover.append(f"Binário sistema (/usr/bin): {usr_bin}")
 
             if not itens_para_remover:
                 print("   Nenhum componente do OpenCode encontrado no sistema.")
@@ -5052,17 +5064,25 @@ CMD ["sh", "-c", "\
             except:
                 pass
 
-            # Remover diretórios (sem sudo para pastas do usuário, com verificação)
+            # Remover diretórios e binários
             dirs_usuario = [
                 (Path.home() / ".opencode", "~/.opencode (binário)"),
                 (Path.home() / ".config" / "opencode", "~/.config/opencode (config)"),
+                (Path.home() / ".cache" / "opencode", "~/.cache/opencode (cache)"),
                 (Path("/tmp/opencode"), "/tmp/opencode (temp)"),
+            ]
+
+            # Binários individuais
+            bins_sistema = [
+                (Path.home() / ".local" / "bin" / "opencode", "~/.local/bin/opencode"),
+                (Path("/usr/local/bin/opencode"), "/usr/local/bin/opencode"),
+                (Path("/usr/bin/opencode"), "/usr/bin/opencode"),
             ]
 
             for diretorio, descricao in dirs_usuario:
                 if diretorio.exists():
                     try:
-                        print(f"   ️  Removendo {descricao}...")
+                        print(f"   🗑️  Removendo {descricao}...")
                         # Tenta remover sem sudo primeiro (usuário é dono)
                         subprocess.run(["rm", "-rf", str(diretorio)], check=True)
                         
@@ -5078,16 +5098,30 @@ CMD ["sh", "-c", "\
                     except Exception as e:
                         print(f"   ⚠️  Erro ao remover {descricao}: {e}")
 
-            # Busca global para limpar resíduos em outros usuários
-            print("\n   🔍 Buscando cópias adicionais em /home...")
+            for binario, descricao in bins_sistema:
+                if binario.exists():
+                    try:
+                        print(f"   🗑️  Removendo {descricao}...")
+                        subprocess.run(["rm", "-f", str(binario)], check=False)
+                        if binario.exists():
+                            subprocess.run(["sudo", "rm", "-f", str(binario)], check=False)
+                        if not binario.exists():
+                            print(f"   ✔ {descricao} removido")
+                        else:
+                            print(f"   ❌ Falha ao remover {descricao}")
+                    except Exception as e:
+                        print(f"   ⚠️  Erro ao remover {descricao}: {e}")
+
+            # Busca global para limpar resíduos em outros usuários e locais
+            print("\n   🔍 Buscando cópias adicionais em /home e /usr...")
             try:
                 result = subprocess.run(
-                    ["sudo", "find", "/home", "-name", "opencode", "-type", "f", "-path", "*/bin/opencode"],
-                    capture_output=True, text=True, timeout=10
+                    ["sudo", "find", "/home", "/usr/local", "/usr/bin", "-name", "opencode", "-type", "f"],
+                    capture_output=True, text=True, timeout=15
                 )
                 if result.stdout.strip():
                     for copia in result.stdout.strip().split('\n'):
-                        if copia:
+                        if copia and not copia.startswith('/home/' + os.getenv('USER', '') + '/.'):
                             print(f"   🗑️  Removendo cópia encontrada: {copia}")
                             subprocess.run(["sudo", "rm", "-f", copia], check=False)
                     print("   ✔ Cópias adicionais removidas")
