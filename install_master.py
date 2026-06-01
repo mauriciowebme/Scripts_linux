@@ -5040,7 +5040,68 @@ CMD ["sh", "-c", "\
                 input("\nPressione Enter para voltar ao menu...")
                 return
 
-            # 3. Executar remoção
+            # 3. Função de remoção forçada em cascata
+            def forcar_remocao(caminho, descricao):
+                """Remove diretório/arquivo usando múltiplas estratégias até confirmar que sumiu"""
+                if not caminho.exists():
+                    print(f"   ⏭️  {descricao} já não existe")
+                    return True
+
+                print(f"   🗑️  Removendo {descricao}...")
+                caminho_str = str(caminho)
+
+                # Estratégia 1: rm -rf direto
+                try:
+                    subprocess.run(["rm", "-rf", caminho_str], check=False, capture_output=True)
+                    if not caminho.exists():
+                        print(f"   ✔ {descricao} removido")
+                        return True
+                except:
+                    pass
+
+                # Estratégia 2: sudo rm -rf
+                try:
+                    print(f"   ⚠️  Tentando com sudo...")
+                    subprocess.run(["sudo", "rm", "-rf", caminho_str], check=False, capture_output=True)
+                    if not caminho.exists():
+                        print(f"   ✔ {descricao} removido com sudo")
+                        return True
+                except:
+                    pass
+
+                # Estratégia 3: find -delete para limpar conteúdo interno primeiro
+                if caminho.is_dir():
+                    try:
+                        print(f"   ⚠️  Limpando conteúdo interno com find...")
+                        subprocess.run(["sudo", "find", caminho_str, "-delete"], check=False, capture_output=True, timeout=10)
+                        subprocess.run(["sudo", "rm", "-rf", caminho_str], check=False, capture_output=True)
+                        if not caminho.exists():
+                            print(f"   ✔ {descricao} removido após limpeza interna")
+                            return True
+                    except:
+                        pass
+
+                # Estratégia 4: remover permissões especiais e tentar novamente
+                try:
+                    print(f"   ⚠️  Removendo atributos especiais e tentando novamente...")
+                    subprocess.run(["sudo", "chattr", "-i", "-a", caminho_str], check=False, capture_output=True)
+                    subprocess.run(["sudo", "chmod", "-R", "777", caminho_str], check=False, capture_output=True)
+                    subprocess.run(["sudo", "rm", "-rf", caminho_str], check=False, capture_output=True)
+                    if not caminho.exists():
+                        print(f"   ✔ {descricao} removido após remover atributos")
+                        return True
+                except:
+                    pass
+
+                # Verificação final
+                if not caminho.exists():
+                    print(f"   ✔ {descricao} removido")
+                    return True
+                else:
+                    print(f"   ❌ Falha crítica ao remover {descricao}")
+                    return False
+
+            # 4. Executar remoção
             print("\n🧹 Removendo componentes...")
 
             # Parar e remover serviço
@@ -5049,12 +5110,7 @@ CMD ["sh", "-c", "\
                     print("   ⏹️  Parando serviço...")
                     subprocess.run(["sudo", "systemctl", "stop", "opencode-web.service"], check=False, capture_output=True)
                     subprocess.run(["sudo", "systemctl", "disable", "opencode-web.service"], check=False, capture_output=True)
-                    print(f"   🗑️  Removendo {service_path}...")
-                    try:
-                        service_path.unlink()
-                    except PermissionError:
-                        subprocess.run(["sudo", "rm", "-f", str(service_path)], check=True)
-                    print("   ✔ Serviço removido")
+                    forcar_remocao(service_path, f"Serviço {service_path}")
                 except Exception as e:
                     print(f"   ⚠️  Erro ao remover serviço: {e}")
 
@@ -5064,71 +5120,61 @@ CMD ["sh", "-c", "\
             except:
                 pass
 
-            # Remover diretórios e binários
-            dirs_usuario = [
+            # Remover todos os diretórios e binários com remoção forçada
+            todos_caminhos = [
                 (Path.home() / ".opencode", "~/.opencode (binário)"),
                 (Path.home() / ".config" / "opencode", "~/.config/opencode (config)"),
                 (Path.home() / ".cache" / "opencode", "~/.cache/opencode (cache)"),
                 (Path("/tmp/opencode"), "/tmp/opencode (temp)"),
-            ]
-
-            # Binários individuais
-            bins_sistema = [
                 (Path.home() / ".local" / "bin" / "opencode", "~/.local/bin/opencode"),
                 (Path("/usr/local/bin/opencode"), "/usr/local/bin/opencode"),
                 (Path("/usr/bin/opencode"), "/usr/bin/opencode"),
             ]
 
-            for diretorio, descricao in dirs_usuario:
-                if diretorio.exists():
-                    try:
-                        print(f"   🗑️  Removendo {descricao}...")
-                        # Tenta remover sem sudo primeiro (usuário é dono)
-                        subprocess.run(["rm", "-rf", str(diretorio)], check=True)
-                        
-                        # Verifica se realmente removeu
-                        if diretorio.exists():
-                            print(f"   ⚠️  Falha ao remover {descricao}, tentando com sudo...")
-                            subprocess.run(["sudo", "rm", "-rf", str(diretorio)], check=True)
-                        
-                        if not diretorio.exists():
-                            print(f"   ✔ {descricao} removido com sucesso")
-                        else:
-                            print(f"   ❌ Falha crítica ao remover {descricao}")
-                    except Exception as e:
-                        print(f"   ⚠️  Erro ao remover {descricao}: {e}")
+            for caminho, descricao in todos_caminhos:
+                forcar_remocao(caminho, descricao)
 
-            for binario, descricao in bins_sistema:
-                if binario.exists():
-                    try:
-                        print(f"   🗑️  Removendo {descricao}...")
-                        subprocess.run(["rm", "-f", str(binario)], check=False)
-                        if binario.exists():
-                            subprocess.run(["sudo", "rm", "-f", str(binario)], check=False)
-                        if not binario.exists():
-                            print(f"   ✔ {descricao} removido")
-                        else:
-                            print(f"   ❌ Falha ao remover {descricao}")
-                    except Exception as e:
-                        print(f"   ⚠️  Erro ao remover {descricao}: {e}")
-
-            # Busca global para limpar resíduos em outros usuários e locais
-            print("\n   🔍 Buscando cópias adicionais em /home e /usr...")
+            # 5. Varredura final agressiva por qualquer resíduo
+            print("\n   🔍 Varredura final por resíduos...")
             try:
                 result = subprocess.run(
-                    ["sudo", "find", "/home", "/usr/local", "/usr/bin", "-name", "opencode", "-type", "f"],
-                    capture_output=True, text=True, timeout=15
+                    ["sudo", "find", "/home", "/usr/local", "/usr/bin", "/tmp",
+                     "-iname", "*opencode*", "-o", "-iname", "*opencode-ai*"],
+                    capture_output=True, text=True, timeout=20
                 )
                 if result.stdout.strip():
-                    for copia in result.stdout.strip().split('\n'):
-                        if copia and not copia.startswith('/home/' + os.getenv('USER', '') + '/.'):
-                            print(f"   🗑️  Removendo cópia encontrada: {copia}")
-                            subprocess.run(["sudo", "rm", "-f", copia], check=False)
-                    print("   ✔ Cópias adicionais removidas")
+                    residuos = [r for r in result.stdout.strip().split('\n') if r]
+                    # Filtra para não incluir o diretório home do usuário atual
+                    user_home = str(Path.home())
+                    residuos_filtrados = [r for r in residuos if not r.startswith(user_home)]
+                    
+                    if residuos_filtrados:
+                        print(f"   Encontrados {len(residuos_filtrados)} resíduos adicionais:")
+                        for res in residuos_filtrados:
+                            print(f"   🗑️  Removendo: {res}")
+                            subprocess.run(["sudo", "rm", "-rf", res], check=False, capture_output=True)
+                        print("   ✔ Resíduos adicionais removidos")
+                    else:
+                        print("   Nenhum resíduo adicional encontrado")
                 else:
-                    print("   Nenhuma cópia adicional encontrada")
+                    print("   Nenhum resíduo encontrado")
             except Exception as e:
-                print(f"   ⚠️  Erro na busca: {e}")
+                print(f"   ⚠️  Erro na varredura: {e}")
+
+            # 6. Verificação final de limpeza
+            print("\n   🔎 Verificando limpeza completa...")
+            pendentes = []
+            for caminho, descricao in todos_caminhos:
+                if caminho.exists():
+                    pendentes.append(descricao)
+
+            if pendentes:
+                print(f"   ⚠️  Atenção: {len(pendentes)} item(ns) ainda existem:")
+                for p in pendentes:
+                    print(f"      - {p}")
+                print("   Isso pode ser normal se houver outra instalação do OpenCode.")
+            else:
+                print("   ✔ Todos os componentes foram removidos com sucesso!")
 
             # Final
             print("\n" + "="*60)
