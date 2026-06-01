@@ -4792,6 +4792,225 @@ CMD ["sh", "-c", "\
         print(f"- URL: http://<ip-servidor>:{porta}")
         print("- Use o TOKEN configurado para autenticar as requisicoes.")
 
+    def gerenciar_opencode(self):
+        """Gerenciador centralizado do OpenCode (Instalar, Reiniciar, Status, Reconfigurar)"""
+        
+        def opcao_instalar():
+            """Chama a instalação/atualização padrão"""
+            self.instala_opencode()
+            input("\nPressione Enter para voltar ao menu...")
+
+        def opcao_reiniciar():
+            """Reinicia o serviço systemd"""
+            print("\n🔄 Reiniciando serviço OpenCode...")
+            try:
+                subprocess.run(["sudo", "systemctl", "restart", "opencode-web.service"], check=True)
+                print("✅ Serviço reiniciado com sucesso!")
+            except Exception as e:
+                print(f" Erro ao reiniciar: {e}")
+            input("\nPressione Enter para voltar ao menu...")
+
+        def opcao_status():
+            """Mostra o status e oferece logs se houver erro"""
+            print("\n📊 Status do serviço OpenCode:")
+            print("-" * 40)
+            try:
+                result = subprocess.run(
+                    ["systemctl", "status", "opencode-web.service"],
+                    capture_output=True, text=True
+                )
+                print(result.stdout)
+                
+                # Se o status indicar falha ou inatividade, oferece logs
+                if "failed" in result.stdout.lower() or "inactive" in result.stdout.lower():
+                    ver_logs = input("\n⚠️  O serviço parece estar parado ou com erro. Deseja ver os logs? (s/n): ").strip().lower()
+                    if ver_logs == 's':
+                        print("\n📜 Últimas linhas do log:")
+                        subprocess.run(["journalctl", "-u", "opencode-web.service", "-e", "--no-pager", "-n", "50"])
+            except Exception as e:
+                print(f"❌ Erro ao verificar status: {e}")
+            input("\nPressione Enter para voltar ao menu...")
+
+        def opcao_reconfigurar():
+            """Reconfigura porta e senha sem reinstalar"""
+            print("\n⚙️  RECONFIGURAÇÃO DO MODO WEB")
+            print("="*40)
+
+            # 1. Detectar configuração atual
+            config_file = Path.home() / ".config" / "opencode" / "opencode.json"
+            porta_atual = "7860"
+            senha_atual = ""
+
+            if config_file.exists():
+                try:
+                    with open(config_file, 'r') as f:
+                        data = json.load(f)
+                    # Tenta extrair do formato novo (server) ou antigo
+                    if "server" in data:
+                        porta_atual = str(data["server"].get("port", "7860"))
+                    elif "web" in data:
+                        porta_atual = str(data["web"].get("port", "7860"))
+                        senha_atual = data["web"].get("password", "")
+                except:
+                    pass
+            
+            print(f"Configuração atual detectada:")
+            print(f" - Porta: {porta_atual}")
+            print(f" - Senha: {'*' * len(senha_atual) if senha_atual else 'Não definida'}")
+
+            # 2. Pedir novos dados
+            nova_porta_input = input(f"\nNova porta para o modo web (Enter para manter {porta_atual}): ").strip()
+            nova_porta = nova_porta_input if nova_porta_input else porta_atual
+
+            nova_senha_input = input("Nova senha (Enter para manter a atual): ").strip()
+            nova_senha = nova_senha_input if nova_senha_input else senha_atual
+            
+            if not nova_senha:
+                print("⚠️  Senha vazia! Gerando senha automática...")
+                nova_senha = self.generate_password(16)
+                print(f"🔑 Senha gerada: {nova_senha}")
+
+            # 3. Aplicar configuração
+            print("\n📝 Aplicando novas configurações...")
+            
+            # Atualiza JSON
+            opencode_config_dir = Path.home() / ".config" / "opencode"
+            opencode_config_dir.mkdir(parents=True, exist_ok=True)
+            
+            config_data = {}
+            if config_file.exists():
+                try:
+                    with open(config_file, 'r') as f:
+                        config_data = json.load(f)
+                except:
+                    pass
+            
+            # Limpa chaves antigas e aplica nova estrutura
+            config_data.pop("web", None)
+            config_data["server"] = {
+                "port": int(nova_porta),
+                "hostname": "0.0.0.0"
+            }
+            
+            with open(config_file, 'w') as f:
+                json.dump(config_data, f, indent=2)
+            print(f"✔ Arquivo de configuração atualizado: {config_file}")
+
+            # Atualiza Serviço Systemd
+            # Precisamos detectar o binário novamente para garantir que o service file esteja correto
+            opencode_bin = None
+            service_user = os.getenv('USER', 'root')
+            service_home = os.path.expanduser(f"~{service_user}")
+            
+            search_paths = [
+                Path.home() / ".opencode" / "bin" / "opencode",
+                Path.home() / ".local" / "bin" / "opencode",
+                Path("/usr/local/bin/opencode"),
+            ]
+            for p in search_paths:
+                if p.exists():
+                    opencode_bin = str(p)
+                    break
+            
+            if not opencode_bin:
+                 try:
+                    result = subprocess.run(["find", "/home", "-name", "opencode", "-type", "f"], capture_output=True, text=True, timeout=5)
+                    if result.stdout.strip():
+                        opencode_bin = result.stdout.strip().split('\n')[0]
+                        service_user = opencode_bin.split('/')[2]
+                        service_home = f"/home/{service_user}"
+                 except: pass
+
+            if opencode_bin:
+                service_path = Path("/etc/systemd/system/opencode-web.service")
+                service_content = textwrap.dedent(f"""\
+                    [Unit]
+                    Description=OpenCode Web Server
+                    After=network-online.target
+                    Wants=network-online.target
+
+                    [Service]
+                    Type=simple
+                    User={service_user}
+                    Environment=HOME={service_home}
+                    Environment=PATH={service_home}/.opencode/bin:{service_home}/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+                    Environment=OPENCODE_SERVER_PASSWORD={nova_senha}
+                    ExecStart={opencode_bin} web --hostname 0.0.0.0 --port {nova_porta}
+                    Restart=on-failure
+                    RestartSec=10
+
+                    [Install]
+                    WantedBy=multi-user.target
+                """)
+
+                try:
+                    try:
+                        service_path.write_text(service_content)
+                    except PermissionError:
+                        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.service') as tmp:
+                            tmp.write(service_content)
+                            tmp_path = tmp.name
+                        subprocess.run(["sudo", "mv", tmp_path, str(service_path)], check=True)
+                        subprocess.run(["sudo", "chmod", "644", str(service_path)], check=True)
+                    
+                    subprocess.run(["sudo", "systemctl", "daemon-reload"], check=True)
+                    subprocess.run(["sudo", "systemctl", "restart", "opencode-web.service"], check=True)
+                    print("✔ Serviço atualizado e reiniciado com sucesso!")
+                except Exception as e:
+                    print(f"⚠️  Erro ao atualizar serviço: {e}")
+
+            # Atualiza Firewall
+            print(f"\n Liberando nova porta {nova_porta} no firewall...")
+            try:
+                # Verifica se já existe
+                check_result = subprocess.run(
+                    ["sudo", "iptables", "-C", "INPUT", "-p", "tcp", "--dport", str(nova_porta), "-j", "ACCEPT"],
+                    capture_output=True
+                )
+                if check_result.returncode != 0:
+                    subprocess.run(
+                        ["sudo", "iptables", "-I", "INPUT", "1", "-p", "tcp", "--dport", str(nova_porta), "-j", "ACCEPT"],
+                        check=True
+                    )
+                    print(f"✔ Porta {nova_porta} liberada no iptables")
+                    
+                    if shutil.which("netfilter-persistent"):
+                        subprocess.run(["sudo", "netfilter-persistent", "save"], check=False)
+                else:
+                    print(f"  Porta {nova_porta} já estava liberada.")
+            except Exception as e:
+                print(f"  ⚠️  Erro ao configurar firewall: {e}")
+
+            # Final
+            print("\n" + "="*60)
+            print("✅ RECONFIGURAÇÃO CONCLUÍDA!")
+            print("="*60)
+            print(f"   Endereço: http://<seu_ip>:{nova_porta}")
+            print(f"   Senha: {nova_senha}")
+            print("="*60)
+            input("\nPressione Enter para voltar ao menu...")
+
+        # Loop do Menu
+        while True:
+            print("\n" + "="*50)
+            print("🤖 GERENCIADOR OPENCODE")
+            print("="*50)
+            print("[1] Instalar / Atualizar")
+            print("[2] Reiniciar Serviço")
+            print("[3] Ver Status")
+            print("[4] Reconfigurar Modo Web (Porta/Senha)")
+            print("[0] Voltar")
+            print("="*50)
+            
+            opt = input("\nEscolha uma opção: ").strip()
+            
+            if opt == '1': opcao_instalar()
+            elif opt == '2': opcao_reiniciar()
+            elif opt == '3': opcao_status()
+            elif opt == '4': opcao_reconfigurar()
+            elif opt == '0': break
+            else: print("❌ Opção inválida.")
+
     def instala_opencode(self):
         """Instala o OpenCode (CLI AI) e configura o modo web com senha"""
         print("\n" + "="*60)
@@ -7376,7 +7595,7 @@ AllowedIPs = {ip_peer}
             ("🦀 Open Claw (Automação/Agentes)", self.gerenciar_open_claw),
             ("🖥️ Interfaces Gráficas (Desktop)", self.menu_interfaces_graficas),
             ("📦 Instalar pacote .deb manualmente", self.instalar_deb),
-            ("🤖 Instalar OpenCode (AI CLI)", self.instala_opencode),
+            ("🤖 Gerenciar OpenCode (AI CLI)", self.gerenciar_opencode),
             ("📊 Monitor de Rede (vnstat)", self.vnstat),
             ("📝 Editores de Código (VSCode/OpenVSCode)", self.submenu_editores),
             ("☁️ Cloudflare WARP (VPN - Contorna bloqueios)", self.gerenciar_cloudflare_warp),
