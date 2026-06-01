@@ -4932,6 +4932,10 @@ CMD ["sh", "-c", "\
                     print(f"\n❌ Erro na segunda tentativa: {e2}")
                     return
 
+        # Limpeza de resíduos da instalação
+        print("\n🧹 Limpando arquivos temporários de instalação...")
+        subprocess.run(["sudo", "rm", "-rf", "/tmp/opencode"], check=False)
+
         # Configura variáveis de ambiente para o modo web
         print("\n⚙️ Configurando modo web...")
 
