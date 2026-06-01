@@ -4990,6 +4990,92 @@ CMD ["sh", "-c", "\
             print("="*60)
             input("\nPressione Enter para voltar ao menu...")
 
+        def opcao_desinstalar():
+            """Remove completamente o OpenCode do sistema"""
+            print("\n🗑️  DESINSTALAÇÃO DO OPENCODE")
+            print("="*40)
+
+            # 1. Detectar o que existe para remover
+            itens_para_remover = []
+            service_path = Path("/etc/systemd/system/opencode-web.service")
+            opencode_dir = Path.home() / ".opencode"
+            config_dir = Path.home() / ".config" / "opencode"
+            tmp_dir = Path("/tmp/opencode")
+
+            if service_path.exists():
+                itens_para_remover.append(f"Serviço systemd: {service_path}")
+            if opencode_dir.exists():
+                itens_para_remover.append(f"Diretório do binário: {opencode_dir}")
+            if config_dir.exists():
+                itens_para_remover.append(f"Diretório de configuração: {config_dir}")
+            if tmp_dir.exists():
+                itens_para_remover.append(f"Temporários: {tmp_dir}")
+
+            if not itens_para_remover:
+                print("   Nenhum componente do OpenCode encontrado no sistema.")
+                input("\nPressione Enter para voltar ao menu...")
+                return
+
+            print("\nOs seguintes itens serão removidos:")
+            for item in itens_para_remover:
+                print(f"   - {item}")
+
+            # 2. Confirmação
+            print("\n⚠️  ATENÇÃO: Esta ação é irreversível!")
+            confirmar = input("Deseja realmente desinstalar o OpenCode? (s/n): ").strip().lower()
+            if confirmar != 's':
+                print("   Desinstalação cancelada.")
+                input("\nPressione Enter para voltar ao menu...")
+                return
+
+            # 3. Executar remoção
+            print("\n🧹 Removendo componentes...")
+
+            # Parar e remover serviço
+            if service_path.exists():
+                try:
+                    print("   ⏹️  Parando serviço...")
+                    subprocess.run(["sudo", "systemctl", "stop", "opencode-web.service"], check=False, capture_output=True)
+                    subprocess.run(["sudo", "systemctl", "disable", "opencode-web.service"], check=False, capture_output=True)
+                    print(f"   🗑️  Removendo {service_path}...")
+                    try:
+                        service_path.unlink()
+                    except PermissionError:
+                        subprocess.run(["sudo", "rm", "-f", str(service_path)], check=True)
+                    print("   ✔ Serviço removido")
+                except Exception as e:
+                    print(f"   ⚠️  Erro ao remover serviço: {e}")
+
+            # Daemon reload
+            try:
+                subprocess.run(["sudo", "systemctl", "daemon-reload"], check=False, capture_output=True)
+            except:
+                pass
+
+            # Remover diretórios
+            dirs_para_remover = [
+                (opencode_dir, "binário"),
+                (config_dir, "configuração"),
+                (tmp_dir, "temporários")
+            ]
+
+            for diretorio, descricao in dirs_para_remover:
+                if diretorio.exists():
+                    try:
+                        print(f"   🗑️  Removendo {descricao} ({diretorio})...")
+                        subprocess.run(["sudo", "rm", "-rf", str(diretorio)], check=True)
+                        print(f"   ✔ {descricao.capitalize()} removido")
+                    except Exception as e:
+                        print(f"   ⚠️  Erro ao remover {descricao}: {e}")
+
+            # Final
+            print("\n" + "="*60)
+            print("✅ OPENCODE COMPLETAMENTE REMOVIDO!")
+            print("="*60)
+            print("   Todos os arquivos, configurações e serviços foram removidos.")
+            print("="*60)
+            input("\nPressione Enter para voltar ao menu...")
+
         # Loop do Menu
         while True:
             print("\n" + "="*50)
@@ -4999,6 +5085,7 @@ CMD ["sh", "-c", "\
             print("[2] Reiniciar Serviço")
             print("[3] Ver Status")
             print("[4] Reconfigurar Modo Web (Porta/Senha)")
+            print("[5] Desinstalar OpenCode")
             print("[0] Voltar")
             print("="*50)
             
@@ -5008,6 +5095,7 @@ CMD ["sh", "-c", "\
             elif opt == '2': opcao_reiniciar()
             elif opt == '3': opcao_status()
             elif opt == '4': opcao_reconfigurar()
+            elif opt == '5': opcao_desinstalar()
             elif opt == '0': break
             else: print("❌ Opção inválida.")
 
