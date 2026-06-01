@@ -5148,9 +5148,9 @@ CMD ["sh", "-c", "\
                 )
                 if result.stdout.strip():
                     residuos = [r for r in result.stdout.strip().split('\n') if r]
-                    # Filtra para não incluir o diretório home do usuário atual
-                    user_home = str(Path.home())
-                    residuos_filtrados = [r for r in residuos if not r.startswith(user_home)]
+                    # Filtra apenas os caminhos que já foram tratados explicitamente
+                    caminhos_tratados = [str(c) for c, _ in todos_caminhos]
+                    residuos_filtrados = [r for r in residuos if r not in caminhos_tratados]
                     
                     if residuos_filtrados:
                         print(f"   Encontrados {len(residuos_filtrados)} resíduos adicionais:")
