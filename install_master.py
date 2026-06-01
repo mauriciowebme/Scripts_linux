@@ -3050,6 +3050,24 @@ WantedBy=timers.target
         self.cria_rede_docker(associar_container_nome='guacamole', numero_rede=1)
         self.cria_rede_docker(associar_container_nome='guacamole_guacd', numero_rede=1)
         
+        # Configurar fontes e locale nos containers para renderização correta no Guacamole
+        print("\n🔧 Configurando fontes e locale nos containers...")
+        comandos_config = [
+            f"docker exec -i -u root guacamole bash -c 'apt update && apt install -y fonts-dejavu-core fonts-liberation fontconfig locales && locale-gen en_US.UTF-8 && locale-gen pt_BR.UTF-8 && update-locale LANG=en_US.UTF-8 && fc-cache -fv'",
+            f"docker exec -i -u root guacamole_guacd bash -c 'apt update && apt install -y fonts-dejavu-core fonts-liberation fontconfig locales && locale-gen en_US.UTF-8 && locale-gen pt_BR.UTF-8 && update-locale LANG=en_US.UTF-8 && fc-cache -fv'",
+        ]
+        self.executar_comandos(comandos_config, ignorar_erros=True, exibir_executando=False)
+        
+        # Reiniciar containers para aplicar configurações
+        print("🔄 Reiniciando containers para aplicar configurações...")
+        comandos_restart = [
+            "docker restart guacamole",
+            "docker restart guacamole_guacd",
+        ]
+        self.executar_comandos(comandos_restart, exibir_executando=False)
+        
+        print("✅ Configuração de fontes concluída!\n")
+        
         print('Instalação do guacamole completa.\n')
         print('Acesse: http://<seu_ip>:8086/guacamole')
         print('Usuario: guacadmin')
