@@ -5001,6 +5001,7 @@ CMD ["sh", "-c", "\
             opencode_dir = Path.home() / ".opencode"
             config_dir = Path.home() / ".config" / "opencode"
             cache_dir = Path.home() / ".cache" / "opencode"
+            share_dir = Path.home() / ".local" / "share" / "opencode"
             tmp_dir = Path("/tmp/opencode")
             local_bin = Path.home() / ".local" / "bin" / "opencode"
             usr_local_bin = Path("/usr/local/bin/opencode")
@@ -5014,6 +5015,8 @@ CMD ["sh", "-c", "\
                 itens_para_remover.append(f"Diretório de configuração: {config_dir}")
             if cache_dir.exists():
                 itens_para_remover.append(f"Diretório de cache: {cache_dir}")
+            if share_dir.exists():
+                itens_para_remover.append(f"Banco de dados de sessões: {share_dir}")
             if tmp_dir.exists():
                 itens_para_remover.append(f"Temporários: {tmp_dir}")
             if local_bin.exists():
@@ -5125,6 +5128,7 @@ CMD ["sh", "-c", "\
                 (Path.home() / ".opencode", "~/.opencode (binário)"),
                 (Path.home() / ".config" / "opencode", "~/.config/opencode (config)"),
                 (Path.home() / ".cache" / "opencode", "~/.cache/opencode (cache)"),
+                (Path.home() / ".local" / "share" / "opencode", "~/.local/share/opencode (banco de dados)"),
                 (Path("/tmp/opencode"), "/tmp/opencode (temp)"),
                 (Path.home() / ".local" / "bin" / "opencode", "~/.local/bin/opencode"),
                 (Path("/usr/local/bin/opencode"), "/usr/local/bin/opencode"),
@@ -5139,7 +5143,7 @@ CMD ["sh", "-c", "\
             try:
                 result = subprocess.run(
                     ["sudo", "find", "/home", "/usr/local", "/usr/bin", "/tmp",
-                     "-iname", "*opencode*", "-o", "-iname", "*opencode-ai*"],
+                     "-iname", "*opencode*", "-o", "-iname", "*opencode-ai*", "-o", "-path", "*/.local/share/opencode*"],
                     capture_output=True, text=True, timeout=20
                 )
                 if result.stdout.strip():
