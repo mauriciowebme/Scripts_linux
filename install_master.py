@@ -5052,21 +5052,49 @@ CMD ["sh", "-c", "\
             except:
                 pass
 
-            # Remover diretórios
-            dirs_para_remover = [
-                (opencode_dir, "binário"),
-                (config_dir, "configuração"),
-                (tmp_dir, "temporários")
+            # Remover diretórios (sem sudo para pastas do usuário, com verificação)
+            dirs_usuario = [
+                (Path.home() / ".opencode", "~/.opencode (binário)"),
+                (Path.home() / ".config" / "opencode", "~/.config/opencode (config)"),
+                (Path("/tmp/opencode"), "/tmp/opencode (temp)"),
             ]
 
-            for diretorio, descricao in dirs_para_remover:
+            for diretorio, descricao in dirs_usuario:
                 if diretorio.exists():
                     try:
-                        print(f"   🗑️  Removendo {descricao} ({diretorio})...")
-                        subprocess.run(["sudo", "rm", "-rf", str(diretorio)], check=True)
-                        print(f"   ✔ {descricao.capitalize()} removido")
+                        print(f"   ️  Removendo {descricao}...")
+                        # Tenta remover sem sudo primeiro (usuário é dono)
+                        subprocess.run(["rm", "-rf", str(diretorio)], check=True)
+                        
+                        # Verifica se realmente removeu
+                        if diretorio.exists():
+                            print(f"   ⚠️  Falha ao remover {descricao}, tentando com sudo...")
+                            subprocess.run(["sudo", "rm", "-rf", str(diretorio)], check=True)
+                        
+                        if not diretorio.exists():
+                            print(f"   ✔ {descricao} removido com sucesso")
+                        else:
+                            print(f"   ❌ Falha crítica ao remover {descricao}")
                     except Exception as e:
                         print(f"   ⚠️  Erro ao remover {descricao}: {e}")
+
+            # Busca global para limpar resíduos em outros usuários
+            print("\n   🔍 Buscando cópias adicionais em /home...")
+            try:
+                result = subprocess.run(
+                    ["sudo", "find", "/home", "-name", "opencode", "-type", "f", "-path", "*/bin/opencode"],
+                    capture_output=True, text=True, timeout=10
+                )
+                if result.stdout.strip():
+                    for copia in result.stdout.strip().split('\n'):
+                        if copia:
+                            print(f"   🗑️  Removendo cópia encontrada: {copia}")
+                            subprocess.run(["sudo", "rm", "-f", copia], check=False)
+                    print("   ✔ Cópias adicionais removidas")
+                else:
+                    print("   Nenhuma cópia adicional encontrada")
+            except Exception as e:
+                print(f"   ⚠️  Erro na busca: {e}")
 
             # Final
             print("\n" + "="*60)
