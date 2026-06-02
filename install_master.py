@@ -6104,18 +6104,33 @@ class Sistema(Docker, Executa_comandos):
         if os.path.exists(passwd_file):
             os.remove(passwd_file)
         
-        # Configura nova senha usando sudo se necessário
+        # Cria arquivo temporário com a senha (vncpasswd precisa de input via arquivo)
+        temp_pass_file = "/tmp/vnc_pass.txt"
+        with open(temp_pass_file, 'w') as f:
+            f.write(senha_vnc + senha_vnc)  # Duas vezes: senha e confirmação
+        
+        # Configura nova senha usando vncpasswd -f (lê do stdin)
         try:
-            subprocess.run(
-                f'echo -e "{senha_vnc}\\n{senha_vnc}\\nn" | sudo vncpasswd {passwd_file}',
-                shell=True, check=True
-            )
+            with open(temp_pass_file, 'r') as f:
+                subprocess.run(
+                    ["sudo", "vncpasswd", "-f"],
+                    stdin=f,
+                    stdout=open(passwd_file, 'wb'),
+                    check=True
+                )
         except Exception:
             # Fallback sem sudo
-            subprocess.run(
-                f'echo -e "{senha_vnc}\\n{senha_vnc}\\nn" | vncpasswd {passwd_file}',
-                shell=True, check=True
-            )
+            with open(temp_pass_file, 'r') as f:
+                subprocess.run(
+                    ["vncpasswd", "-f"],
+                    stdin=f,
+                    stdout=open(passwd_file, 'wb'),
+                    check=True
+                )
+        
+        # Limpa arquivo temporário
+        if os.path.exists(temp_pass_file):
+            os.remove(temp_pass_file)
         
         os.chmod(passwd_file, 0o600)
         
