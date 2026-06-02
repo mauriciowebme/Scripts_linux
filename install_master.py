@@ -6049,17 +6049,36 @@ class Sistema(Docker, Executa_comandos):
                 break
             print(" A senha deve ter entre 4 e 8 caracteres.")
         
-        # Configura a senha usando vncpasswd
-        import tempfile
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as f:
-            f.write(f"{senha_vnc}\n{senha_vnc}\nn\n")
-            temp_path = f.name
-        subprocess.run(f"vncpasswd -f < {temp_path}", shell=True)
-        os.unlink(temp_path)
+        # Detecta o usuário real e home directory corretamente
+        home_dir = os.path.expanduser("~")
+        try:
+            import pwd
+            stat_info = os.stat(home_dir)
+            user = pwd.getpwuid(stat_info.st_uid).pw_name
+        except Exception:
+            user = os.getenv('SUDO_USER') or os.getenv('USER') or 'root'
+            if user == 'root':
+                home_dir = '/root'
+            else:
+                home_dir = f'/home/{user}'
+        
+        # Configura a senha VNC no diretório correto do usuário
+        vnc_dir_user = os.path.join(home_dir, ".vnc")
+        os.makedirs(vnc_dir_user, exist_ok=True)
+        passwd_file = os.path.join(vnc_dir_user, "passwd")
+        
+        # Usa printf para alimentar o vncpasswd interativamente
+        subprocess.run(f'printf "{senha_vnc}\\n{senha_vnc}\\nn\\n" | vncpasswd {passwd_file}', shell=True)
+        os.chmod(passwd_file, 0o600)
+        
+        # Garante que o usuário é dono dos arquivos
+        if user != 'root':
+            subprocess.run(f"chown -R {user}:{user} {vnc_dir_user}", shell=True)
+        
+        print(f" Senha VNC configurada em: {passwd_file}")
         
         # PASSO 5: Cria serviço systemd
         print("\n Criando serviço systemd para iniciar no boot...")
-        user = os.getenv('USER') or os.environ.get('USERNAME') or 'root'
         display = ":1"
         resolution = "1280x720"
         
@@ -6071,8 +6090,10 @@ class Sistema(Docker, Executa_comandos):
             [Service]
             Type=simple
             User={user}
-            WorkingDirectory=/home/{user}
-            ExecStartPre=/usr/bin/vncserver -kill {display} > /dev/null 2>&1 || :
+            Group={user}
+            Environment=HOME={home_dir}
+            WorkingDirectory={home_dir}
+            ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill {display} > /dev/null 2>&1 || :'
             ExecStart=/usr/bin/vncserver {display} -geometry {resolution} -depth 24 -localhost no
             ExecStop=/usr/bin/vncserver -kill {display}
             Restart=on-failure
@@ -6091,9 +6112,13 @@ class Sistema(Docker, Executa_comandos):
         comandos = [
             "sudo systemctl daemon-reload",
             "sudo systemctl enable vncserver@1.service",
+            "sudo systemctl stop vncserver@1.service 2>/dev/null || true",
             "sudo systemctl start vncserver@1.service",
         ]
         self.executar_comandos(comandos, comando_direto=True)
+        
+        # Pequena pausa para o serviço iniciar
+        time.sleep(3)
         
         # PASSO 7: Verifica status
         print("\n Verificando status do serviço...")
