@@ -5867,7 +5867,18 @@ class Sistema(Docker, Executa_comandos):
                     print("📝 Adicionando swap ao /etc/fstab...")
                     subprocess.run('echo "/swap.img none swap sw 0 0" | sudo tee -a /etc/fstab', shell=True)
                 
-                print(f"\n✅ Swap de {novo_tamanho}GB criado com sucesso!")
+                # Configura swappiness para 10 automaticamente
+                print("⚙️  Configurando swappiness para 10...")
+                subprocess.run("sudo sysctl vm.swappiness=10", shell=True)
+                
+                # Torna permanente no /etc/sysctl.conf
+                result = subprocess.run("grep -q 'vm.swappiness' /etc/sysctl.conf", shell=True)
+                if result.returncode == 0:
+                    subprocess.run("sudo sed -i 's/vm.swappiness=.*/vm.swappiness=10/' /etc/sysctl.conf", shell=True)
+                else:
+                    subprocess.run('echo "vm.swappiness=10" | sudo tee -a /etc/sysctl.conf', shell=True)
+                
+                print(f"\n✅ Swap de {novo_tamanho}GB criado com sucesso! Swappiness configurado para 10.")
                 input("\nEnter para continuar...")
                 
             elif escolha == '2':
