@@ -6035,7 +6035,7 @@ class Sistema(Docker, Executa_comandos):
         if not self.verificar_instalacao('xfce4'):
             print("\n XFCE4 não encontrado. Instalando para usar com VNC...")
             comandos = [
-                "sudo apt install -y xfce4 xfce4-goodies dbus-x11",
+                "sudo apt install -y xfce4 xfce4-goodies xfce4-terminal dbus-x11",
             ]
             self.executar_comandos(comandos, comando_direto=True)
             print(" XFCE4 instalado.")
@@ -6053,6 +6053,12 @@ class Sistema(Docker, Executa_comandos):
             "unset SESSION_MANAGER\n"
             "unset DBUS_SESSION_BUS_ADDRESS\n"
             "export XDG_SESSION_TYPE=x11\n"
+            "\n"
+            "# Carrega perfil do usuário para PATH correto\n"
+            "[ -f $HOME/.bashrc ] && source $HOME/.bashrc\n"
+            "[ -f $HOME/.profile ] && source $HOME/.profile\n"
+            "export PATH=\"/usr/local/bin:/usr/bin:/bin:$HOME/.local/bin:$PATH\"\n"
+            "\n"
             "[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup\n"
             "[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\n"
             "exec startxfce4\n"
@@ -6083,15 +6089,15 @@ class Sistema(Docker, Executa_comandos):
             After=syslog.target network.target
             
             [Service]
-            Type=forking
+            Type=simple
             User={user}
             Group={user}
             Environment=HOME={home_dir}
+            Environment=DISPLAY={display}
             WorkingDirectory={home_dir}
-            PIDFile={home_dir}/.vnc/%H:%i.pid
             ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill {display} > /dev/null 2>&1 || :'
-            ExecStart=/usr/bin/vncserver {display} -geometry {resolution} -depth 24 -localhost no
-            ExecStop=/usr/bin/vncserver -kill {display}
+            ExecStart=/usr/bin/Xtigervnc {display} -geometry {resolution} -depth 24 -localhost no -SecurityTypes VncAuth -PasswordFile {home_dir}/.vnc/passwd
+            ExecStop=/bin/sh -c '/usr/bin/vncserver -kill {display} 2>/dev/null || :'
             Restart=on-failure
             RestartSec=5
             
