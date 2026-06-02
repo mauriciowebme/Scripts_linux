@@ -6001,46 +6001,7 @@ class Sistema(Docker, Executa_comandos):
         print("O serviço iniciará automaticamente no boot.")
         print("-"*55)
         
-        # PASSO 1: Instala TigerVNC
-        print("\n Instalando TigerVNC Server...")
-        comandos = [
-            "sudo apt update",
-            "sudo apt install -y tigervnc-standalone-server tigervnc-common",
-        ]
-        self.executar_comandos(comandos, comando_direto=True)
-        
-        # PASSO 2: Verifica/instala XFCE (sem lightdm!)
-        if not self.verificar_instalacao('xfce4'):
-            print("\n XFCE4 não encontrado. Instalando para usar com VNC...")
-            comandos = [
-                "sudo apt install -y xfce4 xfce4-goodies dbus-x11",
-            ]
-            self.executar_comandos(comandos, comando_direto=True)
-            print(" XFCE4 instalado.")
-        else:
-            print(" XFCE4 já está instalado.")
-        
-        # PASSO 3: Configura xstartup
-        print("\n Configurando ambiente VNC...")
-        vnc_dir = os.path.expanduser("~/.vnc")
-        os.makedirs(vnc_dir, exist_ok=True)
-        
-        xstartup_path = os.path.join(vnc_dir, "xstartup")
-        xstartup_content = (
-            "#!/bin/sh\n"
-            "unset SESSION_MANAGER\n"
-            "unset DBUS_SESSION_BUS_ADDRESS\n"
-            "export XDG_SESSION_TYPE=x11\n"
-            "[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup\n"
-            "[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\n"
-            "exec startxfce4\n"
-        )
-        with open(xstartup_path, 'w') as f:
-            f.write(xstartup_content)
-        os.chmod(xstartup_path, 0o755)
-        print(f" xstartup configurado em: {xstartup_path}")
-        
-        # PASSO 4: Solicita e configura senha VNC
+        # PASSO 1: Solicita senha VNC
         print("\n Configure a senha de acesso VNC:")
         print("(4-8 caracteres, será usada pelo cliente VNC)")
         while True:
@@ -6062,22 +6023,56 @@ class Sistema(Docker, Executa_comandos):
             else:
                 home_dir = f'/home/{user}'
         
-        # Configura a senha VNC no diretório correto do usuário
+        # PASSO 2: Instala TigerVNC
+        print("\n Instalando TigerVNC Server...")
+        comandos = [
+            "sudo apt update",
+            "sudo apt install -y tigervnc-standalone-server tigervnc-common",
+        ]
+        self.executar_comandos(comandos, comando_direto=True)
+        
+        # PASSO 3: Verifica/instala XFCE (sem lightdm!)
+        if not self.verificar_instalacao('xfce4'):
+            print("\n XFCE4 não encontrado. Instalando para usar com VNC...")
+            comandos = [
+                "sudo apt install -y xfce4 xfce4-goodies dbus-x11",
+            ]
+            self.executar_comandos(comandos, comando_direto=True)
+            print(" XFCE4 instalado.")
+        else:
+            print(" XFCE4 já está instalado.")
+        
+        # PASSO 4: Configura xstartup
+        print("\n Configurando ambiente VNC...")
         vnc_dir_user = os.path.join(home_dir, ".vnc")
         os.makedirs(vnc_dir_user, exist_ok=True)
-        passwd_file = os.path.join(vnc_dir_user, "passwd")
         
-        # Usa printf para alimentar o vncpasswd interativamente
+        xstartup_path = os.path.join(vnc_dir_user, "xstartup")
+        xstartup_content = (
+            "#!/bin/sh\n"
+            "unset SESSION_MANAGER\n"
+            "unset DBUS_SESSION_BUS_ADDRESS\n"
+            "export XDG_SESSION_TYPE=x11\n"
+            "[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup\n"
+            "[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\n"
+            "exec startxfce4\n"
+        )
+        with open(xstartup_path, 'w') as f:
+            f.write(xstartup_content)
+        os.chmod(xstartup_path, 0o755)
+        print(f" xstartup configurado em: {xstartup_path}")
+        
+        # PASSO 5: Configura senha VNC
+        passwd_file = os.path.join(vnc_dir_user, "passwd")
         subprocess.run(f'printf "{senha_vnc}\\n{senha_vnc}\\nn\\n" | vncpasswd {passwd_file}', shell=True)
         os.chmod(passwd_file, 0o600)
         
-        # Garante que o usuário é dono dos arquivos
         if user != 'root':
             subprocess.run(f"chown -R {user}:{user} {vnc_dir_user}", shell=True)
         
-        print(f" Senha VNC configurada em: {passwd_file}")
+        print(f" Senha VNC configurada.")
         
-        # PASSO 5: Cria serviço systemd
+        # PASSO 6: Cria serviço systemd
         print("\n Criando serviço systemd para iniciar no boot...")
         display = ":1"
         resolution = "1280x720"
@@ -6108,7 +6103,7 @@ class Sistema(Docker, Executa_comandos):
         with open(service_path, 'w') as f:
             f.write(service_content)
         
-        # PASSO 6: Habilita e inicia serviço
+        # PASSO 7: Habilita e inicia serviço
         print("\n Habilitando e iniciando serviço VNC...")
         comandos = [
             "sudo systemctl daemon-reload",
@@ -6118,17 +6113,15 @@ class Sistema(Docker, Executa_comandos):
         ]
         self.executar_comandos(comandos, comando_direto=True)
         
-        # Pequena pausa para o serviço iniciar
         time.sleep(3)
         
-        # PASSO 7: Verifica status
+        # PASSO 8: Verifica status
         print("\n Verificando status do serviço...")
         subprocess.run("sudo systemctl status vncserver@1.service --no-pager", shell=True)
         
-        # PASSO 7.1: Libera porta no firewall
+        # PASSO 8.1: Libera porta no firewall
         print("\n Liberando porta 5901 no firewall...")
         
-        # Tenta UFW
         try:
             ufw_check = subprocess.run(
                 ["sudo", "ufw", "status"],
@@ -6145,7 +6138,6 @@ class Sistema(Docker, Executa_comandos):
         except Exception as e:
             print(f"  UFW não encontrado: {e}")
         
-        # Tenta iptables SEMPRE
         try:
             check_result = subprocess.run(
                 ["sudo", "iptables", "-C", "INPUT", "-p", "tcp", "--dport", "5901", "-j", "ACCEPT"],
@@ -6160,7 +6152,6 @@ class Sistema(Docker, Executa_comandos):
                 )
                 print(" Porta 5901 liberada no iptables")
                 
-                # Salva regras
                 if shutil.which("netfilter-persistent"):
                     subprocess.run(["sudo", "netfilter-persistent", "save"], check=False)
                     print("  Regras salvas via netfilter-persistent")
@@ -6173,7 +6164,7 @@ class Sistema(Docker, Executa_comandos):
         except Exception as e:
             print(f"  Não foi possível configurar iptables: {e}")
         
-        # PASSO 8: Exibe instruções
+        # PASSO 9: Exibe instruções
         ip = self.exibe_ip()
         print("\n" + "="*55)
         print(" VNC SERVER INSTALADO COM SUCESSO!")
