@@ -3040,6 +3040,8 @@ WantedBy=timers.target
         """
         
         comandos = [
+            "docker pull guacamole/guacamole:latest",
+            "docker pull guacamole/guacd:latest",
             container_guacamole,
             container_guacd,
             ]
