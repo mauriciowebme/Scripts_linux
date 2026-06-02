@@ -6052,9 +6052,12 @@ class Sistema(Docker, Executa_comandos):
             "#!/bin/sh\n"
             "unset SESSION_MANAGER\n"
             "unset DBUS_SESSION_BUS_ADDRESS\n"
+            "\n"
+            "# Adiciona opencode ao PATH para funcionar no VNC\n"
+            "export PATH=\"/home/ubuntu/.opencode/bin:/usr/local/bin:/usr/bin:/bin:$HOME/.local/bin:$PATH\"\n"
+            "\n"
             "[ -f $HOME/.bashrc ] && source $HOME/.bashrc\n"
             "[ -f $HOME/.profile ] && source $HOME/.profile\n"
-            "export PATH=\"/usr/local/bin:/usr/bin:/bin:$HOME/.local/bin:$PATH\"\n"
             "[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\n"
             "exec /usr/bin/xterm -geometry 130x40 -ls -title \"Terminal VNC\"\n"
         )
@@ -6076,7 +6079,7 @@ class Sistema(Docker, Executa_comandos):
         # PASSO 6: Cria serviço systemd
         print("\n Criando serviço systemd para iniciar no boot...")
         display = ":1"
-        resolution = "1280x720"
+        resolution = "1920x1080"
         
         service_content = textwrap.dedent(f"""\
             [Unit]
@@ -6091,7 +6094,7 @@ class Sistema(Docker, Executa_comandos):
             Environment=DISPLAY={display}
             WorkingDirectory={home_dir}
             ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill {display} > /dev/null 2>&1 || :'
-            ExecStart=/usr/bin/Xtigervnc {display} -geometry {resolution} -depth 24 -localhost no -SecurityTypes VncAuth -PasswordFile {home_dir}/.vnc/passwd
+            ExecStart=/usr/bin/vncserver {display} -fg -geometry {resolution} -depth 24 -localhost no -SecurityTypes VncAuth -PasswordFile {home_dir}/.vnc/passwd
             ExecStop=/bin/sh -c '/usr/bin/vncserver -kill {display} 2>/dev/null || :'
             Restart=on-failure
             RestartSec=5
