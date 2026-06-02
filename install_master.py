@@ -6056,7 +6056,7 @@ class Sistema(Docker, Executa_comandos):
             "[ -f $HOME/.profile ] && source $HOME/.profile\n"
             "export PATH=\"/usr/local/bin:/usr/bin:/bin:$HOME/.local/bin:$PATH\"\n"
             "[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\n"
-            "exec xterm -geometry 130x40 -ls -title \"Terminal VNC\"\n"
+            "exec /usr/bin/xterm -geometry 130x40 -ls -title \"Terminal VNC\"\n"
         )
         with open(xstartup_path, 'w') as f:
             f.write(xstartup_content)
@@ -6065,7 +6065,7 @@ class Sistema(Docker, Executa_comandos):
         
         # PASSO 5: Configura senha VNC
         passwd_file = os.path.join(vnc_dir_user, "passwd")
-        subprocess.run(f'printf "{senha_vnc}\\n{senha_vnc}\\nn\\n" | vncpasswd {passwd_file}', shell=True)
+        subprocess.run(f'echo -e "{senha_vnc}\\n{senha_vnc}" | vncpasswd {passwd_file} > /dev/null 2>&1', shell=True)
         os.chmod(passwd_file, 0o600)
         
         if user != 'root':
@@ -6109,7 +6109,7 @@ class Sistema(Docker, Executa_comandos):
         comandos = [
             "sudo systemctl daemon-reload",
             "sudo systemctl enable vncserver@1.service",
-            "sudo systemctl stop vncserver@1.service 2>/dev/null || true",
+            "/bin/sh -c 'sudo systemctl stop vncserver@1.service 2>/dev/null || true'",
             "sudo systemctl start vncserver@1.service",
         ]
         self.executar_comandos(comandos, comando_direto=True)
