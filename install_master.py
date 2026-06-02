@@ -6382,8 +6382,8 @@ class Sistema(Docker, Executa_comandos):
             "\n"
             "xrdb $HOME/.Xresources\n"
             "\n"
-            "# xterm grande com tema escuro\n"
-            "exec /usr/bin/xterm -geometry 240x70 -ls -title \"Terminal VNC\" +sb -b 0\n"
+            "# xterm maximizado - ajusta automaticamente ao tamanho da janela VNC\n"
+            "exec /usr/bin/xterm -maximized -ls -title \"Terminal VNC\" +sb -b 0\n"
         )
         with open(xstartup_path, 'w') as f:
             f.write(xstartup_content)
@@ -6435,7 +6435,7 @@ class Sistema(Docker, Executa_comandos):
         # PASSO 6: Cria serviço systemd
         print("\n Criando serviço systemd para iniciar no boot...")
         display = ":1"
-        resolution = "1200x720"
+        resolution = "1350x720"
         
         service_content = textwrap.dedent(f"""\
             [Unit]
