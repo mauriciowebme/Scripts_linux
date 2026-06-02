@@ -6124,6 +6124,54 @@ class Sistema(Docker, Executa_comandos):
         print("\n Verificando status do serviço...")
         subprocess.run("sudo systemctl status vncserver@1.service --no-pager", shell=True)
         
+        # PASSO 7.1: Libera porta no firewall
+        print("\n Liberando porta 5901 no firewall...")
+        
+        # Tenta UFW
+        try:
+            ufw_check = subprocess.run(
+                ["sudo", "ufw", "status"],
+                capture_output=True, text=True
+            )
+            if "active" in ufw_check.stdout.lower():
+                subprocess.run(
+                    ["sudo", "ufw", "allow", "5901/tcp"],
+                    check=True
+                )
+                print(" Porta 5901 liberada no UFW")
+            else:
+                print("  UFW inativo, pulando...")
+        except Exception as e:
+            print(f"  UFW não encontrado: {e}")
+        
+        # Tenta iptables SEMPRE
+        try:
+            check_result = subprocess.run(
+                ["sudo", "iptables", "-C", "INPUT", "-p", "tcp", "--dport", "5901", "-j", "ACCEPT"],
+                capture_output=True
+            )
+            if check_result.returncode == 0:
+                print("  Porta 5901 já liberada no iptables")
+            else:
+                subprocess.run(
+                    ["sudo", "iptables", "-I", "INPUT", "1", "-p", "tcp", "--dport", "5901", "-j", "ACCEPT"],
+                    check=True
+                )
+                print(" Porta 5901 liberada no iptables")
+                
+                # Salva regras
+                if shutil.which("netfilter-persistent"):
+                    subprocess.run(["sudo", "netfilter-persistent", "save"], check=False)
+                    print("  Regras salvas via netfilter-persistent")
+                elif shutil.which("iptables-save"):
+                    subprocess.run(
+                        ["sudo", "sh", "-c", "iptables-save > /etc/iptables.rules"],
+                        check=False
+                    )
+                    print("  Regras salvas em /etc/iptables.rules")
+        except Exception as e:
+            print(f"  Não foi possível configurar iptables: {e}")
+        
         # PASSO 8: Exibe instruções
         ip = self.exibe_ip()
         print("\n" + "="*55)
