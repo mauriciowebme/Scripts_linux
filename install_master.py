@@ -6088,7 +6088,7 @@ class Sistema(Docker, Executa_comandos):
             Group={user}
             Environment=HOME={home_dir}
             WorkingDirectory={home_dir}
-            PIDFile={home_dir}/.vnc/%H%i.pid
+            PIDFile={home_dir}/.vnc/%H:%i.pid
             ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill {display} > /dev/null 2>&1 || :'
             ExecStart=/usr/bin/vncserver {display} -geometry {resolution} -depth 24 -localhost no
             ExecStop=/usr/bin/vncserver -kill {display}
