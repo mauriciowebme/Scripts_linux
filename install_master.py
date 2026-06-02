@@ -6435,7 +6435,7 @@ class Sistema(Docker, Executa_comandos):
         # PASSO 6: Cria serviço systemd
         print("\n Criando serviço systemd para iniciar no boot...")
         display = ":1"
-        resolution = "1500x720"
+        resolution = "1350x720"
         
         service_content = textwrap.dedent(f"""\
             [Unit]
