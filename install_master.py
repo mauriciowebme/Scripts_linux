@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # Instalação Inicial:
 # wget --no-cache -O install_master.py https://raw.githubusercontent.com/mauriciowebme/Scripts_linux/main/install_master.py && python3 install_master.py
@@ -6178,10 +6178,19 @@ class Sistema(Docker, Executa_comandos):
         
         # PASSO 7: Habilita e inicia serviço
         print("\n Habilitando e iniciando serviço VNC...")
+        
+        # Para serviço antigo se existir
+        subprocess.run(["sudo", "systemctl", "stop", "vncserver@1.service"], check=False)
+        time.sleep(2)
+        
+        # Mata processos antigos do VNC
+        subprocess.run(["sudo", "pkill", "-9", "Xtigervnc"], check=False)
+        subprocess.run(["sudo", "pkill", "-9", "xterm"], check=False)
+        time.sleep(1)
+        
         comandos = [
             "sudo systemctl daemon-reload",
             "sudo systemctl enable vncserver@1.service",
-            "/bin/sh -c 'sudo systemctl stop vncserver@1.service 2>/dev/null || true'",
             "sudo systemctl start vncserver@1.service",
         ]
         self.executar_comandos(comandos, comando_direto=True)
