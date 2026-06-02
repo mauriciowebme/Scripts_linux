@@ -5991,6 +5991,137 @@ class Sistema(Docker, Executa_comandos):
         except Exception as e:
             print(f"Ocorreu um erro inesperado: {e}")
     
+    def instala_vnc_server(self,):
+        """Instala TigerVNC Server com XFCE - funciona com ou sem interface gráfica no host"""
+        print("\n" + "="*55)
+        print(" INSTALAÇÃO DO VNC SERVER (ACESSO REMOTO)")
+        print("="*55)
+        print("Instala TigerVNC Server com ambiente XFCE leve")
+        print("O XFCE roda APENAR dentro da sessão VNC")
+        print("O serviço iniciará automaticamente no boot.")
+        print("-"*55)
+        
+        # PASSO 1: Instala TigerVNC
+        print("\n Instalando TigerVNC Server...")
+        comandos = [
+            "sudo apt update",
+            "sudo apt install -y tigervnc-standalone-server tigervnc-common",
+        ]
+        self.executar_comandos(comandos, comando_direto=True)
+        
+        # PASSO 2: Verifica/instala XFCE (sem lightdm!)
+        if not self.verificar_instalacao('xfce4'):
+            print("\n XFCE4 não encontrado. Instalando para usar com VNC...")
+            comandos = [
+                "sudo apt install -y xfce4 xfce4-goodies dbus-x11",
+            ]
+            self.executar_comandos(comandos, comando_direto=True)
+            print(" XFCE4 instalado.")
+        else:
+            print(" XFCE4 já está instalado.")
+        
+        # PASSO 3: Configura xstartup
+        print("\n Configurando ambiente VNC...")
+        vnc_dir = os.path.expanduser("~/.vnc")
+        os.makedirs(vnc_dir, exist_ok=True)
+        
+        xstartup_path = os.path.join(vnc_dir, "xstartup")
+        xstartup_content = (
+            "#!/bin/sh\n"
+            "unset SESSION_MANAGER\n"
+            "unset DBUS_SESSION_BUS_ADDRESS\n"
+            "export XDG_SESSION_TYPE=x11\n"
+            "[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup\n"
+            "[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\n"
+            "exec startxfce4\n"
+        )
+        with open(xstartup_path, 'w') as f:
+            f.write(xstartup_content)
+        os.chmod(xstartup_path, 0o755)
+        print(f" xstartup configurado em: {xstartup_path}")
+        
+        # PASSO 4: Solicita e configura senha VNC
+        print("\n Configure a senha de acesso VNC:")
+        print("(4-8 caracteres, será usada pelo cliente VNC)")
+        while True:
+            senha_vnc = input("Senha VNC: ").strip()
+            if 4 <= len(senha_vnc) <= 8:
+                break
+            print(" A senha deve ter entre 4 e 8 caracteres.")
+        
+        # Configura a senha usando vncpasswd
+        import tempfile
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as f:
+            f.write(f"{senha_vnc}\n{senha_vnc}\nn\n")
+            temp_path = f.name
+        subprocess.run(f"vncpasswd -f < {temp_path}", shell=True)
+        os.unlink(temp_path)
+        
+        # PASSO 5: Cria serviço systemd
+        print("\n Criando serviço systemd para iniciar no boot...")
+        user = os.getenv('USER') or os.environ.get('USERNAME') or 'root'
+        display = ":1"
+        resolution = "1280x720"
+        
+        service_content = textwrap.dedent(f"""\
+            [Unit]
+            Description=TigerVNC Server - Display {display}
+            After=syslog.target network.target
+            
+            [Service]
+            Type=simple
+            User={user}
+            WorkingDirectory=/home/{user}
+            ExecStartPre=/usr/bin/vncserver -kill {display} > /dev/null 2>&1 || :
+            ExecStart=/usr/bin/vncserver {display} -geometry {resolution} -depth 24 -localhost no
+            ExecStop=/usr/bin/vncserver -kill {display}
+            Restart=on-failure
+            RestartSec=5
+            
+            [Install]
+            WantedBy=multi-user.target
+        """)
+        
+        service_path = "/etc/systemd/system/vncserver@.service"
+        with open(service_path, 'w') as f:
+            f.write(service_content)
+        
+        # PASSO 6: Habilita e inicia serviço
+        print("\n Habilitando e iniciando serviço VNC...")
+        comandos = [
+            "sudo systemctl daemon-reload",
+            "sudo systemctl enable vncserver@1.service",
+            "sudo systemctl start vncserver@1.service",
+        ]
+        self.executar_comandos(comandos, comando_direto=True)
+        
+        # PASSO 7: Verifica status
+        print("\n Verificando status do serviço...")
+        subprocess.run("sudo systemctl status vncserver@1.service --no-pager", shell=True)
+        
+        # PASSO 8: Exibe instruções
+        ip = self.exibe_ip()
+        print("\n" + "="*55)
+        print(" VNC SERVER INSTALADO COM SUCESSO!")
+        print("="*55)
+        print(f"Endereço de acesso: {ip}:5901")
+        print(f"Display: {display}")
+        print(f"Resolução: {resolution}")
+        print(f"Ambiente: XFCE4")
+        print("-"*55)
+        print(" Clientes VNC recomendados:")
+        print("  - Windows: RealVNC Viewer, TightVNC")
+        print("  - Linux: Remmina, TigerVNC Viewer")
+        print("  - macOS: Screen Sharing (nativo), RealVNC")
+        print("  - Android/iOS: VNC Viewer")
+        print("-"*55)
+        print(" Comandos úteis:")
+        print("  status:  sudo systemctl status vncserver@1.service")
+        print("  stop:    sudo systemctl stop vncserver@1.service")
+        print("  start:   sudo systemctl start vncserver@1.service")
+        print("  restart: sudo systemctl restart vncserver@1.service")
+        print("="*55)
+    
     def setup_wifi(self,):
         print('Instalando gerenciador de WIFI nmtui.')
         comandos = [
@@ -7814,6 +7945,7 @@ AllowedIPs = {ip_peer}
             ("Instalar/Iniciar XFCE (Leve)", self.instalar_interface_xfce),
             ("Instalar GNOME (Padrão Ubuntu)", self.instalar_interface_gnome),
             ("Instalar Desktop Ubuntu Webtop (Docker)", self.desktop_ubuntu_webtop),
+            ("Instalar VNC Server (Acesso Remoto)", self.instala_vnc_server),
             ("Voltar", None)
         ]
         self.mostrar_menu_paginado(opcoes, titulo="🖥️  INTERFACES GRÁFICAS", itens_por_pagina=10)
