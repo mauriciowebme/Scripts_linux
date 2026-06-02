@@ -5996,8 +5996,8 @@ class Sistema(Docker, Executa_comandos):
         print("\n" + "="*55)
         print(" INSTALAÇÃO DO VNC SERVER (ACESSO REMOTO)")
         print("="*55)
-        print("Instala TigerVNC Server com ambiente XFCE leve")
-        print("O XFCE roda APENAR dentro da sessão VNC")
+        print("Instala TigerVNC Server com terminal xterm")
+        print("Um terminal xterm abre automaticamente ao conectar")
         print("O serviço iniciará automaticamente no boot.")
         print("-"*55)
         
@@ -6031,16 +6031,16 @@ class Sistema(Docker, Executa_comandos):
         ]
         self.executar_comandos(comandos, comando_direto=True)
         
-        # PASSO 3: Verifica/instala XFCE (sem lightdm!)
-        if not self.verificar_instalacao('xfce4'):
-            print("\n XFCE4 não encontrado. Instalando para usar com VNC...")
+        # PASSO 3: Verifica/instala xterm
+        if not self.verificar_instalacao('xterm'):
+            print("\n xterm não encontrado. Instalando...")
             comandos = [
-                "sudo apt install -y xfce4 xfce4-goodies xfce4-terminal dbus-x11",
+                "sudo apt install -y xterm x11-xserver-utils dbus-x11",
             ]
             self.executar_comandos(comandos, comando_direto=True)
-            print(" XFCE4 instalado.")
+            print(" xterm instalado.")
         else:
-            print(" XFCE4 já está instalado.")
+            print(" xterm já está instalado.")
         
         # PASSO 4: Configura xstartup
         print("\n Configurando ambiente VNC...")
@@ -6052,16 +6052,11 @@ class Sistema(Docker, Executa_comandos):
             "#!/bin/sh\n"
             "unset SESSION_MANAGER\n"
             "unset DBUS_SESSION_BUS_ADDRESS\n"
-            "export XDG_SESSION_TYPE=x11\n"
-            "\n"
-            "# Carrega perfil do usuário para PATH correto\n"
             "[ -f $HOME/.bashrc ] && source $HOME/.bashrc\n"
             "[ -f $HOME/.profile ] && source $HOME/.profile\n"
             "export PATH=\"/usr/local/bin:/usr/bin:/bin:$HOME/.local/bin:$PATH\"\n"
-            "\n"
-            "[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup\n"
             "[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\n"
-            "exec startxfce4\n"
+            "exec xterm -geometry 130x40 -ls -title \"Terminal VNC\"\n"
         )
         with open(xstartup_path, 'w') as f:
             f.write(xstartup_content)
@@ -6178,7 +6173,7 @@ class Sistema(Docker, Executa_comandos):
         print(f"Endereço de acesso: {ip}:5901")
         print(f"Display: {display}")
         print(f"Resolução: {resolution}")
-        print(f"Ambiente: XFCE4")
+        print(f"Ambiente: Terminal xterm (bash)")
         print("-"*55)
         print(" Clientes VNC recomendados:")
         print("  - Windows: RealVNC Viewer, TightVNC")
