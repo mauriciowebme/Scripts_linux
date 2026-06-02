@@ -6081,7 +6081,7 @@ class Sistema(Docker, Executa_comandos):
             "xterm*color7: #d4d4d4\n"
             "xterm*color15: #ffffff\n"
             "xterm*faceName: Monospace\n"
-            "xterm*faceSize: 12\n"
+            "xterm*faceSize: 14\n"
             "xterm*scrollBar: false\n"
             "xterm*internalBorder: 0\n"
             "xterm*borderWidth: 0\n"
@@ -6089,8 +6089,8 @@ class Sistema(Docker, Executa_comandos):
             "\n"
             "xrdb $HOME/.Xresources\n"
             "\n"
-            "# xterm grande com tema escuro\n"
-            "exec /usr/bin/xterm -geometry 200x60 -ls -title \"Terminal VNC\" +sb -b 0\n"
+            "# xterm grande com tema escuro - proporção otimizada para OpenCode\n"
+            "exec /usr/bin/xterm -geometry 240x70 -ls -title \"Terminal VNC\" +sb -b 0\n"
         )
         with open(xstartup_path, 'w') as f:
             f.write(xstartup_content)
