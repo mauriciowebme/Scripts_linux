@@ -6167,8 +6167,14 @@ class Sistema(Docker, Executa_comandos):
         """)
         
         service_path = "/etc/systemd/system/vncserver@.service"
-        with open(service_path, 'w') as f:
+        
+        # Escreve o arquivo de serviço usando sudo (via arquivo temporário)
+        temp_service = "/tmp/vncserver.service"
+        with open(temp_service, 'w') as f:
             f.write(service_content)
+        
+        # Move para o destino com sudo
+        subprocess.run(["sudo", "mv", temp_service, service_path], check=True)
         
         # PASSO 7: Habilita e inicia serviço
         print("\n Habilitando e iniciando serviço VNC...")
