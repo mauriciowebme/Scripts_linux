@@ -1,2 +1,9 @@
 # Ignorar diretório de temporários do projeto
 .tmp/
+
+# Ignorar cache do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
