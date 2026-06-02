@@ -6089,8 +6089,8 @@ class Sistema(Docker, Executa_comandos):
             "\n"
             "xrdb $HOME/.Xresources\n"
             "\n"
-            "# xterm em fullscreen - ocupa toda a tela\n"
-            "exec /usr/bin/xterm -fullscreen -ls -title \"Terminal VNC\" +sb -b 0\n"
+            "# xterm grande com tema escuro\n"
+            "exec /usr/bin/xterm -geometry 200x60 -ls -title \"Terminal VNC\" +sb -b 0\n"
         )
         with open(xstartup_path, 'w') as f:
             f.write(xstartup_content)
