@@ -6099,11 +6099,28 @@ class Sistema(Docker, Executa_comandos):
         
         # PASSO 5: Configura senha VNC
         passwd_file = os.path.join(vnc_dir_user, "passwd")
-        subprocess.run(f'echo -e "{senha_vnc}\\n{senha_vnc}" | vncpasswd {passwd_file} > /dev/null 2>&1', shell=True)
+        
+        # Remove arquivo antigo se existir
+        if os.path.exists(passwd_file):
+            os.remove(passwd_file)
+        
+        # Configura nova senha usando sudo se necessário
+        try:
+            subprocess.run(
+                f'echo -e "{senha_vnc}\\n{senha_vnc}\\nn" | sudo vncpasswd {passwd_file}',
+                shell=True, check=True
+            )
+        except Exception:
+            # Fallback sem sudo
+            subprocess.run(
+                f'echo -e "{senha_vnc}\\n{senha_vnc}\\nn" | vncpasswd {passwd_file}',
+                shell=True, check=True
+            )
+        
         os.chmod(passwd_file, 0o600)
         
         if user != 'root':
-            subprocess.run(f"chown -R {user}:{user} {vnc_dir_user}", shell=True)
+            subprocess.run(f"sudo chown -R {user}:{user} {vnc_dir_user}", shell=True)
         
         print(f" Senha VNC configurada.")
         
