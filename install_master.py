@@ -6435,7 +6435,6 @@ class Sistema(Docker, Executa_comandos):
         # PASSO 6: Cria serviço systemd
         print("\n Criando serviço systemd para iniciar no boot...")
         display = ":1"
-        resolution = "1280x720"
         
         service_content = textwrap.dedent(f"""\
             [Unit]
@@ -6450,7 +6449,7 @@ class Sistema(Docker, Executa_comandos):
             Environment=DISPLAY={display}
             WorkingDirectory={home_dir}
             ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill {display} > /dev/null 2>&1 || :'
-            ExecStart=/usr/bin/vncserver {display} -fg -geometry {resolution} -depth 24 -localhost no -SecurityTypes VncAuth -PasswordFile {home_dir}/.vnc/passwd
+            ExecStart=/usr/bin/vncserver {display} -fg -depth 24 -localhost no -SecurityTypes VncAuth -PasswordFile {home_dir}/.vnc/passwd
             ExecStop=/bin/sh -c '/usr/bin/vncserver -kill {display} 2>/dev/null || :'
             Restart=on-failure
             RestartSec=5
@@ -6546,7 +6545,7 @@ class Sistema(Docker, Executa_comandos):
         print("="*55)
         print(f"Endereço de acesso: {ip}:5901")
         print(f"Display: {display}")
-        print(f"Resolução: {resolution}")
+        print(f"Resolução: Auto-ajustável (dinâmica)")
         print(f"Ambiente: Terminal xterm (bash)")
         print("-"*55)
         print(" Clientes VNC recomendados:")
