@@ -6059,7 +6059,7 @@ class Sistema(Docker, Executa_comandos):
             "[ -f $HOME/.bashrc ] && source $HOME/.bashrc\n"
             "[ -f $HOME/.profile ] && source $HOME/.profile\n"
             "[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources\n"
-            "exec /usr/bin/xterm -geometry 130x40 -ls -title \"Terminal VNC\"\n"
+            "exec /usr/bin/xterm -geometry 180x55 -ls -title \"Terminal VNC\"\n"
         )
         with open(xstartup_path, 'w') as f:
             f.write(xstartup_content)
