@@ -6049,15 +6049,15 @@ class Sistema(Docker, Executa_comandos):
         
         xstartup_path = os.path.join(vnc_dir_user, "xstartup")
         xstartup_content = (
-            "#!/bin/sh\n"
+            "#!/bin/bash\n"
             "unset SESSION_MANAGER\n"
             "unset DBUS_SESSION_BUS_ADDRESS\n"
             "\n"
             "# Adiciona opencode ao PATH para funcionar no VNC\n"
             "export PATH=\"/home/ubuntu/.opencode/bin:/usr/local/bin:/usr/bin:/bin:$HOME/.local/bin:$PATH\"\n"
             "\n"
-            "[ -f $HOME/.bashrc ] && source $HOME/.bashrc\n"
-            "[ -f $HOME/.profile ] && source $HOME/.profile\n"
+            "[ -f $HOME/.bashrc ] && . $HOME/.bashrc\n"
+            "[ -f $HOME/.profile ] && . $HOME/.profile\n"
             "\n"
             "# Configura tema escuro estilo VS Code Dark+\n"
             "cat > $HOME/.Xresources << 'XRES'\n"
@@ -6084,12 +6084,13 @@ class Sistema(Docker, Executa_comandos):
             "xterm*faceSize: 12\n"
             "xterm*scrollBar: false\n"
             "xterm*internalBorder: 0\n"
+            "xterm*borderWidth: 0\n"
             "XRES\n"
             "\n"
             "xrdb $HOME/.Xresources\n"
             "\n"
-            "# xterm grande com tema escuro, sem barra de scroll e sem bordas\n"
-            "exec /usr/bin/xterm -geometry 200x60 -ls -title \"Terminal VNC\" +sb -b 0\n"
+            "# xterm em fullscreen - ocupa toda a tela\n"
+            "exec /usr/bin/xterm -fullscreen -ls -title \"Terminal VNC\" +sb -b 0\n"
         )
         with open(xstartup_path, 'w') as f:
             f.write(xstartup_content)
