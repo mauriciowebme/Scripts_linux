@@ -6162,18 +6162,18 @@ class Sistema(Docker, Executa_comandos):
                     print("📝 Adicionando swap ao /etc/fstab...")
                     subprocess.run('echo "/swap.img none swap sw 0 0" | sudo tee -a /etc/fstab', shell=True)
                 
-                # Configura swappiness para 10 automaticamente
-                print("⚙️  Configurando swappiness para 10...")
-                subprocess.run("sudo sysctl vm.swappiness=10", shell=True)
+                # Configura swappiness para 20 automaticamente
+                print("⚙️  Configurando swappiness para 20...")
+                subprocess.run("sudo sysctl vm.swappiness=20", shell=True)
                 
                 # Torna permanente no /etc/sysctl.conf
                 result = subprocess.run("grep -q 'vm.swappiness' /etc/sysctl.conf", shell=True)
                 if result.returncode == 0:
-                    subprocess.run("sudo sed -i 's/vm.swappiness=.*/vm.swappiness=10/' /etc/sysctl.conf", shell=True)
+                    subprocess.run("sudo sed -i 's/vm.swappiness=.*/vm.swappiness=20/' /etc/sysctl.conf", shell=True)
                 else:
-                    subprocess.run('echo "vm.swappiness=10" | sudo tee -a /etc/sysctl.conf', shell=True)
+                    subprocess.run('echo "vm.swappiness=20" | sudo tee -a /etc/sysctl.conf', shell=True)
                 
-                print(f"\n✅ Swap de {novo_tamanho}GB criado com sucesso! Swappiness configurado para 10.")
+                print(f"\n✅ Swap de {novo_tamanho}GB criado com sucesso! Swappiness configurado para 20.")
                 input("\nEnter para continuar...")
                 
             elif escolha == '2':
@@ -6189,7 +6189,7 @@ class Sistema(Docker, Executa_comandos):
             elif escolha == '3':
                 print("\n📖 Swappiness define quando o sistema usa swap:")
                 print("   0  = Usa swap apenas em emergência")
-                print("   10 = Recomendado para servidores com SSD")
+                print("   20 = Recomendado para servidores com SSD")
                 print("   60 = Padrão do Linux")
                 print("   100 = Usa swap agressivamente")
                 
