@@ -8413,7 +8413,6 @@ AllowedIPs = {ip_peer}
             ("Ferramentas de Backup (Rsync)", self.rsync_sync),
             ("Configurar Inicialização (.py service)", self.setup_inicializar_service),
             ("VPN WireGuard", self.menu_wireguard),
-            ("🔗 Gerenciar Túneis SSH", self.gerenciar_tuneis_ssh),
             ("Fechar tampa notebook (NooT)", self.fecha_tela_noot),
             ("Ecaminhamentos de Portas/Tuneis", self.ecaminhamentos_portas_tuneis),
         ]
@@ -10326,6 +10325,19 @@ Host {nome}
         print(f"\n📊 Total: {len(scripts)} scripts")
         input("\nPressione Enter para continuar...")
 
+    def gerenciar_microservicos(self):
+        """Menu centralizado para gerenciamento de microserviços"""
+        opcoes_menu = [
+            ("🔗 Gerenciar Túneis SSH", self.gerenciar_tuneis_ssh),
+            ("🌐 Gerenciar FRP Proxies", self.gerenciar_frp),
+            ("📁 Gerenciar SFTP (sftpgo)", self.gerenciar_usuarios_sftp),
+            ("🌍 Gerenciar Traefik (rotas)", self.adiciona_roteador_servico_traefik),
+            ("📊 Monitoramento (Grafana)", self.iniciar_monitoramento),
+            ("💾 Gerenciar Bancos PostgreSQL", self.gerenciar_bancos_postgres),
+            ("📝 Controle Sites (OpenLiteSpeed)", self.controle_sites_openlitespeed),
+        ]
+        self.mostrar_menu_paginado(opcoes_menu, titulo="🔧 GERENCIADOR DE MICROSERVIÇOS", itens_por_pagina=10)
+
     def sair(self,):
         """Sai do programa."""
         print("Saindo...")
@@ -10347,6 +10359,7 @@ ip server: {servicos.exibe_ip()}"""
         ("Desligar", servicos.Desligar),
         ("Atualizar o sistema", servicos.menu_atualizacoes),
         ("Central de Instalações", servicos.menu_instalacoes),
+        ("🔧 Gerenciar Microserviços", servicos.gerenciar_microservicos),
         ("Configurações do Sistema", servicos.opcoes_sistema),
         ("Diagnóstico e Monitoramento", servicos.submenu_diagnostico),
         ("Comandos essenciais do Linux", servicos.comandos_essenciais_linux),
