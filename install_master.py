@@ -9845,6 +9845,18 @@ AllowedIPs = {ip_peer}
         with open(caminho, "w") as f:
             json.dump(tuneis, f, indent=2, ensure_ascii=False)
 
+    def _log_tunel(self, nome, mensagem):
+        """Registra evento de túnel no log"""
+        log_dir = f"{self.install_principal}/tuneis/logs"
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = f"{log_dir}/{nome}.log"
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        try:
+            with open(log_file, "a") as f:
+                f.write(f"[{timestamp}] {mensagem}\n")
+        except Exception:
+            pass
+
     def _tuneis_ativos(self):
         """Retorna set de nomes de túneis ativos baseado em processos SSH"""
         ativos = set()
@@ -9853,18 +9865,15 @@ AllowedIPs = {ip_peer}
                 ["ps", "aux"],
                 capture_output=True, text=True
             )
+            tuneis = self._carregar_tuneis()
             for linha in result.stdout.splitlines():
-                if "ssh" in linha and "-R" in linha and "-N" in linha:
-                    partes = linha.split()
-                    for parte in partes:
-                        if "-R" in parte:
-                            idx = partes.index(parte)
-                            if idx + 1 < len(partes):
-                                porta_remota = partes[idx + 1].split(":")[0]
-                                tuneis = self._carregar_tuneis()
-                                for nome, info in tuneis.items():
-                                    if str(info["porta_remota"]) == porta_remota:
-                                        ativos.add(nome)
+                if "ssh" not in linha or "-R" not in linha or "-N" not in linha:
+                    continue
+                matches = re.findall(r'-R\s+(\d+):', linha)
+                for porta in matches:
+                    for nome, info in tuneis.items():
+                        if str(info["porta_remota"]) == porta:
+                            ativos.add(nome)
         except Exception:
             pass
         return ativos
@@ -9892,6 +9901,9 @@ AllowedIPs = {ip_peer}
         porta_remota = int(porta_remota)
 
         porta_local = input("🏠 Porta local da máquina remota (padrão: 22): ").strip() or "22"
+        if not porta_local.isdigit():
+            print("❌ Porta local inválida.")
+            return
 
         usuario = input("👤 Usuário SSH: ").strip()
         if not usuario:
@@ -9909,6 +9921,24 @@ AllowedIPs = {ip_peer}
         tipo_choice = input("Escolha (1/2): ").strip()
         tipo = "windows" if tipo_choice == "1" else "linux"
 
+        # Testar conectividade SSH
+        print("\n🔍 Testando conectividade SSH...")
+        result = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+             "-o", "StrictHostKeyChecking=no",
+             f"{usuario}@{servidor}", "echo ok"],
+            capture_output=True, text=True, timeout=10
+        )
+        if result.returncode != 0:
+            print("⚠️ Conexão SSH falhou. Verifique:")
+            print("  - Chave SSH configurada (recomendado)")
+            print("  - Ou senha correta (pode travar no loop de reconexão)")
+            confirmar = input("Continuar mesmo assim? (s/n): ").strip().lower()
+            if confirmar != "s":
+                return
+        else:
+            print("✅ Conectividade OK!")
+
         tuneis[nome] = {
             "porta_remota": porta_remota,
             "porta_local": int(porta_local),
@@ -9919,6 +9949,7 @@ AllowedIPs = {ip_peer}
         }
 
         self._salvar_tuneis(tuneis)
+        self._log_tunel(nome, f"Túnel criado: porta {porta_remota} -> {porta_local} ({tipo})")
         print(f"\n✅ Túnel '{nome}' criado com sucesso!")
         print(f"   Porta remota: {porta_remota}")
         print(f"   Porta local: {porta_local}")
@@ -10015,6 +10046,7 @@ AllowedIPs = {ip_peer}
         if escolha == "0":
             for nome in tuneis.keys():
                 self._gerar_script_windows_nome(nome)
+                input("   Pressione Enter para continuar...")
         elif escolha.isdigit():
             idx = int(escolha) - 1
             nomes = list(tuneis.keys())
@@ -10055,6 +10087,7 @@ echo.
 
 :conectar
 ssh -o StrictHostKeyChecking=no ^
+    -o BatchMode=yes ^
     -o ServerAliveInterval=30 ^
     -o ServerAliveCountMax=3 ^
     -R %PORTA_TUNEL%:localhost:%PORTA_LOCAL% ^
@@ -10092,6 +10125,7 @@ goto conectar
         if escolha == "0":
             for nome in tuneis.keys():
                 self._gerar_script_linux_nome(nome)
+                input("   Pressione Enter para continuar...")
         elif escolha.isdigit():
             idx = int(escolha) - 1
             nomes = list(tuneis.keys())
@@ -10132,6 +10166,7 @@ echo ""
 
 while true; do
     ssh -o StrictHostKeyChecking=no \\
+        -o BatchMode=yes \\
         -o ServerAliveInterval=30 \\
         -o ServerAliveCountMax=3 \\
         -R $PORTA_TUNEL:localhost:$PORTA_LOCAL \\
@@ -10175,8 +10210,11 @@ done
 
         if marca_inicio in conteudo_existente:
             inicio = conteudo_existente.index(marca_inicio)
-            fim = conteudo_existente.index(marca_fim) + len(marca_fim)
-            conteudo_novo = conteudo_existente[:inicio] + conteudo_existente[fim + 1:]
+            try:
+                fim = conteudo_existente.index(marca_fim) + len(marca_fim)
+                conteudo_novo = conteudo_existente[:inicio] + conteudo_existente[fim + 1:]
+            except ValueError:
+                conteudo_novo = conteudo_existente[:inicio]
         else:
             conteudo_novo = conteudo_existente
 
@@ -10211,6 +10249,7 @@ Host {nome}
         print("\nIsso irá:")
         print("  - Habilitar GatewayPorts (permitir túneis reversos)")
         print("  - Habilitar PasswordAuthentication (login por senha)")
+        print("  - Permitir login root apenas por chave (prohibit-password)")
         print("  - Criar backup do sshd_config")
 
         confirmar = input("\nContinuar? (s/n): ").strip().lower()
@@ -10218,34 +10257,87 @@ Host {nome}
             print("Operação cancelada.")
             return
 
-        try:
-            subprocess.run(["sudo", "cp", "/etc/ssh/sshd_config", "/etc/ssh/sshd_config.bak.tuneis"], check=False)
+        # Backup
+        result = subprocess.run(
+            ["sudo", "cp", "/etc/ssh/sshd_config", "/etc/ssh/sshd_config.bak.tuneis"],
+            capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            print(f"❌ Falha ao criar backup: {result.stderr.strip()}")
+            input("\nPressione Enter para continuar...")
+            return
 
-            comandos = [
-                r"sudo sed -i 's/^#\?GatewayPorts.*/GatewayPorts yes/' /etc/ssh/sshd_config",
-                r"sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config",
-                r"sudo sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config",
-            ]
+        # Aplicar configurações com feedback
+        erros = []
+        comandos = [
+            (r"sudo sed -i 's/^#\?GatewayPorts.*/GatewayPorts yes/' /etc/ssh/sshd_config", "GatewayPorts"),
+            (r"sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config", "PasswordAuthentication"),
+            (r"sudo sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config", "PermitRootLogin"),
+        ]
 
-            for cmd in comandos:
-                subprocess.run(cmd, shell=True, check=False)
-
-            result = subprocess.run(
-                "grep -q '^GatewayPorts' /etc/ssh/sshd_config",
-                shell=True
-            )
+        for cmd, nome in comandos:
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
             if result.returncode != 0:
-                subprocess.run(
-                    "echo 'GatewayPorts yes' | sudo tee -a /etc/ssh/sshd_config",
-                    shell=True
-                )
+                erros.append(f"  ❌ Falha ao configurar {nome}: {result.stderr.strip()}")
+            else:
+                print(f"  ✅ {nome} configurado")
 
-            subprocess.run(["sudo", "systemctl", "restart", "ssh"], check=False)
+        # Fallback: se GatewayPorts não foi encontrado, adiciona
+        result = subprocess.run(
+            "grep -q '^GatewayPorts' /etc/ssh/sshd_config",
+            shell=True
+        )
+        if result.returncode != 0:
+            print("  ⚠️ GatewayPorts não encontrado, adicionando...")
+            subprocess.run(
+                "echo 'GatewayPorts yes' | sudo tee -a /etc/ssh/sshd_config",
+                shell=True, capture_output=True, text=True
+            )
 
-            print("\n✅ SSH configurado para túneis!")
+        # Validar configuração antes de reiniciar
+        print("\n🔍 Validando configuração SSH...")
+        result = subprocess.run(
+            "sudo sshd -t", shell=True, capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            print(f"⚠️ Configuração SSH inválida!")
+            print(f"   Erro: {result.stderr.strip()}")
+            print("   Restaurando backup...")
+            subprocess.run(
+                ["sudo", "cp", "/etc/ssh/sshd_config.bak.tuneis", "/etc/ssh/sshd_config"]
+            )
+            print("✅ Backup restaurado.")
+            input("\nPressione Enter para continuar...")
+            return
+        print("✅ Configuração válida!")
+
+        # Reiniciar apenas o serviço ativo
+        print("\n🔄 Reiniciando serviço SSH...")
+        reiniciado = False
+        for servico in ["ssh", "sshd"]:
+            result = subprocess.run(
+                ["sudo", "systemctl", "restart", servico],
+                capture_output=True, text=True
+            )
+            if result.returncode == 0:
+                print(f"  ✅ Serviço {servico} reiniciado com sucesso")
+                reiniciado = True
+                break
+            else:
+                print(f"  ⚠️ Falha ao reiniciar {servico}")
+
+        if not reiniciado:
+            print("  ❌ Falha ao reiniciar SSH! Tente manualmente: sudo systemctl restart sshd")
+            erros.append("  ❌ Nenhum serviço SSH reiniciado")
+
+        # Resumo
+        if erros:
+            print("\n⚠️ Erros encontrados:")
+            for e in erros:
+                print(e)
+        else:
+            print("\n✅ SSH configurado para túneis com sucesso!")
             print("   Backup: /etc/ssh/sshd_config.bak.tuneis")
-        except Exception as e:
-            print(f"❌ Erro ao configurar SSH: {e}")
 
         input("\nPressione Enter para continuar...")
 
