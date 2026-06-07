@@ -5745,6 +5745,52 @@ CMD ["sh", "-c", "\
         subprocess.run(["sudo", "systemctl", "enable", "ttyd.service"], check=False)
         subprocess.run(["sudo", "systemctl", "restart", "ttyd.service"], check=False)
 
+        # Liberação de firewall
+        print("\n Configurando firewall...")
+        try:
+            ufw_check = subprocess.run(
+                ["sudo", "ufw", "status"],
+                capture_output=True, text=True, timeout=10
+            )
+            if "active" in ufw_check.stdout.lower():
+                subprocess.run(
+                    ["sudo", "ufw", "allow", str(porta_web), "tcp"],
+                    capture_output=True, text=True, timeout=10
+                )
+                print(f"✔ Porta {porta_web} liberada no UFW")
+        except Exception:
+            pass
+
+        # Tenta iptables SEMPRE (independente do UFW)
+        try:
+            check_iptables = subprocess.run(
+                ["sudo", "iptables", "-C", "INPUT", "-p", "tcp", "--dport", str(porta_web), "-j", "ACCEPT"],
+                capture_output=True, timeout=10
+            )
+            if check_iptables.returncode == 0:
+                print(f"  Porta {porta_web} já liberada no iptables")
+            else:
+                subprocess.run(
+                    ["sudo", "iptables", "-I", "INPUT", "1", "-p", "tcp", "--dport", str(porta_web), "-j", "ACCEPT"],
+                    capture_output=True, timeout=10
+                )
+                print(f"✔ Porta {porta_web} liberada no iptables (inserida no topo da cadeia)")
+
+                # Salva regras iptables para persistir no boot
+                if shutil.which("netfilter-persistent"):
+                    subprocess.run(
+                        ["sudo", "netfilter-persistent", "save"],
+                        capture_output=True, timeout=10
+                    )
+                elif shutil.which("iptables-save"):
+                    subprocess.run(
+                        ["sudo", "sh", "-c", "iptables-save > /etc/iptables.rules"],
+                        capture_output=True, timeout=10
+                    )
+                print("  Regras salvas em /etc/iptables.rules")
+        except Exception as e:
+            print(f"  ⚠️  Não foi possível configurar iptables: {e}")
+
         time.sleep(2)
 
         print("\n" + "=" * 60)
