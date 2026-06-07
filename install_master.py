@@ -9909,6 +9909,9 @@ AllowedIPs = {ip_peer}
         if not usuario:
             print("❌ Usuário é obrigatório.")
             return
+        if not re.match(r'^[a-zA-Z0-9_.@-]+$', usuario):
+            print("❌ Usuário inválido. Use apenas letras, números, _, ., @ ou -.")
+            return
 
         servidor = input("🌐 IP ou domínio do servidor: ").strip()
         if not servidor:
@@ -10071,10 +10074,10 @@ AllowedIPs = {ip_peer}
 title Tunel: {nome}
 color 0A
 
-set USUARIO={info['usuario']}
-set SERVIDOR={info['servidor']}
-set PORTA_TUNEL={info['porta_remota']}
-set PORTA_LOCAL={info['porta_local']}
+set "USUARIO={info['usuario']}"
+set "SERVIDOR={info['servidor']}"
+set "PORTA_TUNEL={info['porta_remota']}"
+set "PORTA_LOCAL={info['porta_local']}"
 
 echo.
 echo ========================================
@@ -10150,8 +10153,8 @@ goto conectar
 # Túnel: {nome}
 # Uso: chmod +x {nome}.sh && ./{nome}.sh
 
-USUARIO="{info['usuario']}"
-SERVIDOR="{info['servidor']}"
+USUARIO='{info['usuario']}'
+SERVIDOR='{info['servidor']}'
 PORTA_TUNEL={info['porta_remota']}
 PORTA_LOCAL={info['porta_local']}
 
@@ -10222,8 +10225,8 @@ done
         for nome, info in tuneis.items():
             bloco_tuneis += f"""
 Host {nome}
-    HostName localhost
-    Port {info['porta_remota']}
+    HostName {info['servidor']}
+    Port 22
     User {info['usuario']}
     StrictHostKeyChecking no
 """
