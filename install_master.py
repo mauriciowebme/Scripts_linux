@@ -5595,6 +5595,178 @@ CMD ["sh", "-c", "\
         print("Aponte seus testes do WebDriver para http://servidor:4444")
         print("")
 
+    def instala_terminal_web(self):
+        print("Iniciando instalação do Terminal Web (ttyd).")
+        print("=" * 60)
+        print("Terminal web leve e responsivo - perfeito para celular!")
+        print("-" * 60)
+
+        ttyd_dir = f"{self.install_principal}/ttyd"
+        os.makedirs(ttyd_dir, exist_ok=True)
+
+        detect_machine = platform.machine().lower()
+        arch_map = {
+            "x86_64": "x86_64",
+            "amd64": "x86_64",
+            "aarch64": "arm64",
+            "arm64": "arm64",
+            "armv7l": "arm",
+        }
+        ttyd_arch = arch_map.get(detect_machine, "x86_64")
+        print(f" Arquitetura detectada: {detect_machine} → {ttyd_arch}")
+
+        ttyd_bin = "/usr/local/bin/ttyd"
+        if os.path.exists(ttyd_bin):
+            print(f" Binário ttyd já existe: {ttyd_bin}")
+            try:
+                result = subprocess.run([ttyd_bin, "--version"], capture_output=True, text=True)
+                if result.returncode == 0:
+                    print(f" Versão instalada: {result.stdout.strip()}")
+            except:
+                pass
+            reinstalar = input(" Deseja reinstalar/atualizar? (s/n): ").strip().lower()
+            if reinstalar != "s":
+                print(" Usando instalação existente.")
+            else:
+                print(" Baixando nova versão...")
+                os.remove(ttyd_bin)
+        else:
+            print(f" Baixando ttyd para {ttyd_arch}...")
+
+        if not os.path.exists(ttyd_bin):
+            try:
+                api_url = "https://api.github.com/repos/tsl0922/ttyd/releases/latest"
+                resp = subprocess.run(
+                    ["curl", "-sL", api_url],
+                    capture_output=True, text=True, timeout=30
+                )
+                if resp.returncode == 0:
+                    release_data = json.loads(resp.stdout)
+                    version = release_data.get("tag_name", "1.7.7").lstrip("v")
+                else:
+                    version = "1.7.7"
+            except Exception:
+                version = "1.7.7"
+
+            asset_name = f"ttyd.{ttyd_arch}"
+            download_url = f"https://github.com/tsl0922/ttyd/releases/download/{version}/{asset_name}"
+
+            print(f" Versão: {version}")
+            print(f" Asset: {asset_name}")
+
+            try:
+                subprocess.run(
+                    ["curl", "-fSL", "-o", "/tmp/ttyd", download_url],
+                    check=True, timeout=120
+                )
+                print(f" Download concluído.")
+
+                subprocess.run(["sudo", "mv", "/tmp/ttyd", ttyd_bin], check=True)
+                subprocess.run(["sudo", "chmod", "+x", ttyd_bin], check=True)
+                print(f" Binário instalado: {ttyd_bin}")
+            except Exception as e:
+                print(f" Erro ao baixar ttyd: {e}")
+                print(" Você pode baixar manualmente em: https://github.com/tsl0922/ttyd/releases")
+                return
+
+        porta = self.escolher_porta_disponivel()
+        if not porta:
+            print(" Nenhuma porta disponível no intervalo padrão.")
+            return
+        porta_web = porta[0]
+
+        config_file = os.path.join(ttyd_dir, "config.json")
+        usar_config_existente = False
+
+        if os.path.exists(config_file):
+            print("\n⚠️  Arquivo de configuração já existe!")
+            resposta = input(" Deseja usar as configurações existentes? (s/n) [padrão: s]: ").strip().lower()
+            if resposta != "n":
+                usar_config_existente = True
+                print("✅ Usando configurações existentes.")
+                try:
+                    with open(config_file, "r") as f:
+                        cfg = json.load(f)
+                    porta_web = cfg.get("porta", porta_web)
+                    ttyd_user = cfg.get("user", "root")
+                    ttyd_password = cfg.get("password", "")
+                except:
+                    ttyd_user = "root"
+                    ttyd_password = ""
+            else:
+                print(" Novas configurações serão solicitadas.")
+
+        if not usar_config_existente:
+            ttyd_user = input("\n Usuário para acesso (padrão: root): ").strip() or "root"
+            ttyd_password_input = input(" Senha (Enter para gerar automaticamente): ").strip()
+            if not ttyd_password_input:
+                ttyd_password = self.generate_password(16)
+                print(f" Senha gerada automaticamente: {ttyd_password}")
+            else:
+                ttyd_password = ttyd_password_input
+
+            print("\n💡 O ttyd usa autenticação HTTP Basic.")
+            print("   Para acesso via celular, a interface é totalmente responsiva.")
+
+            cfg = {
+                "porta": porta_web,
+                "user": ttyd_user,
+                "password": ttyd_password,
+                "versao": version,
+            }
+            with open(config_file, "w") as f:
+                json.dump(cfg, f, indent=2)
+            os.chmod(config_file, 0o600)
+            print(f" Configuração salva: {config_file}")
+
+        print("\n Criando serviço systemd...")
+        service_content = textwrap.dedent(f"""\
+            [Unit]
+            Description=Terminal Web (ttyd)
+            After=network.target
+
+            [Service]
+            Type=simple
+            User=root
+            ExecStart={ttyd_bin} --credential {shlex.quote(ttyd_user)}:{shlex.quote(ttyd_password)} --port {porta_web} --writable bash
+            Restart=on-failure
+            RestartSec=5
+
+            [Install]
+            WantedBy=multi-user.target
+        """)
+
+        temp_svc = "/tmp/ttyd.service"
+        with open(temp_svc, "w") as f:
+            f.write(service_content)
+
+        subprocess.run(["sudo", "mv", temp_svc, "/etc/systemd/system/ttyd.service"], check=False)
+        subprocess.run(["sudo", "systemctl", "daemon-reload"], check=False)
+        subprocess.run(["sudo", "systemctl", "enable", "ttyd.service"], check=False)
+        subprocess.run(["sudo", "systemctl", "restart", "ttyd.service"], check=False)
+
+        time.sleep(2)
+
+        print("\n" + "=" * 60)
+        print(" Instalação do Terminal Web (ttyd) concluída!")
+        print("=" * 60)
+        print("\n IPs possíveis para acesso:")
+        self.executar_comandos(["hostname -I | tr ' ' '\\n'"], exibir_executando=False)
+        print(f"\n Endereço: http://<seu_ip>:{porta_web}")
+        print(f" Usuário: {ttyd_user}")
+        print(f" Senha: {ttyd_password}")
+        print(f"\n Porta: {porta_web}")
+        print("\n💡 Este terminal é responsivo e funciona perfeitamente no celular!")
+        print("   No celular, use o navegador em tela cheia para melhor experiência.")
+        print("\n🔧 Comandos úteis:")
+        print("   status:  sudo systemctl status ttyd")
+        print("   stop:    sudo systemctl stop ttyd")
+        print("   start:   sudo systemctl start ttyd")
+        print("   restart: sudo systemctl restart ttyd")
+        print("   logs:    sudo journalctl -u ttyd -f")
+        print("\n Guarde a senha! Ela não será exibida novamente.")
+        print("=" * 60)
+
     def instala_frp_server(self):
         print("Iniciando instalação do frp server (reverse proxy).")
         print("=" * 60)
@@ -8394,6 +8566,7 @@ AllowedIPs = {ip_peer}
             ("🧠 Inteligência Artificial (Ollama Local)", self.gerenciar_ollama),
             ("🦀 Open Claw (Automação/Agentes)", self.gerenciar_open_claw),
             ("🖥️ Interfaces Gráficas (Desktop)", self.menu_interfaces_graficas),
+            ("💻 Terminal Web (ttyd) - Responsivo/Mobile", self.instala_terminal_web),
             ("📦 Instalar pacote .deb manualmente", self.instalar_deb),
             ("🤖 Gerenciar OpenCode (AI CLI)", self.gerenciar_opencode),
             ("📊 Monitor de Rede (vnstat)", self.vnstat),
@@ -10554,6 +10727,190 @@ done
 
         input("\nPressione Enter para continuar...")
 
+    def gerenciar_terminal_web(self):
+        print("\n=== GERENCIAMENTO DO TERMINAL WEB (ttyd) ===\n")
+
+        ttyd_bin = "/usr/local/bin/ttyd"
+        config_file = f"{self.install_principal}/ttyd/config.json"
+
+        while True:
+            try:
+                result = subprocess.run(
+                    ["sudo", "systemctl", "is-active", "ttyd.service"],
+                    capture_output=True, text=True
+                )
+                status = result.stdout.strip()
+                if status == "active":
+                    status_icon = "🟢 ATIVO"
+                else:
+                    status_icon = "🔴 INATIVO"
+            except:
+                status_icon = "⚪ NÃO INSTALADO"
+
+            print(f"Status: {status_icon}")
+
+            if os.path.exists(config_file):
+                try:
+                    with open(config_file, "r") as f:
+                        cfg = json.load(f)
+                    print(f"Porta: {cfg.get('porta', 'N/A')}")
+                    print(f"Usuário: {cfg.get('user', 'N/A')}")
+                except:
+                    pass
+
+            print("\n" + "-" * 55)
+            print("[1] Iniciar ttyd")
+            print("[2] Parar ttyd")
+            print("[3] Reiniciar ttyd")
+            print("[4] Ver status detalhado")
+            print("[5] Ver logs")
+            print("[6] Alterar senha")
+            print("[7] Alterar porta")
+            print("[0] Voltar")
+            print("=" * 55)
+
+            opcao = input("\nEscolha: ").strip()
+
+            if opcao == "1":
+                print("\n Iniciando ttyd...")
+                subprocess.run(["sudo", "systemctl", "start", "ttyd.service"], check=False)
+                time.sleep(1)
+                subprocess.run(["sudo", "systemctl", "status", "ttyd.service", "--no-pager"], check=False)
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "2":
+                print("\n Parando ttyd...")
+                subprocess.run(["sudo", "systemctl", "stop", "ttyd.service"], check=False)
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "3":
+                print("\n Reiniciando ttyd...")
+                subprocess.run(["sudo", "systemctl", "restart", "ttyd.service"], check=False)
+                time.sleep(1)
+                subprocess.run(["sudo", "systemctl", "status", "ttyd.service", "--no-pager"], check=False)
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "4":
+                print("\n Status detalhado:")
+                subprocess.run(["sudo", "systemctl", "status", "ttyd.service", "--no-pager"], check=False)
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "5":
+                print("\n Logs recentes (Ctrl+C para sair):")
+                subprocess.run(["sudo", "journalctl", "-u", "ttyd.service", "-n", "50", "--no-pager"], check=False)
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "6":
+                if not os.path.exists(config_file):
+                    print(" Arquivo de configuração não encontrado.")
+                    input("\nPressione Enter para continuar...")
+                    continue
+
+                try:
+                    with open(config_file, "r") as f:
+                        cfg = json.load(f)
+                    ttyd_user = cfg.get("user", "root")
+                    print(f"\n Usuário atual: {ttyd_user}")
+                except:
+                    ttyd_user = "root"
+
+                nova_senha = input(" Nova senha (Enter para gerar automaticamente): ").strip()
+                if not nova_senha:
+                    nova_senha = self.generate_password(16)
+                    print(f" Senha gerada: {nova_senha}")
+
+                cfg["password"] = nova_senha
+                with open(config_file, "w") as f:
+                    json.dump(cfg, f, indent=2)
+                os.chmod(config_file, 0o600)
+
+                print("\n Atualizando serviço com nova senha...")
+                service_content = textwrap.dedent(f"""\
+                    [Unit]
+                    Description=Terminal Web (ttyd)
+                    After=network.target
+
+                    [Service]
+                    Type=simple
+                    User=root
+                    ExecStart={ttyd_bin} --credential {shlex.quote(ttyd_user)}:{shlex.quote(nova_senha)} --port {cfg.get('porta', 7681)} --writable bash
+                    Restart=on-failure
+                    RestartSec=5
+
+                    [Install]
+                    WantedBy=multi-user.target
+                """)
+
+                temp_svc = "/tmp/ttyd.service"
+                with open(temp_svc, "w") as f:
+                    f.write(service_content)
+
+                subprocess.run(["sudo", "mv", temp_svc, "/etc/systemd/system/ttyd.service"], check=False)
+                subprocess.run(["sudo", "systemctl", "daemon-reload"], check=False)
+                subprocess.run(["sudo", "systemctl", "restart", "ttyd.service"], check=False)
+
+                print(" Senha atualizada e serviço reiniciado!")
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "7":
+                if not os.path.exists(config_file):
+                    print(" Arquivo de configuração não encontrado.")
+                    input("\nPressione Enter para continuar...")
+                    continue
+
+                try:
+                    with open(config_file, "r") as f:
+                        cfg = json.load(f)
+                    porta_atual = cfg.get("porta", 7681)
+                    ttyd_user = cfg.get("user", "root")
+                    ttyd_password = cfg.get("password", "")
+                except:
+                    porta_atual = 7681
+                    ttyd_user = "root"
+                    ttyd_password = ""
+
+                print(f" Porta atual: {porta_atual}")
+                nova_porta = input(" Nova porta (Enter para manter): ").strip()
+                if nova_porta:
+                    cfg["porta"] = int(nova_porta)
+                    with open(config_file, "w") as f:
+                        json.dump(cfg, f, indent=2)
+
+                    print("\n Atualizando serviço com nova porta...")
+                    service_content = textwrap.dedent(f"""\
+                        [Unit]
+                        Description=Terminal Web (ttyd)
+                        After=network.target
+
+                        [Service]
+                        Type=simple
+                        User=root
+                        ExecStart={ttyd_bin} --credential {shlex.quote(ttyd_user)}:{shlex.quote(ttyd_password)} --port {nova_porta} --writable bash
+                        Restart=on-failure
+                        RestartSec=5
+
+                        [Install]
+                        WantedBy=multi-user.target
+                    """)
+
+                    temp_svc = "/tmp/ttyd.service"
+                    with open(temp_svc, "w") as f:
+                        f.write(service_content)
+
+                    subprocess.run(["sudo", "mv", temp_svc, "/etc/systemd/system/ttyd.service"], check=False)
+                    subprocess.run(["sudo", "systemctl", "daemon-reload"], check=False)
+                    subprocess.run(["sudo", "systemctl", "restart", "ttyd.service"], check=False)
+
+                    print(f" Porta alterada para {nova_porta} e serviço reiniciado!")
+                else:
+                    print(" Porta mantida.")
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "0":
+                break
+            else:
+                print(" Opção inválida.")
+
     def gerenciar_microservicos(self):
         """Menu centralizado para gerenciamento de microserviços"""
         opcoes_menu = [
@@ -10564,6 +10921,7 @@ done
             ("📊 Monitoramento (Grafana)", self.iniciar_monitoramento),
             ("💾 Gerenciar Bancos PostgreSQL", self.gerenciar_bancos_postgres),
             ("📝 Controle Sites (OpenLiteSpeed)", self.controle_sites_openlitespeed),
+            ("💻 Gerenciar Terminal Web (ttyd)", self.gerenciar_terminal_web),
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="🔧 GERENCIADOR DE MICROSERVIÇOS", itens_por_pagina=10)
 
@@ -10579,7 +10937,7 @@ def main():
     check_for_update(sistema_instance=servicos)
     
     banner = f"""Arquivo install_master.py iniciado!
-Versão 1.228
+Versão 1.229
 Execute com: install_master
 ip server: {servicos.exibe_ip()}"""
     """Função principal que controla o menu."""
