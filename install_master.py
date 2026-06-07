@@ -5812,6 +5812,289 @@ CMD ["sh", "-c", "\
         print("   logs:    sudo journalctl -u ttyd -f")
         print("\n Guarde a senha! Ela não será exibida novamente.")
         print("=" * 60)
+        print("\n💡 Para experiência mobile completa (toolbar com setas, tab, esc),")
+        print("   instale também o Termote (PWA) na Central de Instalações!")
+
+    def instala_termote_mobile(self):
+        print("Iniciando instalação do Termote Mobile (PWA).")
+        print("=" * 60)
+        print("PWA mobile para terminal com toolbar virtual e gestos!")
+        print("-" * 60)
+
+        ttyd_bin = "/usr/local/bin/ttyd"
+        if not os.path.exists(ttyd_bin):
+            print(" Erro: ttyd não está instalado!")
+            print(" Instale primeiro o Terminal Web (ttyd) na Central de Instalações.")
+            return
+
+        termote_dir = f"{self.install_principal}/termote"
+        pwa_dir = os.path.join(termote_dir, "pwa")
+        os.makedirs(termote_dir, exist_ok=True)
+        os.makedirs(pwa_dir, exist_ok=True)
+
+        detect_machine = platform.machine().lower()
+        arch_map = {
+            "x86_64": "linux-amd64",
+            "amd64": "linux-amd64",
+            "aarch64": "linux-arm64",
+            "arm64": "linux-arm64",
+        }
+        termote_arch = arch_map.get(detect_machine, "linux-amd64")
+        print(f" Arquitetura detectada: {detect_machine} → {termote_arch}")
+
+        tmux_api_bin = "/usr/local/bin/tmux-api"
+        try:
+            api_url = "https://api.github.com/repos/lamngockhuong/termote/releases/latest"
+            resp = subprocess.run(
+                ["curl", "-sL", api_url],
+                capture_output=True, text=True, timeout=30
+            )
+            if resp.returncode == 0:
+                release_data = json.loads(resp.stdout)
+                version = release_data.get("tag_name", "v0.0.15").lstrip("v")
+            else:
+                version = "0.0.15"
+        except Exception:
+            version = "0.0.15"
+
+        download_url_api = f"https://github.com/lamngockhuong/termote/releases/download/v{version}/tmux-api-{termote_arch}"
+        download_url_pwa = f"https://github.com/lamngockhuong/termote/releases/download/v{version}/pwa-dist-v{version}.zip"
+
+        print(f" Versão: {version}")
+
+        if os.path.exists(tmux_api_bin):
+            print(f" Binário tmux-api já existe: {tmux_api_bin}")
+            reinstalar = input(" Deseja reinstalar/atualizar? (s/n): ").strip().lower()
+            if reinstalar != "s":
+                print(" Usando instalação existente.")
+            else:
+                print(" Baixando nova versão...")
+                os.remove(tmux_api_bin)
+        else:
+            print(f" Baixando tmux-api para {termote_arch}...")
+
+        if not os.path.exists(tmux_api_bin):
+            try:
+                subprocess.run(
+                    ["curl", "-fSL", "-o", "/tmp/tmux-api", download_url_api],
+                    check=True, timeout=120
+                )
+                print(" Download do tmux-api concluído.")
+                subprocess.run(["sudo", "mv", "/tmp/tmux-api", tmux_api_bin], check=True)
+                subprocess.run(["sudo", "chmod", "+x", tmux_api_bin], check=True)
+                print(f" Binário instalado: {tmux_api_bin}")
+            except Exception as e:
+                print(f" Erro ao baixar tmux-api: {e}")
+                return
+
+        print("\n Instalando dependências...")
+        if not shutil.which("tmux"):
+            print(" Instalando tmux...")
+            subprocess.run(["sudo", "apt", "install", "-y", "tmux"], check=False)
+
+        if not shutil.which("unzip"):
+            print(" Instalando unzip...")
+            subprocess.run(["sudo", "apt", "install", "-y", "unzip"], check=False)
+
+        if not os.path.exists(os.path.join(pwa_dir, "index.html")):
+            print(f" Baixando PWA dist...")
+            try:
+                subprocess.run(
+                    ["curl", "-fSL", "-o", "/tmp/pwa-dist.zip", download_url_pwa],
+                    check=True, timeout=120
+                )
+                print(" Download da PWA concluído.")
+                subprocess.run(["sudo", "rm", "-rf", f"{pwa_dir}/*"], check=False)
+                subprocess.run(
+                    ["sudo", "unzip", "-o", "/tmp/pwa-dist.zip", "-d", pwa_dir],
+                    check=True, timeout=30
+                )
+                subprocess.run(["sudo", "rm", "-f", "/tmp/pwa-dist.zip"], check=False)
+                print(f" PWA extraída em: {pwa_dir}")
+            except Exception as e:
+                print(f" Erro ao baixar PWA: {e}")
+                return
+        else:
+            print(" PWA já está instalada.")
+
+        porta_termote = 7680
+        ttyd_config = f"{self.install_principal}/ttyd/config.json"
+        ttyd_port = 7681
+        ttyd_user = "root"
+        ttyd_password = ""
+
+        if os.path.exists(ttyd_config):
+            try:
+                with open(ttyd_config, "r") as f:
+                    ttyd_cfg = json.load(f)
+                ttyd_port = ttyd_cfg.get("porta", 7681)
+                ttyd_user = ttyd_cfg.get("user", "root")
+                ttyd_password = ttyd_cfg.get("password", "")
+            except:
+                pass
+
+        config_file = os.path.join(termote_dir, "config.json")
+        usar_config_existente = False
+
+        if os.path.exists(config_file):
+            print("\n⚠️  Arquivo de configuração já existe!")
+            resposta = input(" Deseja usar as configurações existentes? (s/n) [padrão: s]: ").strip().lower()
+            if resposta != "n":
+                usar_config_existente = True
+                print("✅ Usando configurações existentes.")
+                try:
+                    with open(config_file, "r") as f:
+                        cfg = json.load(f)
+                    porta_termote = cfg.get("porta", 7680)
+                    termote_user = cfg.get("user", ttyd_user)
+                    termote_password = cfg.get("password", ttyd_password)
+                except:
+                    termote_user = ttyd_user
+                    termote_password = ttyd_password
+            else:
+                print(" Novas configurações serão solicitadas.")
+
+        if not usar_config_existente:
+            reutilizar = input("\n Deseja reutilizar as credenciais do ttyd? (s/n) [padrão: s]: ").strip().lower()
+            if reutilizar != "n":
+                termote_user = ttyd_user
+                termote_password = ttyd_password
+                print(f" Usando credenciais do ttyd: {termote_user}")
+            else:
+                termote_user = input(" Usuário para acesso (padrão: root): ").strip() or "root"
+                ttyd_password_input = input(" Senha (Enter para gerar automaticamente): ").strip()
+                if not ttyd_password_input:
+                    termote_password = self.generate_password(16)
+                    print(f" Senha gerada automaticamente: {termote_password}")
+                else:
+                    termote_password = ttyd_password_input
+
+            expor_lan = input("\n Expor na rede local (LAN)? (s/n) [padrão: s]: ").strip().lower()
+            if expor_lan == "n":
+                listen_addr = "127.0.0.1"
+                print(" Acessível apenas localmente (localhost).")
+            else:
+                listen_addr = "0.0.0.0"
+                print(" Acessível pela rede local.")
+
+            cfg = {
+                "porta": porta_termote,
+                "user": termote_user,
+                "password": termote_password,
+                "versao": version,
+                "listen": listen_addr,
+                "ttyd_port": ttyd_port,
+            }
+            with open(config_file, "w") as f:
+                json.dump(cfg, f, indent=2)
+            os.chmod(config_file, 0o600)
+            print(f" Configuração salva: {config_file}")
+        else:
+            try:
+                with open(config_file, "r") as f:
+                    cfg = json.load(f)
+                listen_addr = cfg.get("listen", "0.0.0.0")
+            except:
+                listen_addr = "0.0.0.0"
+
+        print("\n Criando serviço systemd...")
+        service_content = textwrap.dedent(f"""\
+            [Unit]
+            Description=Termote Mobile PWA (tmux-api)
+            After=network.target ttyd.service
+            Wants=ttyd.service
+
+            [Service]
+            Type=simple
+            User=root
+            Environment=TERMOTE_USER={shlex.quote(termote_user)}
+            Environment=TERMOTE_PASS={shlex.quote(termote_password)}
+            ExecStart={tmux_api_bin} --ttyd-url ws://localhost:{ttyd_port} --port {porta_termote} --static-dir {pwa_dir} --listen {listen_addr}
+            Restart=on-failure
+            RestartSec=5
+
+            [Install]
+            WantedBy=multi-user.target
+        """)
+
+        temp_svc = "/tmp/termote.service"
+        with open(temp_svc, "w") as f:
+            f.write(service_content)
+
+        subprocess.run(["sudo", "mv", temp_svc, "/etc/systemd/system/termote.service"], check=False)
+        subprocess.run(["sudo", "systemctl", "daemon-reload"], check=False)
+        subprocess.run(["sudo", "systemctl", "enable", "termote.service"], check=False)
+        subprocess.run(["sudo", "systemctl", "restart", "termote.service"], check=False)
+
+        print("\n Configurando firewall...")
+        try:
+            ufw_check = subprocess.run(
+                ["sudo", "ufw", "status"],
+                capture_output=True, text=True, timeout=10
+            )
+            if "active" in ufw_check.stdout.lower():
+                subprocess.run(
+                    ["sudo", "ufw", "allow", str(porta_termote), "tcp"],
+                    capture_output=True, text=True, timeout=10
+                )
+                print(f"✔ Porta {porta_termote} liberada no UFW")
+        except Exception:
+            pass
+
+        try:
+            check_iptables = subprocess.run(
+                ["sudo", "iptables", "-C", "INPUT", "-p", "tcp", "--dport", str(porta_termote), "-j", "ACCEPT"],
+                capture_output=True, timeout=10
+            )
+            if check_iptables.returncode == 0:
+                print(f"  Porta {porta_termote} já liberada no iptables")
+            else:
+                subprocess.run(
+                    ["sudo", "iptables", "-I", "INPUT", "1", "-p", "tcp", "--dport", str(porta_termote), "-j", "ACCEPT"],
+                    capture_output=True, timeout=10
+                )
+                print(f"✔ Porta {porta_termote} liberada no iptables (inserida no topo da cadeia)")
+
+                if shutil.which("netfilter-persistent"):
+                    subprocess.run(
+                        ["sudo", "netfilter-persistent", "save"],
+                        capture_output=True, timeout=10
+                    )
+                elif shutil.which("iptables-save"):
+                    subprocess.run(
+                        ["sudo", "sh", "-c", "iptables-save > /etc/iptables.rules"],
+                        capture_output=True, timeout=10
+                    )
+                print("  Regras salvas em /etc/iptables.rules")
+        except Exception as e:
+            print(f"  ⚠️  Não foi possível configurar iptables: {e}")
+
+        time.sleep(2)
+
+        print("\n" + "=" * 60)
+        print(" Instalação do Termote Mobile (PWA) concluída!")
+        print("=" * 60)
+        print("\n IPs possíveis para acesso:")
+        self.executar_comandos(["hostname -I | tr ' ' '\\n'"], exibir_executando=False)
+        print(f"\n Endereço PWA: http://<seu_ip>:{porta_termote}")
+        print(f" Usuário: {termote_user}")
+        print(f" Senha: {termote_password}")
+        print(f"\n Porta: {porta_termote}")
+        print("\n📱 Recursos Mobile:")
+        print("   ✅ Toolbar virtual: Tab, Esc, Ctrl, Shift, Setas")
+        print("   ✅ Gestos: Swipe ← = Ctrl+C, Swipe → = Tab")
+        print("   ✅ Pinch-to-zoom funcional (recalcula colunas)")
+        print("   ✅ PWA instalável na homescreen")
+        print("   ✅ Múltiplas sessões tmux")
+        print("\n💡 No celular, adicione à tela inicial para experiência full-screen!")
+        print("\n🔧 Comandos úteis:")
+        print("   status:  sudo systemctl status termote")
+        print("   stop:    sudo systemctl stop termote")
+        print("   start:   sudo systemctl start termote")
+        print("   restart: sudo systemctl restart termote")
+        print("   logs:    sudo journalctl -u termote -f")
+        print("\n Guarde a senha! Ela não será exibida novamente.")
+        print("=" * 60)
 
     def instala_frp_server(self):
         print("Iniciando instalação do frp server (reverse proxy).")
@@ -8613,6 +8896,7 @@ AllowedIPs = {ip_peer}
             ("🦀 Open Claw (Automação/Agentes)", self.gerenciar_open_claw),
             ("🖥️ Interfaces Gráficas (Desktop)", self.menu_interfaces_graficas),
             ("💻 Terminal Web (ttyd) - Responsivo/Mobile", self.instala_terminal_web),
+            ("📱 Terminal Mobile (Termote PWA)", self.instala_termote_mobile),
             ("📦 Instalar pacote .deb manualmente", self.instalar_deb),
             ("🤖 Gerenciar OpenCode (AI CLI)", self.gerenciar_opencode),
             ("📊 Monitor de Rede (vnstat)", self.vnstat),
@@ -10957,6 +11241,216 @@ done
             else:
                 print(" Opção inválida.")
 
+    def gerenciar_termote_mobile(self):
+        print("\n=== GERENCIAMENTO DO TERMOTE MOBILE (PWA) ===\n")
+
+        tmux_api_bin = "/usr/local/bin/tmux-api"
+        config_file = f"{self.install_principal}/termote/config.json"
+
+        while True:
+            try:
+                result = subprocess.run(
+                    ["sudo", "systemctl", "is-active", "termote.service"],
+                    capture_output=True, text=True
+                )
+                status = result.stdout.strip()
+                if status == "active":
+                    status_icon = "🟢 ATIVO"
+                else:
+                    status_icon = "🔴 INATIVO"
+            except:
+                status_icon = "⚪ NÃO INSTALADO"
+
+            print(f"Status: {status_icon}")
+
+            if os.path.exists(config_file):
+                try:
+                    with open(config_file, "r") as f:
+                        cfg = json.load(f)
+                    print(f"Porta: {cfg.get('porta', 'N/A')}")
+                    print(f"Usuário: {cfg.get('user', 'N/A')}")
+                    print(f"ttyd porta: {cfg.get('ttyd_port', 'N/A')}")
+                except:
+                    pass
+
+            print("\n" + "-" * 55)
+            print("[1] Iniciar Termote")
+            print("[2] Parar Termote")
+            print("[3] Reiniciar Termote")
+            print("[4] Ver status detalhado")
+            print("[5] Ver logs")
+            print("[6] Alterar senha")
+            print("[7] Alterar porta")
+            print("[8] Atualizar Termote")
+            print("[0] Voltar")
+            print("=" * 55)
+
+            opcao = input("\nEscolha: ").strip()
+
+            if opcao == "1":
+                print("\n Iniciando Termote...")
+                subprocess.run(["sudo", "systemctl", "start", "termote.service"], check=False)
+                time.sleep(1)
+                subprocess.run(["sudo", "systemctl", "status", "termote.service", "--no-pager"], check=False)
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "2":
+                print("\n Parando Termote...")
+                subprocess.run(["sudo", "systemctl", "stop", "termote.service"], check=False)
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "3":
+                print("\n Reiniciando Termote...")
+                subprocess.run(["sudo", "systemctl", "restart", "termote.service"], check=False)
+                time.sleep(1)
+                subprocess.run(["sudo", "systemctl", "status", "termote.service", "--no-pager"], check=False)
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "4":
+                print("\n Status detalhado:")
+                subprocess.run(["sudo", "systemctl", "status", "termote.service", "--no-pager"], check=False)
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "5":
+                print("\n Logs recentes (Ctrl+C para sair):")
+                subprocess.run(["sudo", "journalctl", "-u", "termote.service", "-n", "50", "--no-pager"], check=False)
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "6":
+                if not os.path.exists(config_file):
+                    print(" Arquivo de configuração não encontrado.")
+                    input("\nPressione Enter para continuar...")
+                    continue
+
+                try:
+                    with open(config_file, "r") as f:
+                        cfg = json.load(f)
+                    termote_user = cfg.get("user", "root")
+                    porta_termote = cfg.get("porta", 7680)
+                    listen_addr = cfg.get("listen", "0.0.0.0")
+                    ttyd_port = cfg.get("ttyd_port", 7681)
+                    versao = cfg.get("versao", "0.0.15")
+                    print(f"\n Usuário atual: {termote_user}")
+                except:
+                    termote_user = "root"
+                    porta_termote = 7680
+                    listen_addr = "0.0.0.0"
+                    ttyd_port = 7681
+                    versao = "0.0.15"
+
+                nova_senha = input(" Nova senha (Enter para gerar automaticamente): ").strip()
+                if not nova_senha:
+                    nova_senha = self.generate_password(16)
+                    print(f" Senha gerada: {nova_senha}")
+
+                cfg["password"] = nova_senha
+                with open(config_file, "w") as f:
+                    json.dump(cfg, f, indent=2)
+                os.chmod(config_file, 0o600)
+
+                print("\n Atualizando serviço com nova senha...")
+                service_content = textwrap.dedent(f"""\
+                    [Unit]
+                    Description=Termote Mobile PWA (tmux-api)
+                    After=network.target ttyd.service
+                    Wants=ttyd.service
+
+                    [Service]
+                    Type=simple
+                    User=root
+                    Environment=TERMOTE_USER={shlex.quote(termote_user)}
+                    Environment=TERMOTE_PASS={shlex.quote(nova_senha)}
+                    ExecStart={tmux_api_bin} --ttyd-url ws://localhost:{ttyd_port} --port {porta_termote} --static-dir {self.install_principal}/termote/pwa --listen {listen_addr}
+                    Restart=on-failure
+                    RestartSec=5
+
+                    [Install]
+                    WantedBy=multi-user.target
+                """)
+
+                temp_svc = "/tmp/termote.service"
+                with open(temp_svc, "w") as f:
+                    f.write(service_content)
+
+                subprocess.run(["sudo", "mv", temp_svc, "/etc/systemd/system/termote.service"], check=False)
+                subprocess.run(["sudo", "systemctl", "daemon-reload"], check=False)
+                subprocess.run(["sudo", "systemctl", "restart", "termote.service"], check=False)
+
+                print(" Senha atualizada e serviço reiniciado!")
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "7":
+                if not os.path.exists(config_file):
+                    print(" Arquivo de configuração não encontrado.")
+                    input("\nPressione Enter para continuar...")
+                    continue
+
+                try:
+                    with open(config_file, "r") as f:
+                        cfg = json.load(f)
+                    porta_atual = cfg.get("porta", 7680)
+                    termote_user = cfg.get("user", "root")
+                    termote_password = cfg.get("password", "")
+                    listen_addr = cfg.get("listen", "0.0.0.0")
+                    ttyd_port = cfg.get("ttyd_port", 7681)
+                except:
+                    porta_atual = 7680
+                    termote_user = "root"
+                    termote_password = ""
+                    listen_addr = "0.0.0.0"
+                    ttyd_port = 7681
+
+                print(f" Porta atual: {porta_atual}")
+                nova_porta = input(" Nova porta (Enter para manter): ").strip()
+                if nova_porta:
+                    cfg["porta"] = int(nova_porta)
+                    with open(config_file, "w") as f:
+                        json.dump(cfg, f, indent=2)
+
+                    print("\n Atualizando serviço com nova porta...")
+                    service_content = textwrap.dedent(f"""\
+                        [Unit]
+                        Description=Termote Mobile PWA (tmux-api)
+                        After=network.target ttyd.service
+                        Wants=ttyd.service
+
+                        [Service]
+                        Type=simple
+                        User=root
+                        Environment=TERMOTE_USER={shlex.quote(termote_user)}
+                        Environment=TERMOTE_PASS={shlex.quote(termote_password)}
+                        ExecStart={tmux_api_bin} --ttyd-url ws://localhost:{ttyd_port} --port {nova_porta} --static-dir {self.install_principal}/termote/pwa --listen {listen_addr}
+                        Restart=on-failure
+                        RestartSec=5
+
+                        [Install]
+                        WantedBy=multi-user.target
+                    """)
+
+                    temp_svc = "/tmp/termote.service"
+                    with open(temp_svc, "w") as f:
+                        f.write(service_content)
+
+                    subprocess.run(["sudo", "mv", temp_svc, "/etc/systemd/system/termote.service"], check=False)
+                    subprocess.run(["sudo", "systemctl", "daemon-reload"], check=False)
+                    subprocess.run(["sudo", "systemctl", "restart", "termote.service"], check=False)
+
+                    print(f" Porta alterada para {nova_porta} e serviço reiniciado!")
+                else:
+                    print(" Porta mantida.")
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "8":
+                print("\n Atualizando Termote...")
+                print(" Redirecionando para instalação...")
+                self.instala_termote_mobile()
+                input("\nPressione Enter para continuar...")
+
+            elif opcao == "0":
+                break
+            else:
+                print(" Opção inválida.")
+
     def gerenciar_microservicos(self):
         """Menu centralizado para gerenciamento de microserviços"""
         opcoes_menu = [
@@ -10968,6 +11462,7 @@ done
             ("💾 Gerenciar Bancos PostgreSQL", self.gerenciar_bancos_postgres),
             ("📝 Controle Sites (OpenLiteSpeed)", self.controle_sites_openlitespeed),
             ("💻 Gerenciar Terminal Web (ttyd)", self.gerenciar_terminal_web),
+            ("📱 Gerenciar Termote Mobile (PWA)", self.gerenciar_termote_mobile),
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="🔧 GERENCIADOR DE MICROSERVIÇOS", itens_por_pagina=10)
 
@@ -10983,7 +11478,7 @@ def main():
     check_for_update(sistema_instance=servicos)
     
     banner = f"""Arquivo install_master.py iniciado!
-Versão 1.229
+ Versão 1.230
 Execute com: install_master
 ip server: {servicos.exibe_ip()}"""
     """Função principal que controla o menu."""
