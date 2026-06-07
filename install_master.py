@@ -9784,21 +9784,18 @@ AllowedIPs = {ip_peer}
             print(f"🟢 Túneis ativos: {len(ativos)}")
 
             if tuneis:
-                print("\n📋 Túneis configurados:")
+                print("\n📋 Resumo rápido:")
                 for nome, info in tuneis.items():
                     status = "🟢 ATIVO" if nome in ativos else "🔴 INATIVO"
                     print(f"  {status} | {nome} → porta {info['porta_remota']} ({info['tipo']})")
 
             print("\n" + "-" * 55)
-            print("[1] ➕ Criar novo túnel")
-            print("[2] 📋 Listar e monitorar túneis")
-            print("[3] 🗑️  Remover túnel")
-            print("[4] 🪟 Gerar script .bat (Windows)")
-            print("[5] 🐧 Gerar script .sh (Linux)")
-            print("[6] 🔗 Atualizar aliases SSH (~/.ssh/config)")
-            print("[7] ⚙️  Configurar SSH para túneis")
-            print("[8] 📄 Ver script na tela")
-            print("[9] 📁 Listar scripts disponíveis")
+            print("[1] ➕ Criar túnel")
+            print("[2] ✏️  Editar túnel")
+            print("[3] 🗑️  Excluir túnel")
+            print("[4] 📋 Visualizar túneis")
+            print("[5] 📄 Script cliente")
+            print("[6] ⚙️  Configurar servidor SSH")
             print("[0] Voltar")
             print("=" * 55)
 
@@ -9807,21 +9804,15 @@ AllowedIPs = {ip_peer}
             if opcao == "1":
                 self._criar_tunel()
             elif opcao == "2":
-                self._listar_tuneis()
+                self._editar_tunel()
             elif opcao == "3":
-                self._remover_tunel()
+                self._excluir_tunel()
             elif opcao == "4":
-                self._gerar_script_windows()
+                self._visualizar_tuneis()
             elif opcao == "5":
-                self._gerar_script_linux()
+                self._script_cliente()
             elif opcao == "6":
-                self._atualizar_ssh_config()
-            elif opcao == "7":
                 self._configurar_ssh_tuneis()
-            elif opcao == "8":
-                self._ver_script_tela()
-            elif opcao == "9":
-                self._listar_scripts()
             elif opcao == "0":
                 break
             else:
@@ -9878,6 +9869,139 @@ AllowedIPs = {ip_peer}
             pass
         return ativos
 
+    def _escolher_tunel(self, titulo="Escolha o túnel", tuneis=None):
+        """Exibe lista numerada e retorna o nome do túnel escolhido"""
+        if tuneis is None:
+            tuneis = self._carregar_tuneis()
+        if not tuneis:
+            print("\n⚪ Nenhum túnel configurado.")
+            return None
+
+        print(f"\n{titulo}:")
+        for i, nome in enumerate(tuneis.keys(), 1):
+            info = tuneis[nome]
+            print(f"  [{i}] {nome} → porta {info['porta_remota']} ({info['tipo']})")
+
+        escolha = input("\nNúmero (0 para cancelar): ").strip()
+        if escolha == "0" or not escolha:
+            return None
+
+        try:
+            idx = int(escolha) - 1
+            nomes = list(tuneis.keys())
+            if 0 <= idx < len(nomes):
+                return nomes[idx]
+        except ValueError:
+            pass
+
+        print("❌ Número inválido.")
+        return None
+
+    def _verificar_e_desbloquear_porta(self, usuario, servidor, porta_remota, tuneis, nome_atual=None):
+        """Verifica disponibilidade da porta e desbloqueia firewall"""
+        for nome_existente, info_existente in tuneis.items():
+            if nome_existente == nome_atual:
+                continue
+            if info_existente['porta_remota'] == porta_remota:
+                print(f"⚠️ Porta {porta_remota} já usada pelo túnel '{nome_existente}'!")
+                confirmar = input("Continuar mesmo assim? (s/n): ").strip().lower()
+                if confirmar != "s":
+                    return False
+
+        print(f"\n🔍 Verificando porta {porta_remota} no servidor...")
+        result = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+             "-o", "StrictHostKeyChecking=no",
+             f"{usuario}@{servidor}",
+             f"ss -tln | grep ':{porta_remota} '"],
+            capture_output=True, text=True, timeout=10
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            print(f"⚠️ Porta {porta_remota} já está em uso no servidor!")
+            confirmar = input("Continuar mesmo assim? (s/n): ").strip().lower()
+            if confirmar != "s":
+                return False
+        else:
+            print(f"✅ Porta {porta_remota} disponível!")
+
+        print(f"\n🔓 Verificando e desbloqueando firewall na porta {porta_remota}...")
+        comandos_desbloqueio = [
+            f"sudo iptables -D INPUT -p tcp --dport {porta_remota} -j DROP 2>/dev/null; true",
+            f"sudo iptables -D INPUT -p tcp --dport {porta_remota} -j REJECT 2>/dev/null; true",
+            f"sudo iptables -I INPUT 1 -p tcp --dport {porta_remota} -j ACCEPT",
+            f"sudo iptables-save | sudo tee /etc/iptables/rules.v4 2>/dev/null; true",
+        ]
+        for cmd in comandos_desbloqueio:
+            subprocess.run(
+                ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+                 "-o", "StrictHostKeyChecking=no",
+                 f"{usuario}@{servidor}", cmd],
+                capture_output=True, text=True, timeout=10
+            )
+
+        result = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+             "-o", "StrictHostKeyChecking=no",
+             f"{usuario}@{servidor}",
+             f"sudo iptables -L INPUT -n | grep '{porta_remota}' | grep ACCEPT || true"],
+            capture_output=True, text=True, timeout=10
+        )
+        if "ACCEPT" in result.stdout:
+            print(f"✅ Porta {porta_remota} desbloqueada no firewall!")
+        else:
+            print(f"⚠️ Não foi possível verificar regra de firewall. Verifique manualmente.")
+
+        return True
+
+    def _gerar_scripts_tunel(self, nome):
+        """Gera scripts .bat e .sh para um túnel"""
+        self._gerar_script_windows_nome(nome)
+        self._gerar_script_linux_nome(nome)
+
+    def _atualizar_ssh_config_silencioso(self):
+        """Atualiza aliases SSH sem interação com usuário"""
+        tuneis = self._carregar_tuneis()
+        if not tuneis:
+            return
+
+        ssh_dir = os.path.expanduser("~/.ssh")
+        os.makedirs(ssh_dir, exist_ok=True)
+        config_path = os.path.join(ssh_dir, "config")
+
+        marca_inicio = "# === TUNEIS SSH - GERADO AUTOMATICAMENTE ==="
+        marca_fim = "# === FIM TUNEIS SSH ==="
+
+        conteudo_existente = ""
+        if os.path.exists(config_path):
+            with open(config_path, "r") as f:
+                conteudo_existente = f.read()
+
+        if marca_inicio in conteudo_existente:
+            inicio = conteudo_existente.index(marca_inicio)
+            try:
+                fim = conteudo_existente.index(marca_fim) + len(marca_fim)
+                conteudo_novo = conteudo_existente[:inicio] + conteudo_existente[fim + 1:]
+            except ValueError:
+                conteudo_novo = conteudo_existente[:inicio]
+        else:
+            conteudo_novo = conteudo_existente
+
+        bloco_tuneis = f"\n{marca_inicio}\n"
+        for nome, info in tuneis.items():
+            bloco_tuneis += f"""
+Host {nome}
+    HostName {info['servidor']}
+    Port 22
+    User {info['usuario']}
+    StrictHostKeyChecking no
+"""
+        bloco_tuneis += f"{marca_fim}\n"
+
+        with open(config_path, "w") as f:
+            f.write(conteudo_novo + bloco_tuneis)
+
+        os.chmod(config_path, 0o600)
+
     def _criar_tunel(self):
         """Wizard para criar novo túnel"""
         print("\n" + "=" * 55)
@@ -9918,11 +10042,28 @@ AllowedIPs = {ip_peer}
             print("❌ Servidor é obrigatório.")
             return
 
-        print("\nTipo da máquina remota:")
-        print("[1] Windows")
-        print("[2] Linux")
-        tipo_choice = input("Escolha (1/2): ").strip()
-        tipo = "windows" if tipo_choice == "1" else "linux"
+        # Detectar tipo automaticamente
+        print("\n🔍 Detectando sistema da máquina remota...")
+        result = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+             "-o", "StrictHostKeyChecking=no",
+             f"{usuario}@{servidor}", "uname -s"],
+            capture_output=True, text=True, timeout=10
+        )
+        if result.returncode == 0:
+            os_detectado = result.stdout.strip().lower()
+            if "windows" not in os_detectado:
+                tipo = "linux"
+                print(f"✅ Sistema detectado: {result.stdout.strip()} (Linux)")
+            else:
+                tipo = "windows"
+                print("✅ Sistema detectado: Windows")
+        else:
+            print("⚠️ Não foi possível detectar automaticamente.")
+            print("[1] Windows")
+            print("[2] Linux")
+            tipo_choice = input("Escolha (1/2): ").strip()
+            tipo = "windows" if tipo_choice == "1" else "linux"
 
         # Testar conectividade SSH
         print("\n🔍 Testando conectividade SSH...")
@@ -9942,6 +10083,10 @@ AllowedIPs = {ip_peer}
         else:
             print("✅ Conectividade OK!")
 
+        # Verificar e desbloquear porta
+        if not self._verificar_e_desbloquear_porta(usuario, servidor, porta_remota, tuneis):
+            return
+
         tuneis[nome] = {
             "porta_remota": porta_remota,
             "porta_local": int(porta_local),
@@ -9953,110 +10098,208 @@ AllowedIPs = {ip_peer}
 
         self._salvar_tuneis(tuneis)
         self._log_tunel(nome, f"Túnel criado: porta {porta_remota} -> {porta_local} ({tipo})")
+
+        # Gerar scripts automaticamente
+        print("\n🔄 Gerando scripts cliente...")
+        self._gerar_scripts_tunel(nome)
+
+        # Atualizar aliases automaticamente
+        print("🔄 Atualizando aliases SSH...")
+        self._atualizar_ssh_config_silencioso()
+
         print(f"\n✅ Túnel '{nome}' criado com sucesso!")
         print(f"   Porta remota: {porta_remota}")
         print(f"   Porta local: {porta_local}")
         print(f"   Usuário: {usuario}")
         print(f"   Servidor: {servidor}")
+        print(f"   Tipo: {tipo}")
 
-        gerar = input("\n📄 Gerar script agora? (s/n): ").strip().lower()
-        if gerar == "s":
-            if tipo == "windows":
-                self._gerar_script_windows_nome(nome)
-            else:
-                self._gerar_script_linux_nome(nome)
-
-    def _listar_tuneis(self):
-        """Lista e monitora túneis"""
-        print("\n" + "=" * 55)
-        print("📋 TÚNEIS CONFIGURADOS E STATUS")
-        print("=" * 55)
-
+    def _editar_tunel(self):
+        """Edita um túnel existente"""
         tuneis = self._carregar_tuneis()
         if not tuneis:
             print("\n⚪ Nenhum túnel configurado.")
-            input("\nPressione Enter para continuar...")
+            return
+
+        nome = self._escolher_tunel("✏️  Editar túnel", tuneis)
+        if not nome:
+            return
+
+        info = tuneis[nome]
+        print(f"\nEditando: {nome}")
+        print(f"  Porta remota atual: {info['porta_remota']}")
+        print(f"  Porta local atual: {info['porta_local']}")
+        print(f"  Usuário atual: {info['usuario']}")
+        print(f"  Servidor atual: {info['servidor']}")
+        print(f"  Tipo atual: {info['tipo']}")
+
+        porta_remota_antiga = info['porta_remota']
+        usuario = info['usuario']
+        servidor = info['servidor']
+
+        porta_remota_input = input(f"\n🔌 Porta remota [{info['porta_remota']}]: ").strip()
+        if porta_remota_input:
+            if not porta_remota_input.isdigit():
+                print("❌ Porta inválida.")
+                return
+            info['porta_remota'] = int(porta_remota_input)
+
+        porta_local_input = input(f"🏠 Porta local [{info['porta_local']}]: ").strip()
+        if porta_local_input:
+            if not porta_local_input.isdigit():
+                print("❌ Porta local inválida.")
+                return
+            info['porta_local'] = int(porta_local_input)
+
+        usuario_input = input(f"👤 Usuário [{info['usuario']}]: ").strip()
+        if usuario_input:
+            if not re.match(r'^[a-zA-Z0-9_.@-]+$', usuario_input):
+                print("❌ Usuário inválido.")
+                return
+            info['usuario'] = usuario_input
+            usuario = usuario_input
+
+        servidor_input = input(f"🌐 Servidor [{info['servidor']}]: ").strip()
+        if servidor_input:
+            info['servidor'] = servidor_input
+            servidor = servidor_input
+
+        print("\nTipo da máquina remota:")
+        print(f"[1] Windows (atual: {info['tipo']})")
+        print("[2] Linux")
+        tipo_choice = input("Escolha (Enter para manter): ").strip()
+        if tipo_choice == "2":
+            info['tipo'] = "linux"
+        elif tipo_choice == "1":
+            info['tipo'] = "windows"
+
+        # Verificar porta se foi alterada
+        porta_mudou = info['porta_remota'] != porta_remota_antiga
+        if porta_mudou:
+            if not self._verificar_e_desbloquear_porta(usuario, servidor, info['porta_remota'], tuneis, nome):
+                return
+
+        tuneis[nome] = info
+        self._salvar_tuneis(tuneis)
+        self._log_tunel(nome, f"Túnel editado: porta {info['porta_remota']} -> {info['porta_local']} ({info['tipo']})")
+
+        print("\n🔄 Regenerando scripts...")
+        self._gerar_scripts_tunel(nome)
+
+        print("🔄 Atualizando aliases SSH...")
+        self._atualizar_ssh_config_silencioso()
+
+        print(f"\n✅ Túnel '{nome}' editado com sucesso!")
+
+    def _excluir_tunel(self):
+        """Remove um túnel e todos os arquivos associados"""
+        tuneis = self._carregar_tuneis()
+        if not tuneis:
+            print("\n⚪ Nenhum túnel configurado.")
+            return
+
+        nome = self._escolher_tunel("🗑️  Excluir túnel", tuneis)
+        if not nome:
+            return
+
+        confirmar = input(f"\n⚠️ Tem certeza que deseja excluir '{nome}'? (s/n): ").strip().lower()
+        if confirmar != "s":
+            print("Operação cancelada.")
+            return
+
+        del tuneis[nome]
+        self._salvar_tuneis(tuneis)
+
+        script_path = f"{self.install_principal}/tuneis/scripts/{nome}.bat"
+        script_path_sh = f"{self.install_principal}/tuneis/scripts/{nome}.sh"
+        if os.path.exists(script_path):
+            os.remove(script_path)
+        if os.path.exists(script_path_sh):
+            os.remove(script_path_sh)
+
+        log_file = f"{self.install_principal}/tuneis/logs/{nome}.log"
+        if os.path.exists(log_file):
+            os.remove(log_file)
+
+        self._atualizar_ssh_config_silencioso()
+        self._log_tunel(nome, "Túnel excluído")
+
+        print(f"\n✅ Túnel '{nome}' excluído com sucesso!")
+
+    def _visualizar_tuneis(self):
+        """Visualiza todos os túneis com detalhes completos"""
+        tuneis = self._carregar_tuneis()
+        if not tuneis:
+            print("\n⚪ Nenhum túnel configurado.")
             return
 
         ativos = self._tuneis_ativos()
 
-        print(f"\n{'NOME':<20} {'PORTA':<8} {'TIPO':<10} {'STATUS':<12} {'USUÁRIO':<15}")
-        print("-" * 65)
+        print("\n" + "=" * 65)
+        print("📋 TÚNEIS CONFIGURADOS")
+        print("=" * 65)
 
         for nome, info in tuneis.items():
             status = "🟢 ATIVO" if nome in ativos else "🔴 INATIVO"
-            print(f"{nome:<20} {info['porta_remota']:<8} {info['tipo']:<10} {status:<12} {info['usuario']:<15}")
+            print(f"\n  {status} | {nome}")
+            print(f"    Porta remota: {info['porta_remota']}")
+            print(f"    Porta local:  {info['porta_local']}")
+            print(f"    Usuário:      {info['usuario']}")
+            print(f"    Servidor:     {info['servidor']}")
+            print(f"    Tipo:         {info['tipo']}")
+            print(f"    Criado em:    {info.get('criado_em', 'N/A')}")
+
+            bat = f"{self.install_principal}/tuneis/scripts/{nome}.bat"
+            sh = f"{self.install_principal}/tuneis/scripts/{nome}.sh"
+            scripts = []
+            if os.path.exists(bat):
+                scripts.append("🪟 .bat")
+            if os.path.exists(sh):
+                scripts.append("🐧 .sh")
+            if scripts:
+                print(f"    Scripts:      {', '.join(scripts)}")
+            else:
+                print(f"    Scripts:      ⚪ Nenhum gerado")
 
         print(f"\n📊 Total: {len(tuneis)} configurados, {len(ativos)} ativos")
-        input("\nPressione Enter para continuar...")
 
-    def _remover_tunel(self):
-        """Remove um túnel"""
-        print("\n" + "=" * 55)
-        print("🗑️  REMOVER TÚNEL")
-        print("=" * 55)
+        if tuneis:
+            ver = input("\n📄 Ver script de algum túnel? (s/n): ").strip().lower()
+            if ver == "s":
+                self._ver_script_tela()
 
-        tuneis = self._carregar_tuneis()
-        if not tuneis:
-            print("\n⚪ Nenhum túnel configurado.")
-            input("\nPressione Enter para continuar...")
-            return
-
-        print("\nTúneis disponíveis:")
-        for i, nome in enumerate(tuneis.keys(), 1):
-            info = tuneis[nome]
-            print(f"  [{i}] {nome} → porta {info['porta_remota']}")
-
-        escolha = input("\nNúmero do túnel para REMOVER (0 para cancelar): ").strip()
-        if escolha == "0" or not escolha:
-            return
-
-        try:
-            idx = int(escolha) - 1
-            nomes = list(tuneis.keys())
-            if 0 <= idx < len(nomes):
-                nome = nomes[idx]
-                del tuneis[nome]
-                self._salvar_tuneis(tuneis)
-
-                script_path = f"{self.install_principal}/tuneis/scripts/{nome}.bat"
-                script_path_sh = f"{self.install_principal}/tuneis/scripts/{nome}.sh"
-                if os.path.exists(script_path):
-                    os.remove(script_path)
-                if os.path.exists(script_path_sh):
-                    os.remove(script_path_sh)
-
-                print(f"✅ Túnel '{nome}' removido!")
-            else:
-                print("❌ Número inválido.")
-        except ValueError:
-            print("❌ Entrada inválida.")
-
-    def _gerar_script_windows(self):
-        """Gera script .bat para Windows (escolhe túnel)"""
+    def _script_cliente(self):
+        """Menu para gerar ou visualizar scripts cliente"""
         tuneis = self._carregar_tuneis()
         if not tuneis:
             print("\n⚪ Nenhum túnel configurado. Crie um primeiro.")
-            input("\nPressione Enter para continuar...")
             return
 
-        print("\n📋 Túneis disponíveis:")
-        for i, nome in enumerate(tuneis.keys(), 1):
-            info = tuneis[nome]
-            print(f"  [{i}] {nome} → porta {info['porta_remota']}")
+        while True:
+            print("\n" + "=" * 55)
+            print("📄 SCRIPT CLIENTE")
+            print("=" * 55)
+            print("[1] 🪟 Gerar script Windows (.bat)")
+            print("[2] 🐧 Gerar script Linux (.sh)")
+            print("[3] 📄 Visualizar na tela")
+            print("[0] Voltar")
 
-        escolha = input("\nNúmero do túnel (0 para todos): ").strip()
-        if escolha == "0":
-            for nome in tuneis.keys():
-                self._gerar_script_windows_nome(nome)
-                input("   Pressione Enter para continuar...")
-        elif escolha.isdigit():
-            idx = int(escolha) - 1
-            nomes = list(tuneis.keys())
-            if 0 <= idx < len(nomes):
-                self._gerar_script_windows_nome(nomes[idx])
+            opcao = input("\nEscolha: ").strip()
+
+            if opcao == "1":
+                nome = self._escolher_tunel("Gerar script Windows", tuneis)
+                if nome:
+                    self._gerar_script_windows_nome(nome)
+            elif opcao == "2":
+                nome = self._escolher_tunel("Gerar script Linux", tuneis)
+                if nome:
+                    self._gerar_script_linux_nome(nome)
+            elif opcao == "3":
+                self._ver_script_tela()
+            elif opcao == "0":
+                break
             else:
-                print("❌ Número inválido.")
+                print("❌ Opção inválida.")
 
     def _gerar_script_windows_nome(self, nome):
         """Gera script .bat para um túnel específico"""
@@ -10110,32 +10353,6 @@ goto conectar
 
         print(f"✅ Script gerado: {caminho}")
         print(f"   Envie para a máquina Windows e execute.")
-
-    def _gerar_script_linux(self):
-        """Gera script .sh para Linux (escolhe túnel)"""
-        tuneis = self._carregar_tuneis()
-        if not tuneis:
-            print("\n⚪ Nenhum túnel configurado. Crie um primeiro.")
-            input("\nPressione Enter para continuar...")
-            return
-
-        print("\n📋 Túneis disponíveis:")
-        for i, nome in enumerate(tuneis.keys(), 1):
-            info = tuneis[nome]
-            print(f"  [{i}] {nome} → porta {info['porta_remota']}")
-
-        escolha = input("\nNúmero do túnel (0 para todos): ").strip()
-        if escolha == "0":
-            for nome in tuneis.keys():
-                self._gerar_script_linux_nome(nome)
-                input("   Pressione Enter para continuar...")
-        elif escolha.isdigit():
-            idx = int(escolha) - 1
-            nomes = list(tuneis.keys())
-            if 0 <= idx < len(nomes):
-                self._gerar_script_linux_nome(nomes[idx])
-            else:
-                print("❌ Número inválido.")
 
     def _gerar_script_linux_nome(self, nome):
         """Gera script .sh para um túnel específico"""
@@ -10191,56 +10408,49 @@ done
         print(f"✅ Script gerado: {caminho}")
         print(f"   Envie para a máquina Linux e execute: ./{nome}.sh")
 
-    def _atualizar_ssh_config(self):
-        """Gera aliases SSH em ~/.ssh/config"""
-        tuneis = self._carregar_tuneis()
-        if not tuneis:
-            print("\n⚪ Nenhum túnel configurado.")
+    def _ver_script_tela(self):
+        """Exibe conteúdo de um script na tela para copiar/colar"""
+        scripts_dir = f"{self.install_principal}/tuneis/scripts"
+        if not os.path.exists(scripts_dir):
+            print("\n⚪ Nenhum script gerado ainda.")
             input("\nPressione Enter para continuar...")
             return
 
-        ssh_dir = os.path.expanduser("~/.ssh")
-        os.makedirs(ssh_dir, exist_ok=True)
-        config_path = os.path.join(ssh_dir, "config")
+        scripts = [f for f in os.listdir(scripts_dir) if f.endswith(('.bat', '.sh'))]
+        if not scripts:
+            print("\n⚪ Nenhum script disponível. Gere um primeiro.")
+            input("\nPressione Enter para continuar...")
+            return
 
-        marca_inicio = "# === TUNEIS SSH - GERADO AUTOMATICAMENTE ==="
-        marca_fim = "# === FIM TUNEIS SSH ==="
+        print("\n📋 Scripts disponíveis:")
+        for i, script in enumerate(scripts, 1):
+            tipo = "🪟 Windows" if script.endswith('.bat') else "🐧 Linux"
+            print(f"  [{i}] {script} ({tipo})")
 
-        conteudo_existente = ""
-        if os.path.exists(config_path):
-            with open(config_path, "r") as f:
-                conteudo_existente = f.read()
+        escolha = input("\nNúmero do script para EXIBIR (0 para cancelar): ").strip()
+        if escolha == "0" or not escolha:
+            return
 
-        if marca_inicio in conteudo_existente:
-            inicio = conteudo_existente.index(marca_inicio)
-            try:
-                fim = conteudo_existente.index(marca_fim) + len(marca_fim)
-                conteudo_novo = conteudo_existente[:inicio] + conteudo_existente[fim + 1:]
-            except ValueError:
-                conteudo_novo = conteudo_existente[:inicio]
-        else:
-            conteudo_novo = conteudo_existente
+        try:
+            idx = int(escolha) - 1
+            if 0 <= idx < len(scripts):
+                script_nome = scripts[idx]
+                caminho = os.path.join(scripts_dir, script_nome)
+                with open(caminho, "r", encoding="utf-8") as f:
+                    conteudo = f.read()
 
-        bloco_tuneis = f"\n{marca_inicio}\n"
-        for nome, info in tuneis.items():
-            bloco_tuneis += f"""
-Host {nome}
-    HostName {info['servidor']}
-    Port 22
-    User {info['usuario']}
-    StrictHostKeyChecking no
-"""
-        bloco_tuneis += f"{marca_fim}\n"
+                print("\n" + "=" * 55)
+                print(f"📄 CONTEÚDO DO SCRIPT: {script_nome}")
+                print("=" * 55)
+                print(conteudo)
+                print("=" * 55)
+                print("\n💡 Copie o conteúdo acima e cole na máquina remota.")
+                print(f"💡 Ou salve em um arquivo: {caminho}")
+            else:
+                print("❌ Número inválido.")
+        except ValueError:
+            print("❌ Entrada inválida.")
 
-        with open(config_path, "w") as f:
-            f.write(conteudo_novo + bloco_tuneis)
-
-        os.chmod(config_path, 0o600)
-
-        print("\n✅ Aliases SSH atualizados!")
-        print("\n📋 Agora você pode conectar por nome:")
-        for nome in tuneis.keys():
-            print(f"   ssh {nome}")
         input("\nPressione Enter para continuar...")
 
     def _configurar_ssh_tuneis(self):
@@ -10342,82 +10552,6 @@ Host {nome}
             print("\n✅ SSH configurado para túneis com sucesso!")
             print("   Backup: /etc/ssh/sshd_config.bak.tuneis")
 
-        input("\nPressione Enter para continuar...")
-
-    def _ver_script_tela(self):
-        """Exibe conteúdo de um script na tela para copiar/colar"""
-        scripts_dir = f"{self.install_principal}/tuneis/scripts"
-        if not os.path.exists(scripts_dir):
-            print("\n⚪ Nenhum script gerado ainda.")
-            input("\nPressione Enter para continuar...")
-            return
-
-        scripts = [f for f in os.listdir(scripts_dir) if f.endswith(('.bat', '.sh'))]
-        if not scripts:
-            print("\n⚪ Nenhum script disponível. Gere um primeiro.")
-            input("\nPressione Enter para continuar...")
-            return
-
-        print("\n📋 Scripts disponíveis:")
-        for i, script in enumerate(scripts, 1):
-            tipo = "🪟 Windows" if script.endswith('.bat') else "🐧 Linux"
-            print(f"  [{i}] {script} ({tipo})")
-
-        escolha = input("\nNúmero do script para EXIBIR (0 para cancelar): ").strip()
-        if escolha == "0" or not escolha:
-            return
-
-        try:
-            idx = int(escolha) - 1
-            if 0 <= idx < len(scripts):
-                script_nome = scripts[idx]
-                caminho = os.path.join(scripts_dir, script_nome)
-                with open(caminho, "r", encoding="utf-8") as f:
-                    conteudo = f.read()
-
-                print("\n" + "=" * 55)
-                print(f"📄 CONTEÚDO DO SCRIPT: {script_nome}")
-                print("=" * 55)
-                print(conteudo)
-                print("=" * 55)
-                print("\n💡 Copie o conteúdo acima e cole na máquina remota.")
-                print(f"💡 Ou salve em um arquivo: {caminho}")
-            else:
-                print("❌ Número inválido.")
-        except ValueError:
-            print("❌ Entrada inválida.")
-
-        input("\nPressione Enter para continuar...")
-
-    def _listar_scripts(self):
-        """Lista todos os scripts disponíveis"""
-        scripts_dir = f"{self.install_principal}/tuneis/scripts"
-        if not os.path.exists(scripts_dir):
-            print("\n⚪ Diretório de scripts ainda não existe.")
-            input("\nPressione Enter para continuar...")
-            return
-
-        scripts = [f for f in os.listdir(scripts_dir) if f.endswith(('.bat', '.sh'))]
-        if not scripts:
-            print("\n⚪ Nenhum script gerado ainda.")
-            input("\nPressione Enter para continuar...")
-            return
-
-        print("\n" + "=" * 55)
-        print("📁 SCRIPTS DISPONÍVEIS")
-        print("=" * 55)
-        print(f"\nDiretório: {scripts_dir}\n")
-
-        for script in sorted(scripts):
-            caminho = os.path.join(scripts_dir, script)
-            tamanho = os.path.getsize(caminho)
-            tipo = "🪟 Windows" if script.endswith('.bat') else "🐧 Linux"
-            modificado = os.path.getmtime(caminho)
-            data_mod = datetime.fromtimestamp(modificado).strftime("%Y-%m-%d %H:%M")
-
-            print(f"  {tipo:<10} | {script:<25} | {tamanho:>6} bytes | {data_mod}")
-
-        print(f"\n📊 Total: {len(scripts)} scripts")
         input("\nPressione Enter para continuar...")
 
     def gerenciar_microservicos(self):
