@@ -10562,16 +10562,12 @@ Host {nome}
         if hosts_ssh:
             for i, host in enumerate(hosts_ssh, 1):
                 print(f"  [{i}] {host}")
-            servidor_input = input("\n  Digite o número ou IP/domínio: ").strip()
-            if servidor_input.isdigit() and 1 <= int(servidor_input) <= len(hosts_ssh):
-                servidor = hosts_ssh[int(servidor_input) - 1]
-            else:
-                servidor = servidor_input
+            servidor = input("\n🌐 IP ou domínio (ou número da lista): ").strip()
+            if servidor.isdigit() and hosts_ssh and 1 <= int(servidor) <= len(hosts_ssh):
+                servidor = hosts_ssh[int(servidor) - 1]
         else:
             print("  Nenhum servidor configurado.")
-
-        if not servidor:
-            servidor = input("\n IP ou domínio do servidor: ").strip()
+            servidor = input("\n🌐 IP ou domínio do servidor: ").strip()
 
         if not servidor:
             print("❌ Servidor é obrigatório.")
