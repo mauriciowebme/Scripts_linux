@@ -5728,7 +5728,7 @@ CMD ["sh", "-c", "\
             [Service]
             Type=simple
             User=root
-            ExecStart={ttyd_bin} --credential {shlex.quote(ttyd_user)}:{shlex.quote(ttyd_password)} --port {porta_web} --writable bash
+            ExecStart={ttyd_bin} -A --credential {shlex.quote(ttyd_user)}:{shlex.quote(ttyd_password)} --port {porta_web} --writable bash
             Restart=on-failure
             RestartSec=5
 
@@ -5804,6 +5804,8 @@ CMD ["sh", "-c", "\
         print(f"\n Porta: {porta_web}")
         print("\n💡 Este terminal é responsivo e funciona perfeitamente no celular!")
         print("   No celular, use o navegador em tela cheia para melhor experiência.")
+        print("\n🔒 Sessões persistentes: as sessões tmux continuam rodando mesmo")
+        print("   quando você fecha o navegador. Ao reabrir, volta onde parou!")
         print("\n🔧 Comandos úteis:")
         print("   status:  sudo systemctl status ttyd")
         print("   stop:    sudo systemctl stop ttyd")
@@ -6037,6 +6039,10 @@ CMD ["sh", "-c", "\
             export TERMOTE_PASS="{shlex.quote(termote_password)}"
             export TERMOTE_BIND="{listen_addr}"
             
+            # Configurações de persistência do tmux
+            tmux set-option -g destroy-unattached off 2>/dev/null || true
+            tmux set-option -g detach-on-destroy off 2>/dev/null || true
+            
             # Garante que o tmux está rodando com sessão 'main'
             if ! tmux list-sessions &>/dev/null; then
                 tmux new-session -d -s main "bash" 2>/dev/null || true
@@ -6158,7 +6164,10 @@ CMD ["sh", "-c", "\
         print("   ✅ Gestos: Swipe ← = Ctrl+C, Swipe → = Tab")
         print("   ✅ Pinch-to-zoom funcional (recalcula colunas)")
         print("   ✅ PWA instalável na homescreen")
-        print("   ✅ Múltiplas sessões tmux")
+        print("   ✅ Múltiplas sessões tmux persistentes")
+        print("\n💡 Sessões persistentes: suas sessões tmux continuam rodando")
+        print("   mesmo quando você fecha o navegador. Ao reabrir, volta onde parou!")
+        print("   Use o botão '+' para criar novas sessões.")
         print("\n💡 No celular, adicione à tela inicial para experiência full-screen!")
         print("\n🔧 Comandos úteis:")
         print("   status:  sudo systemctl status termote")
