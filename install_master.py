@@ -5220,7 +5220,7 @@ CMD ["sh", "-c", "\
             print("[3] Ver Status")
             print("[4] Reconfigurar Modo Web (Porta/Senha)")
             print("[5] Desinstalar OpenCode")
-            print("[0] Voltar")
+            print("[0] ️  Voltar")
             print("="*50)
             
             opt = input("\nEscolha uma opção: ").strip()
@@ -8395,7 +8395,7 @@ AllowedIPs = {ip_peer}
                 print("[1] ➕ Adicionar novo peer (para servidores)")
                 print("[2] 📊 Ver status detalhado")
                 print("[3] 🔍 Testar conexão com peer")
-                print("[0] Voltar ao menu principal")
+                print("[0] ️  Voltar ao menu principal")
                 print("="*70)
                 
                 acao = input("\nEscolha: ").strip()
@@ -8516,7 +8516,7 @@ AllowedIPs = {ip_peer}
         print("[1] SERVIDOR (recebe conexões)")
         print("[2] CLIENTE/WORKER (conecta a um servidor)")
         print("[3] Adicionar peer ao servidor existente")
-        print("[0] Voltar")
+        print("[0] ️  Voltar")
         print("="*70)
         
         escolha = input("\nEscolha uma opção: ").strip()
@@ -8871,7 +8871,7 @@ AllowedIPs = {ip_peer}
             ("Instalar GNOME (Padrão Ubuntu)", self.instalar_interface_gnome),
             ("Instalar Desktop Ubuntu Webtop (Docker)", self.desktop_ubuntu_webtop),
             ("Instalar VNC Server (Acesso Remoto)", self.instala_vnc_server),
-            ("Voltar", None)
+            ("️  Voltar", None)
         ]
         self.mostrar_menu_paginado(opcoes, titulo="🖥️  INTERFACES GRÁFICAS", itens_por_pagina=10)
 
@@ -8894,45 +8894,45 @@ AllowedIPs = {ip_peer}
     def opcoes_sistema(self):
         """Menu de configurações e utilitários do sistema"""
         opcoes_menu = [
-            ("Configurações de Rede (IP, Wifi, SSH)", self.submenu_rede),
-            ("Gerenciamento de Disco e Partições", self.menu_particoes),
-            ("Gerenciamento de Swap", self.menu_swap),
-            ("Gerenciamento de Permissões", self.gerenciar_permissoes_pasta),
-            ("Diagnóstico (Temp, Velocidade, Espaço)", self.submenu_diagnostico),
-            ("Ferramentas de Backup (Rsync)", self.rsync_sync),
-            ("Configurar Inicialização (.py service)", self.setup_inicializar_service),
-            ("VPN WireGuard", self.menu_wireguard),
-            ("Fechar tampa notebook (NooT)", self.fecha_tela_noot),
-            ("Ecaminhamentos de Portas/Tuneis", self.ecaminhamentos_portas_tuneis),
+            ("️ Configurações de Rede (IP, Wifi, SSH)", self.submenu_rede),
+            ("💾 Gerenciamento de Disco e Partições", self.menu_particoes),
+            ("💾 Gerenciamento de Swap", self.menu_swap),
+            ("🔐 Gerenciamento de Permissões", self.gerenciar_permissoes_pasta),
+            ("📊 Diagnóstico (Temp, Velocidade, Espaço)", self.submenu_diagnostico),
+            ("🛠️ Ferramentas de Backup (Rsync)", self.rsync_sync),
+            ("⚙️  Configurar Inicialização (.py service)", self.setup_inicializar_service),
+            ("🔒 VPN WireGuard", self.menu_wireguard),
+            ("💻 Fechar tampa notebook (NooT)", self.fecha_tela_noot),
+            ("🔀 Encaminhamentos de Portas/Túneis", self.ecaminhamentos_portas_tuneis),
         ]
-        self.mostrar_menu_paginado(opcoes_menu, titulo="⚙️  CONFIGURAÇÕES DO SISTEMA", itens_por_pagina=15)
+        self.mostrar_menu_paginado(opcoes_menu, titulo="️  CONFIGURAÇÕES DO SISTEMA", itens_por_pagina=15)
     
     def submenu_rede(self):
         opcoes = [
-            ("Gerenciar Wifi (nmtui)", self.setup_wifi),
-            ("Configurar IP Fixo", self.configura_ip_fixo),
-            ("Configurar SSH", self.configurar_ssh),
-            ("Voltar", None)
+            (" WiFi Gerenciar Wifi (nmtui)", self.setup_wifi),
+            ("️ Configurar IP Fixo", self.configura_ip_fixo),
+            (" Configurar SSH", self.configurar_ssh),
+            ("️  Voltar", None)
         ]
         self.mostrar_menu_paginado(opcoes, titulo="🌐 CONFIGURAÇÕES DE REDE", itens_por_pagina=10)
         
     def submenu_diagnostico(self):
         opcoes = [
-            ("Verificar Temperatura", self.verifica_temperatura),
-            ("Teste de Velocidade Internet", self.verifica_velocidade),
-            ("Ver Uso de Espaço", self.ver_uso_espaco_pasta),
-            ("Status do Sistema (Glances)", self.verificando_status_sistema),
-            ("Voltar", None)
+            ("🌡️  Verificar Temperatura", self.verifica_temperatura),
+            (" Teste de Velocidade Internet", self.verifica_velocidade),
+            ("💾 Ver Uso de Espaço", self.ver_uso_espaco_pasta),
+            ("📊 Status do Sistema (Glances)", self.verificando_status_sistema),
+            ("↩️  Voltar", None)
         ]
         self.mostrar_menu_paginado(opcoes, titulo="🔍 DIAGNÓSTICO DO SISTEMA", itens_por_pagina=10)
     
     def submenu_editores(self):
         opcoes = [
-            ("Instalar VSCode Oficial", self.instala_vscode_oficial),
-            ("Instalar OpenVSCode (Server)", self.instala_openvscode),
-            ("Voltar", None)
+            ("📦 Instalar VSCode Oficial", self.instala_vscode_oficial),
+            ("📦 Instalar OpenVSCode (Server)", self.instala_openvscode),
+            ("↩️  Voltar", None)
         ]
-        self.mostrar_menu_paginado(opcoes, titulo="📝 EDITORES DE CÓDIGO", itens_por_pagina=10)
+        self.mostrar_menu_paginado(opcoes, titulo=" EDITORES DE CÓDIGO", itens_por_pagina=10)
         
     def listar_containers_docker(self):
         """Lista todos os containers Docker (rodando e parados)"""
@@ -9174,9 +9174,9 @@ AllowedIPs = {ip_peer}
             print(f"\nOpcoes de logs:")
             print("[1]  Ultimas 50 linhas")
             print("[2]  Ultimas 100 linhas")
-            print("[3] Ultimas 500 linhas")
-            print("[4] Todos os logs")
-            print("[5] Seguir logs (tempo real)")
+            print("[3]  Ultimas 500 linhas")
+            print("[4]  Todos os logs")
+            print("[5]  Seguir logs (tempo real)")
             
             opcao_log = input("\nEscolha uma opcao: ").strip()
             
@@ -9802,14 +9802,14 @@ AllowedIPs = {ip_peer}
                 print("\n" + "="*45)
                 print("🧠 MODELOS OLLAMA - SELECIONE")
                 print("="*45)
-                print("[1] Llama 3.1")
-                print("[2] Llama 3.2")
-                print("[3] Gemma 3 (Beta)")
+                print("[1] 🦙 Llama 3.1")
+                print("[2]  Llama 3.2")
+                print("[3]  Gemma 3 (Beta)")
                 print("[4] Qwen 2.5 (3B) 32k - Suporte a Tools")
                 print("[5] Outro Modelo (Digitar Nome)")
                 print("[6] Listar Instalados")
                 print("[7] Remover Modelo")
-                print("[0] Voltar")
+                print("[0] ️  Voltar")
                 print("="*45)
                 
                 escolha = input("\nEscolha: ").strip()
@@ -9837,12 +9837,12 @@ AllowedIPs = {ip_peer}
             print("\n" + "="*45)
             print("🦙 GERENCIADOR OLLAMA (LOCAL)")
             print("="*45)
-            print("[1] Instalar Ollama (Script Oficial)")
-            print("[2] Gerenciar Modelos / Chat")
-            print("[3] Verificar Status do Serviço")
+            print("[1]  Instalar Ollama (Script Oficial)")
+            print("[2]  Gerenciar Modelos / Chat")
+            print("[3]  Verificar Status do Serviço")
             print("[4] Reiniciar Serviço")
             print("[5] Integração Open Claw")
-            print("[0] Voltar ao Menu Principal")
+            print("[0] ️  Voltar ao Menu Principal")
             print("="*45)
             
             opt = input("\nEscolha uma opção: ").strip()
@@ -9891,11 +9891,11 @@ AllowedIPs = {ip_peer}
             print("-"*55)
             print("[1] 📦 Instalar WARP")
             print("[2]  Conectar")
-            print("[3] Desconectar")
+            print("[3] ️  Desconectar")
             print("[4] Ver Status Detalhado")
             print("[5] Testar Conexão com Cloudflare")
             print("[6] Habilitar Conexão Automática (boot)")
-            print("[0] Voltar")
+            print("[0] ️  Voltar")
             print("="*55)
 
             opt_warp = input("\nEscolha: ").strip()
@@ -9963,11 +9963,11 @@ AllowedIPs = {ip_peer}
         while True:
             print("\n[1] ➕ Adicionar proxy")
             print("[2] ️  Remover proxy")
-            print("[3] Listar proxies")
+            print("[3] 📋 Listar proxies")
             print("[4] Status do servidor (frps)")
             print("[5] Status do cliente (frpc)")
             print("[6] Ver credenciais do dashboard")
-            print("[0] Voltar")
+            print("[0] ️  Voltar")
 
             opcao = input("\nEscolha uma opção: ").strip()
 
@@ -10285,7 +10285,7 @@ AllowedIPs = {ip_peer}
             print("[4] 📋 Visualizar túneis")
             print("[5] 📄 Script cliente")
             print("[6] ⚙️  Configurar servidor SSH")
-            print("[0] Voltar")
+            print("[0] ️  Voltar")
             print("=" * 55)
 
             opcao = input("\nEscolha: ").strip()
@@ -10872,7 +10872,7 @@ Host {nome}
             print("[1] 🪟 Gerar script Windows (.bat)")
             print("[2] 🐧 Gerar script Linux (.sh)")
             print("[3] 📄 Visualizar na tela")
-            print("[0] Voltar")
+            print("[0] ️  Voltar")
 
             opcao = input("\nEscolha: ").strip()
 
@@ -11178,12 +11178,12 @@ done
             print("\n" + "-" * 55)
             print("[1] ▶️  Iniciar ttyd")
             print("[2] ⏹️  Parar ttyd")
-            print("[3] Reiniciar ttyd")
+            print("[3] ️  Reiniciar ttyd")
             print("[4] Ver status detalhado")
             print("[5] Ver logs")
             print("[6] Alterar senha")
             print("[7] Alterar porta")
-            print("[0] Voltar")
+            print("[0] ️  Voltar")
             print("=" * 55)
 
             opcao = input("\nEscolha: ").strip()
@@ -11359,14 +11359,14 @@ Execute com: install_master
 ip server: {servicos.exibe_ip()}"""
     """Função principal que controla o menu."""
     opcoes_menu = [
-        ("Reiniciar", servicos.Reiniciar),
-        ("Desligar", servicos.Desligar),
-        ("Atualizar o sistema", servicos.menu_atualizacoes),
-        ("Central de Instalações", servicos.menu_instalacoes),
-        ("🔧 Gerenciar Microserviços", servicos.gerenciar_microservicos),
-        ("Configurações do Sistema", servicos.opcoes_sistema),
-        ("Diagnóstico e Monitoramento", servicos.submenu_diagnostico),
-        ("Comandos essenciais do Linux", servicos.comandos_essenciais_linux),
+        (" Reiniciar", servicos.Reiniciar),
+        ("⏻ Desligar", servicos.Desligar),
+        ("📦 Atualizar o sistema", servicos.menu_atualizacoes),
+        ("📂 Central de Instalações", servicos.menu_instalacoes),
+        (" Gerenciar Microserviços", servicos.gerenciar_microservicos),
+        ("️ Configurações do Sistema", servicos.opcoes_sistema),
+        ("📊 Diagnóstico e Monitoramento", servicos.submenu_diagnostico),
+        ("🐧 Comandos essenciais do Linux", servicos.comandos_essenciais_linux),
     ]
     servicos.mostrar_menu_paginado(opcoes_menu, titulo="🖥️  MENU PRINCIPAL - INSTALL MASTER", itens_por_pagina=10, principal=True, mensagem_topo=banner)
 
