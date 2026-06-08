@@ -5831,6 +5831,7 @@ CMD ["sh", "-c", "\
         pwa_dir = os.path.join(termote_dir, "pwa")
         os.makedirs(termote_dir, exist_ok=True)
         os.makedirs(pwa_dir, exist_ok=True)
+        print(f" Diretório criado: {termote_dir}")
 
         detect_machine = platform.machine().lower()
         arch_map = {
@@ -5843,24 +5844,25 @@ CMD ["sh", "-c", "\
         print(f" Arquitetura detectada: {detect_machine} → {termote_arch}")
 
         tmux_api_bin = "/usr/local/bin/tmux-api"
+        version = "0.0.15"
         try:
             api_url = "https://api.github.com/repos/lamngockhuong/termote/releases/latest"
+            print(f" Consultando versão mais recente...")
             resp = subprocess.run(
                 ["curl", "-sL", api_url],
                 capture_output=True, text=True, timeout=30
             )
-            if resp.returncode == 0:
+            if resp.returncode == 0 and resp.stdout.strip():
                 release_data = json.loads(resp.stdout)
                 version = release_data.get("tag_name", "v0.0.15").lstrip("v")
+                print(f" Versão mais recente: {version}")
             else:
-                version = "0.0.15"
-        except Exception:
-            version = "0.0.15"
+                print(f" Não foi possível consultar a API, usando versão {version}")
+        except Exception as e:
+            print(f" Erro ao consultar API: {e}, usando versão {version}")
 
         download_url_api = f"https://github.com/lamngockhuong/termote/releases/download/v{version}/tmux-api-{termote_arch}"
         download_url_pwa = f"https://github.com/lamngockhuong/termote/releases/download/v{version}/pwa-dist-v{version}.zip"
-
-        print(f" Versão: {version}")
 
         if os.path.exists(tmux_api_bin):
             print(f" Binário tmux-api já existe: {tmux_api_bin}")
@@ -5875,10 +5877,17 @@ CMD ["sh", "-c", "\
 
         if not os.path.exists(tmux_api_bin):
             try:
-                subprocess.run(
+                print(f" URL: {download_url_api}")
+                result = subprocess.run(
                     ["curl", "-fSL", "-o", "/tmp/tmux-api", download_url_api],
-                    check=True, timeout=120
+                    capture_output=True, text=True, timeout=120
                 )
+                if result.returncode != 0:
+                    print(f" Erro no curl: {result.stderr}")
+                    return
+                if not os.path.exists("/tmp/tmux-api") or os.path.getsize("/tmp/tmux-api") == 0:
+                    print(" Erro: arquivo baixado está vazio ou não existe.")
+                    return
                 print(" Download do tmux-api concluído.")
                 subprocess.run(["sudo", "mv", "/tmp/tmux-api", tmux_api_bin], check=True)
                 subprocess.run(["sudo", "chmod", "+x", tmux_api_bin], check=True)
@@ -5898,17 +5907,28 @@ CMD ["sh", "-c", "\
 
         if not os.path.exists(os.path.join(pwa_dir, "index.html")):
             print(f" Baixando PWA dist...")
+            print(f" URL: {download_url_pwa}")
             try:
-                subprocess.run(
+                result = subprocess.run(
                     ["curl", "-fSL", "-o", "/tmp/pwa-dist.zip", download_url_pwa],
-                    check=True, timeout=120
+                    capture_output=True, text=True, timeout=120
                 )
+                if result.returncode != 0:
+                    print(f" Erro no curl: {result.stderr}")
+                    return
+                if not os.path.exists("/tmp/pwa-dist.zip") or os.path.getsize("/tmp/pwa-dist.zip") == 0:
+                    print(" Erro: arquivo PWA baixado está vazio ou não existe.")
+                    return
                 print(" Download da PWA concluído.")
-                subprocess.run(["sudo", "rm", "-rf", f"{pwa_dir}/*"], check=False)
-                subprocess.run(
+                subprocess.run(["sudo", "rm", "-rf", pwa_dir], check=False)
+                os.makedirs(pwa_dir, exist_ok=True)
+                result_unzip = subprocess.run(
                     ["sudo", "unzip", "-o", "/tmp/pwa-dist.zip", "-d", pwa_dir],
-                    check=True, timeout=30
+                    capture_output=True, text=True, timeout=30
                 )
+                if result_unzip.returncode != 0:
+                    print(f" Erro no unzip: {result_unzip.stderr}")
+                    return
                 subprocess.run(["sudo", "rm", "-f", "/tmp/pwa-dist.zip"], check=False)
                 print(f" PWA extraída em: {pwa_dir}")
             except Exception as e:
