@@ -10550,7 +10550,7 @@ Host {nome}
     def _criar_tunel(self):
         """Wizard para criar novo túnel com sugestões automáticas"""
         print("\n" + "=" * 55)
-        print(" CRIAR NOVO TÚNEL")
+        print("➕ CRIAR NOVO TÚNEL")
         print("=" * 55)
 
         # Detectar hosts do SSH config
