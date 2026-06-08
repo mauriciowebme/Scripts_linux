@@ -10487,10 +10487,35 @@ Host {nome}
 
         os.chmod(config_path, 0o600)
 
+    def _descobrir_porta_livre_ssh(self, usuario, servidor, porta_inicial=2222, porta_final=2299):
+        """Conecta via SSH ao servidor e encontra porta remota livre no intervalo."""
+        portas_usadas = set()
+
+        result = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+             "-o", "StrictHostKeyChecking=no",
+             f"{usuario}@{servidor}",
+             "ss -tln | awk '{print $4}' | grep -oE '[0-9]+$' | sort -un"],
+            capture_output=True, text=True, timeout=10
+        )
+        if result.returncode == 0:
+            for linha in result.stdout.strip().splitlines():
+                for p in linha.split():
+                    try:
+                        portas_usadas.add(int(p))
+                    except ValueError:
+                        pass
+
+        for porta in range(porta_inicial, porta_final + 1):
+            if porta not in portas_usadas:
+                return porta
+
+        return None
+
     def _criar_tunel(self):
         """Wizard para criar novo túnel"""
         print("\n" + "=" * 55)
-        print("➕ CRIAR NOVO TÚNEL")
+        print(" CRIAR NOVO TÚNEL")
         print("=" * 55)
 
         nome = input("\n📝 Nome do túnel (ex: pc_casa): ").strip().lower().replace(" ", "_")
@@ -10501,17 +10526,6 @@ Host {nome}
         tuneis = self._carregar_tuneis()
         if nome in tuneis:
             print(f"❌ Túnel '{nome}' já existe!")
-            return
-
-        porta_remota = input("🔌 Porta remota no servidor (ex: 2222): ").strip()
-        if not porta_remota.isdigit():
-            print("❌ Porta inválida.")
-            return
-        porta_remota = int(porta_remota)
-
-        porta_local = input("🏠 Porta local da máquina remota (padrão: 22): ").strip() or "22"
-        if not porta_local.isdigit():
-            print("❌ Porta local inválida.")
             return
 
         usuario = input("👤 Usuário SSH: ").strip()
@@ -10525,6 +10539,28 @@ Host {nome}
         servidor = input("🌐 IP ou domínio do servidor: ").strip()
         if not servidor:
             print("❌ Servidor é obrigatório.")
+            return
+
+        print("\n Buscando porta remota livre no servidor...")
+        porta_sugerida = self._descobrir_porta_livre_ssh(usuario, servidor)
+
+        if porta_sugerida:
+            sugestao = input(f"🔌 Porta remota sugerida: {porta_sugerida} (Enter para confirmar ou digite outra): ").strip()
+            porta_remota = int(sugestao) if sugestao.isdigit() else porta_sugerida
+        else:
+            porta_remota_str = input(" Não foi possível detectar automaticamente. Porta remota (ex: 2222): ").strip()
+            if not porta_remota_str.isdigit():
+                print("❌ Porta inválida.")
+                return
+            porta_remota = int(porta_remota_str)
+
+        if not (1 <= porta_remota <= 65535):
+            print(" Porta fora do intervalo válido (1-65535).")
+            return
+
+        porta_local = input("🏠 Porta local da máquina remota (padrão: 22): ").strip() or "22"
+        if not porta_local.isdigit():
+            print("❌ Porta local inválida.")
             return
 
         # Detectar tipo automaticamente
