@@ -15,6 +15,7 @@ import json
 import random
 import re
 import tempfile
+import glob
 import os, sys, time, subprocess, textwrap, select, platform
 from pathlib import Path
 from typing import List, Union
@@ -10598,28 +10599,84 @@ Host {nome}
             print("❌ Usuário inválido. Use apenas letras, números, _, ., @ ou -.")
             return
 
-        # === PASSO 3: Teste SSH (validação, não bloqueante) ===
+        # === PASSO 3: Gestão de Chave SSH (verificar/gerar/copiar) ===
         ssh_ok = False
-        print("\n Testando conectividade SSH...")
-        try:
-            result = subprocess.run(
-                ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-                 "-o", "StrictHostKeyChecking=no",
-                 f"{usuario}@{servidor}", "echo ok"],
-                capture_output=True, text=True, timeout=10
-            )
-            if result.returncode == 0:
-                ssh_ok = True
-                print("✅ Conectividade OK!")
+
+        # 3.1: Detectar chaves existentes
+        ssh_dir = os.path.expanduser("~/.ssh")
+        os.makedirs(ssh_dir, exist_ok=True)
+        chaves_pub = sorted(glob.glob(os.path.join(ssh_dir, "id_*.pub")))
+        chave_existente = chaves_pub[0] if chaves_pub else None
+
+        if chave_existente:
+            chave_nome = os.path.basename(chave_existente).replace(".pub", "")
+            print(f"\n🔑 Chave SSH encontrada: {chave_nome}")
+        else:
+            print("\n🔑 Nenhuma chave SSH encontrada em ~/.ssh/")
+            gerar = input("  Deseja gerar um par de chaves agora? (s/n): ").strip().lower()
+            if gerar == "s":
+                chave_arquivo = os.path.join(ssh_dir, "id_ed25519")
+                print(f"\n  Gerando chave ed25519 (sem senha)...")
+                result = subprocess.run(
+                    ["ssh-keygen", "-t", "ed25519", "-N", "", "-f", chave_arquivo,
+                     "-C", f"{usuario}@{servidor}"],
+                    capture_output=True, text=True
+                )
+                if result.returncode == 0:
+                    print("  ✅ Chave gerada com sucesso!")
+                    chave_existente = f"{chave_arquivo}.pub"
+                else:
+                    print("  ❌ Falha ao gerar chave:")
+                    print(f"    {result.stderr.strip()}")
+                    print("❌ Não é possível continuar sem chave SSH.")
+                    return
             else:
-                print("⚠️ Conexão SSH falhou.")
-        except Exception:
-            print("⚠️ Não foi possível testar SSH.")
+                print("❌ Chave SSH é obrigatória para túneis com autossh.")
+                return
+
+        # 3.2: Copiar chave para o servidor (se necessário)
+        print(f"\n Verificando se a chave já está no servidor {servidor}...")
+        teste = subprocess.run(
+            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+             "-o", "StrictHostKeyChecking=no",
+             f"{usuario}@{servidor}", "echo ok"],
+            capture_output=True, text=True, timeout=10
+        )
+
+        if teste.returncode == 0:
+            print("✅ Chave já configurada no servidor!")
+            ssh_ok = True
+        else:
+            print("  Chave não encontrada no servidor.")
+            copiar = input("  Deseja copiar a chave agora (pede senha 1x)? (s/n): ").strip().lower()
+            if copiar == "s":
+                print(f"\n  Copiando chave para {usuario}@{servidor}...")
+                result = subprocess.run(
+                    ["ssh-copy-id", "-o", "StrictHostKeyChecking=no",
+                     "-i", chave_existente,
+                     f"{usuario}@{servidor}"],
+                    timeout=60
+                )
+                if result.returncode == 0:
+                    # Testar novamente
+                    teste2 = subprocess.run(
+                        ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+                         "-o", "StrictHostKeyChecking=no",
+                         f"{usuario}@{servidor}", "echo ok"],
+                        capture_output=True, text=True, timeout=10
+                    )
+                    if teste2.returncode == 0:
+                        print("✅ Chave copiada e conectividade OK!")
+                        ssh_ok = True
+                    else:
+                        print("️ Chave copiada, mas conexão ainda falhou.")
+                else:
+                    print("❌ Falha ao copiar a chave para o servidor.")
+            else:
+                print("⚠️ Sem chave no servidor, o túnel não vai conectar.")
 
         if not ssh_ok:
-            print("  - Chave SSH configurada (recomendado)")
-            print("  - Ou senha correta (pode travar no loop de reconexão)")
-            confirmar = input("Continuar mesmo assim? (s/n): ").strip().lower()
+            confirmar = input("Continuar e salvar o túnel mesmo assim? (s/n): ").strip().lower()
             if confirmar != "s":
                 return
 
