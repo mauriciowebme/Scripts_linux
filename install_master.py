@@ -10548,32 +10548,36 @@ Host {nome}
         return None
 
     def _criar_tunel(self):
-        """Wizard para criar novo túnel com sugestões automáticas"""
+        """Wizard para criar novo túnel com sugestões automáticas e fluxo não-bloqueante"""
         print("\n" + "=" * 55)
         print("➕ CRIAR NOVO TÚNEL")
         print("=" * 55)
 
         # Detectar hosts do SSH config
         hosts_ssh = self._ler_ssh_config()
+        tuneis_existentes = self._carregar_tuneis()
 
-        # Sugestão de servidor
+        # === PASSO 1: Servidor ===
         print("\n🌐 Servidores SSH configurados (~/.ssh/config):")
         if hosts_ssh:
             for i, host in enumerate(hosts_ssh, 1):
                 print(f"  [{i}] {host}")
-            servidor_input = input("\nDigite o servidor (número ou IP/domínio): ").strip()
+            servidor_input = input("\n  Digite o número ou IP/domínio: ").strip()
             if servidor_input.isdigit() and 1 <= int(servidor_input) <= len(hosts_ssh):
                 servidor = hosts_ssh[int(servidor_input) - 1]
             else:
                 servidor = servidor_input
         else:
-            servidor = input("\n🌐 IP ou domínio do servidor: ").strip()
+            print("  Nenhum servidor configurado.")
+
+        if not servidor:
+            servidor = input("\n IP ou domínio do servidor: ").strip()
 
         if not servidor:
             print("❌ Servidor é obrigatório.")
             return
 
-        # Sugestão de usuário
+        # === PASSO 2: Usuário (com sugestão do SSH config) ===
         usuario_atual = os.environ.get('USER', 'root')
         usuario_ssh = ""
         if hosts_ssh:
@@ -10592,92 +10596,126 @@ Host {nome}
                 pass
 
         usuario_sugestao = usuario_ssh or usuario_atual
-        usuario = input(f"👤 Usuário SSH (Enter para '{usuario_sugestao}'): ").strip() or usuario_sugestao
+        usuario = input(f" Usuário SSH (Enter para '{usuario_sugestao}'): ").strip() or usuario_sugestao
 
         if not re.match(r'^[a-zA-Z0-9_.@-]+$', usuario):
             print("❌ Usuário inválido. Use apenas letras, números, _, ., @ ou -.")
             return
 
-        # Testar conectividade SSH antes de prosseguir
-        print("\n🔍 Testando conectividade SSH...")
-        result = subprocess.run(
-            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-             "-o", "StrictHostKeyChecking=no",
-             f"{usuario}@{servidor}", "echo ok"],
-            capture_output=True, text=True, timeout=10
-        )
-        if result.returncode != 0:
-            print("⚠️ Conexão SSH falhou. Verifique:")
+        # === PASSO 3: Teste SSH (validação, não bloqueante) ===
+        ssh_ok = False
+        print("\n Testando conectividade SSH...")
+        try:
+            result = subprocess.run(
+                ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+                 "-o", "StrictHostKeyChecking=no",
+                 f"{usuario}@{servidor}", "echo ok"],
+                capture_output=True, text=True, timeout=10
+            )
+            if result.returncode == 0:
+                ssh_ok = True
+                print("✅ Conectividade OK!")
+            else:
+                print("⚠️ Conexão SSH falhou.")
+        except Exception:
+            print("⚠️ Não foi possível testar SSH.")
+
+        if not ssh_ok:
             print("  - Chave SSH configurada (recomendado)")
             print("  - Ou senha correta (pode travar no loop de reconexão)")
             confirmar = input("Continuar mesmo assim? (s/n): ").strip().lower()
             if confirmar != "s":
                 return
-        else:
-            print("✅ Conectividade OK!")
 
-        # Detectar hostname remoto para sugerir nome do túnel
-        print("\n🔍 Detectando hostname da máquina remota...")
-        hostname_remoto = self._detectar_hostname_remoto(usuario, servidor)
+        # === PASSO 4: Nome do túnel (com sugestão inteligente) ===
+        hostname_remoto = None
+        if ssh_ok:
+            hostname_remoto = self._detectar_hostname_remoto(usuario, servidor)
+
         nome_sugerido = hostname_remoto or servidor.replace(".", "_").replace("-", "_")
-
         nome = input(f"📝 Nome do túnel (Enter para '{nome_sugerido}'): ").strip().lower().replace(" ", "_") or nome_sugerido
 
-        tuneis = self._carregar_tuneis()
-        if nome in tuneis:
+        if nome in tuneis_existentes:
             print(f"❌ Túnel '{nome}' já existe!")
             return
 
-        print("\n🔍 Buscando porta remota livre no servidor...")
-        porta_sugerida = self._descobrir_porta_livre_ssh(usuario, servidor)
+        # === PASSO 5: Porta remota (com fallback inteligente) ===
+        print("\n🔍 Buscando porta remota livre...")
+        porta_sugerida = None
 
-        if porta_sugerida:
-            sugestao = input(f"🔌 Porta remota sugerida: {porta_sugerida} (Enter para confirmar ou digite outra): ").strip()
-            porta_remota = int(sugestao) if sugestao.isdigit() else porta_sugerida
-        else:
-            porta_remota_str = input(" Não foi possível detectar automaticamente. Porta remota (ex: 2222): ").strip()
-            if not porta_remota_str.isdigit():
-                print("❌ Porta inválida.")
-                return
-            porta_remota = int(porta_remota_str)
+        if ssh_ok:
+            porta_sugerida = self._descobrir_porta_livre_ssh(usuario, servidor)
+
+        if not porta_sugerida:
+            portas_em_uso = {info['porta_remota'] for info in tuneis_existentes.values()}
+            porta_base = 2222
+            while porta_base in portas_em_uso:
+                porta_base += 1
+            porta_sugerida = porta_base
+
+        sugestao = input(f"🔌 Porta remota sugerida: {porta_sugerida} (Enter para confirmar ou digite outra): ").strip()
+        porta_remota = int(sugestao) if sugestao.isdigit() else porta_sugerida
 
         if not (1 <= porta_remota <= 65535):
             print("❌ Porta fora do intervalo válido (1-65535).")
             return
 
+        # === PASSO 6: Porta local ===
         porta_local = input("🏠 Porta local da máquina remota (Enter para 22): ").strip() or "22"
         if not porta_local.isdigit():
             print("❌ Porta local inválida.")
             return
 
-        # Detectar tipo do sistema remoto
-        print("\n🔍 Detectando sistema da máquina remota...")
-        result = subprocess.run(
-            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-             "-o", "StrictHostKeyChecking=no",
-             f"{usuario}@{servidor}", "uname -s"],
-            capture_output=True, text=True, timeout=10
-        )
-        if result.returncode == 0:
-            os_detectado = result.stdout.strip().lower()
-            if "windows" not in os_detectado:
-                tipo = "linux"
-                print(f"✅ Sistema detectado: {result.stdout.strip()} (Linux)")
-            else:
-                tipo = "windows"
-                print("✅ Sistema detectado: Windows")
-        else:
-            print("⚠️ Não foi possível detectar automaticamente.")
+        # === PASSO 7: Detectar tipo do sistema (com fallback) ===
+        tipo = None
+        if ssh_ok:
+            print("\n🔍 Detectando sistema da máquina remota...")
+            try:
+                result = subprocess.run(
+                    ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
+                     "-o", "StrictHostKeyChecking=no",
+                     f"{usuario}@{servidor}", "uname -s"],
+                    capture_output=True, text=True, timeout=10
+                )
+                if result.returncode == 0:
+                    os_detectado = result.stdout.strip().lower()
+                    if "windows" not in os_detectado:
+                        tipo = "linux"
+                        print(f"✅ Sistema detectado: {result.stdout.strip()} (Linux)")
+                    else:
+                        tipo = "windows"
+                        print("✅ Sistema detectado: Windows")
+            except Exception:
+                pass
+
+        if not tipo:
+            print("\n⚠️ Não foi possível detectar automaticamente.")
             print("[1] Windows")
             print("[2] Linux")
             tipo_choice = input("Escolha (1/2): ").strip()
             tipo = "windows" if tipo_choice == "1" else "linux"
 
-        # Verificar e desbloquear porta
-        if not self._verificar_e_desbloquear_porta(usuario, servidor, porta_remota, tuneis):
-            return
+        # === PASSO 8: Validar porta no servidor (apenas se SSH OK) ===
+        if ssh_ok:
+            if not self._verificar_e_desbloquear_porta(usuario, servidor, porta_remota, tuneis_existentes):
+                confirmar = input("A porta pode estar em uso. Continuar mesmo assim? (s/n): ").strip().lower()
+                if confirmar != "s":
+                    return
+        else:
+            print("\n⚠️ Porta não verificada no servidor (SSH indisponível). Verifique manualmente.")
 
-        tuneis[nome] = {
+        # === Resumo final ===
+        print("\n" + "=" * 55)
+        print("📋 Resumo do Túnel:")
+        print(f"   Nome: {nome}")
+        print(f"   Servidor: {servidor}")
+        print(f"   Usuário: {usuario}")
+        print(f"   Porta: {porta_remota} → {porta_local}")
+        print(f"   Tipo: {tipo}")
+        print("=" * 55)
+
+        # === Salvar túnel ===
+        tuneis_existentes[nome] = {
             "porta_remota": porta_remota,
             "porta_local": int(porta_local),
             "usuario": usuario,
@@ -10686,7 +10724,7 @@ Host {nome}
             "criado_em": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
 
-        self._salvar_tuneis(tuneis)
+        self._salvar_tuneis(tuneis_existentes)
         self._log_tunel(nome, f"Túnel criado: porta {porta_remota} -> {porta_local} ({tipo})")
 
         # Gerar scripts automaticamente
@@ -10698,11 +10736,6 @@ Host {nome}
         self._atualizar_ssh_config_silencioso()
 
         print(f"\n✅ Túnel '{nome}' criado com sucesso!")
-        print(f"   Porta remota: {porta_remota}")
-        print(f"   Porta local: {porta_local}")
-        print(f"   Usuário: {usuario}")
-        print(f"   Servidor: {servidor}")
-        print(f"   Tipo: {tipo}")
 
     def _editar_tunel(self):
         """Edita um túnel existente"""
