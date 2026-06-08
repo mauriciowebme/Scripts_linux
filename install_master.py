@@ -6007,9 +6007,13 @@ CMD ["sh", "-c", "\
             [Service]
             Type=simple
             User=root
+            Environment=TERMOTE_PORT={porta_termote}
+            Environment=TERMOTE_PWA_DIR={pwa_dir}
+            Environment=TERMOTE_TTYD_URL=ws://localhost:{ttyd_port}
             Environment=TERMOTE_USER={shlex.quote(termote_user)}
             Environment=TERMOTE_PASS={shlex.quote(termote_password)}
-            ExecStart={tmux_api_bin} --ttyd-url ws://localhost:{ttyd_port} --port {porta_termote} --static-dir {pwa_dir} --listen {listen_addr}
+            Environment=TERMOTE_BIND={listen_addr}
+            ExecStart={tmux_api_bin}
             Restart=on-failure
             RestartSec=5
 
