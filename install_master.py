@@ -5669,11 +5669,8 @@ CMD ["sh", "-c", "\
                 print(" Você pode baixar manualmente em: https://github.com/tsl0922/ttyd/releases")
                 return
 
-        porta = self.escolher_porta_disponivel()
-        if not porta:
-            print(" Nenhuma porta disponível no intervalo padrão.")
-            return
-        porta_web = porta[0]
+        porta_web = 40000  # Porta padrão interna para ttyd (localhost apenas)
+        print(f" Porta interna: {porta_web}")
 
         config_file = os.path.join(ttyd_dir, "config.json")
         usar_config_existente = False
@@ -5722,13 +5719,13 @@ CMD ["sh", "-c", "\
         print("\n Criando serviço systemd...")
         service_content = textwrap.dedent(f"""\
             [Unit]
-            Description=Terminal Web (ttyd)
+            Description=Terminal Web (ttyd) - Serviço Interno
             After=network.target
 
             [Service]
             Type=simple
             User=root
-            ExecStart={ttyd_bin} -A --credential {shlex.quote(ttyd_user)}:{shlex.quote(ttyd_password)} --port {porta_web} --writable bash
+            ExecStart={ttyd_bin} -i lo --credential {shlex.quote(ttyd_user)}:{shlex.quote(ttyd_password)} --port {porta_web} --writable bash
             Restart=on-failure
             RestartSec=5
 
@@ -5745,67 +5742,16 @@ CMD ["sh", "-c", "\
         subprocess.run(["sudo", "systemctl", "enable", "ttyd.service"], check=False)
         subprocess.run(["sudo", "systemctl", "restart", "ttyd.service"], check=False)
 
-        # Liberação de firewall
-        print("\n Configurando firewall...")
-        try:
-            ufw_check = subprocess.run(
-                ["sudo", "ufw", "status"],
-                capture_output=True, text=True, timeout=10
-            )
-            if "active" in ufw_check.stdout.lower():
-                subprocess.run(
-                    ["sudo", "ufw", "allow", str(porta_web), "tcp"],
-                    capture_output=True, text=True, timeout=10
-                )
-                print(f"✔ Porta {porta_web} liberada no UFW")
-        except Exception:
-            pass
-
-        # Tenta iptables SEMPRE (independente do UFW)
-        try:
-            check_iptables = subprocess.run(
-                ["sudo", "iptables", "-C", "INPUT", "-p", "tcp", "--dport", str(porta_web), "-j", "ACCEPT"],
-                capture_output=True, timeout=10
-            )
-            if check_iptables.returncode == 0:
-                print(f"  Porta {porta_web} já liberada no iptables")
-            else:
-                subprocess.run(
-                    ["sudo", "iptables", "-I", "INPUT", "1", "-p", "tcp", "--dport", str(porta_web), "-j", "ACCEPT"],
-                    capture_output=True, timeout=10
-                )
-                print(f"✔ Porta {porta_web} liberada no iptables (inserida no topo da cadeia)")
-
-                # Salva regras iptables para persistir no boot
-                if shutil.which("netfilter-persistent"):
-                    subprocess.run(
-                        ["sudo", "netfilter-persistent", "save"],
-                        capture_output=True, timeout=10
-                    )
-                elif shutil.which("iptables-save"):
-                    subprocess.run(
-                        ["sudo", "sh", "-c", "iptables-save > /etc/iptables.rules"],
-                        capture_output=True, timeout=10
-                    )
-                print("  Regras salvas em /etc/iptables.rules")
-        except Exception as e:
-            print(f"  ⚠️  Não foi possível configurar iptables: {e}")
-
         time.sleep(2)
 
         print("\n" + "=" * 60)
         print(" Instalação do Terminal Web (ttyd) concluída!")
         print("=" * 60)
-        print("\n IPs possíveis para acesso:")
-        self.executar_comandos(["hostname -I | tr ' ' '\\n'"], exibir_executando=False)
-        print(f"\n Endereço: http://<seu_ip>:{porta_web}")
-        print(f" Usuário: {ttyd_user}")
-        print(f" Senha: {ttyd_password}")
-        print(f"\n Porta: {porta_web}")
-        print("\n💡 Este terminal é responsivo e funciona perfeitamente no celular!")
-        print("   No celular, use o navegador em tela cheia para melhor experiência.")
-        print("\n🔒 Sessões persistentes: as sessões tmux continuam rodando mesmo")
-        print("   quando você fecha o navegador. Ao reabrir, volta onde parou!")
+        print("\n🔒 ttyd é um serviço INTERNO (localhost apenas).")
+        print("   Para acesso externo, use o Termote (PWA) na Central de Instalações.")
+        print(f"\n Porta interna: {porta_web} (acessível apenas via localhost)")
+        print("\n💡 Este terminal é usado como backend pelo Termote.")
+        print("   Instale o Termote para experiência mobile completa com toolbar!")
         print("\n🔧 Comandos úteis:")
         print("   status:  sudo systemctl status ttyd")
         print("   stop:    sudo systemctl stop ttyd")
@@ -5814,8 +5760,6 @@ CMD ["sh", "-c", "\
         print("   logs:    sudo journalctl -u ttyd -f")
         print("\n Guarde a senha! Ela não será exibida novamente.")
         print("=" * 60)
-        print("\n💡 Para experiência mobile completa (toolbar com setas, tab, esc),")
-        print("   instale também o Termote (PWA) na Central de Instalações!")
 
     def instala_termote_mobile(self):
         print("Iniciando instalação do Termote Mobile (PWA).")
@@ -5941,7 +5885,7 @@ CMD ["sh", "-c", "\
 
         porta_termote = 7680
         ttyd_config = f"{self.install_principal}/ttyd/config.json"
-        ttyd_port = 7681
+        ttyd_port = 40000  # Porta padrão interna do ttyd
         ttyd_user = "root"
         ttyd_password = ""
 
@@ -5949,7 +5893,7 @@ CMD ["sh", "-c", "\
             try:
                 with open(ttyd_config, "r") as f:
                     ttyd_cfg = json.load(f)
-                ttyd_port = ttyd_cfg.get("porta", 7681)
+                ttyd_port = ttyd_cfg.get("porta", 40000)
                 ttyd_user = ttyd_cfg.get("user", "root")
                 ttyd_password = ttyd_cfg.get("password", "")
             except:
