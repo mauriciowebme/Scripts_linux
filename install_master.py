@@ -5725,7 +5725,7 @@ CMD ["sh", "-c", "\
             [Service]
             Type=simple
             User=root
-            ExecStart={ttyd_bin} -i lo --credential {shlex.quote(ttyd_user)}:{shlex.quote(ttyd_password)} --port {porta_web} --writable bash
+            ExecStart={ttyd_bin} -i lo --credential {shlex.quote(ttyd_user)}:{shlex.quote(ttyd_password)} --port {porta_web} --writable tmux new-session -A -s main "bash"
             Restart=on-failure
             RestartSec=5
 
@@ -6031,6 +6031,7 @@ CMD ["sh", "-c", "\
             ExecStart=/usr/local/bin/termote-start.sh
             Restart=on-failure
             RestartSec=5
+            KillMode=process
 
             [Install]
             WantedBy=multi-user.target
@@ -11185,7 +11186,7 @@ done
                     [Service]
                     Type=simple
                     User=root
-                    ExecStart={ttyd_bin} --credential {shlex.quote(ttyd_user)}:{shlex.quote(nova_senha)} --port {cfg.get('porta', 7681)} --writable bash
+                    ExecStart={ttyd_bin} --credential {shlex.quote(ttyd_user)}:{shlex.quote(nova_senha)} --port {cfg.get('porta', 7681)} --writable tmux new-session -A -s main "bash"
                     Restart=on-failure
                     RestartSec=5
 
@@ -11237,7 +11238,7 @@ done
                         [Service]
                         Type=simple
                         User=root
-                        ExecStart={ttyd_bin} --credential {shlex.quote(ttyd_user)}:{shlex.quote(ttyd_password)} --port {nova_porta} --writable bash
+                        ExecStart={ttyd_bin} --credential {shlex.quote(ttyd_user)}:{shlex.quote(ttyd_password)} --port {nova_porta} --writable tmux new-session -A -s main "bash"
                         Restart=on-failure
                         RestartSec=5
 
