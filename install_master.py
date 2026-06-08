@@ -6027,6 +6027,13 @@ CMD ["sh", "-c", "\
         
         # Cria script wrapper para inicialização correta
         wrapper_script = "/usr/local/bin/termote-start.sh"
+        
+        # Prepara credenciais para URL (com encoding se necessário)
+        ttyd_url_auth = ""
+        if ttyd_password:
+            from urllib.parse import quote
+            ttyd_url_auth = f"{quote(ttyd_user, safe='')}:{quote(ttyd_password, safe='')}@"
+        
         wrapper_content = textwrap.dedent(f"""\
             #!/bin/bash
             # Wrapper para iniciar o Termote com ambiente correto
@@ -6034,7 +6041,7 @@ CMD ["sh", "-c", "\
             export TMUX_TMPDIR="/tmp"
             export TERMOTE_PORT="{porta_termote}"
             export TERMOTE_PWA_DIR="{pwa_dir}"
-            export TERMOTE_TTYD_URL="http://127.0.0.1:{ttyd_port}"
+            export TERMOTE_TTYD_URL="http://{ttyd_url_auth}127.0.0.1:{ttyd_port}"
             export TERMOTE_USER="{shlex.quote(termote_user)}"
             export TERMOTE_PASS="{shlex.quote(termote_password)}"
             export TERMOTE_BIND="{listen_addr}"
@@ -6083,7 +6090,7 @@ CMD ["sh", "-c", "\
             Environment=TMUX_TMPDIR=/tmp
             Environment=TERMOTE_PORT={porta_termote}
             Environment=TERMOTE_PWA_DIR={pwa_dir}
-            Environment=TERMOTE_TTYD_URL=http://127.0.0.1:{ttyd_port}
+            Environment=TERMOTE_TTYD_URL=http://{ttyd_url_auth}127.0.0.1:{ttyd_port}
             Environment=TERMOTE_USER={shlex.quote(termote_user)}
             Environment=TERMOTE_PASS={shlex.quote(termote_password)}
             Environment=TERMOTE_BIND={listen_addr}
