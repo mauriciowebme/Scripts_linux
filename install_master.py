@@ -6032,7 +6032,7 @@ CMD ["sh", "-c", "\
             export TMUX_TMPDIR="/tmp"
             export TERMOTE_PORT="{porta_termote}"
             export TERMOTE_PWA_DIR="{pwa_dir}"
-            export TERMOTE_TTYD_URL="ws://{shlex.quote(termote_user)}:{shlex.quote(termote_password)}@localhost:{ttyd_port}"
+            export TERMOTE_TTYD_URL="http://127.0.0.1:{ttyd_port}"
             export TERMOTE_USER="{shlex.quote(termote_user)}"
             export TERMOTE_PASS="{shlex.quote(termote_password)}"
             export TERMOTE_BIND="{listen_addr}"
@@ -6077,7 +6077,7 @@ CMD ["sh", "-c", "\
             Environment=TMUX_TMPDIR=/tmp
             Environment=TERMOTE_PORT={porta_termote}
             Environment=TERMOTE_PWA_DIR={pwa_dir}
-            Environment=TERMOTE_TTYD_URL=ws://{shlex.quote(termote_user)}:{shlex.quote(termote_password)}@localhost:{ttyd_port}
+            Environment=TERMOTE_TTYD_URL=http://127.0.0.1:{ttyd_port}
             Environment=TERMOTE_USER={shlex.quote(termote_user)}
             Environment=TERMOTE_PASS={shlex.quote(termote_password)}
             Environment=TERMOTE_BIND={listen_addr}
