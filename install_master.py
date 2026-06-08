@@ -5595,10 +5595,8 @@ CMD ["sh", "-c", "\
         print("Aponte seus testes do WebDriver para http://servidor:4444")
         print("")
 
-    def instala_terminal_web(self):
-        print("Iniciando instalação do Terminal Web (ttyd).")
-        print("=" * 60)
-        print("Terminal web leve e responsivo - perfeito para celular!")
+    def _instala_ttyd_backend(self):
+        print("\n Instalando backend do terminal (ttyd)...")
         print("-" * 60)
 
         ttyd_dir = f"{self.install_principal}/ttyd"
@@ -5613,25 +5611,25 @@ CMD ["sh", "-c", "\
             "armv7l": "arm",
         }
         ttyd_arch = arch_map.get(detect_machine, "x86_64")
-        print(f" Arquitetura detectada: {detect_machine} → {ttyd_arch}")
+        print(f"  Arquitetura detectada: {detect_machine} → {ttyd_arch}")
 
         ttyd_bin = "/usr/local/bin/ttyd"
         if os.path.exists(ttyd_bin):
-            print(f" Binário ttyd já existe: {ttyd_bin}")
+            print(f"  Binário ttyd já existe: {ttyd_bin}")
             try:
                 result = subprocess.run([ttyd_bin, "--version"], capture_output=True, text=True)
                 if result.returncode == 0:
-                    print(f" Versão instalada: {result.stdout.strip()}")
+                    print(f"  Versão instalada: {result.stdout.strip()}")
             except:
                 pass
-            reinstalar = input(" Deseja reinstalar/atualizar? (s/n): ").strip().lower()
+            reinstalar = input("  Deseja reinstalar/atualizar? (s/n): ").strip().lower()
             if reinstalar != "s":
-                print(" Usando instalação existente.")
+                print("  Usando instalação existente.")
             else:
-                print(" Baixando nova versão...")
+                print("  Baixando nova versão...")
                 os.remove(ttyd_bin)
         else:
-            print(f" Baixando ttyd para {ttyd_arch}...")
+            print(f"  Baixando ttyd para {ttyd_arch}...")
 
         if not os.path.exists(ttyd_bin):
             try:
@@ -5651,75 +5649,66 @@ CMD ["sh", "-c", "\
             asset_name = f"ttyd.{ttyd_arch}"
             download_url = f"https://github.com/tsl0922/ttyd/releases/download/{version}/{asset_name}"
 
-            print(f" Versão: {version}")
-            print(f" Asset: {asset_name}")
+            print(f"  Versão: {version}")
+            print(f"  Asset: {asset_name}")
 
             try:
                 subprocess.run(
                     ["curl", "-fSL", "-o", "/tmp/ttyd", download_url],
                     check=True, timeout=120
                 )
-                print(f" Download concluído.")
+                print(f"  Download concluído.")
 
                 subprocess.run(["sudo", "mv", "/tmp/ttyd", ttyd_bin], check=True)
                 subprocess.run(["sudo", "chmod", "+x", ttyd_bin], check=True)
-                print(f" Binário instalado: {ttyd_bin}")
+                print(f"  Binário instalado: {ttyd_bin}")
             except Exception as e:
-                print(f" Erro ao baixar ttyd: {e}")
-                print(" Você pode baixar manualmente em: https://github.com/tsl0922/ttyd/releases")
-                return
+                print(f"  Erro ao baixar ttyd: {e}")
+                print("  Você pode baixar manualmente em: https://github.com/tsl0922/ttyd/releases")
+                return None
 
-        porta_web = 40000  # Porta padrão interna para ttyd (localhost apenas)
-        print(f" Porta interna: {porta_web}")
+        porta_web = 40000
 
         config_file = os.path.join(ttyd_dir, "config.json")
         usar_config_existente = False
 
         if os.path.exists(config_file):
-            print("\n⚠️  Arquivo de configuração já existe!")
-            resposta = input(" Deseja usar as configurações existentes? (s/n) [padrão: s]: ").strip().lower()
-            if resposta != "n":
+            try:
+                with open(config_file, "r") as f:
+                    cfg = json.load(f)
+                porta_web = cfg.get("porta", porta_web)
+                ttyd_user = cfg.get("user", "root")
+                ttyd_password = cfg.get("password", "")
                 usar_config_existente = True
-                print("✅ Usando configurações existentes.")
-                try:
-                    with open(config_file, "r") as f:
-                        cfg = json.load(f)
-                    porta_web = cfg.get("porta", porta_web)
-                    ttyd_user = cfg.get("user", "root")
-                    ttyd_password = cfg.get("password", "")
-                except:
-                    ttyd_user = "root"
-                    ttyd_password = ""
-            else:
-                print(" Novas configurações serão solicitadas.")
+                print(f"  Configuração existente carregada (porta: {porta_web}).")
+            except:
+                ttyd_user = "root"
+                ttyd_password = ""
 
         if not usar_config_existente:
-            ttyd_user = input("\n Usuário para acesso (padrão: root): ").strip() or "root"
-            ttyd_password_input = input(" Senha (Enter para gerar automaticamente): ").strip()
+            ttyd_user = input("\n  Usuário para acesso (padrão: root): ").strip() or "root"
+            ttyd_password_input = input("  Senha (Enter para gerar automaticamente): ").strip()
             if not ttyd_password_input:
                 ttyd_password = self.generate_password(16)
-                print(f" Senha gerada automaticamente: {ttyd_password}")
+                print(f"  Senha gerada automaticamente: {ttyd_password}")
             else:
                 ttyd_password = ttyd_password_input
-
-            print("\n💡 O ttyd usa autenticação HTTP Basic.")
-            print("   Para acesso via celular, a interface é totalmente responsiva.")
 
             cfg = {
                 "porta": porta_web,
                 "user": ttyd_user,
                 "password": ttyd_password,
-                "versao": version,
+                "versao": version if 'version' in dir() else "1.7.7",
             }
             with open(config_file, "w") as f:
                 json.dump(cfg, f, indent=2)
             os.chmod(config_file, 0o600)
-            print(f" Configuração salva: {config_file}")
+            print(f"  Configuração salva: {config_file}")
 
-        print("\n Criando serviço systemd...")
+        print("\n  Criando serviço systemd (ttyd)...")
         service_content = textwrap.dedent(f"""\
             [Unit]
-            Description=Terminal Web (ttyd) - Serviço Interno
+            Description=Terminal Web (ttyd) - Backend Termote
             After=network.target
 
             [Service]
@@ -5743,23 +5732,9 @@ CMD ["sh", "-c", "\
         subprocess.run(["sudo", "systemctl", "restart", "ttyd.service"], check=False)
 
         time.sleep(2)
+        print("  Backend ttyd instalado e iniciado.")
 
-        print("\n" + "=" * 60)
-        print(" Instalação do Terminal Web (ttyd) concluída!")
-        print("=" * 60)
-        print("\n🔒 ttyd é um serviço INTERNO (localhost apenas).")
-        print("   Para acesso externo, use o Termote (PWA) na Central de Instalações.")
-        print(f"\n Porta interna: {porta_web} (acessível apenas via localhost)")
-        print("\n💡 Este terminal é usado como backend pelo Termote.")
-        print("   Instale o Termote para experiência mobile completa com toolbar!")
-        print("\n🔧 Comandos úteis:")
-        print("   status:  sudo systemctl status ttyd")
-        print("   stop:    sudo systemctl stop ttyd")
-        print("   start:   sudo systemctl start ttyd")
-        print("   restart: sudo systemctl restart ttyd")
-        print("   logs:    sudo journalctl -u ttyd -f")
-        print("\n Guarde a senha! Ela não será exibida novamente.")
-        print("=" * 60)
+        return (porta_web, ttyd_user, ttyd_password)
 
     def instala_termote_mobile(self):
         print("Iniciando instalação do Termote Mobile (PWA).")
@@ -5767,11 +5742,11 @@ CMD ["sh", "-c", "\
         print("PWA mobile para terminal com toolbar virtual e gestos!")
         print("-" * 60)
 
-        ttyd_bin = "/usr/local/bin/ttyd"
-        if not os.path.exists(ttyd_bin):
-            print(" Erro: ttyd não está instalado!")
-            print(" Instale primeiro o Terminal Web (ttyd) na Central de Instalações.")
+        ttyd_result = self._instala_ttyd_backend()
+        if ttyd_result is None:
+            print(" Erro ao instalar o backend (ttyd). Abortando.")
             return
+        ttyd_port, ttyd_user, ttyd_password = ttyd_result
 
         termote_dir = f"{self.install_principal}/termote"
         pwa_dir = os.path.join(termote_dir, "pwa")
@@ -5895,20 +5870,6 @@ CMD ["sh", "-c", "\
             print(" PWA já está instalada.")
 
         porta_termote = 7680
-        ttyd_config = f"{self.install_principal}/ttyd/config.json"
-        ttyd_port = 40000  # Porta padrão interna do ttyd
-        ttyd_user = "root"
-        ttyd_password = ""
-
-        if os.path.exists(ttyd_config):
-            try:
-                with open(ttyd_config, "r") as f:
-                    ttyd_cfg = json.load(f)
-                ttyd_port = ttyd_cfg.get("porta", 40000)
-                ttyd_user = ttyd_cfg.get("user", "root")
-                ttyd_password = ttyd_cfg.get("password", "")
-            except:
-                pass
 
         config_file = os.path.join(termote_dir, "config.json")
         usar_config_existente = False
@@ -5932,19 +5893,18 @@ CMD ["sh", "-c", "\
                 print(" Novas configurações serão solicitadas.")
 
         if not usar_config_existente:
-            reutilizar = input("\n Deseja reutilizar as credenciais do ttyd? (s/n) [padrão: s]: ").strip().lower()
-            if reutilizar != "n":
-                termote_user = ttyd_user
-                termote_password = ttyd_password
-                print(f" Usando credenciais do ttyd: {termote_user}")
-            else:
-                termote_user = input(" Usuário para acesso (padrão: root): ").strip() or "root"
-                ttyd_password_input = input(" Senha (Enter para gerar automaticamente): ").strip()
-                if not ttyd_password_input:
+            print(f"\n Usando as credenciais do backend: {ttyd_user}")
+            termote_user = ttyd_user
+            termote_password = ttyd_password
+            alterar_cred = input(" Deseja usar credenciais diferentes para o Termote? (s/n) [padrão: n]: ").strip().lower()
+            if alterar_cred == "s":
+                termote_user = input("  Usuário para acesso (padrão: root): ").strip() or "root"
+                termote_pass_input = input("  Senha (Enter para gerar automaticamente): ").strip()
+                if not termote_pass_input:
                     termote_password = self.generate_password(16)
-                    print(f" Senha gerada automaticamente: {termote_password}")
+                    print(f"  Senha gerada automaticamente: {termote_password}")
                 else:
-                    termote_password = ttyd_password_input
+                    termote_password = termote_pass_input
 
             expor_lan = input("\n Expor na rede local (LAN)? (s/n) [padrão: s]: ").strip().lower()
             if expor_lan == "n":
@@ -8918,7 +8878,6 @@ AllowedIPs = {ip_peer}
             ("🧠 Inteligência Artificial (Ollama Local)", self.gerenciar_ollama),
             ("🦀 Open Claw (Automação/Agentes)", self.gerenciar_open_claw),
             ("🖥️ Interfaces Gráficas (Desktop)", self.menu_interfaces_graficas),
-            ("💻 Terminal Web (ttyd) - Responsivo/Mobile", self.instala_terminal_web),
             ("📱 Terminal Mobile (Termote PWA)", self.instala_termote_mobile),
             ("📦 Instalar pacote .deb manualmente", self.instalar_deb),
             ("🤖 Gerenciar OpenCode (AI CLI)", self.gerenciar_opencode),
@@ -11274,7 +11233,7 @@ done
             ("📊 Monitoramento (Grafana)", self.iniciar_monitoramento),
             ("💾 Gerenciar Bancos PostgreSQL", self.gerenciar_bancos_postgres),
             ("📝 Controle Sites (OpenLiteSpeed)", self.controle_sites_openlitespeed),
-            ("💻 Gerenciar Terminal Web (ttyd)", self.gerenciar_terminal_web),
+            ("📱 Gerenciar Terminal (Termote/ttyd)", self.gerenciar_terminal_web),
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="🔧 GERENCIADOR DE MICROSERVIÇOS", itens_por_pagina=10)
 
