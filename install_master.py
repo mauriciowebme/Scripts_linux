@@ -5851,6 +5851,17 @@ CMD ["sh", "-c", "\
             print(" Instalando unzip...")
             subprocess.run(["sudo", "apt", "install", "-y", "unzip"], check=False)
 
+        tmux_conf_content = textwrap.dedent("""\
+            set-option -g destroy-unattached off
+            set-option -g detach-on-destroy off
+        """)
+        temp_tmux_conf = "/tmp/tmux.conf"
+        with open(temp_tmux_conf, "w") as f:
+            f.write(tmux_conf_content)
+        subprocess.run(["sudo", "mv", temp_tmux_conf, "/etc/tmux.conf"], check=False)
+        subprocess.run(["sudo", "chmod", "644", "/etc/tmux.conf"], check=False)
+        print(" Configuração do tmux criada: /etc/tmux.conf")
+
         if not os.path.exists(os.path.join(pwa_dir, "index.html")):
             print(f" Baixando PWA dist...")
             print(f" URL: {download_url_pwa}")
@@ -5965,43 +5976,24 @@ CMD ["sh", "-c", "\
 
         print("\n Criando script wrapper e configurando tmux...")
         
-        # Cria symlink do tmux para garantir que esteja no PATH
-        if not os.path.exists("/usr/local/bin/tmux"):
-            subprocess.run(["sudo", "ln", "-sf", "/usr/bin/tmux", "/usr/local/bin/tmux"], check=False)
-        
-        # Cria script wrapper para inicialização correta
-        wrapper_script = "/usr/local/bin/termote-start.sh"
-        
         # Prepara credenciais para URL (com encoding se necessário)
         ttyd_url_auth = ""
         if ttyd_password:
             from urllib.parse import quote
             ttyd_url_auth = f"{quote(ttyd_user, safe='')}:{quote(ttyd_password, safe='')}@"
-        
+
+        wrapper_script = "/usr/local/bin/termote-start.sh"
+
         wrapper_content = textwrap.dedent(f"""\
             #!/bin/bash
             # Wrapper para iniciar o Termote com ambiente correto
+            # Nota: variáveis de ambiente já são injetadas pelo systemd
+
             export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-            export TMUX_TMPDIR="/tmp"
-            export TERMOTE_PORT="{porta_termote}"
-            export TERMOTE_PWA_DIR="{pwa_dir}"
-            export TERMOTE_TTYD_URL="http://{ttyd_url_auth}127.0.0.1:{ttyd_port}"
-            export TERMOTE_USER="{shlex.quote(termote_user)}"
-            export TERMOTE_PASS="{shlex.quote(termote_password)}"
-            export TERMOTE_BIND="{listen_addr}"
-            
-            # Configurações de persistência do tmux
-            tmux set-option -g destroy-unattached off 2>/dev/null || true
-            tmux set-option -g detach-on-destroy off 2>/dev/null || true
-            
-            # Garante que o tmux está rodando com sessão 'main'
-            if ! tmux list-sessions &>/dev/null; then
-                tmux new-session -d -s main "bash" 2>/dev/null || true
-            fi
-            if ! tmux has-session -t main &>/dev/null; then
-                tmux new-session -d -s main "bash" 2>/dev/null || true
-            fi
-            
+
+            # Garante sessão tmux 'main' (-dA = detached + attach se existe, cria se não)
+            tmux new-session -d -A -s main "bash" 2>/dev/null || true
+
             # Inicia o tmux-api
             exec {tmux_api_bin}
         """)
@@ -6014,8 +6006,8 @@ CMD ["sh", "-c", "\
         
         # Cria sessão tmux 'main' inicial
         try:
-            subprocess.run(["tmux", "new-session", "-d", "-s", "main", "bash"], check=False)
-            print(" Sessão tmux 'main' criada.")
+            subprocess.run(["tmux", "new-session", "-A", "-s", "main", "bash"], check=False)
+            print(" Sessão tmux 'main' criada ou reutilizada.")
         except:
             pass
 
@@ -6029,16 +6021,13 @@ CMD ["sh", "-c", "\
             [Service]
             Type=simple
             User=root
-            PrivateTmp=false
             Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-            Environment=TMUX_TMPDIR=/tmp
             Environment=TERMOTE_PORT={porta_termote}
             Environment=TERMOTE_PWA_DIR={pwa_dir}
             Environment=TERMOTE_TTYD_URL=http://{ttyd_url_auth}127.0.0.1:{ttyd_port}
             Environment=TERMOTE_USER={shlex.quote(termote_user)}
             Environment=TERMOTE_PASS={shlex.quote(termote_password)}
             Environment=TERMOTE_BIND={listen_addr}
-            ExecStartPre=/bin/sh -c "tmux new-session -d -s main 'bash' 2>/dev/null || true"
             ExecStart=/usr/local/bin/termote-start.sh
             Restart=on-failure
             RestartSec=5
