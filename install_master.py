@@ -3160,10 +3160,12 @@ WantedBy=timers.target
         
         # Menu de operações
         print(f"\n=== OPERAÇÕES NO CONTAINER: {container} ===")
-        print("[1] Criar banco de dados")
-        print("[2] Listar bancos de dados")
-        print("[3] Apagar banco de dados")
-        print("[0] Voltar")
+        print("📋 GERENCIAMENTO POSTGRESQL")
+        print("-" * 50)
+        print("[1] 🗄️  Criar banco de dados")
+        print("[2]  Listar bancos de dados")
+        print("[3] 🗑️  Apagar banco de dados")
+        print("[0] ↩️  Voltar")
         
         opcao = input("\nEscolha uma opção: ").strip()
         
@@ -6610,11 +6612,13 @@ class Sistema(Docker, Executa_comandos):
                 pass
             
             print("\n" + "-"*50)
-            print("[1] Criar/Redimensionar Swap")
-            print("[2] Remover Swap")
-            print("[3] Ajustar Swappiness")
-            print("[4] Recarregar Swap (desliga e liga)")
-            print("[0] Voltar")
+            print(" MENU SWAP")
+            print("-" * 50)
+            print("[1]  Criar/Redimensionar Swap")
+            print("[2] 🗑️  Remover Swap")
+            print("[3] ⚙️  Ajustar Swappiness")
+            print("[4] 🔄 Recarregar Swap (desliga e liga)")
+            print("[0] ↩️  Voltar")
             print("="*50)
             
             escolha = input("\nEscolha: ").strip()
@@ -7366,15 +7370,15 @@ class Sistema(Docker, Executa_comandos):
         particao_completa = f"{raid_device}p{particao}"
 
         print("\n🔹 Escolha uma opção:")
-        print("[1] Aumentar o tamanho do RAID")
-        print("[2] Diminuir o tamanho do RAID")
+        print("[1] 📈 Aumentar o tamanho do RAID")
+        print("[2]  Diminuir o tamanho do RAID")
         escolha = input("\nDigite 1 para aumentar ou 2 para diminuir: ").strip()
 
         if escolha == "1":
             acao = "aumentar"
             print("\n📌 Você deseja definir um novo tamanho ou usar o máximo disponível?")
-            print("[1] Definir um tamanho específico")
-            print("[2] Usar o tamanho máximo disponível (padrão)")
+            print("[1]  Definir um tamanho específico")
+            print("[2]  Usar o tamanho máximo disponível (padrão)")
             escolha_tamanho = input("\nDigite 1 para definir um tamanho ou 2 para usar o máximo: ").strip()
 
             if escolha_tamanho == "1":
@@ -8333,9 +8337,9 @@ AllowedIPs = {ip_peer}
             
             print("\n" + "="*70)
             print("OPÇÕES:")
-            print("[1] Manter configuração e apenas visualizar/gerenciar")
-            print("[2] RESETAR e criar nova configuração")
-            print("[0] Voltar ao menu")
+            print("[1]  Manter configuração e apenas visualizar/gerenciar")
+            print("[2]  RESETAR e criar nova configuração")
+            print("[0] ↩️  Voltar ao menu")
             print("="*70)
             
             opcao = input("\nEscolha: ").strip()
@@ -9168,8 +9172,8 @@ AllowedIPs = {ip_peer}
                 container = escolha
             
             print(f"\nOpcoes de logs:")
-            print("[1] Ultimas 50 linhas")
-            print("[2] Ultimas 100 linhas")
+            print("[1]  Ultimas 50 linhas")
+            print("[2]  Ultimas 100 linhas")
             print("[3] Ultimas 500 linhas")
             print("[4] Todos os logs")
             print("[5] Seguir logs (tempo real)")
@@ -9406,13 +9410,13 @@ AllowedIPs = {ip_peer}
             print("\n" + "="*45)
             print("🦀 OPEN CLAW MANAGER - MENU CENTRALIZADO")
             print("="*45)
-            print("[1] Instalar / Atualizar")
-            print("[2] Correção (Doctor)")
-            print("[3] Configurar (openclaw configure)")
-            print("[4] Status")
-            print("[5] Reinstalar do Zero (Limpar e Instalar)")
-            print("[6] Chat no Terminal (openclaw tui)")
-            print("[0] Voltar ao Menu Anterior")
+            print("[1] 📦 Instalar / Atualizar")
+            print("[2]  Correção (Doctor)")
+            print("[3] ⚙️  Configurar (openclaw configure)")
+            print("[4]  Status")
+            print("[5] 🗑️  Reinstalar do Zero (Limpar e Instalar)")
+            print("[6]  Chat no Terminal (openclaw tui)")
+            print("[0] ↩️  Voltar ao Menu Anterior")
             print("="*45)
             
             opt = input("\nEscolha uma opção: ").strip()
@@ -9885,8 +9889,8 @@ AllowedIPs = {ip_peer}
             print("Útil para contornar bloqueios de ISP (Claro/NET/Vivo)")
             print("que impedem downloads do Ollama, Docker Hub, etc.")
             print("-"*55)
-            print("[1] Instalar WARP")
-            print("[2] Conectar")
+            print("[1] 📦 Instalar WARP")
+            print("[2]  Conectar")
             print("[3] Desconectar")
             print("[4] Ver Status Detalhado")
             print("[5] Testar Conexão com Cloudflare")
@@ -9957,8 +9961,8 @@ AllowedIPs = {ip_peer}
         frpc_conf = os.path.join(frp_dir, "client", "frpc.toml")
 
         while True:
-            print("\n[1] Adicionar proxy")
-            print("[2] Remover proxy")
+            print("\n[1] ➕ Adicionar proxy")
+            print("[2] ️  Remover proxy")
             print("[3] Listar proxies")
             print("[4] Status do servidor (frps)")
             print("[5] Status do cliente (frpc)")
@@ -11107,8 +11111,8 @@ done
                     pass
 
             print("\n" + "-" * 55)
-            print("[1] Iniciar ttyd")
-            print("[2] Parar ttyd")
+            print("[1] ▶️  Iniciar ttyd")
+            print("[2] ⏹️  Parar ttyd")
             print("[3] Reiniciar ttyd")
             print("[4] Ver status detalhado")
             print("[5] Ver logs")
