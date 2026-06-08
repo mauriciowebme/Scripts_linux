@@ -6017,6 +6017,51 @@ CMD ["sh", "-c", "\
             except:
                 listen_addr = "0.0.0.0"
 
+        print("\n Criando script wrapper e configurando tmux...")
+        
+        # Cria symlink do tmux para garantir que esteja no PATH
+        if not os.path.exists("/usr/local/bin/tmux"):
+            subprocess.run(["sudo", "ln", "-sf", "/usr/bin/tmux", "/usr/local/bin/tmux"], check=False)
+        
+        # Cria script wrapper para inicialização correta
+        wrapper_script = "/usr/local/bin/termote-start.sh"
+        wrapper_content = textwrap.dedent(f"""\
+            #!/bin/bash
+            # Wrapper para iniciar o Termote com ambiente correto
+            export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+            export TMUX_TMPDIR="/tmp"
+            export TERMOTE_PORT="{porta_termote}"
+            export TERMOTE_PWA_DIR="{pwa_dir}"
+            export TERMOTE_TTYD_URL="ws://{shlex.quote(termote_user)}:{shlex.quote(termote_password)}@localhost:{ttyd_port}"
+            export TERMOTE_USER="{shlex.quote(termote_user)}"
+            export TERMOTE_PASS="{shlex.quote(termote_password)}"
+            export TERMOTE_BIND="{listen_addr}"
+            
+            # Garante que o tmux está rodando com sessão 'main'
+            if ! tmux list-sessions &>/dev/null; then
+                tmux new-session -d -s main "bash" 2>/dev/null || true
+            fi
+            if ! tmux has-session -t main &>/dev/null; then
+                tmux new-session -d -s main "bash" 2>/dev/null || true
+            fi
+            
+            # Inicia o tmux-api
+            exec {tmux_api_bin}
+        """)
+        
+        with open("/tmp/termote-start.sh", "w") as f:
+            f.write(wrapper_content)
+        subprocess.run(["sudo", "mv", "/tmp/termote-start.sh", wrapper_script], check=True)
+        subprocess.run(["sudo", "chmod", "+x", wrapper_script], check=True)
+        print(f" Script wrapper criado: {wrapper_script}")
+        
+        # Cria sessão tmux 'main' inicial
+        try:
+            subprocess.run(["tmux", "new-session", "-d", "-s", "main", "bash"], check=False)
+            print(" Sessão tmux 'main' criada.")
+        except:
+            pass
+
         print("\n Criando serviço systemd...")
         service_content = textwrap.dedent(f"""\
             [Unit]
@@ -6027,13 +6072,17 @@ CMD ["sh", "-c", "\
             [Service]
             Type=simple
             User=root
+            PrivateTmp=false
+            Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            Environment=TMUX_TMPDIR=/tmp
             Environment=TERMOTE_PORT={porta_termote}
             Environment=TERMOTE_PWA_DIR={pwa_dir}
-            Environment=TERMOTE_TTYD_URL=ws://localhost:{ttyd_port}
+            Environment=TERMOTE_TTYD_URL=ws://{shlex.quote(termote_user)}:{shlex.quote(termote_password)}@localhost:{ttyd_port}
             Environment=TERMOTE_USER={shlex.quote(termote_user)}
             Environment=TERMOTE_PASS={shlex.quote(termote_password)}
             Environment=TERMOTE_BIND={listen_addr}
-            ExecStart={tmux_api_bin}
+            ExecStartPre=/bin/sh -c "tmux new-session -d -s main 'bash' 2>/dev/null || true"
+            ExecStart=/usr/local/bin/termote-start.sh
             Restart=on-failure
             RestartSec=5
 
