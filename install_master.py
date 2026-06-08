@@ -7465,9 +7465,9 @@ class Sistema(Docker, Executa_comandos):
     def menu_raid(self):
         """Menu de opções"""
         opcoes_menu = [
-            ("Exibe o estado atual da raid", self.estado_raid),
-            ("Formata o disco para usar em raid existente", self.formatar_criar_particao_raid),
-            ("Controle de tamanho do raid", self.gerenciar_raid),
+            ("📊 Exibe o estado atual da raid", self.estado_raid),
+            ("💾 Formata o disco para usar em raid existente", self.formatar_criar_particao_raid),
+            ("📐 Controle de tamanho do raid", self.gerenciar_raid),
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="💾 GERENCIAMENTO DE RAID", itens_por_pagina=10)
         
@@ -7500,12 +7500,12 @@ class Sistema(Docker, Executa_comandos):
     def menu_particoes(self):
         """Menu de opções"""
         opcoes_menu = [
-            ("Menu RAID", self.menu_raid),
-            ("Listar particoes", self.listar_particoes),
-            ("Listar particoes detalhadas", self.listar_particoes_detalhadas),
-            ("Monta particao", self.monta_particao),
-            ("Desmontar particao", self.desmontar_particao),
-            ("Formata o disco e cria partição e monta", self.formata_cria_particao),
+            (" Menu RAID", self.menu_raid),
+            ("📋 Listar particoes", self.listar_particoes),
+            ("📄 Listar particoes detalhadas", self.listar_particoes_detalhadas),
+            ("💾 Monta particao", self.monta_particao),
+            ("💾 Desmontar particao", self.desmontar_particao),
+            ("💾 Formata o disco e cria partição e monta", self.formata_cria_particao),
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="💿 GERENCIAMENTO DE PARTIÇÕES", itens_por_pagina=10)
     
@@ -8867,10 +8867,10 @@ AllowedIPs = {ip_peer}
     def menu_interfaces_graficas(self):
         """Submenu para instalação de interfaces gráficas"""
         opcoes = [
-            ("Instalar/Iniciar XFCE (Leve)", self.instalar_interface_xfce),
-            ("Instalar GNOME (Padrão Ubuntu)", self.instalar_interface_gnome),
-            ("Instalar Desktop Ubuntu Webtop (Docker)", self.desktop_ubuntu_webtop),
-            ("Instalar VNC Server (Acesso Remoto)", self.instala_vnc_server),
+            ("📦 Instalar/Iniciar XFCE (Leve)", self.instalar_interface_xfce),
+            ("📦 Instalar GNOME (Padrão Ubuntu)", self.instalar_interface_gnome),
+            ("📦 Instalar Desktop Ubuntu Webtop (Docker)", self.desktop_ubuntu_webtop),
+            (" Instalar VNC Server (Acesso Remoto)", self.instala_vnc_server),
             ("️  Voltar", None)
         ]
         self.mostrar_menu_paginado(opcoes, titulo="🖥️  INTERFACES GRÁFICAS", itens_por_pagina=10)
@@ -8911,7 +8911,7 @@ AllowedIPs = {ip_peer}
         opcoes = [
             (" WiFi Gerenciar Wifi (nmtui)", self.setup_wifi),
             ("️ Configurar IP Fixo", self.configura_ip_fixo),
-            (" Configurar SSH", self.configurar_ssh),
+            ("🔐 Configurar SSH", self.configurar_ssh),
             ("️  Voltar", None)
         ]
         self.mostrar_menu_paginado(opcoes, titulo="🌐 CONFIGURAÇÕES DE REDE", itens_por_pagina=10)
@@ -9286,15 +9286,15 @@ AllowedIPs = {ip_peer}
     def menu_gerenciamento_docker(self):
         """Menu de gerenciamento de containers Docker"""
         opcoes_gerenciamento = [
-            ("Listar Containers", self.listar_containers_docker),
-            ("Iniciar Container", self.iniciar_container_docker),
-            ("Parar Container", self.parar_container_docker),
-            ("Reiniciar Container", self.reiniciar_container_docker),
-            ("Excluir Container", self.excluir_container_docker),
-            ("Ver Logs de Container", self.ver_logs_container_docker),
-            ("Inspecionar Container", self.inspecionar_container_docker),
-            ("Limpar Recursos Nao Utilizados", self.limpar_recursos_docker),
-            ("Voltar ao Menu Docker", None)
+            (" Listar Containers", self.listar_containers_docker),
+            ("▶️  Iniciar Container", self.iniciar_container_docker),
+            ("️  Parar Container", self.parar_container_docker),
+            ("🔄 Reiniciar Container", self.reiniciar_container_docker),
+            ("️  Excluir Container", self.excluir_container_docker),
+            ("📄 Ver Logs de Container", self.ver_logs_container_docker),
+            ("🔍 Inspecionar Container", self.inspecionar_container_docker),
+            ("️  Limpar Recursos Nao Utilizados", self.limpar_recursos_docker),
+            ("️  Voltar ao Menu Docker", None)
         ]
         
         self.mostrar_menu_paginado(opcoes_gerenciamento, titulo="📦 GERENCIAMENTO DE CONTAINERS", itens_por_pagina=10)
@@ -9438,41 +9438,41 @@ AllowedIPs = {ip_peer}
             os.chmod(self.install_principal, 0o777)
         """Menu de opções"""
         opcoes_menu = [
-            ("Gerenciar Containers Docker", self.menu_gerenciamento_docker),
-            ("Força instalação docker", self.instala_docker_force),
-            ("Instala portainer", self.instala_portainer),
-            ("Instala filebrowser", self.instala_filebrowser),
-            ("Instala webserver guacamole", self.instala_webserver_guacamole),
-            ("Instala traefik", self.instala_traefik),
+            (" Gerenciar Containers Docker", self.menu_gerenciamento_docker),
+            ("💪 Força instalação docker", self.instala_docker_force),
+            ("📦 Instala portainer", self.instala_portainer),
+            (" Instala filebrowser", self.instala_filebrowser),
+            ("📦 Instala webserver guacamole", self.instala_webserver_guacamole),
+            ("📦 Instala traefik", self.instala_traefik),
             ("||| Conf ||| Adiciona roteamento e serviço ao traefik", self.adiciona_roteador_servico_traefik),
             ("||| Conf ||| Configura rede do container", self.configura_rede),
-            ("Instala frp server (reverse proxy)", self.instala_frp_server),
-            ("Instala frp client (tunnel local)", self.instala_frp_client),
+            ("📦 Instala frp server (reverse proxy)", self.instala_frp_server),
+            ("📦 Instala frp client (tunnel local)", self.instala_frp_client),
             ("||| Conf ||| Gerenciar frp proxies", self.gerenciar_frp),
-            ("Instala SFTP sftpgo", self.instala_ftp_sftpgo),
+            ("📦 Instala SFTP sftpgo", self.instala_ftp_sftpgo),
             ("||| Conf ||| Gerenciador SFTP sftpgo", self.gerenciar_usuarios_sftp),
-            ("Instala openlitespeed", self.instala_openlitespeed),
+            ("📦 Instala openlitespeed", self.instala_openlitespeed),
             ("||| Conf ||| Controle de sites openlitespeed", self.controle_sites_openlitespeed),
             ("** BD ** Instala mysql", self.instala_mysql),
             ("** BD ** Instala postgres", self.instala_postgres),
             ("||| Conf ||| Gerenciar bancos PostgreSQL", self.gerenciar_bancos_postgres),
-            ("Instala wordpress", self.instala_wordpress),
-            ("Instala wordpress puro", self.instala_wordpress_puro),
-            ("Instala app nodejs", self.instala_app_nodejs),
-            ("Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
-            ("Instala n8n (workflow automation)", self.instalar_n8n),
-            ("Start sync pastas com RSYNC", self.start_sync_pastas),
-            ("Instala windows KVM docker", self.instala_windows_KVM_docker),
-            ("Instala Sistema CISO docker", self.instala_sistema_CISO_docker),
-            ("Instala deskto ubuntu webtop", self.desktop_ubuntu_webtop),
-            ("Instala Ubuntu", self.ubuntu),
-            ("Instala rustdesk", self.instala_rustdesk),
-            ("Instala pritunel", self.instala_pritunel),
-            ("Instala nextcloud", self.instala_nextcloud),
-            ("Instala openvscode", self.instala_openvscode),
-            ("Instala vscode_oficial", self.instala_vscode_oficial),
-            ("Instala Open WebUI", self.instala_open_webui),
-            ("Instala Redis Docker", self.instala_redis_docker),
+            ("📦 Instala wordpress", self.instala_wordpress),
+            (" Instala wordpress puro", self.instala_wordpress_puro),
+            ("📦 Instala app nodejs", self.instala_app_nodejs),
+            (" Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
+            ("📦 Instala n8n (workflow automation)", self.instalar_n8n),
+            ("🔄 Start sync pastas com RSYNC", self.start_sync_pastas),
+            ("📦 Instala windows KVM docker", self.instala_windows_KVM_docker),
+            ("📦 Instala Sistema CISO docker", self.instala_sistema_CISO_docker),
+            ("📦 Instala deskto ubuntu webtop", self.desktop_ubuntu_webtop),
+            ("📦 Instala Ubuntu", self.ubuntu),
+            (" Instala rustdesk", self.instala_rustdesk),
+            ("📦 Instala pritunel", self.instala_pritunel),
+            ("📦 Instala nextcloud", self.instala_nextcloud),
+            (" Instala openvscode", self.instala_openvscode),
+            ("📦 Instala vscode_oficial", self.instala_vscode_oficial),
+            ("📦 Instala Open WebUI", self.instala_open_webui),
+            ("📦 Instala Redis Docker", self.instala_redis_docker),
             ("Instala Evolution API WhatsApp", self.instala_evolution_api_whatsapp),
             ("Instala WAHA WhatsApp (devlikeapro)", self.instala_waha_whatsapp),
             ("Instala browserless (chromium headless)", self.instala_browserless),
@@ -11392,12 +11392,12 @@ Execute com: install_master
 ip server: {servicos.exibe_ip()}"""
     """Função principal que controla o menu."""
     opcoes_menu = [
-        (" Reiniciar", servicos.Reiniciar),
+        ("🔄 Reiniciar", servicos.Reiniciar),
         ("⏻ Desligar", servicos.Desligar),
         ("📦 Atualizar o sistema", servicos.menu_atualizacoes),
         ("📂 Central de Instalações", servicos.menu_instalacoes),
-        (" Gerenciar Microserviços", servicos.gerenciar_microservicos),
-        ("️ Configurações do Sistema", servicos.opcoes_sistema),
+        ("🔧 Gerenciar Microserviços", servicos.gerenciar_microservicos),
+        ("⚙️ Configurações do Sistema", servicos.opcoes_sistema),
         ("📊 Diagnóstico e Monitoramento", servicos.submenu_diagnostico),
         ("🐧 Comandos essenciais do Linux", servicos.comandos_essenciais_linux),
     ]
