@@ -11404,7 +11404,7 @@ def main():
     check_for_update(sistema_instance=servicos)
     
     banner = f"""Arquivo install_master.py iniciado!
- Versão 1.230
+ Versão 1.231
 Execute com: install_master
 ip server: {servicos.exibe_ip()}"""
     """Função principal que controla o menu."""
