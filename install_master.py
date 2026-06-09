@@ -10264,14 +10264,14 @@ AllowedIPs = {ip_peer}
 
         while True:
             print("\n" + "=" * 55)
-            print("🔗 GERENCIADOR DE TÚNEIS SSH")
+            print("🔗 GERENCIADOR DE CLIENTES SSH")
             print("=" * 55)
 
             tuneis = self._carregar_tuneis()
             ativos = self._tuneis_ativos()
 
-            print(f"\n📊 Túneis configurados: {len(tuneis)}")
-            print(f"🟢 Túneis ativos: {len(ativos)}")
+            print(f"\n📊 Clientes configurados: {len(tuneis)}")
+            print(f"🟢 Clientes ativos: {len(ativos)}")
 
             if tuneis:
                 print("\n📋 Resumo rápido:")
@@ -10280,18 +10280,18 @@ AllowedIPs = {ip_peer}
                     print(f"  {status} | {nome} → porta {info['porta_remota']} ({info['tipo']})")
 
             print("\n" + "-" * 55)
-            print("[1]  Adicionar cliente")
+            print("[1] ➕ Adicionar cliente")
             print("[2] ✏️ Editar cliente")
             print("[3] 🗑️ Excluir cliente")
-            print("[4]  Clientes conectados")
+            print("[4] 📋 Clientes conectados")
             print("[5] 📜 Script cliente")
-            print("[0] ️  Voltar")
+            print("[0] ↩️ Voltar")
             print("=" * 55)
 
             opcao = input("\nEscolha: ").strip()
 
             if opcao == "1":
-                self._criar_tunel()
+                self._adicionar_cliente()
             elif opcao == "2":
                 self._editar_tunel()
             elif opcao == "3":
@@ -10545,163 +10545,39 @@ Host {nome}
             pass
         return None
 
-    def _criar_tunel(self):
-        """Wizard para criar novo túnel com sugestões automáticas e fluxo não-bloqueante"""
+    def _adicionar_cliente(self):
+        """Adiciona novo cliente com geração automática de chaves e script"""
         print("\n" + "=" * 55)
-        print("➕ CRIAR NOVO TÚNEL")
+        print("➕ ADICIONAR NOVO CLIENTE")
         print("=" * 55)
 
-        # Detectar hosts do SSH config
-        hosts_ssh = self._ler_ssh_config()
         tuneis_existentes = self._carregar_tuneis()
 
-        # === PASSO 1: Servidor ===
-        print("\n🌐 Servidores SSH configurados (~/.ssh/config):")
-        if hosts_ssh:
-            for i, host in enumerate(hosts_ssh, 1):
-                print(f"  [{i}] {host}")
-            servidor = input("\n🌐 IP ou domínio (ou número da lista): ").strip()
-            if servidor.isdigit() and hosts_ssh and 1 <= int(servidor) <= len(hosts_ssh):
-                servidor = hosts_ssh[int(servidor) - 1]
-        else:
-            print("  Nenhum servidor configurado.")
-            servidor = input("\n🌐 IP ou domínio do servidor: ").strip()
+        # === PASSO 1: Nome do cliente ===
+        nome = input("\n📝 Nome do cliente (ex: meu-pc, notebook, etc): ").strip().lower().replace(" ", "_")
 
-        if not servidor:
-            print("❌ Servidor é obrigatório.")
+        if not nome:
+            print("❌ Nome é obrigatório.")
             return
-
-        # === PASSO 2: Usuário (com sugestão do SSH config) ===
-        usuario_atual = os.environ.get('USER', 'root')
-        usuario_ssh = ""
-        if hosts_ssh:
-            ssh_config = os.path.expanduser("~/.ssh/config")
-            try:
-                with open(ssh_config, 'r') as f:
-                    lines = f.readlines()
-                    for i, linha in enumerate(lines):
-                        if f'Host {servidor}' in linha or f'Host {servidor.lower()}' in linha:
-                            for j in range(i+1, min(i+5, len(lines))):
-                                if 'User ' in lines[j]:
-                                    usuario_ssh = lines[j].split()[1]
-                                    break
-                            break
-            except Exception:
-                pass
-
-        usuario_sugestao = usuario_ssh or usuario_atual
-        usuario = input(f" Usuário SSH (Enter para '{usuario_sugestao}'): ").strip() or usuario_sugestao
-
-        if not re.match(r'^[a-zA-Z0-9_.@-]+$', usuario):
-            print("❌ Usuário inválido. Use apenas letras, números, _, ., @ ou -.")
-            return
-
-        # === PASSO 3: Gestão de Chave SSH (verificar/gerar/copiar) ===
-        ssh_ok = False
-
-        # 3.1: Detectar chaves existentes
-        ssh_dir = os.path.expanduser("~/.ssh")
-        os.makedirs(ssh_dir, exist_ok=True)
-        chaves_pub = sorted(glob.glob(os.path.join(ssh_dir, "id_*.pub")))
-        chave_existente = chaves_pub[0] if chaves_pub else None
-
-        if chave_existente:
-            chave_nome = os.path.basename(chave_existente).replace(".pub", "")
-            print(f"\n🔑 Chave SSH encontrada: {chave_nome}")
-        else:
-            print("\n🔑 Nenhuma chave SSH encontrada em ~/.ssh/")
-            gerar = input("  Deseja gerar um par de chaves agora? (s/n): ").strip().lower()
-            if gerar == "s":
-                chave_arquivo = os.path.join(ssh_dir, "id_ed25519")
-                print(f"\n  Gerando chave ed25519 (sem senha)...")
-                result = subprocess.run(
-                    ["ssh-keygen", "-t", "ed25519", "-N", "", "-f", chave_arquivo,
-                     "-C", f"{usuario}@{servidor}"],
-                    capture_output=True, text=True
-                )
-                if result.returncode == 0:
-                    print("  ✅ Chave gerada com sucesso!")
-                    chave_existente = f"{chave_arquivo}.pub"
-                else:
-                    print("  ❌ Falha ao gerar chave:")
-                    print(f"    {result.stderr.strip()}")
-                    print("❌ Não é possível continuar sem chave SSH.")
-                    return
-            else:
-                print("❌ Chave SSH é obrigatória para túneis com autossh.")
-                return
-
-        # 3.2: Copiar chave para o servidor (se necessário)
-        print(f"\n Verificando se a chave já está no servidor {servidor}...")
-        teste = subprocess.run(
-            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-             "-o", "StrictHostKeyChecking=no",
-             f"{usuario}@{servidor}", "echo ok"],
-            capture_output=True, text=True, timeout=10
-        )
-
-        if teste.returncode == 0:
-            print("✅ Chave já configurada no servidor!")
-            ssh_ok = True
-        else:
-            print("  Chave não encontrada no servidor.")
-            copiar = input("  Deseja copiar a chave agora (pede senha 1x)? (s/n): ").strip().lower()
-            if copiar == "s":
-                print(f"\n  Copiando chave para {usuario}@{servidor}...")
-                result = subprocess.run(
-                    ["ssh-copy-id", "-o", "StrictHostKeyChecking=no",
-                     "-i", chave_existente,
-                     f"{usuario}@{servidor}"],
-                    timeout=60
-                )
-                if result.returncode == 0:
-                    # Testar novamente
-                    teste2 = subprocess.run(
-                        ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-                         "-o", "StrictHostKeyChecking=no",
-                         f"{usuario}@{servidor}", "echo ok"],
-                        capture_output=True, text=True, timeout=10
-                    )
-                    if teste2.returncode == 0:
-                        print("✅ Chave copiada e conectividade OK!")
-                        ssh_ok = True
-                    else:
-                        print("️ Chave copiada, mas conexão ainda falhou.")
-                else:
-                    print("❌ Falha ao copiar a chave para o servidor.")
-            else:
-                print("⚠️ Sem chave no servidor, o túnel não vai conectar.")
-
-        if not ssh_ok:
-            confirmar = input("Continuar e salvar o túnel mesmo assim? (s/n): ").strip().lower()
-            if confirmar != "s":
-                return
-
-        # === PASSO 4: Nome do túnel (com sugestão inteligente) ===
-        hostname_remoto = None
-        if ssh_ok:
-            hostname_remoto = self._detectar_hostname_remoto(usuario, servidor)
-
-        nome_sugerido = hostname_remoto or servidor.replace(".", "_").replace("-", "_")
-        nome = input(f"📝 Nome do túnel (Enter para '{nome_sugerido}'): ").strip().lower().replace(" ", "_") or nome_sugerido
 
         if nome in tuneis_existentes:
-            print(f"❌ Túnel '{nome}' já existe!")
+            print(f"❌ Cliente '{nome}' já existe!")
             return
 
-        # === PASSO 5: Porta remota (com fallback inteligente) ===
-        print("\n🔍 Buscando porta remota livre...")
-        porta_sugerida = None
+        if not re.match(r'^[a-zA-Z0-9_-]+$', nome):
+            print("❌ Nome inválido. Use apenas letras, números, _ ou -.")
+            return
 
-        if ssh_ok:
-            porta_sugerida = self._descobrir_porta_livre_ssh(usuario, servidor)
+        # === PASSO 2: IP do servidor (automático) ===
+        servidor = self.exibe_ip()
+        print(f"\n IP do servidor: {servidor} (automático)")
 
-        if not porta_sugerida:
-            portas_em_uso = {info['porta_remota'] for info in tuneis_existentes.values()}
-            porta_base = 2222
-            while porta_base in portas_em_uso:
-                porta_base += 1
-            porta_sugerida = porta_base
+        # === PASSO 3: Porta remota ===
+        portas_em_uso = {info['porta_remota'] for info in tuneis_existentes.values()}
+        porta_base = 2222
+        while porta_base in portas_em_uso:
+            porta_base += 1
+        porta_sugerida = porta_base
 
         sugestao = input(f"🔌 Porta remota sugerida: {porta_sugerida} (Enter para confirmar ou digite outra): ").strip()
         porta_remota = int(sugestao) if sugestao.isdigit() else porta_sugerida
@@ -10710,74 +10586,80 @@ Host {nome}
             print("❌ Porta fora do intervalo válido (1-65535).")
             return
 
-        # === PASSO 6: Porta local ===
+        if porta_remota in portas_em_uso:
+            print(f"❌ Porta {porta_remota} já está em uso por outro cliente.")
+            return
+
+        # === PASSO 4: Porta local ===
         porta_local = input("🏠 Porta local da máquina remota (Enter para 22): ").strip() or "22"
         if not porta_local.isdigit():
             print("❌ Porta local inválida.")
             return
 
-        # === PASSO 7: Detectar tipo do sistema (com fallback) ===
-        tipo = None
-        if ssh_ok:
-            print("\n🔍 Detectando sistema da máquina remota...")
-            try:
-                result = subprocess.run(
-                    ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-                     "-o", "StrictHostKeyChecking=no",
-                     f"{usuario}@{servidor}", "uname -s"],
-                    capture_output=True, text=True, timeout=10
-                )
-                if result.returncode == 0:
-                    os_detectado = result.stdout.strip().lower()
-                    if "windows" not in os_detectado:
-                        tipo = "linux"
-                        print(f"✅ Sistema detectado: {result.stdout.strip()} (Linux)")
-                    else:
-                        tipo = "windows"
-                        print("✅ Sistema detectado: Windows")
-            except Exception:
-                pass
+        # === PASSO 5: Gerar par de chaves único para este cliente ===
+        ssh_dir = os.path.expanduser("~/.ssh")
+        os.makedirs(ssh_dir, exist_ok=True)
+        chave_privada = os.path.join(ssh_dir, f"id_ed25519_{nome}")
+        chave_publica = f"{chave_privada}.pub"
 
-        if not tipo:
-            print("\n⚠️ Não foi possível detectar automaticamente.")
-            print("[1] Windows")
-            print("[2] Linux")
-            tipo_choice = input("Escolha (1/2): ").strip()
-            tipo = "windows" if tipo_choice == "1" else "linux"
+        # Remove arquivos antigos se existirem
+        if os.path.exists(chave_privada):
+            os.remove(chave_privada)
+        if os.path.exists(chave_publica):
+            os.remove(chave_publica)
 
-        # === PASSO 8: Validar porta no servidor (apenas se SSH OK) ===
-        if ssh_ok:
-            if not self._verificar_e_desbloquear_porta(usuario, servidor, porta_remota, tuneis_existentes):
-                confirmar = input("A porta pode estar em uso. Continuar mesmo assim? (s/n): ").strip().lower()
-                if confirmar != "s":
-                    return
-        else:
-            print("\n⚠️ Porta não verificada no servidor (SSH indisponível). Verifique manualmente.")
+        print(f"\n Gerando par de chaves único para '{nome}'...")
+        result = subprocess.run(
+            ["ssh-keygen", "-t", "ed25519", "-N", "", "-f", chave_privada,
+             "-C", f"tunel-{nome}@{servidor}"],
+            capture_output=True, text=True
+        )
 
-        # === Resumo final ===
-        print("\n" + "=" * 55)
-        print("📋 Resumo do Túnel:")
-        print(f"   Nome: {nome}")
-        print(f"   Servidor: {servidor}")
-        print(f"   Usuário: {usuario}")
-        print(f"   Porta: {porta_remota} → {porta_local}")
-        print(f"   Tipo: {tipo}")
-        print("=" * 55)
+        if result.returncode != 0:
+            print(f"❌ Falha ao gerar chave: {result.stderr.strip()}")
+            return
 
-        # === Salvar túnel ===
+        print("✅ Chaves geradas com sucesso!")
+
+        # === PASSO 6: Adicionar chave pública no authorized_keys ===
+        auth_keys = os.path.join(ssh_dir, "authorized_keys")
+        try:
+            with open(chave_publica, 'r') as f:
+                chave_pub_content = f.read().strip()
+
+            # Adiciona no authorized_keys (se já não existir)
+            existente = False
+            if os.path.exists(auth_keys):
+                with open(auth_keys, 'r') as f:
+                    existente = chave_pub_content in f.read()
+
+            if not existente:
+                with open(auth_keys, 'a') as f:
+                    f.write(chave_pub_content + "\n")
+                print("✅ Chave pública adicionada ao authorized_keys")
+            else:
+                print("  Chave já está no authorized_keys")
+        except Exception as e:
+            print(f"⚠️ Falha ao adicionar chave pública: {e}")
+
+        # === PASSO 7: Salvar configuração ===
+        usuario = "root"
+        tipo = "linux"  # Default, pode ser alterado depois
+
         tuneis_existentes[nome] = {
             "porta_remota": porta_remota,
             "porta_local": int(porta_local),
             "usuario": usuario,
             "servidor": servidor,
             "tipo": tipo,
+            "chave_privada": chave_privada,
             "criado_em": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
 
         self._salvar_tuneis(tuneis_existentes)
-        self._log_tunel(nome, f"Túnel criado: porta {porta_remota} -> {porta_local} ({tipo})")
+        self._log_tunel(nome, f"Cliente adicionado: porta {porta_remota} -> {porta_local}")
 
-        # 1º cliente: configura servidor SSH para túneis reversos
+        # === PASSO 8: Configurar servidor SSH (1º cliente) ===
         if len(tuneis_existentes) == 1:
             print("\n🔧 Configurando servidor SSH para túneis reversos...")
             if self._configurar_ssh_server_silencioso():
@@ -10785,40 +10667,236 @@ Host {nome}
             else:
                 print("⚠️ Falha ao configurar servidor SSH. Verifique manualmente.")
 
-        # Gerar scripts automaticamente
-        print("\n🔄 Gerando scripts cliente...")
-        self._gerar_scripts_tunel(nome)
+        # === PASSO 9: Gerar script cliente com chave privada embutida ===
+        print("\n🔄 Gerando script cliente...")
+        self._gerar_script_completo(nome, chave_privada)
 
-        # Atualizar aliases automaticamente
-        print("🔄 Atualizando aliases SSH...")
-        self._atualizar_ssh_config_silencioso()
+        print(f"\n{'=' * 55}")
+        print(f"✅ Cliente '{nome}' criado com sucesso!")
+        print(f"\n Resumo:")
+        print(f"   Nome: {nome}")
+        print(f"   IP do servidor: {servidor}")
+        print(f"   Porta remota: {porta_remota}")
+        print(f"   Porta local: {porta_local}")
+        print(f"\n📄 Script gerado: tuneis/scripts/{nome}.sh")
+        print(f"\n{'=' * 55}")
+        print(f"INSTRUÇÕES:")
+        print(f"1. Copie o script para a máquina remota")
+        print(f"2. Execute: bash {nome}.sh")
+        print(f"3. O túnel será configurado automaticamente")
+        print(f"{'=' * 55}")
 
-        print(f"\n✅ Túnel '{nome}' criado com sucesso!")
-
-    def _editar_tunel(self):
-        """Edita um túnel existente"""
+    def _gerar_script_completo(self, nome, chave_privada_path):
+        """Gera script cliente com chave privada embutida e autodetecção de OS"""
         tuneis = self._carregar_tuneis()
-        if not tuneis:
-            print("\n⚪ Nenhum túnel configurado.")
+        if nome not in tuneis:
+            print(f"❌ Cliente '{nome}' não encontrado.")
             return
 
-        nome = self._escolher_tunel("✏️  Editar túnel", tuneis)
+        info = tuneis[nome]
+
+        # Ler chave privada
+        if not os.path.exists(chave_privada_path):
+            print(f"❌ Chave privada não encontrada: {chave_privada_path}")
+            return
+
+        with open(chave_privada_path, 'r') as f:
+            chave_privada_content = f.read()
+
+        diretorio = f"{self.install_principal}/tuneis/scripts"
+        os.makedirs(diretorio, exist_ok=True)
+        caminho = f"{diretorio}/{nome}.sh"
+
+        # Script bash com chave privada embutida e autodetecção de OS
+        conteudo = f'''#!/bin/bash
+# ============================================
+# Script de Túnel SSH - Cliente: {nome}
+# Gerado automaticamente pelo servidor
+# ============================================
+
+# Configurações do servidor
+SERVIDOR="{info['servidor']}"
+PORTA_REMOTA={info['porta_remota']}
+PORTA_LOCAL={info['porta_local']}
+USUARIO="{info['usuario']}"
+
+# Chave privada embutida
+CHAVE_PRIVADA_DIR="$HOME/.ssh/tunel_{nome}"
+CHAVE_PRIVADA_FILE="$CHAVE_PRIVADA_DIR/id_ed25519"
+
+echo ""
+echo "========================================"
+echo "   TUNEL SSH: {nome}"
+echo "   Servidor: $SERVIDOR:$PORTA_REMOTA"
+echo "   Local: localhost:$PORTA_LOCAL"
+echo "========================================"
+echo ""
+
+# Detectar sistema operacional
+OS="unknown"
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    OS="linux"
+elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+    OS="windows"
+fi
+
+echo "Sistema detectado: $OS"
+echo ""
+
+# Criar diretório para chave privada
+mkdir -p "$CHAVE_PRIVADA_DIR"
+chmod 700 "$CHAVE_PRIVADA_DIR"
+
+# Escrever chave privada
+cat > "$CHAVE_PRIVADA_FILE" << 'CHAVE_EOF'
+{chave_privada_content}CHAVE_EOF
+
+chmod 600 "$CHAVE_PRIVADA_FILE"
+echo "✅ Chave privada configurada"
+
+# Verificar se ssh está instalado
+if ! command -v ssh &> /dev/null; then
+    echo "❌ SSH não está instalado!"
+    if [[ "$OS" == "linux" ]]; then
+        echo "   Instale com: sudo apt-get install openssh-client"
+    elif [[ "$OS" == "windows" ]]; then
+        echo "   Instale o OpenSSH do Windows"
+    fi
+    exit 1
+fi
+
+# Verificar se autossh está instalado (opcional, mas recomendado)
+if command -v autossh &> /dev/null; then
+    echo "✅ autossh encontrado - usando modo persistente"
+    SSH_CMD="autossh -M 0 --"
+else
+    echo "⚠️ autossh não encontrado - usando ssh puro (sem auto-reconexão)"
+    echo "   Recomendação: instale autossh para reconexão automática"
+    SSH_CMD=""
+fi
+
+echo ""
+echo "Conectando ao túnel..."
+echo "Pressione Ctrl+C para desconectar"
+echo ""
+
+# Loop de conexão com autossh ou ssh
+if [[ -n "$SSH_CMD" ]]; then
+    # Modo autossh (persistente)
+    exec $SSH_CMD ssh -o StrictHostKeyChecking=no \\
+        -o BatchMode=yes \\
+        -o ServerAliveInterval=30 \\
+        -o ServerAliveCountMax=3 \\
+        -i "$CHAVE_PRIVADA_FILE" \\
+        -R $PORTA_REMOTA:localhost:$PORTA_LOCAL \\
+        $USUARIO@$SERVIDOR -N
+else
+    # Modo ssh puro com loop
+    while true; do
+        ssh -o StrictHostKeyChecking=no \\
+            -o BatchMode=yes \\
+            -o ServerAliveInterval=30 \\
+            -o ServerAliveCountMax=3 \\
+            -i "$CHAVE_PRIVADA_FILE" \\
+            -R $PORTA_REMOTA:localhost:$PORTA_LOCAL \\
+            $USUARIO@$SERVIDOR -N
+
+        echo ""
+        echo "========================================"
+        echo "   ATENCAO: Conexao caiu!"
+        echo "========================================"
+        echo "Reconectando em 5 segundos..."
+        sleep 5
+    done
+fi
+'''
+
+        with open(caminho, "w", encoding="utf-8") as f:
+            f.write(conteudo)
+
+        os.chmod(caminho, 0o755)
+
+        # Também gerar versão Windows (.bat) se o cliente for Windows
+        if info.get('tipo') == 'windows':
+            caminho_bat = f"{diretorio}/{nome}.bat"
+            conteudo_bat = f'''@echo off
+REM ============================================
+REM Script de Túnel SSH - Cliente: {nome}
+REM Gerado automaticamente pelo servidor
+REM ============================================
+
+set SERVIDOR={info['servidor']}
+set PORTA_REMOTA={info['porta_remota']}
+set PORTA_LOCAL={info['porta_local']}
+set USUARIO={info['usuario']}
+
+echo.
+echo ========================================
+echo    TUNEL SSH: {nome}
+echo    Servidor: %%SERVIDOR%%:%%PORTA_REMOTA%%
+echo    Local: localhost:%%PORTA_LOCAL%%
+echo ========================================
+echo.
+
+REM Criar diretório para chave
+if not exist "%USERPROFILE%\\.ssh\\tunel_{nome}" mkdir "%USERPROFILE%\\.ssh\\tunel_{nome}"
+
+REM Escrever chave privada
+(
+echo {chave_privada_content}
+) > "%USERPROFILE%\\.ssh\\tunel_{nome}\\id_ed25519"
+
+echo Chave privada configurada
+echo.
+echo Conectando ao túnel...
+echo Pressione Ctrl+C para desconectar
+echo.
+
+:conectar
+ssh -o StrictHostKeyChecking=no ^
+    -o BatchMode=yes ^
+    -o ServerAliveInterval=30 ^
+    -o ServerAliveCountMax=3 ^
+    -i "%USERPROFILE%\\.ssh\\tunel_{nome}\\id_ed25519" ^
+    -R %%PORTA_REMOTA%%:localhost:%%PORTA_LOCAL%% ^
+    %%USUARIO%%@%%SERVIDOR%% -N
+
+echo.
+echo ========================================
+echo    ATENCAO: Conexao caiu!
+echo ========================================
+echo Reconectando em 5 segundos...
+timeout /t 5 /nobreak >nul
+goto conectar
+'''
+            with open(caminho_bat, "w", encoding="utf-8") as f:
+                f.write(conteudo_bat)
+
+        print(f"✅ Script gerado: {caminho}")
+        if info.get('tipo') == 'windows':
+            print(f"✅ Script Windows gerado: {caminho_bat}")
+
+    def _editar_tunel(self):
+        """Edita um cliente existente"""
+        tuneis = self._carregar_tuneis()
+        if not tuneis:
+            print("\n⚪ Nenhum cliente configurado.")
+            return
+
+        nome = self._escolher_tunel("✏️ Editar cliente", tuneis)
         if not nome:
             return
 
         info = tuneis[nome]
-        print(f"\nEditando: {nome}")
+        print(f"\nEditando cliente: {nome}")
+        print(f"  IP do servidor: {info['servidor']}")
         print(f"  Porta remota atual: {info['porta_remota']}")
         print(f"  Porta local atual: {info['porta_local']}")
-        print(f"  Usuário atual: {info['usuario']}")
-        print(f"  Servidor atual: {info['servidor']}")
-        print(f"  Tipo atual: {info['tipo']}")
+        print(f"  Tipo: {info['tipo']}")
 
         porta_remota_antiga = info['porta_remota']
-        usuario = info['usuario']
-        servidor = info['servidor']
 
-        porta_remota_input = input(f"\n🔌 Porta remota [{info['porta_remota']}]: ").strip()
+        porta_remota_input = input(f"\n Porta remota [{info['porta_remota']}]: ").strip()
         if porta_remota_input:
             if not porta_remota_input.isdigit():
                 print("❌ Porta inválida.")
@@ -10832,19 +10910,6 @@ Host {nome}
                 return
             info['porta_local'] = int(porta_local_input)
 
-        usuario_input = input(f"👤 Usuário [{info['usuario']}]: ").strip()
-        if usuario_input:
-            if not re.match(r'^[a-zA-Z0-9_.@-]+$', usuario_input):
-                print("❌ Usuário inválido.")
-                return
-            info['usuario'] = usuario_input
-            usuario = usuario_input
-
-        servidor_input = input(f"🌐 Servidor [{info['servidor']}]: ").strip()
-        if servidor_input:
-            info['servidor'] = servidor_input
-            servidor = servidor_input
-
         print("\nTipo da máquina remota:")
         print(f"[1] Windows (atual: {info['tipo']})")
         print("[2] Linux")
@@ -10854,39 +10919,46 @@ Host {nome}
         elif tipo_choice == "1":
             info['tipo'] = "windows"
 
-        # Verificar porta se foi alterada
-        porta_mudou = info['porta_remota'] != porta_remota_antiga
-        if porta_mudou:
-            if not self._verificar_e_desbloquear_porta(usuario, servidor, info['porta_remota'], tuneis, nome):
-                return
-
         tuneis[nome] = info
         self._salvar_tuneis(tuneis)
-        self._log_tunel(nome, f"Túnel editado: porta {info['porta_remota']} -> {info['porta_local']} ({info['tipo']})")
+        self._log_tunel(nome, f"Cliente editado: porta {info['porta_remota']} -> {info['porta_local']} ({info['tipo']})")
 
-        print("\n🔄 Regenerando scripts...")
-        self._gerar_scripts_tunel(nome)
+        # Regenerar scripts se porta ou tipo mudou
+        if info['porta_remota'] != porta_remota_antiga or info.get('chave_privada'):
+            print("\n🔄 Regenerando scripts...")
+            chave_path = info.get('chave_privada', os.path.expanduser(f"~/.ssh/tunel_{nome}_key"))
+            if os.path.exists(chave_path):
+                self._gerar_script_completo(nome, chave_path)
+            else:
+                print("⚠️ Chave privada não encontrada, regenerando sem chave embutida")
+                self._gerar_scripts_tunel(nome)
 
-        print("🔄 Atualizando aliases SSH...")
-        self._atualizar_ssh_config_silencioso()
-
-        print(f"\n✅ Túnel '{nome}' editado com sucesso!")
+        print(f"\n✅ Cliente '{nome}' editado com sucesso!")
 
     def _excluir_tunel(self):
-        """Remove um túnel e todos os arquivos associados"""
+        """Remove um cliente e todos os arquivos associados"""
         tuneis = self._carregar_tuneis()
         if not tuneis:
-            print("\n⚪ Nenhum túnel configurado.")
+            print("\n Nenhum cliente configurado.")
             return
 
-        nome = self._escolher_tunel("🗑️  Excluir túnel", tuneis)
+        nome = self._escolher_tunel(" Excluir cliente", tuneis)
         if not nome:
             return
 
-        confirmar = input(f"\n⚠️ Tem certeza que deseja excluir '{nome}'? (s/n): ").strip().lower()
+        confirmar = input(f"\n Tem certeza que deseja excluir '{nome}'? (s/n): ").strip().lower()
         if confirmar != "s":
             print("Operação cancelada.")
             return
+
+        # Remover chave privada associada
+        info = tuneis.get(nome, {})
+        chave_path = info.get('chave_privada')
+        if chave_path and os.path.exists(chave_path):
+            os.remove(chave_path)
+            print(f"  Chave privada removida: {chave_path}")
+        if chave_path and os.path.exists(f"{chave_path}.pub"):
+            os.remove(f"{chave_path}.pub")
 
         del tuneis[nome]
         self._salvar_tuneis(tuneis)
@@ -10902,22 +10974,40 @@ Host {nome}
         if os.path.exists(log_file):
             os.remove(log_file)
 
-        self._atualizar_ssh_config_silencioso()
-        self._log_tunel(nome, "Túnel excluído")
+        # Remover chave pública do authorized_keys
+        if chave_path:
+            chave_pub_path = f"{chave_path}.pub"
+            if os.path.exists(chave_pub_path):
+                try:
+                    with open(chave_pub_path, 'r') as f:
+                        chave_pub = f.read().strip()
+                    auth_keys = os.path.expanduser("~/.ssh/authorized_keys")
+                    if os.path.exists(auth_keys):
+                        with open(auth_keys, 'r') as f:
+                            lines = f.readlines()
+                        with open(auth_keys, 'w') as f:
+                            for line in lines:
+                                if chave_pub not in line:
+                                    f.write(line)
+                        print("  Chave pública removida do authorized_keys")
+                except Exception:
+                    pass
 
-        print(f"\n✅ Túnel '{nome}' excluído com sucesso!")
+        self._log_tunel(nome, "Cliente excluído")
+
+        print(f"\n Cliente '{nome}' excluído com sucesso!")
 
     def _visualizar_tuneis(self):
-        """Visualiza todos os túneis com detalhes completos"""
+        """Visualiza todos os clientes com detalhes completos"""
         tuneis = self._carregar_tuneis()
         if not tuneis:
-            print("\n⚪ Nenhum túnel configurado.")
+            print("\n Nenhum cliente configurado.")
             return
 
         ativos = self._tuneis_ativos()
 
         print("\n" + "=" * 65)
-        print("📋 TÚNEIS CONFIGURADOS")
+        print("📋 CLIENTES CONFIGURADOS")
         print("=" * 65)
 
         for nome, info in tuneis.items():
@@ -11404,7 +11494,7 @@ def main():
     check_for_update(sistema_instance=servicos)
     
     banner = f"""Arquivo install_master.py iniciado!
- Versão 1.231
+ Versão 1.233
 Execute com: install_master
 ip server: {servicos.exibe_ip()}"""
     """Função principal que controla o menu."""
