@@ -10554,23 +10554,21 @@ Host {nome}
         tuneis_existentes = self._carregar_tuneis()
 
         # === PASSO 1: Nome do cliente ===
-        nome = input("\n📝 Nome do cliente (ex: meu-pc, notebook, etc): ").strip().lower().replace(" ", "_")
-
-        if not nome:
-            print("❌ Nome é obrigatório.")
-            return
+        contador = len(tuneis_existentes) + 1
+        nome_sugerido = f"cliente_{contador}"
+        nome = input(f"\n📝 Nome do cliente (Enter para '{nome_sugerido}'): ").strip().lower().replace(" ", "_") or nome_sugerido
 
         if nome in tuneis_existentes:
-            print(f"❌ Cliente '{nome}' já existe!")
+            print(f"\u274c Cliente '{nome}' já existe!")
             return
 
         if not re.match(r'^[a-zA-Z0-9_-]+$', nome):
-            print("❌ Nome inválido. Use apenas letras, números, _ ou -.")
+            print("\u274c Nome inválido. Use apenas letras, números, _ ou -.")
             return
 
-        # === PASSO 2: IP do servidor (automático) ===
-        servidor = self.exibe_ip()
-        print(f"\n IP do servidor: {servidor} (automático)")
+        # === PASSO 2: IP do servidor (detectado, mas editável) ===
+        servidor_detectado = self.exibe_ip()
+        servidor = input(f"\n🌐 IP do servidor [{servidor_detectado}]: ").strip() or servidor_detectado
 
         # === PASSO 3: Porta remota ===
         portas_em_uso = {info['porta_remota'] for info in tuneis_existentes.values()}
@@ -11494,7 +11492,7 @@ def main():
     check_for_update(sistema_instance=servicos)
     
     banner = f"""Arquivo install_master.py iniciado!
- Versão 1.233
+ Versão 1.234
 Execute com: install_master
 ip server: {servicos.exibe_ip()}"""
     """Função principal que controla o menu."""
