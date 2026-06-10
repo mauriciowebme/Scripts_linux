@@ -512,11 +512,11 @@ Host {nome}
 
         conteudo = f'''#!/bin/bash
 # ============================================
-# Script de Túnel SSH - Cliente: {nome}
+# Script de Tunel SSH - Cliente: {nome}
 # Gerado automaticamente pelo servidor
 # ============================================
 
-# Configurações do servidor
+# Configuracoes do servidor
 SERVIDOR="{info['servidor']}"
 PORTA_REMOTA={info['porta_remota']}
 PORTA_LOCAL={info['porta_local']}
@@ -545,7 +545,7 @@ fi
 echo "Sistema detectado: $OS"
 echo ""
 
-# Criar diretório para chave privada
+# Criar diretorio para chave privada
 mkdir -p "$CHAVE_PRIVADA_DIR"
 chmod 700 "$CHAVE_PRIVADA_DIR"
 
@@ -556,9 +556,9 @@ cat > "$CHAVE_PRIVADA_FILE" << 'CHAVE_EOF'
 chmod 600 "$CHAVE_PRIVADA_FILE"
 echo "✅ Chave privada configurada"
 
-# Verificar se ssh está instalado
+# Verificar se ssh esta instalado
 if ! command -v ssh &> /dev/null; then
-    echo "❌ SSH não está instalado!"
+    echo "SSH nao esta instalado!"
     if [[ "$OS" == "linux" ]]; then
         echo "   Instale com: sudo apt-get install openssh-client"
     elif [[ "$OS" == "windows" ]]; then
@@ -567,22 +567,22 @@ if ! command -v ssh &> /dev/null; then
     exit 1
 fi
 
-# Verificar se autossh está instalado (opcional, mas recomendado)
+# Verificar se autossh esta instalado (opcional, mas recomendado)
 if command -v autossh &> /dev/null; then
     echo "✅ autossh encontrado - usando modo persistente"
     SSH_CMD="autossh -M 0 --"
 else
-    echo "⚠️ autossh não encontrado - usando ssh puro (sem auto-reconexão)"
-    echo "   Recomendação: instale autossh para reconexão automática"
+    echo "️ autossh nao encontrado - usando ssh puro (sem auto-reconexao)"
+    echo "   Recomendação: instale autossh para reconexao automatica"
     SSH_CMD=""
 fi
 
 echo ""
-echo "Conectando ao túnel..."
+echo "Conectando ao tunel..."
 echo "Pressione Ctrl+C para desconectar"
 echo ""
 
-# Loop de conexão com autossh ou ssh
+# Loop de conexao com autossh ou ssh
 if [[ -n "$SSH_CMD" ]]; then
     # Modo autossh (persistente)
     exec $SSH_CMD ssh -o StrictHostKeyChecking=no \\
@@ -595,6 +595,7 @@ if [[ -n "$SSH_CMD" ]]; then
 else
     # Modo ssh puro com loop
     while true; do
+        echo "Conectado ao tunel..."
         ssh -o StrictHostKeyChecking=no \\
             -o BatchMode=yes \\
             -o ServerAliveInterval=30 \\
@@ -628,7 +629,7 @@ fi
 
             conteudo_bat = f'''@echo off
 REM ============================================
-REM Script de Túnel SSH - Cliente: {nome}
+REM Script de Tunel SSH - Cliente: {nome}
 REM Gerado automaticamente pelo servidor
 REM ============================================
 
@@ -645,7 +646,7 @@ echo    Local: 127.0.0.1:%PORTA_LOCAL%
 echo ========================================
 echo.
 
-REM Criar diretório para chave
+REM Criar diretorio para chave
 if not exist "%USERPROFILE%\\.ssh\\tunel_{nome}" mkdir "%USERPROFILE%\\.ssh\\tunel_{nome}"
 
 REM Escrever chave privada (base64 decodificado via PowerShell)
@@ -654,11 +655,12 @@ powershell -NoProfile -Command "[IO.File]::WriteAllBytes($env:CHAVE_FILE, [Conve
 
 echo Chave privada configurada
 echo.
-echo Conectando ao túnel...
+echo Conectando...
 echo Pressione Ctrl+C para desconectar
 echo.
 
 :conectar
+echo Conectado ao tunel...
 ssh -o StrictHostKeyChecking=no ^
     -o BatchMode=yes ^
     -o ServerAliveInterval=30 ^
