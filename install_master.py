@@ -3164,7 +3164,7 @@ WantedBy=timers.target
         print("📋 GERENCIAMENTO POSTGRESQL")
         print("-" * 50)
         print("[1] 🗄️  Criar banco de dados")
-        print("[2]  Listar bancos de dados")
+        print("[2] 📋  Listar bancos de dados")
         print("[3] 🗑️  Apagar banco de dados")
         print("[0] ↩️  Voltar")
         
@@ -5216,12 +5216,12 @@ CMD ["sh", "-c", "\
             print("\n" + "="*50)
             print("🤖 GERENCIADOR OPENCODE")
             print("="*50)
-            print("[1] Instalar / Atualizar")
-            print("[2] Reiniciar Serviço")
-            print("[3] Ver Status")
-            print("[4] Reconfigurar Modo Web (Porta/Senha)")
-            print("[5] Desinstalar OpenCode")
-            print("[0] ️  Voltar")
+            print("[1] 📦  Instalar / Atualizar")
+            print("[2] 🔄  Reiniciar Serviço")
+            print("[3] 📊  Ver Status")
+            print("[4] ⚙️  Reconfigurar Modo Web (Porta/Senha)")
+            print("[5] 🗑️  Desinstalar OpenCode")
+            print("[0] ↩️  Voltar")
             print("="*50)
             
             opt = input("\nEscolha uma opção: ").strip()
@@ -6617,10 +6617,10 @@ class Sistema(Docker, Executa_comandos):
             print("\n" + "-"*50)
             print(" MENU SWAP")
             print("-" * 50)
-            print("[1]  Criar/Redimensionar Swap")
+            print("[1] ➕  Criar/Redimensionar Swap")
             print("[2] 🗑️  Remover Swap")
             print("[3] ⚙️  Ajustar Swappiness")
-            print("[4] 🔄 Recarregar Swap (desliga e liga)")
+            print("[4] 🔄  Recarregar Swap (desliga e liga)")
             print("[0] ↩️  Voltar")
             print("="*50)
             
@@ -7373,15 +7373,15 @@ class Sistema(Docker, Executa_comandos):
         particao_completa = f"{raid_device}p{particao}"
 
         print("\n🔹 Escolha uma opção:")
-        print("[1] 📈 Aumentar o tamanho do RAID")
-        print("[2]  Diminuir o tamanho do RAID")
+        print("[1] 📈  Aumentar o tamanho do RAID")
+        print("[2] 📉️  Diminuir o tamanho do RAID")
         escolha = input("\nDigite 1 para aumentar ou 2 para diminuir: ").strip()
 
         if escolha == "1":
             acao = "aumentar"
             print("\n📌 Você deseja definir um novo tamanho ou usar o máximo disponível?")
-            print("[1]  Definir um tamanho específico")
-            print("[2]  Usar o tamanho máximo disponível (padrão)")
+            print("[1] 📏️  Definir um tamanho específico")
+            print("[2] 📐️  Usar o tamanho máximo disponível (padrão)")
             escolha_tamanho = input("\nDigite 1 para definir um tamanho ou 2 para usar o máximo: ").strip()
 
             if escolha_tamanho == "1":
@@ -7468,9 +7468,9 @@ class Sistema(Docker, Executa_comandos):
     def menu_raid(self):
         """Menu de opções"""
         opcoes_menu = [
-            ("📊 Exibe o estado atual da raid", self.estado_raid),
-            ("💾 Formata o disco para usar em raid existente", self.formatar_criar_particao_raid),
-            ("📐 Controle de tamanho do raid", self.gerenciar_raid),
+            ("📊  Exibe o estado atual da raid", self.estado_raid),
+            ("💾  Formata o disco para usar em raid existente", self.formatar_criar_particao_raid),
+            ("📐  Controle de tamanho do raid", self.gerenciar_raid)
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="💾 GERENCIAMENTO DE RAID", itens_por_pagina=10)
         
@@ -7504,11 +7504,11 @@ class Sistema(Docker, Executa_comandos):
         """Menu de opções"""
         opcoes_menu = [
             (" Menu RAID", self.menu_raid),
-            ("📋 Listar particoes", self.listar_particoes),
-            ("📄 Listar particoes detalhadas", self.listar_particoes_detalhadas),
-            ("💾 Monta particao", self.monta_particao),
-            ("💾 Desmontar particao", self.desmontar_particao),
-            ("💾 Formata o disco e cria partição e monta", self.formata_cria_particao),
+            ("📋  Listar particoes", self.listar_particoes),
+            ("📄  Listar particoes detalhadas", self.listar_particoes_detalhadas),
+            ("💾  Monta particao", self.monta_particao),
+            ("💾  Desmontar particao", self.desmontar_particao),
+            ("💾  Formata o disco e cria partição e monta", self.formata_cria_particao)
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="💿 GERENCIAMENTO DE PARTIÇÕES", itens_por_pagina=10)
     
@@ -8340,8 +8340,8 @@ AllowedIPs = {ip_peer}
             
             print("\n" + "="*70)
             print("OPÇÕES:")
-            print("[1]  Manter configuração e apenas visualizar/gerenciar")
-            print("[2]  RESETAR e criar nova configuração")
+            print("[1] ✅  Manter configuração e apenas visualizar/gerenciar")
+            print("[2] 🔄  RESETAR e criar nova configuração")
             print("[0] ↩️  Voltar ao menu")
             print("="*70)
             
@@ -8395,10 +8395,10 @@ AllowedIPs = {ip_peer}
                 print("\n" + "="*70)
                 print("O QUE DESEJA FAZER?")
                 print("="*70)
-                print("[1] ➕ Adicionar novo peer (para servidores)")
-                print("[2] 📊 Ver status detalhado")
-                print("[3] 🔍 Testar conexão com peer")
-                print("[0] ️  Voltar ao menu principal")
+                print("[1] ➕  Adicionar novo peer (para servidores)")
+                print("[2] 📊  Ver status detalhado")
+                print("[3] 🔍  Testar conexão com peer")
+                print("[0] ↩️  Voltar ao menu principal")
                 print("="*70)
                 
                 acao = input("\nEscolha: ").strip()
@@ -8516,10 +8516,10 @@ AllowedIPs = {ip_peer}
         # 3. Perguntar tipo de configuração
         print("="*70)
         print("Qual tipo de configuração deseja?")
-        print("[1] SERVIDOR (recebe conexões)")
-        print("[2] CLIENTE/WORKER (conecta a um servidor)")
-        print("[3] Adicionar peer ao servidor existente")
-        print("[0] ️  Voltar")
+        print("[1] 🖥️  SERVIDOR (recebe conexões)")
+        print("[2] 💻  CLIENTE/WORKER (conecta a um servidor)")
+        print("[3] ➕  Adicionar peer ao servidor existente")
+        print("[0] ↩️  Voltar")
         print("="*70)
         
         escolha = input("\nEscolha uma opção: ").strip()
@@ -8768,12 +8768,12 @@ AllowedIPs = {ip_peer}
     def menu_wireguard(self):
         """Menu principal do WireGuard - Versão Dinâmica"""
         opcoes_menu = [
-            ("🚀 Configurar WireGuard (Auto-install)", self.configurar_wireguard_dinamico),
+            ("🚀  Configurar WireGuard (Auto-install)", self.configurar_wireguard_dinamico),
             ("▶️  Iniciar/Habilitar WireGuard", self.iniciar_wireguard),
             ("⏸️  Parar WireGuard", self.parar_wireguard),
-            ("📊 Ver status e conexões", self.status_wireguard),
-            ("🔍 Testar conexão", self.testar_conexao_wireguard),
-            ("📄 Visualizar configuração", self.visualizar_config_wireguard),
+            ("📊  Ver status e conexões", self.status_wireguard),
+            ("🔍  Testar conexão", self.testar_conexao_wireguard),
+            ("📄  Visualizar configuração", self.visualizar_config_wireguard)
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="🔐 GERENCIADOR WIREGUARD VPN", itens_por_pagina=10)
         
@@ -8870,26 +8870,26 @@ AllowedIPs = {ip_peer}
     def menu_interfaces_graficas(self):
         """Submenu para instalação de interfaces gráficas"""
         opcoes = [
-            ("📦 Instalar/Iniciar XFCE (Leve)", self.instalar_interface_xfce),
-            ("📦 Instalar GNOME (Padrão Ubuntu)", self.instalar_interface_gnome),
-            ("📦 Instalar Desktop Ubuntu Webtop (Docker)", self.desktop_ubuntu_webtop),
-            (" Instalar VNC Server (Acesso Remoto)", self.instala_vnc_server),
-            ("️  Voltar", None)
+            ("📦  Instalar/Iniciar XFCE (Leve)", self.instalar_interface_xfce),
+            ("📦  Instalar GNOME (Padrão Ubuntu)", self.instalar_interface_gnome),
+            ("📦  Instalar Desktop Ubuntu Webtop (Docker)", self.desktop_ubuntu_webtop),
+            ("🖥️  Instalar VNC Server (Acesso Remoto)", self.instala_vnc_server),
+            ("↩️  Voltar", None)
         ]
         self.mostrar_menu_paginado(opcoes, titulo="🖥️  INTERFACES GRÁFICAS", itens_por_pagina=10)
 
     def menu_instalacoes(self):
         """Menu centralizado para instalações de softwares e serviços"""
         opcoes = [
-            ("🐳 Docker e Aplicações em Containers", self.menu_docker),
-            ("🧠 Inteligência Artificial (Ollama Local)", self.gerenciar_ollama),
-            ("🦀 Open Claw (Automação/Agentes)", self.gerenciar_open_claw),
+            ("🐳  Docker e Aplicações em Containers", self.menu_docker),
+            ("🧠  Inteligência Artificial (Ollama Local)", self.gerenciar_ollama),
+            ("🦀  Open Claw (Automação/Agentes)", self.gerenciar_open_claw),
             ("🖥️ Interfaces Gráficas (Desktop)", self.menu_interfaces_graficas),
-            ("📱 Terminal Mobile (Termote PWA)", self.instala_termote_mobile),
-            ("📦 Instalar pacote .deb manualmente", self.instalar_deb),
-            ("🤖 Gerenciar OpenCode (AI CLI)", self.gerenciar_opencode),
-            ("📊 Monitor de Rede (vnstat)", self.vnstat),
-            ("📝 Editores de Código (VSCode/OpenVSCode)", self.submenu_editores),
+            ("📱  Terminal Mobile (Termote PWA)", self.instala_termote_mobile),
+            ("📦  Instalar pacote .deb manualmente", self.instalar_deb),
+            ("🤖  Gerenciar OpenCode (AI CLI)", self.gerenciar_opencode),
+            ("📊  Monitor de Rede (vnstat)", self.vnstat),
+            ("📝  Editores de Código (VSCode/OpenVSCode)", self.submenu_editores),
             ("☁️ Cloudflare WARP (VPN - Contorna bloqueios)", self.gerenciar_cloudflare_warp),
         ]
         self.mostrar_menu_paginado(opcoes, titulo="⬇️  CENTRAL DE INSTALAÇÕES", itens_por_pagina=10)
@@ -8897,42 +8897,42 @@ AllowedIPs = {ip_peer}
     def opcoes_sistema(self):
         """Menu de configurações e utilitários do sistema"""
         opcoes_menu = [
-            ("️ Configurações de Rede (IP, Wifi, SSH)", self.submenu_rede),
-            ("💾 Gerenciamento de Disco e Partições", self.menu_particoes),
-            ("💾 Gerenciamento de Swap", self.menu_swap),
-            ("🔐 Gerenciamento de Permissões", self.gerenciar_permissoes_pasta),
-            ("📊 Diagnóstico (Temp, Velocidade, Espaço)", self.submenu_diagnostico),
+            ("🌐  Configurações de Rede (IP, Wifi, SSH)", self.submenu_rede),
+            ("💾  Gerenciamento de Disco e Partições", self.menu_particoes),
+            ("💾  Gerenciamento de Swap", self.menu_swap),
+            ("🔐  Gerenciamento de Permissões", self.gerenciar_permissoes_pasta),
+            ("📊  Diagnóstico (Temp, Velocidade, Espaço)", self.submenu_diagnostico),
             ("🛠️ Ferramentas de Backup (Rsync)", self.rsync_sync),
             ("⚙️  Configurar Inicialização (.py service)", self.setup_inicializar_service),
-            ("🔒 VPN WireGuard", self.menu_wireguard),
-            ("💻 Fechar tampa notebook (NooT)", self.fecha_tela_noot),
-            ("🔀 Encaminhamentos de Portas/Túneis", self.ecaminhamentos_portas_tuneis),
+            ("🔒  VPN WireGuard", self.menu_wireguard),
+            ("💻  Fechar tampa notebook (NooT)", self.fecha_tela_noot),
+            ("🔀  Encaminhamentos de Portas/Túneis", self.ecaminhamentos_portas_tuneis)
         ]
-        self.mostrar_menu_paginado(opcoes_menu, titulo="️  CONFIGURAÇÕES DO SISTEMA", itens_por_pagina=15)
+        self.mostrar_menu_paginado(opcoes_menu, titulo="⚙️  CONFIGURAÇÕES DO SISTEMA", itens_por_pagina=15)
     
     def submenu_rede(self):
         opcoes = [
-            (" WiFi Gerenciar Wifi (nmtui)", self.setup_wifi),
-            ("️ Configurar IP Fixo", self.configura_ip_fixo),
-            ("🔐 Configurar SSH", self.configurar_ssh),
-            ("️  Voltar", None)
+            ("📶  Gerenciar Wifi (nmtui)", self.setup_wifi),
+            ("📍  Configurar IP Fixo", self.configura_ip_fixo),
+            ("🔐  Configurar SSH", self.configurar_ssh),
+            ("↩️  Voltar", None)
         ]
         self.mostrar_menu_paginado(opcoes, titulo="🌐 CONFIGURAÇÕES DE REDE", itens_por_pagina=10)
         
     def submenu_diagnostico(self):
         opcoes = [
             ("🌡️  Verificar Temperatura", self.verifica_temperatura),
-            (" Teste de Velocidade Internet", self.verifica_velocidade),
-            ("💾 Ver Uso de Espaço", self.ver_uso_espaco_pasta),
-            ("📊 Status do Sistema (Glances)", self.verificando_status_sistema),
+            ("🌐  Teste de Velocidade Internet", self.verifica_velocidade),
+            ("💾  Ver Uso de Espaço", self.ver_uso_espaco_pasta),
+            ("📊  Status do Sistema (Glances)", self.verificando_status_sistema),
             ("↩️  Voltar", None)
         ]
         self.mostrar_menu_paginado(opcoes, titulo="🔍 DIAGNÓSTICO DO SISTEMA", itens_por_pagina=10)
     
     def submenu_editores(self):
         opcoes = [
-            ("📦 Instalar VSCode Oficial", self.instala_vscode_oficial),
-            ("📦 Instalar OpenVSCode (Server)", self.instala_openvscode),
+            ("📦  Instalar VSCode Oficial", self.instala_vscode_oficial),
+            ("📦  Instalar OpenVSCode (Server)", self.instala_openvscode),
             ("↩️  Voltar", None)
         ]
         self.mostrar_menu_paginado(opcoes, titulo=" EDITORES DE CÓDIGO", itens_por_pagina=10)
@@ -9289,15 +9289,15 @@ AllowedIPs = {ip_peer}
     def menu_gerenciamento_docker(self):
         """Menu de gerenciamento de containers Docker"""
         opcoes_gerenciamento = [
-            (" Listar Containers", self.listar_containers_docker),
+            ("📋  Listar Containers", self.listar_containers_docker),
             ("▶️  Iniciar Container", self.iniciar_container_docker),
-            ("️  Parar Container", self.parar_container_docker),
-            ("🔄 Reiniciar Container", self.reiniciar_container_docker),
-            ("️  Excluir Container", self.excluir_container_docker),
-            ("📄 Ver Logs de Container", self.ver_logs_container_docker),
-            ("🔍 Inspecionar Container", self.inspecionar_container_docker),
-            ("️  Limpar Recursos Nao Utilizados", self.limpar_recursos_docker),
-            ("️  Voltar ao Menu Docker", None)
+            ("⏹️  Parar Container", self.parar_container_docker),
+            ("🔄  Reiniciar Container", self.reiniciar_container_docker),
+            ("🗑️  Excluir Container", self.excluir_container_docker),
+            ("📄  Ver Logs de Container", self.ver_logs_container_docker),
+            ("🔍  Inspecionar Container", self.inspecionar_container_docker),
+            ("  Limpar Recursos Nao Utilizados", self.limpar_recursos_docker),
+            ("↩️  Voltar ao Menu Docker", None)
         ]
         
         self.mostrar_menu_paginado(opcoes_gerenciamento, titulo="📦 GERENCIAMENTO DE CONTAINERS", itens_por_pagina=10)
@@ -9413,12 +9413,12 @@ AllowedIPs = {ip_peer}
             print("\n" + "="*45)
             print("🦀 OPEN CLAW MANAGER - MENU CENTRALIZADO")
             print("="*45)
-            print("[1] 📦 Instalar / Atualizar")
-            print("[2]  Correção (Doctor)")
+            print("[1] 📦  Instalar / Atualizar")
+            print("[2] 🩺  Correção (Doctor)")
             print("[3] ⚙️  Configurar (openclaw configure)")
-            print("[4]  Status")
+            print("[4] 📊  Status")
             print("[5] 🗑️  Reinstalar do Zero (Limpar e Instalar)")
-            print("[6]  Chat no Terminal (openclaw tui)")
+            print("[6] 💬  Chat no Terminal (openclaw tui)")
             print("[0] ↩️  Voltar ao Menu Anterior")
             print("="*45)
             
@@ -9442,40 +9442,40 @@ AllowedIPs = {ip_peer}
         """Menu de opções"""
         opcoes_menu = [
             (" Gerenciar Containers Docker", self.menu_gerenciamento_docker),
-            ("💪 Força instalação docker", self.instala_docker_force),
-            ("📦 Instala portainer", self.instala_portainer),
+            ("💪  Força instalação docker", self.instala_docker_force),
+            ("📦  Instala portainer", self.instala_portainer),
             (" Instala filebrowser", self.instala_filebrowser),
-            ("📦 Instala webserver guacamole", self.instala_webserver_guacamole),
-            ("📦 Instala traefik", self.instala_traefik),
+            ("📦  Instala webserver guacamole", self.instala_webserver_guacamole),
+            ("📦  Instala traefik", self.instala_traefik),
             ("||| Conf ||| Adiciona roteamento e serviço ao traefik", self.adiciona_roteador_servico_traefik),
             ("||| Conf ||| Configura rede do container", self.configura_rede),
-            ("📦 Instala frp server (reverse proxy)", self.instala_frp_server),
-            ("📦 Instala frp client (tunnel local)", self.instala_frp_client),
+            ("📦  Instala frp server (reverse proxy)", self.instala_frp_server),
+            ("📦  Instala frp client (tunnel local)", self.instala_frp_client),
             ("||| Conf ||| Gerenciar frp proxies", self.gerenciar_frp),
-            ("📦 Instala SFTP sftpgo", self.instala_ftp_sftpgo),
+            ("📦  Instala SFTP sftpgo", self.instala_ftp_sftpgo),
             ("||| Conf ||| Gerenciador SFTP sftpgo", self.gerenciar_usuarios_sftp),
-            ("📦 Instala openlitespeed", self.instala_openlitespeed),
+            ("📦  Instala openlitespeed", self.instala_openlitespeed),
             ("||| Conf ||| Controle de sites openlitespeed", self.controle_sites_openlitespeed),
             ("** BD ** Instala mysql", self.instala_mysql),
             ("** BD ** Instala postgres", self.instala_postgres),
             ("||| Conf ||| Gerenciar bancos PostgreSQL", self.gerenciar_bancos_postgres),
-            ("📦 Instala wordpress", self.instala_wordpress),
+            ("📦  Instala wordpress", self.instala_wordpress),
             (" Instala wordpress puro", self.instala_wordpress_puro),
-            ("📦 Instala app nodejs", self.instala_app_nodejs),
+            ("📦  Instala app nodejs", self.instala_app_nodejs),
             (" Instala grafana, prometheus, node-exporter", self.iniciar_monitoramento),
-            ("📦 Instala n8n (workflow automation)", self.instalar_n8n),
-            ("🔄 Start sync pastas com RSYNC", self.start_sync_pastas),
-            ("📦 Instala windows KVM docker", self.instala_windows_KVM_docker),
-            ("📦 Instala Sistema CISO docker", self.instala_sistema_CISO_docker),
-            ("📦 Instala deskto ubuntu webtop", self.desktop_ubuntu_webtop),
-            ("📦 Instala Ubuntu", self.ubuntu),
+            ("📦  Instala n8n (workflow automation)", self.instalar_n8n),
+            ("🔄  Start sync pastas com RSYNC", self.start_sync_pastas),
+            ("📦  Instala windows KVM docker", self.instala_windows_KVM_docker),
+            ("📦  Instala Sistema CISO docker", self.instala_sistema_CISO_docker),
+            ("📦  Instala deskto ubuntu webtop", self.desktop_ubuntu_webtop),
+            ("📦  Instala Ubuntu", self.ubuntu),
             (" Instala rustdesk", self.instala_rustdesk),
-            ("📦 Instala pritunel", self.instala_pritunel),
-            ("📦 Instala nextcloud", self.instala_nextcloud),
+            ("📦  Instala pritunel", self.instala_pritunel),
+            ("📦  Instala nextcloud", self.instala_nextcloud),
             (" Instala openvscode", self.instala_openvscode),
-            ("📦 Instala vscode_oficial", self.instala_vscode_oficial),
-            ("📦 Instala Open WebUI", self.instala_open_webui),
-            ("📦 Instala Redis Docker", self.instala_redis_docker),
+            ("📦  Instala vscode_oficial", self.instala_vscode_oficial),
+            ("📦  Instala Open WebUI", self.instala_open_webui),
+            ("📦  Instala Redis Docker", self.instala_redis_docker),
             ("Instala Evolution API WhatsApp", self.instala_evolution_api_whatsapp),
             ("Instala WAHA WhatsApp (devlikeapro)", self.instala_waha_whatsapp),
             ("Instala browserless (chromium headless)", self.instala_browserless),
@@ -9533,11 +9533,11 @@ AllowedIPs = {ip_peer}
     def menu_atualizacoes(self,):
         """Menu de atualizações do sistema"""
         opcoes_menu = [
-            ("🔄 Atualizar Lista de Pacotes (apt update)", self.atualizar_sistema_simples),
+            ("🔄  Atualizar Lista de Pacotes (apt update)", self.atualizar_sistema_simples),
             ("⬆️ Atualização Rápida (update + upgrade)", self.atualizar_sistema_rapida),
-            ("🚀 Atualização Completa (update + upgrade + full-upgrade + limpeza)", self.atualizar_sistema_completa),
-            ("🔁 Atualização Completa + Reiniciar", self.atualizar_sistema_completa_reiniciar),
-            ("🧹 Limpeza de Pacotes (autoremove + autoclean)", self.limpar_pacotes),
+            ("🚀  Atualização Completa (update + upgrade + full-upgrade + limpeza)", self.atualizar_sistema_completa),
+            ("🔁  Atualização Completa + Reiniciar", self.atualizar_sistema_completa_reiniciar),
+            ("🧹  Limpeza de Pacotes (autoremove + autoclean)", self.limpar_pacotes)
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="🔄 ATUALIZAÇÕES DO SISTEMA", itens_por_pagina=10)
         
@@ -9805,14 +9805,14 @@ AllowedIPs = {ip_peer}
                 print("\n" + "="*45)
                 print("🧠 MODELOS OLLAMA - SELECIONE")
                 print("="*45)
-                print("[1] 🦙 Llama 3.1")
-                print("[2]  Llama 3.2")
+                print("[1] 🦙  Llama 3.1")
+                print("[2] 🦙  Llama 3.2")
                 print("[3]  Gemma 3 (Beta)")
-                print("[4] Qwen 2.5 (3B) 32k - Suporte a Tools")
-                print("[5] Outro Modelo (Digitar Nome)")
-                print("[6] Listar Instalados")
-                print("[7] Remover Modelo")
-                print("[0] ️  Voltar")
+                print("[4] 🤖  Qwen 2.5 (3B) 32k - Suporte a Tools")
+                print("[5]  Outro Modelo (Digitar Nome)")
+                print("[6] 📋  Listar Instalados")
+                print("[7] 🗑️  Remover Modelo")
+                print("[0] ↩️  Voltar")
                 print("="*45)
                 
                 escolha = input("\nEscolha: ").strip()
@@ -9840,12 +9840,12 @@ AllowedIPs = {ip_peer}
             print("\n" + "="*45)
             print("🦙 GERENCIADOR OLLAMA (LOCAL)")
             print("="*45)
-            print("[1]  Instalar Ollama (Script Oficial)")
+            print("[1] 📦  Instalar Ollama (Script Oficial)")
             print("[2]  Gerenciar Modelos / Chat")
-            print("[3]  Verificar Status do Serviço")
-            print("[4] Reiniciar Serviço")
-            print("[5] Integração Open Claw")
-            print("[0] ️  Voltar ao Menu Principal")
+            print("[3] 📊️  Verificar Status do Serviço")
+            print("[4] 🔄  Reiniciar Serviço")
+            print("[5]  Integração Open Claw")
+            print("[0] ↩️  Voltar ao Menu Principal")
             print("="*45)
             
             opt = input("\nEscolha uma opção: ").strip()
@@ -9892,13 +9892,13 @@ AllowedIPs = {ip_peer}
             print("Útil para contornar bloqueios de ISP (Claro/NET/Vivo)")
             print("que impedem downloads do Ollama, Docker Hub, etc.")
             print("-"*55)
-            print("[1] 📦 Instalar WARP")
-            print("[2]  Conectar")
-            print("[3] ️  Desconectar")
-            print("[4] Ver Status Detalhado")
-            print("[5] Testar Conexão com Cloudflare")
-            print("[6] Habilitar Conexão Automática (boot)")
-            print("[0] ️  Voltar")
+            print("[1] 📦  Instalar WARP")
+            print("[2] 🔌  Conectar")
+            print("[3] 🔌  Desconectar")
+            print("[4]  Ver Status Detalhado")
+            print("[5]  Testar Conexão com Cloudflare")
+            print("[6]  Habilitar Conexão Automática (boot)")
+            print("[0] ↩️  Voltar")
             print("="*55)
 
             opt_warp = input("\nEscolha: ").strip()
@@ -9965,12 +9965,12 @@ AllowedIPs = {ip_peer}
 
         while True:
             print("\n[1] ➕ Adicionar proxy")
-            print("[2] ️  Remover proxy")
-            print("[3] 📋 Listar proxies")
-            print("[4] Status do servidor (frps)")
-            print("[5] Status do cliente (frpc)")
-            print("[6] Ver credenciais do dashboard")
-            print("[0] ️  Voltar")
+            print("[2] ➖  Remover proxy")
+            print("[3] 📋  Listar proxies")
+            print("[4] 🖥️  Status do servidor (frps)")
+            print("[5]  Status do cliente (frpc)")
+            print("[6] 🔑  Ver credenciais do dashboard")
+            print("[0] ↩️  Voltar")
 
             opcao = input("\nEscolha uma opção: ").strip()
 
@@ -10282,12 +10282,12 @@ AllowedIPs = {ip_peer}
                     print(f"  {status} | {nome} → porta {info['porta_remota']} ({info['tipo']})")
 
             print("\n" + "-" * 55)
-            print("[1] ➕ Adicionar cliente")
-            print("[2] ✏️ Editar cliente")
-            print("[3] 🗑️ Excluir cliente")
-            print("[4] 📋 Clientes conectados")
-            print("[5] 📜 Script cliente")
-            print("[0] ↩️ Voltar")
+            print("[1] ➕  Adicionar cliente")
+            print("[2] ✏️  Editar cliente")
+            print("[3] 🗑️  Excluir cliente")
+            print("[4] 📋  Clientes conectados")
+            print("[5] 📜  Script cliente")
+            print("[0] ↩️  Voltar")
             print("=" * 55)
 
             opcao = input("\nEscolha: ").strip()
@@ -11300,12 +11300,12 @@ goto conectar
             print("\n" + "-" * 55)
             print("[1] ▶️  Iniciar ttyd")
             print("[2] ⏹️  Parar ttyd")
-            print("[3] ️  Reiniciar ttyd")
-            print("[4] Ver status detalhado")
-            print("[5] Ver logs")
-            print("[6] Alterar senha")
-            print("[7] Alterar porta")
-            print("[0] ️  Voltar")
+            print("[3] 🔄  Reiniciar ttyd")
+            print("[4] 📊  Ver status detalhado")
+            print("[5] 📄  Ver logs")
+            print("[6] 🔑  Alterar senha")
+            print("[7] 🔌  Alterar porta")
+            print("[0] ↩️  Voltar")
             print("=" * 55)
 
             opcao = input("\nEscolha: ").strip()
@@ -11453,14 +11453,14 @@ goto conectar
     def gerenciar_microservicos(self):
         """Menu centralizado para gerenciamento de microserviços"""
         opcoes_menu = [
-            ("🔗 Gerenciar Túneis SSH", self.gerenciar_tuneis_ssh),
-            ("🌐 Gerenciar FRP Proxies", self.gerenciar_frp),
-            ("📁 Gerenciar SFTP (sftpgo)", self.gerenciar_usuarios_sftp),
-            ("🌍 Gerenciar Traefik (rotas)", self.adiciona_roteador_servico_traefik),
-            ("📊 Monitoramento (Grafana)", self.iniciar_monitoramento),
-            ("💾 Gerenciar Bancos PostgreSQL", self.gerenciar_bancos_postgres),
-            ("📝 Controle Sites (OpenLiteSpeed)", self.controle_sites_openlitespeed),
-            ("📱 Gerenciar Terminal (Termote/ttyd)", self.gerenciar_terminal_web),
+            ("🔗  Gerenciar Túneis SSH", self.gerenciar_tuneis_ssh),
+            ("🌐  Gerenciar FRP Proxies", self.gerenciar_frp),
+            ("📁  Gerenciar SFTP (sftpgo)", self.gerenciar_usuarios_sftp),
+            ("🌍  Gerenciar Traefik (rotas)", self.adiciona_roteador_servico_traefik),
+            ("📊  Monitoramento (Grafana)", self.iniciar_monitoramento),
+            ("💾  Gerenciar Bancos PostgreSQL", self.gerenciar_bancos_postgres),
+            ("📝  Controle Sites (OpenLiteSpeed)", self.controle_sites_openlitespeed),
+            ("📱  Gerenciar Terminal (Termote/ttyd)", self.gerenciar_terminal_web)
         ]
         self.mostrar_menu_paginado(opcoes_menu, titulo="🔧 GERENCIADOR DE MICROSERVIÇOS", itens_por_pagina=10)
 
@@ -11481,14 +11481,14 @@ Execute com: install_master
 ip server: {servicos.exibe_ip()}"""
     """Função principal que controla o menu."""
     opcoes_menu = [
-        ("🔄 Reiniciar", servicos.Reiniciar),
-        ("⏻ Desligar", servicos.Desligar),
-        ("📦 Atualizar o sistema", servicos.menu_atualizacoes),
-        ("📂 Central de Instalações", servicos.menu_instalacoes),
-        ("🔧 Gerenciar Microserviços", servicos.gerenciar_microservicos),
-        ("⚙️ Configurações do Sistema", servicos.opcoes_sistema),
-        ("📊 Diagnóstico e Monitoramento", servicos.submenu_diagnostico),
-        ("🐧 Comandos essenciais do Linux", servicos.comandos_essenciais_linux),
+        ("🔄  Reiniciar", servicos.Reiniciar),
+        ("⏻  Desligar", servicos.Desligar),
+        ("📦  Atualizar o sistema", servicos.menu_atualizacoes),
+        ("📂  Central de Instalações", servicos.menu_instalacoes),
+        ("🔧  Gerenciar Microserviços", servicos.gerenciar_microservicos),
+        ("⚙️  Configurações do Sistema", servicos.opcoes_sistema),
+        ("📊  Diagnóstico e Monitoramento", servicos.submenu_diagnostico),
+        ("🐧  Comandos essenciais do Linux", servicos.comandos_essenciais_linux)
     ]
     servicos.mostrar_menu_paginado(opcoes_menu, titulo="🖥️  MENU PRINCIPAL - INSTALL MASTER", itens_por_pagina=10, principal=True, mensagem_topo=banner)
 
