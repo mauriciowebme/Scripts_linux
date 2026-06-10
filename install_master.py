@@ -5832,6 +5832,8 @@ CMD ["sh", "-c", "\
         tmux_conf_content = textwrap.dedent("""\
             set-option -g destroy-unattached off
             set-option -g detach-on-destroy off
+            set-option -g mouse on
+            set-option -g history-limit 50000
         """)
         temp_tmux_conf = "/tmp/tmux.conf"
         with open(temp_tmux_conf, "w") as f:
@@ -10384,61 +10386,77 @@ AllowedIPs = {ip_peer}
         print("❌ Número inválido.")
         return None
 
-    def _verificar_e_desbloquear_porta(self, usuario, servidor, porta_remota, tuneis, nome_atual=None):
-        """Verifica disponibilidade da porta e desbloqueia firewall"""
-        for nome_existente, info_existente in tuneis.items():
-            if nome_existente == nome_atual:
-                continue
-            if info_existente['porta_remota'] == porta_remota:
-                print(f"⚠️ Porta {porta_remota} já usada pelo túnel '{nome_existente}'!")
-                confirmar = input("Continuar mesmo assim? (s/n): ").strip().lower()
-                if confirmar != "s":
-                    return False
-
-        print(f"\n🔍 Verificando porta {porta_remota} no servidor...")
-        result = subprocess.run(
-            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-             "-o", "StrictHostKeyChecking=no",
-             f"{usuario}@{servidor}",
-             f"ss -tln | grep ':{porta_remota} '"],
-            capture_output=True, text=True, timeout=10
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            print(f"⚠️ Porta {porta_remota} já está em uso no servidor!")
-            confirmar = input("Continuar mesmo assim? (s/n): ").strip().lower()
-            if confirmar != "s":
-                return False
-        else:
-            print(f"✅ Porta {porta_remota} disponível!")
-
-        print(f"\n🔓 Verificando e desbloqueando firewall na porta {porta_remota}...")
-        comandos_desbloqueio = [
-            f"sudo iptables -D INPUT -p tcp --dport {porta_remota} -j DROP 2>/dev/null; true",
-            f"sudo iptables -D INPUT -p tcp --dport {porta_remota} -j REJECT 2>/dev/null; true",
-            f"sudo iptables -I INPUT 1 -p tcp --dport {porta_remota} -j ACCEPT",
-            f"sudo iptables-save | sudo tee /etc/iptables/rules.v4 2>/dev/null; true",
-        ]
-        for cmd in comandos_desbloqueio:
-            subprocess.run(
-                ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-                 "-o", "StrictHostKeyChecking=no",
-                 f"{usuario}@{servidor}", cmd],
-                capture_output=True, text=True, timeout=10
+    def _abrir_porta_firewall(self, porta):
+        """Abre porta no firewall local (UFW + iptables). Retorna True se ok."""
+        sucesso = False
+        
+        # 1. Tenta UFW (firewall padrão do Ubuntu)
+        try:
+            ufw_check = subprocess.run(
+                ["sudo", "ufw", "status"],
+                capture_output=True, text=True
             )
+            if "active" in ufw_check.stdout.lower():
+                subprocess.run(
+                    ["sudo", "ufw", "allow", str(porta), "tcp"],
+                    check=True
+                )
+                print(f"  ✅ Porta {porta} liberada no UFW")
+                sucesso = True
+        except Exception:
+            pass
 
-        result = subprocess.run(
-            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-             "-o", "StrictHostKeyChecking=no",
-             f"{usuario}@{servidor}",
-             f"sudo iptables -L INPUT -n | grep '{porta_remota}' | grep ACCEPT || true"],
-            capture_output=True, text=True, timeout=10
-        )
-        if "ACCEPT" in result.stdout:
-            print(f"✅ Porta {porta_remota} desbloqueada no firewall!")
-        else:
-            print(f"⚠️ Não foi possível verificar regra de firewall. Verifique manualmente.")
+        # 2. Tenta iptables SEMPRE (independente do UFW)
+        try:
+            check_result = subprocess.run(
+                ["sudo", "iptables", "-C", "INPUT", "-p", "tcp", "--dport", str(porta), "-j", "ACCEPT"],
+                capture_output=True
+            )
+            if check_result.returncode == 0:
+                print(f"  ✅ Porta {porta} já liberada no iptables")
+                return True
+            
+            subprocess.run(
+                ["sudo", "iptables", "-I", "INPUT", "1", "-p", "tcp", "--dport", str(porta), "-j", "ACCEPT"],
+                check=True
+            )
+            print(f"  ✅ Porta {porta} liberada no iptables")
 
-        return True
+            if shutil.which("netfilter-persistent"):
+                subprocess.run(["sudo", "netfilter-persistent", "save"], check=False)
+            elif shutil.which("iptables-save"):
+                subprocess.run(
+                    ["sudo", "sh", "-c", "iptables-save > /etc/iptables.rules"],
+                    check=False
+                )
+            return True
+        except Exception as e:
+            print(f"  ⚠️ Falha ao configurar iptables: {e}")
+            return sucesso
+
+    def _fechar_porta_firewall(self, porta):
+        """Remove regra de firewall. Retorna True se ok."""
+        try:
+            subprocess.run(
+                ["sudo", "iptables", "-D", "INPUT", "-p", "tcp", "--dport", str(porta), "-j", "ACCEPT"],
+                capture_output=True
+            )
+            subprocess.run(
+                ["sudo", "ufw", "delete", "allow", str(porta), "tcp"],
+                capture_output=True
+            )
+            if shutil.which("netfilter-persistent"):
+                subprocess.run(["sudo", "netfilter-persistent", "save"], check=False)
+            elif shutil.which("iptables-save"):
+                subprocess.run(
+                    ["sudo", "sh", "-c", "iptables-save > /etc/iptables.rules"],
+                    check=False
+                )
+            print(f"  ✅ Regra de firewall removida para porta {porta}")
+            return True
+        except Exception as e:
+            print(f"  ⚠️ Falha ao remover regra: {e}")
+            return False
 
     def _gerar_scripts_tunel(self, nome):
         """Gera scripts .bat e .sh para um túnel"""
@@ -10489,31 +10507,6 @@ Host {nome}
 
         os.chmod(config_path, 0o600)
 
-    def _descobrir_porta_livre_ssh(self, usuario, servidor, porta_inicial=2222, porta_final=2299):
-        """Conecta via SSH ao servidor e encontra porta remota livre no intervalo."""
-        portas_usadas = set()
-
-        result = subprocess.run(
-            ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-             "-o", "StrictHostKeyChecking=no",
-             f"{usuario}@{servidor}",
-             "ss -tln | awk '{print $4}' | grep -oE '[0-9]+$' | sort -un"],
-            capture_output=True, text=True, timeout=10
-        )
-        if result.returncode == 0:
-            for linha in result.stdout.strip().splitlines():
-                for p in linha.split():
-                    try:
-                        portas_usadas.add(int(p))
-                    except ValueError:
-                        pass
-
-        for porta in range(porta_inicial, porta_final + 1):
-            if porta not in portas_usadas:
-                return porta
-
-        return None
-
     def _ler_ssh_config(self):
         """Lê ~/.ssh/config e retorna lista de hosts configurados"""
         hosts = []
@@ -10529,21 +10522,6 @@ Host {nome}
             except Exception:
                 pass
         return hosts
-
-    def _detectar_hostname_remoto(self, usuario, servidor):
-        """Conecta via SSH e detecta o hostname da máquina remota"""
-        try:
-            result = subprocess.run(
-                ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5",
-                 "-o", "StrictHostKeyChecking=no",
-                 f"{usuario}@{servidor}", "hostname"],
-                capture_output=True, text=True, timeout=10
-            )
-            if result.returncode == 0:
-                return result.stdout.strip().lower().replace(" ", "_").replace("-", "_")
-        except Exception:
-            pass
-        return None
 
     def _adicionar_cliente(self):
         """Adiciona novo cliente com geração automática de chaves e script"""
@@ -10570,23 +10548,33 @@ Host {nome}
         servidor_detectado = self.exibe_ip()
         servidor = input(f"\n🌐 IP do servidor [{servidor_detectado}]: ").strip() or servidor_detectado
 
-        # === PASSO 3: Porta remota ===
-        portas_em_uso = {info['porta_remota'] for info in tuneis_existentes.values()}
-        porta_base = 2222
-        while porta_base in portas_em_uso:
-            porta_base += 1
-        porta_sugerida = porta_base
-
-        sugestao = input(f"🔌 Porta remota sugerida: {porta_sugerida} (Enter para confirmar ou digite outra): ").strip()
-        porta_remota = int(sugestao) if sugestao.isdigit() else porta_sugerida
-
-        if not (1 <= porta_remota <= 65535):
-            print("❌ Porta fora do intervalo válido (1-65535).")
+        # === PASSO 3: Porta remota (busca automática na faixa 40450-40500) ===
+        print("\n🔍 Buscando porta livre na faixa 40450-40500...")
+        portas_em_uso_json = {info['porta_remota'] for info in tuneis_existentes.values()}
+        porta_remota = None
+        
+        for porta_teste in range(40450, 40501):
+            if porta_teste in portas_em_uso_json:
+                continue
+            
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    if s.connect_ex(('localhost', porta_teste)) == 0:
+                        continue
+            except Exception:
+                pass
+            
+            porta_remota = porta_teste
+            break
+        
+        if porta_remota is None:
+            print("❌ Nenhuma porta livre encontrada na faixa 40450-40500.")
             return
+        
+        print(f"✅ Porta {porta_remota} encontrada e disponível!")
 
-        if porta_remota in portas_em_uso:
-            print(f"❌ Porta {porta_remota} já está em uso por outro cliente.")
-            return
+        print(f"\n🔓 Configurando firewall na porta {porta_remota}...")
+        self._abrir_porta_firewall(porta_remota)
 
         # === PASSO 4: Porta local ===
         porta_local = input("🏠 Porta local da máquina remota (Enter para 22): ").strip() or "22"
@@ -10894,12 +10882,34 @@ goto conectar
 
         porta_remota_antiga = info['porta_remota']
 
-        porta_remota_input = input(f"\n Porta remota [{info['porta_remota']}]: ").strip()
+        porta_remota_input = input(f"\n Porta remota [{info['porta_remota']}] (Enter para manter, 'auto' para buscar automaticamente): ").strip()
         if porta_remota_input:
-            if not porta_remota_input.isdigit():
-                print("❌ Porta inválida.")
-                return
-            info['porta_remota'] = int(porta_remota_input)
+            if porta_remota_input.lower() == 'auto':
+                print("\n🔍 Buscando porta livre na faixa 40450-40500...")
+                tuneis_todos = self._carregar_tuneis()
+                portas_em_uso_json = {v['porta_remota'] for k, v in tuneis_todos.items() if k != nome}
+                nova_porta = None
+                
+                for porta_teste in range(40450, 40501):
+                    if porta_teste in portas_em_uso_json:
+                        continue
+                    try:
+                        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                            if s.connect_ex(('localhost', porta_teste)) == 0:
+                                continue
+                    except Exception:
+                        pass
+                    nova_porta = porta_teste
+                    break
+                
+                if nova_porta is None:
+                    print("❌ Nenhuma porta livre encontrada na faixa 40450-40500.")
+                    return
+                
+                info['porta_remota'] = nova_porta
+                print(f"✅ Porta {nova_porta} encontrada!")
+            elif porta_remota_input.isdigit():
+                info['porta_remota'] = int(porta_remota_input)
 
         porta_local_input = input(f"🏠 Porta local [{info['porta_local']}]: ").strip()
         if porta_local_input:
@@ -10920,6 +10930,13 @@ goto conectar
         tuneis[nome] = info
         self._salvar_tuneis(tuneis)
         self._log_tunel(nome, f"Cliente editado: porta {info['porta_remota']} -> {info['porta_local']} ({info['tipo']})")
+
+        # Atualizar firewall se porta mudou
+        if info['porta_remota'] != porta_remota_antiga:
+            print(f"\n🔓 Abrindo firewall na porta {info['porta_remota']}...")
+            self._abrir_porta_firewall(info['porta_remota'])
+            print(f"🔒 Fechando firewall na porta {porta_remota_antiga}...")
+            self._fechar_porta_firewall(porta_remota_antiga)
 
         # Regenerar scripts se porta ou tipo mudou
         if info['porta_remota'] != porta_remota_antiga or info.get('chave_privada'):
@@ -10992,6 +11009,12 @@ goto conectar
                     pass
 
         self._log_tunel(nome, "Cliente excluído")
+
+        # Fechar firewall da porta
+        porta_excluida = info.get('porta_remota')
+        if porta_excluida:
+            print(f"\n🔒 Removendo firewall da porta {porta_excluida}...")
+            self._fechar_porta_firewall(porta_excluida)
 
         print(f"\n Cliente '{nome}' excluído com sucesso!")
 
@@ -11492,7 +11515,7 @@ def main():
     check_for_update(sistema_instance=servicos)
     
     banner = f"""Arquivo install_master.py iniciado!
- Versão 1.234
+ Versão 1.235
 Execute com: install_master
 ip server: {servicos.exibe_ip()}"""
     """Função principal que controla o menu."""
