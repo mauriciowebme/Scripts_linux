@@ -10940,16 +10940,23 @@ goto conectar
         print(f"  Porta local atual: {info['porta_local']}")
         print(f"  Tipo: {info['tipo']}")
 
-        servidor_input = input(f"\n🌐 IP do servidor [{info['servidor']}]: ").strip()
+        info_original = dict(info)
+
+        servidor_input = input(f"\n🌐 IP do servidor [{info['servidor']}] (Enter para manter): ").strip()
         if servidor_input:
             info['servidor'] = servidor_input
+            print(f"   ✅ Alterado: {servidor_input}")
+        else:
+            print(f"   ✅ Mantido: {info['servidor']}")
 
         porta_remota_antiga = info['porta_remota']
+        porta_local_antiga = info['porta_local']
+        tipo_antigo = info['tipo']
 
-        porta_remota_input = input(f"\n Porta remota [{info['porta_remota']}] (Enter para manter, 'auto' para buscar automaticamente): ").strip()
+        porta_remota_input = input(f"\n Porta remota [{info['porta_remota']}] (Enter para manter, 'auto' para automático): ").strip()
         if porta_remota_input:
             if porta_remota_input.lower() == 'auto':
-                print("\n🔍 Buscando porta livre na faixa 40450-40500...")
+                print("\n Buscando porta livre na faixa 40450-40500...")
                 tuneis_todos = self._carregar_tuneis()
                 portas_em_uso_json = {v['porta_remota'] for k, v in tuneis_todos.items() if k != nome}
                 nova_porta = None
@@ -10974,22 +10981,32 @@ goto conectar
                 print(f"✅ Porta {nova_porta} encontrada!")
             elif porta_remota_input.isdigit():
                 info['porta_remota'] = int(porta_remota_input)
+                print(f"   ✅ Alterado: {porta_remota_input}")
+        else:
+            print(f"   ✅ Mantido: {info['porta_remota']}")
 
-        porta_local_input = input(f"🏠 Porta local [{info['porta_local']}]: ").strip()
+        porta_local_input = input(f"\n🏠 Porta local [{info['porta_local']}] (Enter para manter): ").strip()
         if porta_local_input:
             if not porta_local_input.isdigit():
                 print("❌ Porta local inválida.")
                 return
             info['porta_local'] = int(porta_local_input)
+            print(f"   ✅ Alterado: {porta_local_input}")
+        else:
+            print(f"   ✅ Mantido: {info['porta_local']}")
 
-        print("\nTipo da máquina remota:")
-        print(f"[1] Windows (atual: {info['tipo']})")
-        print("[2] Linux")
-        tipo_choice = input("Escolha (Enter para manter): ").strip()
+        print(f"\n🖥️ Tipo da máquina remota:")
+        print(f"  [1] Windows (atual: {info['tipo']})")
+        print(f"  [2] Linux")
+        tipo_choice = input("  Escolha (Enter para manter): ").strip()
         if tipo_choice == "2":
             info['tipo'] = "linux"
+            print(f"   ✅ Alterado: linux")
         elif tipo_choice == "1":
             info['tipo'] = "windows"
+            print(f"   ✅ Alterado: windows")
+        else:
+            print(f"   ✅ Mantido: {info['tipo']}")
 
         tuneis[nome] = info
         self._salvar_tuneis(tuneis)
@@ -10997,14 +11014,21 @@ goto conectar
 
         # Atualizar firewall se porta mudou
         if info['porta_remota'] != porta_remota_antiga:
-            print(f"\n🔓 Abrindo firewall na porta {info['porta_remota']}...")
+            print(f"\n Abrindo firewall na porta {info['porta_remota']}...")
             self._abrir_porta_firewall(info['porta_remota'])
-            print(f"🔒 Fechando firewall na porta {porta_remota_antiga}...")
+            print(f" Fechando firewall na porta {porta_remota_antiga}...")
             self._fechar_porta_firewall(porta_remota_antiga)
 
-        # Regenerar scripts se porta, servidor ou tipo mudou
-        if info['porta_remota'] != porta_remota_antiga or info['servidor'] != servidor or info.get('chave_privada'):
-            print("\n🔄 Regenerando scripts...")
+        # Regenerar scripts se algo relevante mudou
+        algo_mudou = (
+            info['porta_remota'] != porta_remota_antiga or
+            info['porta_local'] != porta_local_antiga or
+            info['servidor'] != info_original['servidor'] or
+            info['tipo'] != tipo_antigo or
+            info.get('chave_privada')
+        )
+        if algo_mudou:
+            print("\n Regenerando scripts...")
             self._gerar_scripts_tunel(nome)
 
         print(f"\n✅ Cliente '{nome}' editado com sucesso!")
