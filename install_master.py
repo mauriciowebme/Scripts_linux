@@ -10287,6 +10287,7 @@ AllowedIPs = {ip_peer}
             print("[3] 🗑️  Excluir cliente")
             print("[4] 📋  Clientes conectados")
             print("[5] 📜  Script cliente")
+            print("[6] 🔓  Abrir/Fechar portas")
             print("[0] ↩️  Voltar")
             print("=" * 55)
 
@@ -10302,6 +10303,8 @@ AllowedIPs = {ip_peer}
                 self._visualizar_tuneis()
             elif opcao == "5":
                 self._script_cliente()
+            elif opcao == "6":
+                self._gerenciar_portas()
             elif opcao == "0":
                 break
             else:
@@ -10388,7 +10391,19 @@ AllowedIPs = {ip_peer}
         """Abre porta no firewall local (UFW + iptables). Retorna True se ok."""
         sucesso = False
         
-        # 1. Tenta UFW (firewall padrão do Ubuntu)
+        # 1. Verifica se já está aberta no iptables
+        try:
+            check_result = subprocess.run(
+                ["sudo", "iptables", "-C", "INPUT", "-p", "tcp", "--dport", str(porta), "-j", "ACCEPT"],
+                capture_output=True
+            )
+            if check_result.returncode == 0:
+                print(f"  ✅ Porta {porta} JÁ está liberada no iptables")
+                return True
+        except Exception:
+            pass
+
+        # 2. Tenta UFW (firewall padrão do Ubuntu)
         try:
             ufw_check = subprocess.run(
                 ["sudo", "ufw", "status"],
@@ -10401,55 +10416,67 @@ AllowedIPs = {ip_peer}
                 )
                 print(f"  ✅ Porta {porta} liberada no UFW")
                 sucesso = True
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"  ⚠️ UFW não disponível: {e}")
 
-        # 2. Tenta iptables SEMPRE (independente do UFW)
+        # 3. Tenta iptables SEMPRE (independente do UFW)
         try:
-            check_result = subprocess.run(
-                ["sudo", "iptables", "-C", "INPUT", "-p", "tcp", "--dport", str(porta), "-j", "ACCEPT"],
-                capture_output=True
-            )
-            if check_result.returncode == 0:
-                print(f"  ✅ Porta {porta} já liberada no iptables")
-                return True
-            
             subprocess.run(
                 ["sudo", "iptables", "-I", "INPUT", "1", "-p", "tcp", "--dport", str(porta), "-j", "ACCEPT"],
                 check=True
             )
             print(f"  ✅ Porta {porta} liberada no iptables")
 
+            # Salva regras
             if shutil.which("netfilter-persistent"):
                 subprocess.run(["sudo", "netfilter-persistent", "save"], check=False)
+                print(f"  💾 Regras salvas (netfilter-persistent)")
             elif shutil.which("iptables-save"):
                 subprocess.run(
-                    ["sudo", "sh", "-c", "iptables-save > /etc/iptables.rules"],
+                    ["sudo", "sh", "-c", "iptables-save > /etc/iptables/rules.v4"],
                     check=False
                 )
+                print(f"  💾 Regras salvas (/etc/iptables/rules.v4)")
             return True
         except Exception as e:
-            print(f"  ⚠️ Falha ao configurar iptables: {e}")
+            print(f"  ❌ Falha ao configurar iptables: {e}")
             return sucesso
 
     def _fechar_porta_firewall(self, porta):
         """Remove regra de firewall. Retorna True se ok."""
         try:
-            subprocess.run(
-                ["sudo", "iptables", "-D", "INPUT", "-p", "tcp", "--dport", str(porta), "-j", "ACCEPT"],
+            # Verifica se regra existe no iptables antes de remover
+            check_result = subprocess.run(
+                ["sudo", "iptables", "-C", "INPUT", "-p", "tcp", "--dport", str(porta), "-j", "ACCEPT"],
                 capture_output=True
             )
+            
+            if check_result.returncode == 0:
+                subprocess.run(
+                    ["sudo", "iptables", "-D", "INPUT", "-p", "tcp", "--dport", str(porta), "-j", "ACCEPT"],
+                    check=True
+                )
+                print(f"  ✅ Porta {porta} fechada no iptables")
+            else:
+                print(f"  ℹ️ Porta {porta} já estava fechada no iptables")
+
+            # Tenta remover do UFW também
             subprocess.run(
                 ["sudo", "ufw", "delete", "allow", str(porta), "tcp"],
                 capture_output=True
             )
+
+            # Salva regras
             if shutil.which("netfilter-persistent"):
                 subprocess.run(["sudo", "netfilter-persistent", "save"], check=False)
+                print(f"  💾 Regras salvas (netfilter-persistent)")
             elif shutil.which("iptables-save"):
                 subprocess.run(
-                    ["sudo", "sh", "-c", "iptables-save > /etc/iptables.rules"],
+                    ["sudo", "sh", "-c", "iptables-save > /etc/iptables/rules.v4"],
                     check=False
                 )
+                print(f"  💾 Regras salvas (/etc/iptables/rules.v4)")
+            
             print(f"  ✅ Regra de firewall removida para porta {porta}")
             return True
         except Exception as e:
@@ -11223,6 +11250,120 @@ goto conectar
                 print("=" * 55)
                 print(conteudo)
                 print("=" * 55)
+            else:
+                print("❌ Número inválido.")
+        except ValueError:
+            print("❌ Entrada inválida.")
+
+        input("\nPressione Enter para continuar...")
+
+    def _gerenciar_portas(self):
+        """Gerencia abertura/fechamento de portas dos túneis no firewall"""
+        tuneis = self._carregar_tuneis()
+        if not tuneis:
+            print("\n⚪ Nenhum túnel configurado.")
+            return
+
+        print("\n" + "=" * 55)
+        print("🔓 GERENCIAR PORTAS DOS TÚNEIS")
+        print("=" * 55)
+
+        # Verifica status de cada porta no iptables
+        print("\n Status atual das portas:\n")
+        
+        lista_nomes = list(tuneis.keys())
+        portas_abertas = []
+        
+        for i, nome in enumerate(lista_nomes, 1):
+            info = tuneis[nome]
+            porta = info['porta_remota']
+            
+            # Verifica se está aberta no iptables
+            check_result = subprocess.run(
+                ["sudo", "iptables", "-C", "INPUT", "-p", "tcp", "--dport", str(porta), "-j", "ACCEPT"],
+                capture_output=True
+            )
+            
+            if check_result.returncode == 0:
+                status = "✅ ABERTA"
+                portas_abertas.append(nome)
+            else:
+                status = "🔒 FECHADA"
+            
+            tipo = "🪟 Windows" if info.get('tipo') == 'windows' else "🐧 Linux"
+            print(f"  [{i}] {nome} - Porta {porta} - {status} ({tipo})")
+
+        print("\n" + "-" * 55)
+        print("[1-{}] Escolher cliente para alterar".format(len(lista_nomes)))
+        print("[A] Abrir TODAS as portas")
+        print("[F] Fechar TODAS as portas")
+        print("[0] Voltar")
+        print("=" * 55)
+
+        escolha = input("\nEscolha: ").strip().lower()
+
+        if escolha == "0":
+            return
+        
+        if escolha == "a":
+            # Abrir todas as portas
+            print("\n🔓 Abrindo TODAS as portas...\n")
+            for nome in lista_nomes:
+                info = tuneis[nome]
+                print(f"  {nome} (porta {info['porta_remota']}):")
+                self._abrir_porta_firewall(info['porta_remota'])
+                print()
+            print("✅ Todas as portas foram abertas!")
+            self._log_tunel("sistema", "Todas as portas abertas via gerenciador")
+            input("\nPressione Enter para continuar...")
+            return
+        
+        if escolha == "f":
+            # Fechar todas as portas
+            print("\n Fechando TODAS as portas...\n")
+            for nome in lista_nomes:
+                info = tuneis[nome]
+                print(f"  {nome} (porta {info['porta_remota']}):")
+                self._fechar_porta_firewall(info['porta_remota'])
+                print()
+            print("✅ Todas as portas foram fechadas!")
+            self._log_tunel("sistema", "Todas as portas fechadas via gerenciador")
+            input("\nPressione Enter para continuar...")
+            return
+
+        # Escolher cliente específico
+        try:
+            idx = int(escolha) - 1
+            if 0 <= idx < len(lista_nomes):
+                nome = lista_nomes[idx]
+                info = tuneis[nome]
+                porta = info['porta_remota']
+                
+                # Verifica status atual
+                check_result = subprocess.run(
+                    ["sudo", "iptables", "-C", "INPUT", "-p", "tcp", "--dport", str(porta), "-j", "ACCEPT"],
+                    capture_output=True
+                )
+                esta_aberta = check_result.returncode == 0
+                
+                print(f"\n📋 Cliente: {nome}")
+                print(f"   Porta: {porta}")
+                print(f"   Status: {'✅ ABERTA' if esta_aberta else ' FECHADA'}")
+                
+                if esta_aberta:
+                    confirmar = input(f"\nDeseja FECHAR a porta {porta}? (s/n): ").strip().lower()
+                    if confirmar == "s":
+                        print(f"\n🔒 Fechando porta {porta}...")
+                        self._fechar_porta_firewall(porta)
+                        print(f"\n✅ Porta {porta} fechada com sucesso!")
+                        self._log_tunel(nome, f"Porta {porta} fechada via gerenciador")
+                else:
+                    confirmar = input(f"\nDeseja ABRIR a porta {porta}? (s/n): ").strip().lower()
+                    if confirmar == "s":
+                        print(f"\n🔓 Abrindo porta {porta}...")
+                        self._abrir_porta_firewall(porta)
+                        print(f"\n✅ Porta {porta} aberta com sucesso!")
+                        self._log_tunel(nome, f"Porta {porta} aberta via gerenciador")
             else:
                 print("❌ Número inválido.")
         except ValueError:
