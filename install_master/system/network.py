@@ -1,0 +1,160 @@
+import os
+import re
+import subprocess
+import time
+
+import yaml
+
+from install_master.core.docker_base import DockerBase
+
+
+class MixinNetwork(DockerBase):
+
+    def submenu_rede(self):
+        opcoes = [
+            ("📶  Gerenciar Wifi (nmtui)", self.setup_wifi),
+            ("📍  Configurar IP Fixo", self.configura_ip_fixo),
+            ("🔐  Configurar SSH", self.configurar_ssh),
+            ("↩️  Voltar", None)
+        ]
+        self.mostrar_menu_paginado(opcoes, titulo="🌐 CONFIGURAÇÕES DE REDE", itens_por_pagina=10)
+
+    def setup_wifi(self,):
+        print('Instalando gerenciador de WIFI nmtui.')
+        comandos = [
+            "sudo apt update",
+            "sudo apt install -y network-manager",
+            "sudo systemctl enable NetworkManager",
+            "sudo systemctl start NetworkManager",
+            "sudo nmtui"
+        ]
+        print("Configurando Wi-Fi com NetworkManager...")
+        self.executar_comandos(comandos, comando_direto=True)
+
+    def gerenciar_fstab(self, ponto_montagem, acao='adicionar', dispositivo=None):
+        try:
+            with open("/etc/fstab", "r") as fstab:
+                linhas = fstab.readlines()
+
+            linha_existente = None
+
+            for linha in linhas:
+                if ponto_montagem in linha and 'ext4' in linha:
+                    linha_existente = linha
+                    break
+
+            if acao == 'adicionar':
+                if not dispositivo:
+                    print("Erro: Para adicionar, você deve fornecer o dispositivo.")
+                    return
+
+                if linha_existente:
+                    print(f"O ponto de montagem {ponto_montagem} já está presente no /etc/fstab.")
+                    return
+
+                linha_fstab = f"{dispositivo} {ponto_montagem} ext4 defaults 0 0\n"
+                with open("/etc/fstab", "a") as fstab:
+                    fstab.write(linha_fstab)
+                print(f"Partição {dispositivo} adicionada ao /etc/fstab para montagem automática em {ponto_montagem}.")
+
+            elif acao == 'desmontar':
+                if linha_existente:
+                    novas_linhas = []
+                    for x in linhas:
+                        if ponto_montagem in x and 'ext4' in x:
+                            novas_linhas.append(f"#{x}")
+                        else:
+                            novas_linhas.append(x)
+
+                    with open("/etc/fstab", "w") as fstab:
+                        fstab.writelines(novas_linhas)
+                    print(f"Ponto de montagem {ponto_montagem} comentado no /etc/fstab para evitar montagem automática.")
+                else:
+                    print(f"O ponto de montagem {ponto_montagem} não está presente no /etc/fstab.")
+
+        except PermissionError:
+            print("Erro: Permissões insuficientes para modificar /etc/fstab. Execute o script com sudo.")
+        except Exception as e:
+            print(f"Erro: {e}")
+
+    def listar_particoes(self,):
+        print("Listando discos disponiveis:")
+        comandos = [
+            "lsblk -o NAME,SIZE,TYPE,MOUNTPOINT | grep -E 'disk|part|lvm|raid'",
+        ]
+        resultado = self.executar_comandos(comandos)
+
+    def listar_particoes_detalhadas(self,):
+        print("Listando discos disponiveis:")
+        comandos = [
+            "sudo parted -l",
+        ]
+        resultado = self.executar_comandos(comandos)
+
+    def configura_ip_fixo(self,):
+        print("Interfaces de rede disponíveis:")
+        interfaces = subprocess.check_output(["ip", "addr"])
+        interfaces = interfaces.decode("utf-8").splitlines()
+        for line in interfaces:
+            if ":" in line:
+                print(line.split(":")[1].strip())
+
+        interface = input("Digite o nome da interface de rede (ex: enp2s0f5): ")
+
+        try:
+            subprocess.check_output(["ip", "addr", "show", interface])
+        except subprocess.CalledProcessError:
+            print(f"Interface {interface} não encontrada. Verifique o nome e tente novamente.")
+            return
+
+        ip_address = input("Digite o endereço IP com a máscara (ex: 192.168.0.80/24): ")
+
+        gateway = input("Digite o endereço do gateway (ex: 192.168.0.1): ")
+
+        dns = input("Digite os endereços de DNS separados por vírgula (ex: 8.8.8.8, 8.8.4.4): ")
+        dns_list = [dns.strip() for dns in dns.split(",")]
+
+        config_file = "/etc/netplan/00-installer-config.yaml"
+        if not os.path.exists(config_file):
+            config_file = "/etc/netplan/50-cloud-init.yaml"
+            with open("/etc/cloud/cloud.cfg.d/99-disable-network-config.cfg", "w") as file:
+                file.write("network: {config: disabled}")
+
+        print("Criando backup do arquivo de configuração existente...")
+        backup_file = config_file + "_old"
+        subprocess.run(["sudo", "cp", config_file, backup_file], check=True)
+
+        config_data = {
+            "network": {
+                "version": 2,
+                "renderer": "networkd",
+                "ethernets": {
+                    interface: {
+                        "addresses": [ip_address],
+                        "routes": [{"to": "default", "via": gateway}],
+                        "nameservers": {"addresses": dns_list}
+                    }
+                }
+            }
+        }
+
+        print("Gerando novo arquivo de configuração...")
+        try:
+            with open(config_file, "w") as file:
+                yaml.dump(config_data, file, default_flow_style=False)
+        except IOError as e:
+            print(f"Erro ao escrever no arquivo de configuração: {e}")
+            return
+
+        print("Aplicando as configurações...")
+        try:
+            subprocess.run(["sudo", "netplan", "apply"], check=True)
+            print("Configuração concluída com sucesso!")
+        except subprocess.CalledProcessError as e:
+            print(f"Erro ao aplicar as configurações: {e}")
+
+    def verificar_boot_mode(self):
+        """Verifica se o sistema está usando BIOS (Legacy) ou UEFI"""
+        if os.path.exists("/sys/firmware/efi"):
+            return "UEFI"
+        return "BIOS"
