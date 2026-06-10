@@ -10338,22 +10338,20 @@ AllowedIPs = {ip_peer}
             pass
 
     def _tuneis_ativos(self):
-        """Retorna set de nomes de túneis ativos baseado em processos SSH"""
+        """Retorna set de nomes de túneis ativos baseado em portas listening no sshd"""
         ativos = set()
         try:
             result = subprocess.run(
-                ["ps", "aux"],
+                ["ss", "-tlnp"],
                 capture_output=True, text=True
             )
             tuneis = self._carregar_tuneis()
             for linha in result.stdout.splitlines():
-                if "ssh" not in linha or "-R" not in linha or "-N" not in linha:
+                if "sshd" not in linha:
                     continue
-                matches = re.findall(r'-R\s+(\d+):', linha)
-                for porta in matches:
-                    for nome, info in tuneis.items():
-                        if str(info["porta_remota"]) == porta:
-                            ativos.add(nome)
+                for nome, info in tuneis.items():
+                    if f":{info['porta_remota']} " in linha or f":{info['porta_remota']}\t" in linha:
+                        ativos.add(nome)
         except Exception:
             pass
         return ativos
