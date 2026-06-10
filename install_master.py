@@ -10845,6 +10845,13 @@ fi
         # Também gerar versão Windows (.bat) se o cliente for Windows
         if info.get('tipo') == 'windows':
             caminho_bat = f"{diretorio}/{nome}.bat"
+
+            # Codificar chave em base64 (evita problemas de escape/encoding no batch)
+            chave_b64 = subprocess.run(
+                ["base64", "-w0", chave_privada_path],
+                capture_output=True, text=True
+            ).stdout.strip()
+
             conteudo_bat = f'''@echo off
 REM ============================================
 REM Script de Túnel SSH - Cliente: {nome}
@@ -10859,18 +10866,17 @@ set USUARIO={info['usuario']}
 echo.
 echo ========================================
 echo    TUNEL SSH: {nome}
-echo    Servidor: %%SERVIDOR%%:%%PORTA_REMOTA%%
-echo    Local: localhost:%%PORTA_LOCAL%%
+echo    Servidor: %SERVIDOR%:%PORTA_REMOTA%
+echo    Local: localhost:%PORTA_LOCAL%
 echo ========================================
 echo.
 
 REM Criar diretório para chave
 if not exist "%USERPROFILE%\\.ssh\\tunel_{nome}" mkdir "%USERPROFILE%\\.ssh\\tunel_{nome}"
 
-REM Escrever chave privada
-(
-echo {chave_privada_content}
-) > "%USERPROFILE%\\.ssh\\tunel_{nome}\\id_ed25519"
+REM Escrever chave privada (base64 decodificado via PowerShell)
+set "CHAVE_FILE=%USERPROFILE%\\.ssh\\tunel_{nome}\\id_ed25519"
+powershell -NoProfile -Command "[IO.File]::WriteAllBytes($env:CHAVE_FILE, [Convert]::FromBase64String('{chave_b64}'))"
 
 echo Chave privada configurada
 echo.
@@ -10884,8 +10890,8 @@ ssh -o StrictHostKeyChecking=no ^
     -o ServerAliveInterval=30 ^
     -o ServerAliveCountMax=3 ^
     -i "%USERPROFILE%\\.ssh\\tunel_{nome}\\id_ed25519" ^
-    -R %%PORTA_REMOTA%%:localhost:%%PORTA_LOCAL%% ^
-    %%USUARIO%%@%%SERVIDOR%% -N
+    -R %PORTA_REMOTA%:localhost:%PORTA_LOCAL% ^
+    %USUARIO%@%SERVIDOR% -N
 
 echo.
 echo ========================================
