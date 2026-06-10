@@ -10459,9 +10459,49 @@ AllowedIPs = {ip_peer}
             return False
 
     def _gerar_scripts_tunel(self, nome):
-        """Gera scripts .bat e .sh para um túnel"""
-        self._gerar_script_windows_nome(nome)
-        self._gerar_script_linux_nome(nome)
+        """Gera scripts .bat e .sh para um túnel com chave embutida"""
+        tuneis = self._carregar_tuneis()
+        if nome not in tuneis:
+            print(f"❌ Túnel '{nome}' não encontrado.")
+            return
+
+        info = tuneis[nome]
+        chave_privada = info.get('chave_privada', os.path.expanduser(f"~/.ssh/id_ed25519_{nome}"))
+
+        if not os.path.exists(chave_privada):
+            print(f"❌ Chave privada não encontrada: {chave_privada}")
+            print("   Regenerando chave...")
+            ssh_dir = os.path.expanduser("~/.ssh")
+            os.makedirs(ssh_dir, exist_ok=True)
+            result = subprocess.run(
+                ["ssh-keygen", "-t", "ed25519", "-N", "", "-f", chave_privada,
+                 "-C", f"tunel-{nome}@{info['servidor']}"],
+                capture_output=True, text=True
+            )
+            if result.returncode != 0:
+                print(f"❌ Falha ao gerar chave: {result.stderr.strip()}")
+                return
+            print("✅ Nova chave gerada!")
+
+            auth_keys = os.path.join(ssh_dir, "authorized_keys")
+            try:
+                with open(f"{chave_privada}.pub", 'r') as f:
+                    chave_pub_content = f.read().strip()
+                existente = False
+                if os.path.exists(auth_keys):
+                    with open(auth_keys, 'r') as f:
+                        existente = chave_pub_content in f.read()
+                if not existente:
+                    with open(auth_keys, 'a') as f:
+                        f.write(chave_pub_content + "\n")
+                    print("✅ Chave pública adicionada ao authorized_keys")
+            except Exception as e:
+                print(f"⚠️ Falha ao adicionar chave pública: {e}")
+
+            info['chave_privada'] = chave_privada
+            self._salvar_tuneis(tuneis)
+
+        self._gerar_script_completo(nome, chave_privada)
 
     def _atualizar_ssh_config_silencioso(self):
         """Atualiza aliases SSH sem interação com usuário"""
@@ -10941,12 +10981,7 @@ goto conectar
         # Regenerar scripts se porta ou tipo mudou
         if info['porta_remota'] != porta_remota_antiga or info.get('chave_privada'):
             print("\n🔄 Regenerando scripts...")
-            chave_path = info.get('chave_privada', os.path.expanduser(f"~/.ssh/tunel_{nome}_key"))
-            if os.path.exists(chave_path):
-                self._gerar_script_completo(nome, chave_path)
-            else:
-                print("⚠️ Chave privada não encontrada, regenerando sem chave embutida")
-                self._gerar_scripts_tunel(nome)
+            self._gerar_scripts_tunel(nome)
 
         print(f"\n✅ Cliente '{nome}' editado com sucesso!")
 
@@ -11071,134 +11106,22 @@ goto conectar
             print("\n" + "=" * 55)
             print("📄 SCRIPT CLIENTE")
             print("=" * 55)
-            print("[1] 🪟 Gerar script Windows (.bat)")
-            print("[2] 🐧 Gerar script Linux (.sh)")
-            print("[3] 📄 Visualizar na tela")
+            print("[1] 📄 Gerar scripts (.sh + .bat)")
+            print("[2]  Visualizar na tela")
             print("[0] ️  Voltar")
 
             opcao = input("\nEscolha: ").strip()
 
             if opcao == "1":
-                nome = self._escolher_tunel("Gerar script Windows", tuneis)
+                nome = self._escolher_tunel("Gerar scripts", tuneis)
                 if nome:
-                    self._gerar_script_windows_nome(nome)
+                    self._gerar_scripts_tunel(nome)
             elif opcao == "2":
-                nome = self._escolher_tunel("Gerar script Linux", tuneis)
-                if nome:
-                    self._gerar_script_linux_nome(nome)
-            elif opcao == "3":
                 self._ver_script_tela()
             elif opcao == "0":
                 break
             else:
-                print("❌ Opção inválida.")
-
-    def _gerar_script_windows_nome(self, nome):
-        """Gera script .bat para um túnel específico"""
-        tuneis = self._carregar_tuneis()
-        if nome not in tuneis:
-            print(f"❌ Túnel '{nome}' não encontrado.")
-            return
-
-        info = tuneis[nome]
-        diretorio = f"{self.install_principal}/tuneis/scripts"
-        os.makedirs(diretorio, exist_ok=True)
-        caminho = f"{diretorio}/{nome}.bat"
-
-        conteudo = f"""@echo off
-title Tunel: {nome}
-color 0A
-
-set "USUARIO={info['usuario']}"
-set "SERVIDOR={info['servidor']}"
-set "PORTA_TUNEL={info['porta_remota']}"
-set "PORTA_LOCAL={info['porta_local']}"
-
-echo.
-echo ========================================
-echo    TUNEL: {nome}
-echo    servidor:%PORTA_TUNEL% -^> localhost:%PORTA_LOCAL%
-echo ========================================
-echo.
-echo Conectando...
-echo.
-
-:conectar
-ssh -o StrictHostKeyChecking=no ^
-    -o BatchMode=yes ^
-    -o ServerAliveInterval=30 ^
-    -o ServerAliveCountMax=3 ^
-    -R %PORTA_TUNEL%:localhost:%PORTA_LOCAL% ^
-    %USUARIO%@%SERVIDOR% -N
-
-echo.
-echo ========================================
-echo    ATENCAO: Conexao caiu!
-echo ========================================
-echo Reconectando em 5 segundos...
-timeout /t 5 /nobreak >nul
-goto conectar
-"""
-
-        with open(caminho, "w", encoding="utf-8") as f:
-            f.write(conteudo)
-
-        print(f"✅ Script gerado: {caminho}")
-        print(f"   Envie para a máquina Windows e execute.")
-
-    def _gerar_script_linux_nome(self, nome):
-        """Gera script .sh para um túnel específico"""
-        tuneis = self._carregar_tuneis()
-        if nome not in tuneis:
-            print(f"❌ Túnel '{nome}' não encontrado.")
-            return
-
-        info = tuneis[nome]
-        diretorio = f"{self.install_principal}/tuneis/scripts"
-        os.makedirs(diretorio, exist_ok=True)
-        caminho = f"{diretorio}/{nome}.sh"
-
-        conteudo = f"""#!/bin/bash
-# Túnel: {nome}
-# Uso: chmod +x {nome}.sh && ./{nome}.sh
-
-USUARIO='{info['usuario']}'
-SERVIDOR='{info['servidor']}'
-PORTA_TUNEL={info['porta_remota']}
-PORTA_LOCAL={info['porta_local']}
-
-echo ""
-echo "========================================"
-echo "   TUNEL: {nome}"
-echo "   servidor:$PORTA_TUNEL -> localhost:$PORTA_LOCAL"
-echo "========================================"
-echo ""
-echo "Conectando..."
-echo ""
-
-while true; do
-    ssh -o StrictHostKeyChecking=no \\
-        -o BatchMode=yes \\
-        -o ServerAliveInterval=30 \\
-        -o ServerAliveCountMax=3 \\
-        -R $PORTA_TUNEL:localhost:$PORTA_LOCAL \\
-        $USUARIO@$SERVIDOR -N
-
-    echo ""
-    echo "========================================"
-    echo "   ATENCAO: Conexao caiu!"
-    echo "========================================"
-    echo "Reconectando em 5 segundos..."
-    sleep 5
-done
-"""
-
-        with open(caminho, "w", encoding="utf-8") as f:
-            f.write(conteudo)
-
-        os.chmod(caminho, 0o755)
-        print(f"✅ Script gerado: {caminho}")
-        print(f"   Envie para a máquina Linux e execute: ./{nome}.sh")
+                print(" Opção inválida.")
 
     def _ver_script_tela(self):
         """Exibe conteúdo de um script na tela para copiar/colar"""
