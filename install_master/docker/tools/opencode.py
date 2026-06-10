@@ -154,7 +154,7 @@ class MixinOpenCode(DockerBase):
                     Environment=HOME={service_home}
                     Environment=PATH={service_home}/.opencode/bin:{service_home}/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
                     Environment=OPENCODE_SERVER_PASSWORD={nova_senha}
-                    ExecStart={opencode_bin} web --hostname 0.0.0.0 --port {nova_porta}
+                    ExecStart={opencode_bin} serve --hostname 0.0.0.0 --port {nova_porta} --cors "*"
                     Restart=on-failure
                     RestartSec=10
 
@@ -663,7 +663,7 @@ class MixinOpenCode(DockerBase):
                 Environment=HOME={service_home}
                 Environment=PATH={service_home}/.opencode/bin:{service_home}/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
                 Environment=OPENCODE_SERVER_PASSWORD={senha_web}
-                ExecStart={opencode_bin} web --hostname 0.0.0.0 --port {porta_web}
+                ExecStart={opencode_bin} serve --hostname 0.0.0.0 --port {porta_web} --cors "*"
                 Restart=on-failure
                 RestartSec=10
 
@@ -759,7 +759,7 @@ class MixinOpenCode(DockerBase):
         print(f"   Senha de Acesso: {senha_web}")
         print(f"\n💡 COMANDO PARA INICIAR O SERVIDOR:")
         print(f"   Rode este comando como o usuário '{service_user}':")
-        print(f"   OPENCODE_SERVER_PASSWORD={senha_web} opencode web --hostname 0.0.0.0 --port {porta_web}")
+        print(f"   OPENCODE_SERVER_PASSWORD={senha_web} opencode serve --hostname 0.0.0.0 --port {porta_web} --cors \"*\"")
         print(f"\n🛠️ COMANDOS ÚTEIS:")
         print(f"   opencode              # Inicia no terminal (modo interativo)")
         print(f"   opencode web          # Inicia modo web (servidor)")

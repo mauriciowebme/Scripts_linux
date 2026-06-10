@@ -530,7 +530,7 @@ echo ""
 echo "========================================"
 echo "   TUNEL SSH: {nome}"
 echo "   Servidor: $SERVIDOR:$PORTA_REMOTA"
-echo "   Local: localhost:$PORTA_LOCAL"
+echo "   Local: 127.0.0.1:$PORTA_LOCAL"
 echo "========================================"
 echo ""
 
@@ -590,7 +590,7 @@ if [[ -n "$SSH_CMD" ]]; then
         -o ServerAliveInterval=30 \\
         -o ServerAliveCountMax=3 \\
         -i "$CHAVE_PRIVADA_FILE" \\
-        -R $PORTA_REMOTA:localhost:$PORTA_LOCAL \\
+        -R $PORTA_REMOTA:127.0.0.1:$PORTA_LOCAL \\
         $USUARIO@$SERVIDOR -N
 else
     # Modo ssh puro com loop
@@ -600,7 +600,7 @@ else
             -o ServerAliveInterval=30 \\
             -o ServerAliveCountMax=3 \\
             -i "$CHAVE_PRIVADA_FILE" \\
-            -R $PORTA_REMOTA:localhost:$PORTA_LOCAL \\
+            -R $PORTA_REMOTA:127.0.0.1:$PORTA_LOCAL \\
             $USUARIO@$SERVIDOR -N
 
         echo ""
@@ -641,7 +641,7 @@ echo.
 echo ========================================
 echo    TUNEL SSH: {nome}
 echo    Servidor: %SERVIDOR%:%PORTA_REMOTA%
-echo    Local: localhost:%PORTA_LOCAL%
+echo    Local: 127.0.0.1:%PORTA_LOCAL%
 echo ========================================
 echo.
 
@@ -664,7 +664,7 @@ ssh -o StrictHostKeyChecking=no ^
     -o ServerAliveInterval=30 ^
     -o ServerAliveCountMax=3 ^
     -i "%USERPROFILE%\\.ssh\\tunel_{nome}\\id_ed25519" ^
-    -R %PORTA_REMOTA%:localhost:%PORTA_LOCAL% ^
+    -R %PORTA_REMOTA%:127.0.0.1:%PORTA_LOCAL% ^
     %USUARIO%@%SERVIDOR% -N
 
 echo.
