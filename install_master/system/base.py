@@ -84,8 +84,9 @@ class MixinBase(DockerBase):
 
             for idx_original, (texto, funcao) in opcoes_pagina:
                 # Calcular padding baseado na largura do emoji
-                primeiro = texto[0] if texto else ''
-                if '\uFE0F' in primeiro:
+                # Emojis compostos têm \uFE0F (variation selector) nos primeiros 2 caracteres
+                primeiros_dois = texto[:2] if len(texto) >= 2 else texto
+                if '\uFE0F' in primeiros_dois:
                     pad = " "   # Emoji composto (2 colunas) → 1 espaço
                 else:
                     pad = "  "  # Emoji simples (1 coluna) → 2 espaços
