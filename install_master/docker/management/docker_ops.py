@@ -245,11 +245,11 @@ class MixinDockerOps(DockerBase):
                 container = escolha
             
             print(f"\nOpcoes de logs:")
-            print("[1]  Ultimas 50 linhas")
-            print("[2]  Ultimas 100 linhas")
-            print("[3]  Ultimas 500 linhas")
-            print("[4]  Todos os logs")
-            print("[5]  Seguir logs (tempo real)")
+            print("[1] 📜  Ultimas 50 linhas")
+            print("[2] 📜  Ultimas 100 linhas")
+            print("[3] 📜  Ultimas 500 linhas")
+            print("[4] 📄  Todos os logs")
+            print("[5] ️  Seguir logs (tempo real)")
             
             opcao_log = input("\nEscolha uma opcao: ").strip()
             

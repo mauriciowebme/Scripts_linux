@@ -122,9 +122,9 @@ class MixinServices(DockerBase):
             print("[1] 📦  Instalar WARP")
             print("[2] 🔌  Conectar")
             print("[3] 🔌  Desconectar")
-            print("[4]  Ver Status Detalhado")
-            print("[5]  Testar Conexão com Cloudflare")
-            print("[6]  Habilitar Conexão Automática (boot)")
+            print("[4] 📊  Ver Status Detalhado")
+            print("[5] 🌐  Testar Conexão com Cloudflare")
+            print("[6] ⚡  Habilitar Conexão Automática (boot)")
             print("[0] ↩️  Voltar")
             print("="*55)
 

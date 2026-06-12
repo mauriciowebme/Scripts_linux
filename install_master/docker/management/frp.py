@@ -314,7 +314,7 @@ class MixinFRP(DockerBase):
             print("[2] ➖  Remover proxy")
             print("[3] 📋  Listar proxies")
             print("[4] 🖥️  Status do servidor (frps)")
-            print("[5]  Status do cliente (frpc)")
+            print("[5] 💻  Status do cliente (frpc)")
             print("[6] 🔑  Ver credenciais do dashboard")
             print("[0] ↩️  Voltar")
 

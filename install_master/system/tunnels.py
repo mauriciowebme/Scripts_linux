@@ -435,8 +435,8 @@ Host {nome}
             print(f"⚠️ Falha ao adicionar chave pública: {e}")
 
         print("\n Tipo da máquina remota:")
-        print("[1] Windows")
-        print("[2] Linux")
+        print("[1] 🪟  Windows")
+        print("[2] 🐧  Linux")
         tipo_choice = input("Escolha (Enter para Linux): ").strip()
         if tipo_choice == "1":
             tipo = "windows"
@@ -894,11 +894,6 @@ goto conectar
                 print(f"    Scripts:      ⚪ Nenhum gerado")
 
         print(f"\n📊 Total: {len(tuneis)} configurados, {len(ativos)} ativos")
-
-        if tuneis:
-            ver = input("\n Ver script de algum túnel? (s/n): ").strip().lower()
-            if ver == "s":
-                self._script_cliente()
 
     def _script_cliente(self):
         """Gera e exibe o script na tela"""
