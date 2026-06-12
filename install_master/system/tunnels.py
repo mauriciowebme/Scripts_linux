@@ -39,7 +39,7 @@ class MixinTunnels(DockerBase):
 
             print("\n" + "-" * 55)
             print("[1] ➕  Adicionar cliente")
-            print("[2] ✏️  Editar cliente")
+            print("[2] ️  Editar cliente")
             print("[3] 🗑️  Excluir cliente")
             print("[4] 📋  Clientes conectados")
             print("[5] 📜  Script cliente")

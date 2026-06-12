@@ -89,10 +89,10 @@ class MixinPostgres(DockerBase):
         print(f"\n=== OPERAÇÕES NO CONTAINER: {container} ===")
         print("📋 GERENCIAMENTO POSTGRESQL")
         print("-" * 50)
-        print("[1] 🗄️  Criar banco de dados")
-        print("[2] 📋  Listar bancos de dados")
-        print("[3] 🗑️  Apagar banco de dados")
-        print("[0] ↩️  Voltar")
+        print("[1] 🗄️ Criar banco de dados")
+        print("[2] 📋 Listar bancos de dados")
+        print("[3] 🗑️ Apagar banco de dados")
+        print("[0] ↩️ Voltar")
 
         opcao = input("\nEscolha uma opção: ").strip()
 

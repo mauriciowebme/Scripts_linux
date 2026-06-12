@@ -152,15 +152,15 @@ class MixinPartitions(DockerBase):
         particao_completa = f"{raid_device}p{particao}"
 
         print("\n🔹 Escolha uma opção:")
-        print("[1] 📈  Aumentar o tamanho do RAID")
-        print("[2] 📉️  Diminuir o tamanho do RAID")
+        print("[1] 📈 Aumentar o tamanho do RAID")
+        print("[2] 📉️ Diminuir o tamanho do RAID")
         escolha = input("\nDigite 1 para aumentar ou 2 para diminuir: ").strip()
 
         if escolha == "1":
             acao = "aumentar"
             print("\n📌 Você deseja definir um novo tamanho ou usar o máximo disponível?")
-            print("[1] 📏️  Definir um tamanho específico")
-            print("[2] 📐️  Usar o tamanho máximo disponível (padrão)")
+            print("[1] 📏️ Definir um tamanho específico")
+            print("[2] 📐️ Usar o tamanho máximo disponível (padrão)")
             escolha_tamanho = input("\nDigite 1 para definir um tamanho ou 2 para usar o máximo: ").strip()
 
             if escolha_tamanho == "1":

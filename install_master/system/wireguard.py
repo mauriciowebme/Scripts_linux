@@ -402,9 +402,9 @@ AllowedIPs = {ip_peer}
 
             print("\n" + "="*70)
             print("OPÇÕES:")
-            print("[1] ✅  Manter configuração e apenas visualizar/gerenciar")
-            print("[2] 🔄  RESETAR e criar nova configuração")
-            print("[0] ↩️  Voltar ao menu")
+            print("[1] ✅ Manter configuração e apenas visualizar/gerenciar")
+            print("[2] 🔄 RESETAR e criar nova configuração")
+            print("[0] ↩️ Voltar ao menu")
             print("="*70)
 
             opcao = input("\nEscolha: ").strip()
@@ -452,10 +452,10 @@ AllowedIPs = {ip_peer}
                 print("\n" + "="*70)
                 print("O QUE DESEJA FAZER?")
                 print("="*70)
-                print("[1] ➕  Adicionar novo peer (para servidores)")
-                print("[2] 📊  Ver status detalhado")
-                print("[3] 🔍  Testar conexão com peer")
-                print("[0] ↩️  Voltar ao menu principal")
+                print("[1] ➕ Adicionar novo peer (para servidores)")
+                print("[2] 📊 Ver status detalhado")
+                print("[3] 🔍 Testar conexão com peer")
+                print("[0] ↩️ Voltar ao menu principal")
                 print("="*70)
 
                 acao = input("\nEscolha: ").strip()
@@ -562,10 +562,10 @@ AllowedIPs = {ip_peer}
 
         print("="*70)
         print("Qual tipo de configuração deseja?")
-        print("[1] 🖥️  SERVIDOR (recebe conexões)")
-        print("[2] 💻  CLIENTE/WORKER (conecta a um servidor)")
-        print("[3] ➕  Adicionar peer ao servidor existente")
-        print("[0] ↩️  Voltar")
+        print("[1] 🖥️ SERVIDOR (recebe conexões)")
+        print("[2] 💻 CLIENTE/WORKER (conecta a um servidor)")
+        print("[3] ➕ Adicionar peer ao servidor existente")
+        print("[0] ↩️ Voltar")
         print("="*70)
 
         escolha = input("\nEscolha uma opção: ").strip()

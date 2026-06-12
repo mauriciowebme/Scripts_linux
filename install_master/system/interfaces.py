@@ -48,7 +48,7 @@ class MixinInterfaces(DockerBase):
             print("\n" + "-"*50)
             print(" MENU SWAP")
             print("-" * 50)
-            print("[1] ➕  Criar/Redimensionar Swap")
+            print("[1]   Criar/Redimensionar Swap")
             print("[2] 🗑️  Remover Swap")
             print("[3] ⚙️  Ajustar Swappiness")
             print("[4] 🔄  Recarregar Swap (desliga e liga)")
