@@ -407,6 +407,30 @@ class MixinOpenCode(DockerBase):
             print("="*60)
             input("\nPressione Enter para voltar ao menu...")
 
+        def opcao_gerar_script():
+            """Mostra scripts prontos para copiar (Linux e Windows)"""
+            print("\n" + "="*50)
+            print(" SCRIPTS PARA INICIAR SERVIDOR")
+            print("="*50)
+
+            print("\n🐧 LINUX - Iniciar servidor:")
+            print("─" * 50)
+            print("""OPENCODE_SERVER_USERNAME=opencode
+OPENCODE_SERVER_PASSWORD=sua_senha
+opencode serve --hostname 0.0.0.0 --port 7860 --cors \"*\"""")
+
+            print("\n🪟 WINDOWS - Script .bat:")
+            print("─" * 50)
+            print("""@echo off
+title OpenCode Server
+set OPENCODE_SERVER_USERNAME=opencode
+set OPENCODE_SERVER_PASSWORD=sua_senha
+opencode serve --port 7860 --hostname 127.0.0.1 --cors "*"
+pause""")
+
+            print("\n" + "="*50)
+            input("Pressione Enter para voltar ao menu...")
+
         # Loop do Menu
         while True:
             print("\n" + "="*50)
@@ -416,17 +440,19 @@ class MixinOpenCode(DockerBase):
             print("[2] 🔄  Reiniciar Serviço")
             print("[3] 📊  Ver Status")
             print("[4] ⚙️  Reconfigurar Modo Web (Porta/Senha)")
-            print("[5] 🗑️  Desinstalar OpenCode")
+            print("[5] 📝  Gerar Script Servidor")
+            print("[6] 🗑️  Desinstalar OpenCode")
             print("[0] ↩️  Voltar")
             print("="*50)
-            
+
             opt = input("\nEscolha uma opção: ").strip()
-            
+
             if opt == '1': opcao_instalar()
             elif opt == '2': opcao_reiniciar()
             elif opt == '3': opcao_status()
             elif opt == '4': opcao_reconfigurar()
-            elif opt == '5': opcao_desinstalar()
+            elif opt == '5': opcao_gerar_script()
+            elif opt == '6': opcao_desinstalar()
             elif opt == '0': break
             else: print("❌ Opção inválida.")
 
