@@ -459,14 +459,14 @@ def main():
 Execute com: install_master
 ip server: {servicos.exibe_ip()}"""
     opcoes_menu = [
-        ("🔄  Reiniciar", servicos.Reiniciar),
+        ("  Reiniciar", servicos.Reiniciar),
         (" ️ Desligar", servicos.Desligar),
-        ("📦  Atualizar o sistema", servicos.menu_atualizacoes),
-        ("📂  Central de Instalações", servicos.menu_instalacoes),
-        ("🔧  Gerenciar Microserviços", servicos.gerenciar_microservicos),
-        ("⚙️  Configurações do Sistema", servicos.opcoes_sistema),
-        ("📊  Diagnóstico e Monitoramento", servicos.submenu_diagnostico),
-        ("🐧  Comandos essenciais do Linux", servicos.comandos_essenciais_linux)
+        ("  Atualizar o sistema", servicos.menu_atualizacoes),
+        ("  Central de Instalações", servicos.menu_instalacoes),
+        ("  Gerenciar Microserviços", servicos.gerenciar_microservicos),
+        ("️  Configurações do Sistema", servicos.opcoes_sistema),
+        ("  Diagnóstico e Monitoramento", servicos.submenu_diagnostico),
+        ("  Comandos essenciais do Linux", servicos.comandos_essenciais_linux)
     ]
     servicos.mostrar_menu_paginado(opcoes_menu, titulo="🖥️  MENU PRINCIPAL - INSTALL MASTER", itens_por_pagina=10, principal=True, mensagem_topo=banner)
 
