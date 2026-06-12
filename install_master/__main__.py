@@ -464,7 +464,7 @@ ip server: {servicos.exibe_ip()}"""
         ("📦  Atualizar o sistema", servicos.menu_atualizacoes),
         ("📂  Central de Instalações", servicos.menu_instalacoes),
         ("🔧  Gerenciar Microserviços", servicos.gerenciar_microservicos),
-        ("⚙️  Configurações do Sistema", servicos.opcoes_sistema),
+        ("⚙️ Configurações do Sistema", servicos.opcoes_sistema),
         ("📊  Diagnóstico e Monitoramento", servicos.submenu_diagnostico),
         ("🐧  Comandos essenciais do Linux", servicos.comandos_essenciais_linux)
     ]
