@@ -83,10 +83,17 @@ class MixinBase(DockerBase):
             print("\033[1;36m" + "="*80 + "\033[0m")
 
             for idx_original, (texto, funcao) in opcoes_pagina:
-                if idx_original == 0:
-                    print(f"\033[91m  [{idx_original}] {texto}\033[0m")
+                # Calcular padding baseado na largura do emoji
+                primeiro = texto[0] if texto else ''
+                if '\uFE0F' in primeiro:
+                    pad = " "   # Emoji composto (2 colunas) → 1 espaço
                 else:
-                    print(f"\033[92m  [{idx_original}]\033[0m {texto}")
+                    pad = "  "  # Emoji simples (1 coluna) → 2 espaços
+                
+                if idx_original == 0:
+                    print(f"\033[91m  [{idx_original}]{pad}{texto}\033[0m")
+                else:
+                    print(f"\033[92m  [{idx_original}]\033[0m{pad}{texto}")
 
             print("\n" + "\033[2m" + "-"*80 + "\033[0m")
             print("\033[96m  NAVEGAÇÃO:\033[0m [n]ext | [p]rev | [número] para selecionar")
