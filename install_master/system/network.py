@@ -217,23 +217,6 @@ class MixinNetwork(DockerBase):
         print("📊 INFORMAÇÕES DE REDE")
         print("=" * 60)
 
-        # Detectar gateway padrão e interface associada
-        gateway_info = {}
-        try:
-            rota = subprocess.check_output(
-                ["ip", "route", "show", "default"], text=True, stderr=subprocess.DEVNULL
-            ).strip()
-            if rota:
-                parts = rota.split()
-                gw = parts[2] if len(parts) > 2 and parts[1] == "via" else None
-                dev = parts[4] if len(parts) > 4 and parts[3] == "dev" else None
-                if gw and dev:
-                    gateway_info = {"gateway": gw, "dev": dev}
-        except Exception:
-            pass
-
-        gateway_shown = False
-
         for iface in interfaces:
             print(f"\nInterface: {iface}")
             print(f"{'─' * 60}")
@@ -279,14 +262,25 @@ class MixinNetwork(DockerBase):
                 print("  📡 MAC:     N/A")
                 print("  📡 Status:  N/A")
 
-            # Mostrar gateway apenas na interface de saída padrão
-            if gateway_info and iface == gateway_info["dev"]:
-                print(f"  🚪 Gateway:  {gateway_info['gateway']}")
-                gateway_shown = True
-
-        # Fallback: se nenhuma interface foi a dev do gateway, mostrar no final
-        if gateway_info and not gateway_shown:
-            print(f"\n  🚪 Gateway:  {gateway_info['gateway']} (via {gateway_info['dev']})")
+            # Gateway da interface
+            try:
+                rotas_iface = subprocess.check_output(
+                    ["ip", "route", "show", "dev", iface], text=True, stderr=subprocess.DEVNULL
+                ).strip()
+                gateways = []
+                for rota in rotas_iface.splitlines():
+                    rota = rota.strip()
+                    if " via " in rota:
+                        parts = rota.split()
+                        idx = parts.index("via")
+                        if idx + 1 < len(parts):
+                            gw = parts[idx + 1]
+                            if gw not in gateways:
+                                gateways.append(gw)
+                if gateways:
+                    print(f"  🚪 Gateway:  {', '.join(gateways)}")
+            except Exception:
+                pass
 
         print(f"\n{'─' * 60}")
 
