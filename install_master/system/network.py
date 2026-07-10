@@ -14,6 +14,7 @@ class MixinNetwork(DockerBase):
         opcoes = [
             ("📶  Gerenciar Wifi (nmtui)", self.setup_wifi),
             ("📍  Configurar IP Fixo", self.configura_ip_fixo),
+            ("📊  Informações de Rede", self.informacoes_rede),
             ("🔐  Configurar SSH", self.configurar_ssh),
             ("↩️  Voltar", None)
         ]
@@ -193,6 +194,110 @@ class MixinNetwork(DockerBase):
             print("Configuração concluída com sucesso!")
         except subprocess.CalledProcessError as e:
             print(f"Erro ao aplicar as configurações: {e}")
+
+    def informacoes_rede(self):
+        """Exibe informações completas de rede de todas as interfaces físicas."""
+        interfaces = self.lista_interfaces_fisicas()
+
+        if not interfaces:
+            print("\n⚠️  Nenhuma interface de rede física encontrada.")
+            return
+
+        print("\n" + "=" * 60)
+        print("📊 INFORMAÇÕES DE REDE")
+        print("=" * 60)
+
+        # Detectar gateway padrão e interface associada
+        gateway_info = {}
+        try:
+            rota = subprocess.check_output(
+                ["ip", "route", "show", "default"], text=True, stderr=subprocess.DEVNULL
+            ).strip()
+            if rota:
+                parts = rota.split()
+                gw = parts[2] if len(parts) > 2 and parts[1] == "via" else None
+                dev = parts[4] if len(parts) > 4 and parts[3] == "dev" else None
+                if gw and dev:
+                    gateway_info = {"gateway": gw, "dev": dev}
+        except Exception:
+            pass
+
+        gateway_shown = False
+
+        for iface in interfaces:
+            print(f"\nInterface: {iface}")
+            print(f"{'─' * 60}")
+
+            # IP e máscara
+            try:
+                output = subprocess.check_output(
+                    ["ip", "-4", "addr", "show", iface], text=True, stderr=subprocess.DEVNULL
+                )
+                for line in output.splitlines():
+                    line = line.strip()
+                    if "inet " in line:
+                        parts = line.split()
+                        ip_mask = parts[1] if len(parts) > 1 else "N/A"
+                        print(f"  📍 IP:      {ip_mask}")
+            except Exception:
+                print("  📍 IP:      N/A (sem IPv4)")
+
+            # MAC e status
+            try:
+                output = subprocess.check_output(
+                    ["ip", "link", "show", iface], text=True, stderr=subprocess.DEVNULL
+                )
+                for line in output.splitlines():
+                    line = line.strip()
+                    if "link/ether" in line:
+                        mac = line.split()[1]
+                        print(f"  📡 MAC:     {mac}")
+                    if "<" in line and ">" in line:
+                        start = line.index("<") + 1
+                        end = line.index(">")
+                        flags = line[start:end]
+                        status = "UP" if "UP" in flags else "DOWN"
+                        print(f"  📡 Status:  {status}")
+                        if "mtu" in line:
+                            mtu = line.split("mtu")[1].strip().split()[0]
+                            print(f"  📦 MTU:     {mtu}")
+            except Exception:
+                print("  📡 MAC:     N/A")
+                print("  📡 Status:  N/A")
+
+            # Mostrar gateway apenas na interface de saída padrão
+            if gateway_info and iface == gateway_info["dev"]:
+                print(f"  🚪 Gateway:  {gateway_info['gateway']}")
+                gateway_shown = True
+
+        # Fallback: se nenhuma interface foi a dev do gateway, mostrar no final
+        if gateway_info and not gateway_shown:
+            print(f"\n  🚪 Gateway:  {gateway_info['gateway']} (via {gateway_info['dev']})")
+
+        print(f"\n{'─' * 60}")
+
+        # DNS
+        try:
+            with open("/etc/resolv.conf", "r") as f:
+                dns_servers = [line.strip().split()[1] for line in f if line.strip().startswith("nameserver")]
+                if dns_servers:
+                    print(f"   DNS:      {', '.join(dns_servers)}")
+                else:
+                    print("   DNS:      N/A")
+        except Exception:
+            print("   DNS:      N/A (não foi possível ler /etc/resolv.conf)")
+
+        # IP público
+        try:
+            ip_publico = subprocess.check_output(
+                ["curl", "-s", "--connect-timeout", "5", "ifconfig.me"], text=True, stderr=subprocess.DEVNULL
+            ).strip()
+            print(f"   IP Público: {ip_publico}")
+        except Exception:
+            print("   IP Público: N/A (sem conexão ou timeout)")
+
+        print(f"{'─' * 60}\n")
+        input("Pressione Enter para continuar...")
 
     def verificar_boot_mode(self):
         """Verifica se o sistema está usando BIOS (Legacy) ou UEFI"""
