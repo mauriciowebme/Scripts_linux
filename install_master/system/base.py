@@ -151,7 +151,7 @@ class MixinBase(DockerBase):
 
     def exibe_ip(self,):
         comandos = [
-            "ip addr show | grep -vE '(docker|br-)' | grep 'inet ' | awk '{split($2, a, \"/\"); print a[1], $NF}'",
+            "ip addr show | grep -vE '(docker|br-|veth|wg|virbr|lxcbr|cali|flannel|vnet|kube)' | grep 'inet ' | awk '{split($2, a, \"/\"); print a[1], $NF}'",
         ]
         resultados = self.executar_comandos(comandos, exibir_executando=False, exibir_resultados=False)
         ip_result = "\n".join(line.strip() for line in resultados[comandos[0]] if "127.0.0.1" not in line)

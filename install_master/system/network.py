@@ -91,21 +91,62 @@ class MixinNetwork(DockerBase):
         ]
         resultado = self.executar_comandos(comandos)
 
-    def configura_ip_fixo(self,):
-        print("Interfaces de rede disponíveis:")
-        interfaces = subprocess.check_output(["ip", "addr"])
-        interfaces = interfaces.decode("utf-8").splitlines()
-        for line in interfaces:
-            if ":" in line:
-                print(line.split(":")[1].strip())
-
-        interface = input("Digite o nome da interface de rede (ex: enp2s0f5): ")
-
+    def lista_interfaces_fisicas(self):
+        """Lista interfaces de rede físicas, filtrando interfaces virtuais."""
         try:
-            subprocess.check_output(["ip", "addr", "show", interface])
+            saida = subprocess.check_output(
+                ["ip", "-o", "link", "show"], text=True
+            )
         except subprocess.CalledProcessError:
-            print(f"Interface {interface} não encontrada. Verifique o nome e tente novamente.")
+            return []
+
+        # Padrões de interfaces virtuais a ignorar
+        prefixos_virtuais = (
+            "lo", "docker", "br-", "veth", "wg",
+            "virbr", "lxcbr", "cali", "flannel", "vnet", "kube",
+        )
+
+        interfaces = []
+        for linha in saida.strip().splitlines():
+            match = re.match(r'^\d+:\s+(\S+?)[@:]', linha)
+            if not match:
+                continue
+            nome = match.group(1)
+            # Remove sufixo @ifN de veth pairs
+            nome = re.sub(r'@\w+$', '', nome)
+            # Filtra interfaces virtuais
+            if any(nome == p or nome.startswith(p) for p in prefixos_virtuais):
+                continue
+            if nome not in interfaces:
+                interfaces.append(nome)
+
+        return interfaces
+
+    def configura_ip_fixo(self,):
+        # Lista interfaces físicas disponíveis para seleção
+        interfaces = self.lista_interfaces_fisicas()
+
+        if not interfaces:
+            print("❌ Nenhuma interface de rede física encontrada.")
             return
+
+        print("Interfaces de rede disponíveis:")
+        for idx, nome in enumerate(interfaces, start=1):
+            print(f"  [{idx}] {nome}")
+
+        # Seleção numérica da interface
+        while True:
+            escolha = input("Selecione o número da interface de rede: ").strip()
+            try:
+                num = int(escolha)
+                if 1 <= num <= len(interfaces):
+                    break
+                print(f"❌ Digite um número entre 1 e {len(interfaces)}.")
+            except ValueError:
+                print("❌ Entrada inválida. Digite um número.")
+
+        interface = interfaces[num - 1]
+        print(f"✅ Interface selecionada: {interface}")
 
         ip_address = input("Digite o endereço IP com a máscara (ex: 192.168.0.80/24): ")
 

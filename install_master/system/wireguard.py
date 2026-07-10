@@ -591,13 +591,23 @@ AllowedIPs = {ip_peer}
         ip_servidor = input("IP do servidor na VPN [10.8.0.1/24]: ").strip() or "10.8.0.1/24"
         porta = input("Porta [51820]: ").strip() or "51820"
 
+        # Detectar interface de saída padrão para as regras de NAT
+        try:
+            rota_default = subprocess.check_output(
+                ["ip", "route", "show", "default"], text=True
+            ).strip()
+            match = re.search(r'dev\s+(\S+)', rota_default)
+            iface_saida = match.group(1) if match else 'eth0'
+        except Exception:
+            iface_saida = 'eth0'
+
         config_path = Path("/etc/wireguard/wg0.conf")
         config_content = f"""[Interface]
 Address = {ip_servidor}
 PrivateKey = {private_key}
 ListenPort = {porta}
-PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o {iface_saida} -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o {iface_saida} -j MASQUERADE
 
 # Peers serão adicionados abaixo
 # Use a opção 'Adicionar peer' do menu
