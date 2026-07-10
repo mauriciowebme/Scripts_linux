@@ -262,7 +262,6 @@ class MixinNetwork(DockerBase):
         # 4. Converter máscara para CIDR para o netplan
         cidr = self.mask_to_cidr(nova_mascara)
         ip_com_mascara = f"{novo_ip}/{cidr}"
-        dns_list = [d.strip() for d in novos_dns.split(",")]
 
         # 5. Aplicar configuração via netplan
         config_file = "/etc/netplan/00-installer-config.yaml"
@@ -283,24 +282,62 @@ class MixinNetwork(DockerBase):
         except subprocess.CalledProcessError as e:
             print(f"⚠️  Não foi possível criar backup: {e}")
 
-        config_data = {
-            "network": {
-                "version": 2,
-                "renderer": "networkd",
-                "ethernets": {
-                    interface: {
-                        "addresses": [ip_com_mascara],
-                        "routes": [{"to": "default", "via": novo_gateway}],
-                        "nameservers": {"addresses": dns_list}
-                    }
-                }
-            }
-        }
+        # Carregar configuração existente para preservar outras interfaces
+        try:
+            with open(config_file, "r") as file:
+                config_data = yaml.safe_load(file)
+        except Exception as e:
+            print(f"❌ Erro ao ler configuração existente: {e}")
+            return
+
+        # Garantir estrutura básica
+        if config_data is None:
+            config_data = {}
+        if "network" not in config_data:
+            config_data["network"] = {}
+        if "ethernets" not in config_data["network"]:
+            config_data["network"]["ethernets"] = {}
+        if "version" not in config_data["network"]:
+            config_data["network"]["version"] = 2
+
+        # NÃO adicionar renderer se não existia antes
+
+        # Atualizar apenas a interface selecionada
+        if interface not in config_data["network"]["ethernets"]:
+            config_data["network"]["ethernets"][interface] = {}
+
+        iface_config = config_data["network"]["ethernets"][interface]
+
+        # Atualizar addresses
+        iface_config["addresses"] = [ip_com_mascara]
+
+        # Atualizar routes (preservar métrica e outras rotas)
+        routes = []
+        if "routes" in iface_config:
+            # Preservar rotas existentes que não são default
+            routes = [r for r in iface_config["routes"] if r.get("to") != "default"]
+
+        # Adicionar rota default
+        default_route = {"to": "default", "via": novo_gateway}
+        # Preservar métrica se existia
+        for r in iface_config.get("routes", []):
+            if r.get("to") == "default" and "metric" in r:
+                default_route["metric"] = r["metric"]
+                break
+
+        routes.append(default_route)
+        iface_config["routes"] = routes
+
+        # Atualizar nameservers APENAS se usuário especificou novos DNS
+        if novos_dns and novos_dns != config_atual["dns"]:
+            dns_list = [d.strip() for d in novos_dns.split(",")]
+            iface_config["nameservers"] = {"addresses": dns_list}
+        # Se usuário manteve (Enter), não mexer no nameservers existente
 
         print("Gerando novo arquivo de configuração...")
         try:
             with open(config_file, "w") as file:
-                yaml.dump(config_data, file, default_flow_style=False)
+                yaml.dump(config_data, file, default_flow_style=False, sort_keys=False)
         except IOError as e:
             print(f"❌ Erro ao escrever no arquivo de configuração: {e}")
             return
@@ -309,8 +346,11 @@ class MixinNetwork(DockerBase):
         try:
             subprocess.run(["sudo", "netplan", "apply"], check=True)
             print("✅ Configuração aplicada com sucesso!")
+            print(f"   Interface {interface} atualizada.")
+            print(f"   Outras interfaces preservadas.")
         except subprocess.CalledProcessError as e:
             print(f"❌ Erro ao aplicar as configurações: {e}")
+            print(f"   Backup disponível em: {backup_file}")
 
     def informacoes_rede(self):
         """Exibe informações completas de rede de todas as interfaces físicas."""
