@@ -197,6 +197,16 @@ class MixinNetwork(DockerBase):
 
     def informacoes_rede(self):
         """Exibe informações completas de rede de todas as interfaces físicas."""
+
+        def cidr_to_mask(cidr):
+            """Converte prefixo CIDR para máscara decimal. Ex: 23 -> 255.255.254.0"""
+            try:
+                prefix = int(cidr)
+                mask_int = (0xFFFFFFFF << (32 - prefix)) & 0xFFFFFFFF
+                return f"{(mask_int >> 24) & 0xFF}.{(mask_int >> 16) & 0xFF}.{(mask_int >> 8) & 0xFF}.{mask_int & 0xFF}"
+            except (ValueError, TypeError):
+                return "N/A"
+
         interfaces = self.lista_interfaces_fisicas()
 
         if not interfaces:
@@ -239,6 +249,10 @@ class MixinNetwork(DockerBase):
                         parts = line.split()
                         ip_mask = parts[1] if len(parts) > 1 else "N/A"
                         print(f"  📍 IP:      {ip_mask}")
+                        if "/" in ip_mask:
+                            cidr = ip_mask.split("/")[1]
+                            mask = cidr_to_mask(cidr)
+                            print(f"  📍 Máscara:  {mask}")
             except Exception:
                 print("  📍 IP:      N/A (sem IPv4)")
 
