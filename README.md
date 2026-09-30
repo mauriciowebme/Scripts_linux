@@ -7,6 +7,8 @@
 ![Ubuntu](https://img.shields.io/badge/ubuntu-20.04+-orange)
 ![License](https://img.shields.io/badge/license-MIT-purple)
 
+> **Padrão de versionamento:** a versão oficial do projeto é o `__version__` em `install_master/__init__.py` (fonte única de verdade). O badge de versão acima deve ser sincronizado a cada bump.
+
 ## Requisitos
 
 - Ubuntu 20.04 ou superior
@@ -45,19 +47,22 @@ Scripts_linux/
 │   │   └── deps.py                # Gerenciamento de dependências
 │   ├── docker/                    # Módulos Docker
 │   │   ├── databases/             # PostgreSQL, MySQL
-│   │   ├── tools/                 # 19 ferramentas (n8n, Portainer, Redis, etc.)
-│   │   ├── vms/                   # VMs (Windows KVM, Ubuntu, Webtop, Nextcloud)
+│   │   ├── tools/                 # 18 ferramentas (n8n, Portainer, Redis, etc.)
+│   │   ├── vms/                   # VMs (Windows KVM, Ubuntu, Webtop, Nextcloud, CISO)
 │   │   ├── web/                   # Traefik, WordPress, OpenLiteSpeed, NodeJS
 │   │   └── management/            # Instalação Docker, CRUD containers, FRP
 │   └── system/                    # Configurações do sistema
 │       ├── base.py                # Mixin base e menus
-│       ├── network.py             # Configurações de rede
-│       ├── wireguard.py           # VPN WireGuard
-│       ├── tunnels.py             # Túneis SSH
-│       ├── partitions.py          # Gerenciamento de partições
 │       ├── diagnostic.py          # Diagnósticos do sistema
+│       ├── interfaces.py          # Interfaces gráficas (XFCE, GNOME, VNC)
+│       ├── linux_commands.py      # Referência de comandos do Linux
+│       ├── network.py             # Configurações de rede
 │       ├── ollama.py              # IA local (Ollama)
-│       └── updates.py             # Atualizações do sistema
+│       ├── partitions.py          # Gerenciamento de partições
+│       ├── services.py            # Serviços do sistema (systemd)
+│       ├── tunnels.py             # Túneis SSH
+│       ├── updates.py             # Atualizações do sistema
+│       └── wireguard.py           # VPN WireGuard
 └── .gitignore
 ```
 
